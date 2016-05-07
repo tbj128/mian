@@ -1,0 +1,6 @@
+Experiment Name ,,,,,
+Description of the experiment goes here,,,,,
+OTU,Pvalue,Qvalue,Correlation,Rank,NonZero
+Otu00001,0.0504,0.09,0,1,2
+Otu00002,0.0668,0.2,0,1,3
+Otu00003,0.09,1,0,1,4

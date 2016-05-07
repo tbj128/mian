@@ -1,0 +1,170 @@
+body {
+  padding-top: 50px;
+  background-color:#F6F6F6;
+}
+
+.overlay {
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:#000;
+  opacity:0.75;
+}
+
+.highlight {
+    background-color: #4D97CA;
+    width: 100%;
+    padding: 36px 64px;
+    color: #FFF;
+    text-align: center;
+}
+
+.editor {
+	position: fixed;
+	left:0px;
+	top:50px;
+	bottom:0px;
+	width:360px;
+	border-right:1px solid #E8E8E8;
+  background:#F3F3F3;
+	padding:20px;
+}
+
+.editor label {
+	margin-top:12px;
+}
+
+.editor .pad-bottom {
+	margin-bottom:4px;
+}
+
+.welcome-container {
+	margin-top:60px;
+}
+
+.analysis-container {
+	margin-left:360px;
+	padding:20px;
+}
+
+.upload-item {
+  background: #FFF;
+  box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.12);
+  width: 720px;
+  margin: 0 auto 16px auto;
+  padding:36px 48px;
+}
+
+.upload-status {
+  margin-top: 20px;
+  text-align: right;
+}
+
+/**
+ * Navbar
+ */
+.navbar {
+	border-bottom: 1px solid #E8E8E8;
+	background:#FFF;
+}
+
+.navbar .container {
+	width:100%;
+	margin-left:6px;
+}
+
+/**
+ * D3 Custom
+ */
+
+.axis text {
+  font-size: 14px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}
+
+
+.whisker line,
+.median line,
+.box rect, {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+
+circle {
+  fill: black;
+  stroke: none;
+  shape-rendering: crispEdges;
+}
+
+circle:hover {
+  fill: orange;
+  stroke: orange;
+  opacity: 1;
+}
+
+.outlier {
+  stroke: black;
+  stroke-width: 2px;
+}
+
+.point {  
+  opacity: 0.25; 
+}
+
+.axis path {
+    fill: none;
+    stroke: black;
+    stroke-width: 1px;
+    shape-rendering: crispEdges;
+}
+
+.axis line {
+    fill: none;
+    stroke: black;
+    stroke-width: 1px;
+    shape-rendering: crispEdges;
+}
+
+
+/**
+ * Form
+ */
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}

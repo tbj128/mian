@@ -12,11 +12,21 @@ body {
 }
 
 .highlight {
-    background-color: #4D97CA;
-    width: 100%;
-    padding: 36px 64px;
-    color: #FFF;
-    text-align: center;
+  background-color: #44B9DB;
+  padding: 36px 64px;
+  color: #FFF;
+}
+
+.highlight-light {
+  background-color: #FFF;
+  padding: 36px 64px;
+  color: #999;
+}
+
+.highlight-default {
+  border-top:1px solid #E8E8E8;
+  padding: 36px 64px;
+  color: #999;
 }
 
 .editor {
@@ -55,10 +65,28 @@ body {
   padding:36px 48px;
 }
 
+.upload-name {
+  width: 720px;
+  margin: 0 auto 16px auto;
+}
+
 .upload-status {
   margin-top: 20px;
   text-align: right;
 }
+
+.upload-loading {
+  font-size:24px;
+  margin:0 20px 0 0;
+  vertical-align: middle;
+  -webkit-animation:spin 0.5s linear infinite;
+  -moz-animation:spin 0.5s linear infinite;
+  animation:spin 0.5s linear infinite;
+}
+
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
 
 /**
  * Navbar
@@ -71,6 +99,51 @@ body {
 .navbar .container {
 	width:100%;
 	margin-left:6px;
+}
+
+/**
+ * Projects Page
+ */
+
+.project-heading {
+  margin:32px auto 32px auto;
+  border-bottom: 1px solid #E8E8E8;
+}
+
+.project-container {
+  padding-bottom:24px;
+}
+
+.project-main {
+  border-left: 1px solid #E8E8E8;
+}
+
+.project-new {
+  padding-left:24px;
+  padding-right:24px;
+}
+
+.project-delete {
+  float: right;
+  margin-top: -32px;
+  margin-right: 2px;
+}
+
+.project-item {
+  width:100%;
+  padding:24px;
+  background:#FFF;
+  margin-bottom:6px;
+}
+
+.project-item-meta {
+  width:92px;
+}
+
+.project-empty {
+  margin:64px;
+  color:#999;
+  text-align:center;
 }
 
 /**

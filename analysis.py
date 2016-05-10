@@ -7,8 +7,12 @@ from scipy import stats
 # 
 
 # Converts a CSV formatted OTU table to an array based format 
-def csvToTable(userID, csvName):
-	dir = os.path.dirname(__file__) + "/data/" + userID
+def csvToTable(userID, projectID, csvName):
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "data")
+	dir = os.path.join(dir, userID)
+	dir = os.path.join(dir, projectID)
+
 	csvName = os.path.join(dir, csvName)
 	baseCSV = csv.reader(open(csvName), delimiter=',', quotechar='|')
 	otuMap = []
@@ -18,7 +22,12 @@ def csvToTable(userID, csvName):
 	return otuMap
 
 # Exports a OTU table to CSV format
-def tableToCSV(base, csvName):
+def tableToCSV(base, userID, projectID, csvName):
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "data")
+	dir = os.path.join(dir, userID)
+	dir = os.path.join(dir, projectID)
+	
 	dir = os.path.dirname(__file__) + "/data/"
 	csvName = os.path.join(dir, csvName)
 	outputCSV = csv.writer(open(csvName, 'wb'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -49,8 +58,8 @@ def decomposeSilvaTaxonomy(tax):
 		decomposed.append(a)
 	return decomposed
 
-def getTaxonomyMapping(userID):
-	taxonomyMapping = csvToTable(userID, "otuTaxonomyMapping.csv")
+def getTaxonomyMapping(userID, projectID):
+	taxonomyMapping = csvToTable(userID, projectID, "otuTaxonomyMapping.csv")
 	# TODO: Consider column naming and detect Silva/GreenGenes
 	taxonomyMap = {}
 	i = 0
@@ -62,8 +71,8 @@ def getTaxonomyMapping(userID):
 
 # ================================
 
-def getMetadataHeaders(userID):
-	metadata = csvToTable(userID, "otuMetadata.csv")
+def getMetadataHeaders(userID, projectID):
+	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
 	headers = [];
 	i = 1
 	while i < len(metadata[0]):
@@ -73,13 +82,13 @@ def getMetadataHeaders(userID):
 
 # ================================
 
-def getAbundanceForOTUs(userID, level, itemsOfInterest, catvar):
+def getAbundanceForOTUs(userID, projectID, level, itemsOfInterest, catvar):
 	if itemsOfInterest is None:
 		return []
 
-	base = csvToTable(userID, "otuTable.csv")
-	metadata = csvToTable(userID, "otuMetadata.csv")
-	taxonomyMap = getTaxonomyMapping(userID)
+	base = csvToTable(userID, projectID, "otuTable.csv")
+	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	taxonomyMap = getTaxonomyMapping(userID, projectID)
 
 	statsAbundances = {}
 	abundances = {}

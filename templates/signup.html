@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'header.html' %}
+    <title>Signup - mian</title>
+  </head>
+
+  <body>
+    {% include 'navigation.html' %}
+
+    <div class="jumbotron" style="margin: 36px auto;width:540px;padding-left:48px;padding-right:48px;">
+      <div class="container">
+        <h2><strong>mian</strong> signup</h2><br />
+        <form data-toggle="validator" method="POST" action="/signup">
+          <div class="form-group">
+            <label for="inputName">Email <span style="color:#999;font-weight:normal;">This will be your username</span></label>
+            <input type="email" class="form-control" id="inputName" name="inputName" placeholder="Email" required>
+            <div class="help-block with-errors"></div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword">Password</label>
+            <input style="margin-bottom:6px;" type="password" name="inputPassword" data-minlength="6" class="form-control" id="inputPassword" placeholder="Password" required>
+            <input type="password" class="form-control" name="inputPasswordConfirm" id="inputPasswordConfirm" data-match="#inputPassword" data-match-error="Whoops, these don't match" placeholder="Confirm Password" required>
+            <div class="help-block with-errors"></div>
+          </div>
+          <button type="submit" class="btn btn-default">Signup</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/plugins/validator.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+  </body>
+</html>

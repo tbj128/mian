@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'header.html' %}
+    <title>New Project - mian</title>
+  </head>
+
+  <body>
+    {% include 'navigation.html' %}
+
+    <div id="welcome" class="container">
+      <div class="section-heading project-heading">
+          <h2><i class="fa fa-plus-circle"></i>&nbsp;&nbsp;New Project</h2>
+      </div>
+
+      <div id="welcome-container" class="row welcome-container">
+        <input type="text" class="form-control upload-name" id="inputName" name="inputName" placeholder="Project Name" required>
+        <div class="help-block with-errors"></div>
+        <div class="row upload-item">
+          <div class="col-md-9">
+            <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;OTU Table</h3>
+            <h5>CSV-formatted file with OTUs across the top header and sample/group IDs as rows</h5>
+          </div>
+          <div class="col-md-3 upload-status">
+            <form id="otuTableForm" action="/upload" method="post" enctype="multipart/form-data">
+              <input type="hidden" name="category" value="otuTable" />
+              <span id="otuTableOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
+              <span id="otuTableLoading" style="display:none;">
+                <i class="fa fa-spinner upload-loading"></i>
+              </span>
+              <span id="otuTableWrapper" class="btn btn-default btn-file">
+                  <span id="otuTableText">Upload</span> <input type="file" name="upload" id="otuTable" accept=".csv" />
+              </span>
+            </form>
+          </div>
+        </div>
+
+        <div class="row upload-item">
+          <div class="col-md-9">
+            <h3 style="margin-top:0px"><i class="fa fa-map-o"></i>&nbsp;&nbsp;OTU Taxonomy Mapping</h3>
+            <h5>CSV-formatted file with each row representing an OTU and its corresponding taxonomy information</h5>
+          </div>
+          <div class="col-md-3 upload-status">
+            <form id="otuTaxonomyMappingForm" action="/upload" method="post" enctype="multipart/form-data">
+              <input type="hidden" name="category" value="otuTaxonomyMapping" />
+              <span id="otuTaxonomyMappingOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
+              <span id="otuTaxonomyMappingLoading" style="display:none;">
+                <i class="fa fa-spinner upload-loading"></i>
+              </span>
+              <span id="otuTaxonomyMappingWrapper" class="btn btn-default btn-file">
+                  <span id="otuTaxonomyMappingText">Upload</span> <input type="file" name="upload" id="otuTaxonomyMapping" accept=".csv" />
+              </span>
+            </form>
+          </div>
+        </div>
+
+        <div class="row upload-item">
+          <div class="col-md-9">
+            <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Sample ID Mapping</h3>
+            <h5>CSV-formatted file with each row representing an sample/group ID and its corresponding metadata</h5>
+          </div>
+          <div class="col-md-3 upload-status">
+            <form id="otuMetadataForm" action="/upload" method="post" enctype="multipart/form-data">
+              <input type="hidden" name="category" value="otuMetadata" />
+              <span id="otuMetadataOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
+              <span id="otuMetadataLoading" style="display:none;">
+                <i class="fa fa-spinner upload-loading"></i>
+              </span>
+              <span id="otuMetadataWrapper" class="btn btn-default btn-file">
+                  <span id="otuMetadataText">Upload</span> <input type="file" name="upload" id="otuMetadata" accept=".csv" />
+              </span>
+            </form>
+          </div>
+        </div>
+
+        <div class="row upload-item" style="background:none !important;box-shadow:none !important;text-align:center;padding-top:0px;padding-right:0px;">
+          <form data-toggle="validator" method="POST" action="/create">
+            <input type="hidden" id="projectName" name="projectName" value="" />
+            <input type="hidden" id="projectOTUTableName" name="projectOTUTableName" value="" />
+            <input type="hidden" id="projectTaxaMapName" name="projectTaxaMapName" value="" />
+            <input type="hidden" id="projectSampleIDName" name="projectSampleIDName" value="" />
+            <button id="upload-submit" type="submit" class="btn btn-primary" style="width:180px;" disabled>Create</button>
+          </form>
+        </div>
+      </div>
+    </div><!-- /.container -->
+
+    <div class="highlight-default" style="text-align:center;">
+      <div class="container">
+        Built at the University of British Columbia. See the source on <a href="https://github.com/tbj128/OTUViz">Github</a>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/core.upload.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+  </body>
+</html>

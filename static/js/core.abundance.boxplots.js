@@ -93,7 +93,7 @@ $(document).ready(function() {
     if (taxonomiesMap.length == 0) {
       // Load taxonomy map
       $.ajax({
-        url: "taxonomies", 
+        url: "taxonomies?pid=" + $("#project").val(), 
         success: function(result) {
           var json = JSON.parse(result);
           taxonomiesMap = json;
@@ -107,7 +107,7 @@ $(document).ready(function() {
 
   function updateCatVar() {
     $.ajax({
-      url: "metadata_headers", 
+      url: "metadata_headers?pid=" + $("#project").val(), 
       success: function(result) {
         var json = JSON.parse(result);
 
@@ -135,6 +135,7 @@ $(document).ready(function() {
     var catvar = $("#catvar").val();
 
     var data = {
+      "pid": $("#project").val(),
       "level": level,
       "taxonomy": taxonomy.join(","),
       "catvar": catvar

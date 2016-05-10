@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'header.html' %}
+    <title>Projects - mian</title>
+  </head>
+
+  <body>
+    {% include 'navigation.html' %}
+    {% if newSignup %}
+    <div class="alert alert-success">
+      <strong>Welcome!</strong> Start by creating a new project below. 
+    </div>
+    {% endif %}
+
+    <div class="container project-container">
+      <div class="section-heading project-heading">
+          <h2><i class="fa fa-folder"></i>&nbsp;&nbsp;Projects</h2>
+      </div>
+      <div class="row">
+        <div class="col-md-2">
+          <a href="create" class="btn btn-primary project-new">New Project</a>
+        </div>
+        <div class="col-md-10 project-main">
+          {% if items|length == 0 %}
+            <div class="project-empty">
+              <i class="fa fa-folder-o fa-4x"></i>
+              <h3>No projects yet</h3>
+            </div>
+          {% else %}
+            {% for projectName in projectNames %}
+              <div class="project-item">
+                <h4>{{ projectName }}</h4>
+                <a title="Delete this project" href="#" class="project-delete"><i class="fa fa-trash"></i></a>
+                <table class="table table-hover">
+                  <tbody> 
+                    <tr> 
+                      <th scope="row">{{ items[projectName]["otuTable"] }}</th> 
+                      <td>OTU Table</td> 
+                      <td class="project-item-meta">
+                        <a href="#">Replace</a>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <th scope="row">{{ items[projectName]["otuTaxonomyMapping"] }}</th> 
+                      <td>Taxonomy Mapping</td> 
+                      <td class="project-item-meta">
+                        <a href="#">Replace</a>
+                      </td>
+                    </tr>
+                    <tr> 
+                      <th scope="row">{{ items[projectName]["otuMetadata"] }}</th> 
+                      <td>Metadata</td> 
+                      <td class="project-item-meta">
+                        <a href="#">Replace</a>
+                      </td>
+                    </tr>
+                  </tbody> 
+                </table>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-default" style="text-align:center;">
+      <div class="container">
+        Built at the University of British Columbia. See the source on <a href="https://github.com/tbj128/OTUViz">Github</a>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+  </body>
+</html>

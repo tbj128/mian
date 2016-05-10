@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'header.html' %}
+    <title>Abundance Boxplots - mian</title>
+  </head>
+
+  <body>
+    {% include 'navigation.html' %}
+
+    <div id="editor" class="editor">
+      <h3>Abundances Analysis</h3>
+
+      <label class="control-label">Project</label>
+      <select id="project" name="project" class="form-control">
+        {% for projectName in projectNames %}
+          <option value="{{ projectName }}">{{ projectName }}</option>
+        {% endfor %}
+      </select>
+
+      <hr />
+
+      <label class="control-label">Taxonomic Level</label>
+      <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum">Phylum</option>
+        <option value="Class">Class</option>
+        <option value="Order">Order</option>
+        <option value="Family">Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU">OTU</option>
+      </select>
+
+      <select style="display:none;" id="taxonomy-specific" name="taxonomy-specific" class="form-control pad-bottom" multiple="multiple">
+      </select>
+
+      <hr />
+
+      <label class="control-label">Categorical Variable</label>
+      <select id="catvar" name="catvar" class="form-control">
+      </select>
+    </div>
+
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    </div><!-- /.container -->
+    <hr style="margin-top:0px; margin-bottom:0px;" />
+    <div id="stats-container" class="analysis-container" style="display:none;">
+      <h4>Welch's T-Test Summary</h4>
+      <table class="table table-hover"> 
+        <thead> 
+          <tr> 
+            <th>Category 1</th> 
+            <th>Category 2</th> 
+            <th>P-Value</th> 
+          </tr> 
+        </thead> 
+        <tbody id="stats-rows"> 
+        </tbody>
+      </table>
+    </div><!-- /.container -->
+
+    <div class="highlight-default" style="text-align:center;">
+      <div class="container">
+        Built at the University of British Columbia. See the source on <a href="https://github.com/tbj128/OTUViz">Github</a>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="static/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/d3.js"></script>
+    <script src="static/js/jquery.csv.js"></script>
+    <script src="static/js/plugins/bootstrap-multiselect.js"></script>
+    <script src="static/js/core.abundance.boxplots.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+  </body>
+</html>

@@ -2,6 +2,7 @@
 data/*
 *.db
 config.py
+Tom/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

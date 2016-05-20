@@ -3,6 +3,10 @@ body {
   background-color:#F6F6F6;
 }
 
+hr {
+  margin-bottom:0px;
+}
+
 .overlay {
   position:fixed;
   width:100%;
@@ -183,7 +187,7 @@ body {
 }
 
 circle {
-  fill: black;
+  fill: #242C70;
   stroke: none;
   shape-rendering: crispEdges;
 }
@@ -200,7 +204,7 @@ circle:hover {
 }
 
 .point {  
-  opacity: 0.25; 
+  opacity: 1; 
 }
 
 .axis path {

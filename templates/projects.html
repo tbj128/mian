@@ -29,9 +29,9 @@
             </div>
           {% else %}
             {% for projectName in projectNames %}
-              <div class="project-item">
+              <div class="project-item" id="p-{{ projectName }}">
                 <h4>{{ projectName }}</h4>
-                <a title="Delete this project" href="#" class="project-delete"><i class="fa fa-trash"></i></a>
+                <a title="Delete this project" href="#" data-project="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
                 <table class="table table-hover">
                   <tbody> 
                     <tr> 
@@ -77,6 +77,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="static/js/vendor/jquery.min.js"><\/script>')</script>
     <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/plugins/bootbox.min.js"></script>
+    <script src="static/js/core.projects.js"></script>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->

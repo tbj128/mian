@@ -9,8 +9,12 @@ import random
 import string
 import json
 import hashlib
+import shutil
 
 import analysis
+import analysis_diversity
+import analysis_r_visualizations
+import analysis_stats
 
 DB_NAME = "mian.db"
 RELATIVE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -92,7 +96,6 @@ class User(flask_login.UserMixin):
 
 @login_manager.user_loader
 def user_loader(id):
-	print id
 	userEmail = getUserEmail(id)
 	if userEmail == "":
 		return
@@ -233,6 +236,48 @@ def abundance_boxplots():
 	projectNames = getAllProjects(current_user.id)
 	return render_template('abundance_boxplots.html', projectNames=projectNames)
 
+@app.route('/alpha_diversity')
+@flask_login.login_required
+def alpha_diversity():
+	projectNames = getAllProjects(current_user.id)
+	return render_template('alpha_diversity.html', projectNames=projectNames)
+
+@app.route('/beta_diversity')
+@flask_login.login_required
+def beta_diversity():
+	projectNames = getAllProjects(current_user.id)
+	return render_template('beta_diversity.html', projectNames=projectNames)
+
+@app.route('/cluster_gravity')
+@flask_login.login_required
+def cluster_gravity():
+	projectNames = getAllProjects(current_user.id)
+	return render_template('cluster_gravity.html', projectNames=projectNames)
+
+@app.route('/pca')
+@flask_login.login_required
+def pca():
+	projectNames = getAllProjects(current_user.id)
+	return render_template('pca.html', projectNames=projectNames)
+
+@app.route('/fisher_exact')
+@flask_login.login_required
+def fisher_exact():
+	projectNames = getAllProjects(current_user.id)
+	# TODO: Use default project name
+	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
+	return render_template('fisher_exact.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
+
+@app.route('/enriched_selection')
+@flask_login.login_required
+def enriched_selection():
+	projectNames = getAllProjects(current_user.id)
+	# TODO: Use default project name
+	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
+	return render_template('enriched_selection.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
+
 
 # ----- Visualization endpoints -----
 
@@ -272,6 +317,98 @@ def getAbundances():
 	abundances = analysis.getAbundanceForOTUs(user, pid, level, taxonomy, catvar)
 	return json.dumps(abundances)
 
+@app.route('/abundances_grouping', methods=['POST'])
+@flask_login.login_required
+def getAbundancesGrouping():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+
+	taxonomyGroupingGeneral = request.form['taxonomy_group_general']
+	taxonomyGroupingSpecific = request.form['taxonomy_group_specific']
+
+	abundances = analysis.getAbundanceForOTUsByGrouping(user, pid, level, taxonomy, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific)
+	return json.dumps(abundances)
+
+@app.route('/alpha_diversity', methods=['POST'])
+@flask_login.login_required
+def getAlphaDiversity():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+	alphaType = request.form['alphaType']
+	alphaContext = request.form['alphaContext']
+
+	abundances = analysis_diversity.alphaDiversity(user, pid, level, taxonomy, catvar, alphaType, alphaContext)
+	return json.dumps(abundances)
+
+@app.route('/beta_diversity', methods=['POST'])
+@flask_login.login_required
+def getBetaDiversity():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+	betaType = request.form['betaType']
+
+	abundances = analysis_diversity.betaDiversity(user, pid, level, taxonomy, catvar, betaType)
+	return json.dumps(abundances)
+
+@app.route('/pca', methods=['POST'])
+@flask_login.login_required
+def getPCA():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+	pca1 = request.form['pca1']
+	pca2 = request.form['pca2']
+
+	abundances = analysis_r_visualizations.pca(user, pid, level, taxonomy, catvar, pca1, pca2)
+	return json.dumps(abundances)
+
+@app.route('/fisher_exact', methods=['POST'])
+@flask_login.login_required
+def getFisherExact():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+	minthreshold = request.form['minthreshold']
+	keepthreshold = request.form['keepthreshold']
+	pwVar1 = request.form['pwVar1']
+	pwVar2 = request.form['pwVar2']
+
+	abundances = analysis_stats.fisherExact(user, pid, level, taxonomy, catvar, minthreshold, keepthreshold, pwVar1, pwVar2)
+	return json.dumps(abundances)
+
+@app.route('/enriched_selection', methods=['POST'])
+@flask_login.login_required
+def getEnrichedSelection():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+	enrichedthreshold = request.form['enrichedthreshold']
+	pwVar1 = request.form['pwVar1']
+	pwVar2 = request.form['pwVar2']
+
+	abundances = analysis_stats.enrichedSelection(user, pid, level, taxonomy, catvar, pwVar1, pwVar2, enrichedthreshold)
+	return json.dumps(abundances)
 
 # ----- Data processing endpoints -----
 def allowed_file(filename):
@@ -296,6 +433,20 @@ def upload():
 
 		return "Error"
 
+@app.route('/deleteProject', methods=['POST'])
+@flask_login.login_required
+def deleteProject():
+	if request.method == 'POST':
+		project = request.form['project']
+		deleteConfirm = request.form['delete']
+		if deleteConfirm == "delete" and project != "":
+			userUploadFolder = os.path.join(UPLOAD_FOLDER, current_user.id)
+			userProjectFolder = os.path.join(userUploadFolder, project)
+			if os.path.exists(userProjectFolder):
+				shutil.rmtree(userProjectFolder)
+				return "OK"
+		return "Error"
+
 # ------------------
 # Helpers
 # ------------------
@@ -309,65 +460,6 @@ def getAllProjects(userID):
 				projectName = dir
 				projectNames.append(projectName)
 	return projectNames
-
-# @app.route('/abundances')
-# def abundances():
-# 	user = request.get_cookie("user")
-# 	if user:
-# 		otuTable, taxaMap, metadata = didUserUploadRequiredFiles(user)
-# 		if otuTable == 1 and taxaMap == 1 and metadata == 1:
-# 			return template('abundances', otuTable=otuTable, taxaMap=taxaMap, metadata=metadata)
-	
-
-# # @route('/static/<filepath:path>')
-# # def server_static(filepath):
-# # 	print filepath, RELATIVE_PATH + '/static'
-# # 	return static_file(filepath, root=RELATIVE_PATH + '/static')
-
-# @app.route('/static/<path:path>')
-# def send_static(path):
-#     return send_from_directory('static', path)
-
-
-# # 
-# # GET/POST API Requests
-# # 
-
-# # ----- Auth endpoints -----
-# @app.route('/auth')
-# def show(db):
-# 	username = "abc@example.com"
-# 	db.execute('SELECT * from accounts where user_email="%s"', (username,))
-# 	row = db.fetchone()
-# 	if row:
-# 		print row
-#     	# return template('showitem', page=row)
-# 	return HTTPError(404, "Page not found")
-
-
-# # ----- Data processing endpoints -----
-
-# @app.route('/upload', methods=['POST'])
-# @requires_auth
-# def doUpload():
-# 	user = request.get_cookie("user")
-# 	category = request.forms.get('category')
-# 	upload = request.files.get('upload')
-# 	name, ext = os.path.splitext(upload.filename)
-# 	if ext not in ('.csv'):
-# 		return 'File extension not allowed.'
-
-# 	# TODO: Need more security
-# 	# TODO: Check file validity
-# 	saveDir = RELATIVE_PATH + '/data/' + user
-# 	filename = category + ".csv"
-# 	filepath = os.path.join(saveDir, filename)
-# 	upload.save(filepath, True)
-
-# 	return 'OK'
-
-
-
 
 if __name__ == '__main__':
 	app.secret_key = 'Twilight Sparkle'

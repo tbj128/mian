@@ -1,27 +1,5 @@
 $(document).ready(function() {
   // Global variables storing the data
-  var otuTableData = [];
-  var otuTableDataRow = {};
-  var otuTableDataCol = {};
-
-  var otuTaxonomyMappingData = [];
-  var otuTaxonomyMappingRow = {};
-  var otuTaxonomyMappingCol = {};
-
-  var sampleIDMappingData = [];
-  var sampleIDMappingRow = {};
-  var sampleIDMappingCol = {};
-
-  var taxonomyLevels = {
-    "Kingdom": 0,
-    "Phylum": 1,
-    "Class": 2,
-    "Order": 3,
-    "Family": 4,
-    "Genus": 5,
-    "Species": 6,
-  };
-  var taxonomiesMap = [];
 
   // Initialization
   updateTaxonomicLevel(true);
@@ -29,6 +7,10 @@ $(document).ready(function() {
   createListeners();
 
   function createListeners() {
+    $("#project").change(function () {
+      updateAnalysis();
+    });
+
     $("#taxonomy").change(function () {
       updateTaxonomicLevel(false);
     });
@@ -125,7 +107,6 @@ $(document).ready(function() {
 
   function updateAnalysis() {
     $("#stats-container").fadeIn(250);
-
     var level = taxonomyLevels[getTaxonomicLevel()];
     var taxonomy = $("#taxonomy-specific").val();
     if (taxonomy == null) {

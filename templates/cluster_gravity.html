@@ -2,14 +2,33 @@
 <html lang="en">
   <head>
     {% include 'header.html' %}
-    <title>Abundance Boxplots - mian</title>
+    <title>Cluster Gravity - mian</title>
   </head>
+
+  <style type="text/css">
+    .cluster-gravity circle {
+      shape-rendering: inherit;
+      fill: rgb(31, 119, 180);
+      fill-opacity: .25;
+      stroke: rgb(31, 119, 180);
+      stroke-width: 1px;
+    }
+
+    .cluster-gravity .leaf circle {
+      fill: #ff7f0e;
+      fill-opacity: 1;
+    }
+
+    .cluster-gravity text {
+      font: 10px sans-serif;
+    }
+  </style>
 
   <body>
     {% include 'navigation.html' %}
 
     <div id="editor" class="editor">
-      <h3>Abundances Analysis</h3>
+      <h3>Circle Cluster</h3>
 
       <label class="control-label">Project</label>
       <select id="project" name="project" class="form-control">
@@ -40,11 +59,38 @@
       <label class="control-label">Categorical Variable</label>
       <select id="catvar" name="catvar" class="form-control">
       </select>
+
+      <label class="control-label">General Taxonomic Group</label>
+      <select id="taxonomy_group_general" name="taxonomy_group_general" class="form-control pad-bottom">
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum" selected>Phylum</option>
+        <option value="Class">Class</option>
+        <option value="Order">Order</option>
+        <option value="Family">Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU">OTU</option>
+      </select>
+
+      <label class="control-label">Specific Taxonomic Group</label>
+      <select id="taxonomy_group_specific" name="taxonomy_group_specific" class="form-control pad-bottom">
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum">Phylum</option>
+        <option value="Class">Class</option>
+        <option value="Order">Order</option>
+        <option value="Family" selected>Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU">OTU</option>
+      </select>
+      
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    <div id="analysis-container" class="analysis-container cluster-gravity" style="min-height:500px;">
     </div><!-- /.container -->
+
     <hr style="margin-top:0px; margin-bottom:0px;" />
+
     <div id="stats-container" class="analysis-container" style="display:none;">
       <h4>Welch's T-Test Summary</h4>
       <table class="table table-hover"> 
@@ -72,7 +118,7 @@
     <script src="static/js/jquery.csv.js"></script>
     <script src="static/js/plugins/bootstrap-multiselect.js"></script>
     <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.abundance.boxplots.js"></script>
+    <script src="static/js/core.cluster.gravity.js"></script>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->

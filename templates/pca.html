@@ -18,6 +18,10 @@
         stroke: #0e4993;
         stroke-width: 2px;
       }
+
+      .pca .dot {
+        stroke: none !important;
+      }
     </style>
   </head>
 
@@ -86,7 +90,7 @@
       <input id="pca2-range" type="text" value="" data-slider-min="10" data-slider-max="1000" data-slider-step="0.1" data-slider-value="[250,450]" style="display:none;"/>
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    <div id="analysis-container" class="analysis-container pca" style="min-height:500px;">
     </div><!-- /.container -->
 
     <div id="variance-container" class="analysis-container line-chart" style="min-height:500px;">
@@ -99,8 +103,7 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="static/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="static/js/jquery.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/d3.js"></script>
     <script src="static/js/plugins/bootstrap-multiselect.js"></script>

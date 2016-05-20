@@ -1,10 +1,11 @@
 $(document).ready(function() {
   // Initialization
   createListeners();
+  updateAnalysis();
 
-  updateTaxonomicLevel(true, function() {
-    updateAnalysis();
-  });
+  // updateTaxonomicLevel(true, function() {
+  //   updateAnalysis();
+  // });
 
   function createListeners() {
     // Alter the second option so that the pairwise aren't both the same value
@@ -20,9 +21,9 @@ $(document).ready(function() {
       });
     });
 
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
+    // $("#taxonomy-specific").change(function () {
+    //   updateAnalysis();
+    // });
 
     $("#catvar").change(function () {
       updateAnalysis();
@@ -61,14 +62,14 @@ $(document).ready(function() {
 
     for (var i = 0; i < diff1.length; i++) {
       var r = '<tr>';
-      r = r + '<td>' + diff1[i] + '</td><td></td>';
+      r = r + '<td>' + diff1[i].t + '</td><td>' + diff1[i].c + '</td>';
       r = r + '<tr>';
       $('#stats-rows-cat1').append(r);
     }
     
     for (var i = 0; i < diff2.length; i++) {
       var r = '<tr>';
-      r = r + '<td>' + diff2[i] + '</td><td></td>';
+      r = r + '<td>' + diff2[i].t + '</td><td>' + diff2[i].c + '</td>';
       r = r + '<tr>';
       $('#stats-rows-cat2').append(r);
     }

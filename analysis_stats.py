@@ -146,9 +146,31 @@ def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1
 	diff1 = diffBase(otuTableCat1, otuTableCat2)
 	diff2 = diffBase(otuTableCat2, otuTableCat1)
 
+	diff1Arr = []
+	for d in diff1:
+		dObj = {}
+		if int(level) == -1:
+			dObj["t"] = d
+			dObj["c"] = ', '.join(taxonomyMap[d])
+		else:
+			dObj["t"] = d
+			dObj["c"] = ""
+		diff1Arr.append(dObj)
+
+	diff2Arr = []
+	for d in diff2:
+		dObj = {}
+		if int(level) == -1:
+			dObj["t"] = d
+			dObj["c"] = ', '.join(taxonomyMap[d])
+		else:
+			dObj["t"] = d
+			dObj["c"] = ""
+		diff2Arr.append(dObj)
+
 	abundancesObj = {}
-	abundancesObj["diff1"] = diff1
-	abundancesObj["diff2"] = diff2
+	abundancesObj["diff1"] = diff1Arr
+	abundancesObj["diff2"] = diff2Arr
 
 	return abundancesObj
 

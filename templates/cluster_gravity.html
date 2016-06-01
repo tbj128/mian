@@ -22,6 +22,32 @@
     .cluster-gravity text {
       font: 10px sans-serif;
     }
+
+    .cluster-gravity .node {
+      cursor: pointer;
+    }
+
+    .cluster-gravity .node:hover {
+      stroke: #000;
+      stroke-width: 1.5px;
+    }
+
+    .cluster-gravity .node--leaf {
+      fill: white;
+    }
+
+    .cluster-gravity .label {
+      font: 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+      text-anchor: middle;
+      text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
+    }
+
+    .cluster-gravity .label,
+    .cluster-gravity .node--root,
+    .cluster-gravity .node--leaf {
+      pointer-events: none;
+    }
+
   </style>
 
   <body>

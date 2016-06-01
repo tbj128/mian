@@ -56,7 +56,6 @@ $(document).ready(function() {
       data: data,
       success: function(result) {
         var abundancesObj = JSON.parse(result);
-        console.log(abundancesObj)
         renderClusters(abundancesObj);
       },
       error: function(err) {
@@ -65,124 +64,87 @@ $(document).ready(function() {
     });
   }
 
+  // GPL V3 
+  // https://bl.ocks.org/mbostock/7607535
   function renderClusters(abundancesObj) {
-    var root = abundancesObj["root"];
+    $("#analysis-container").empty();
 
-    var diameter = 960,
-        format = d3.format(",d");
+    var root = abundancesObj["root"];
+    // root.children = root.children.slice(1,2);
+    console.log(root)
+    console.log(fullData)
+    
+    // var root = fullData;
+
+    var diameter = 680, margin = 20;
+
+    var color = d3.scale.linear()
+        .domain([-1, 5])
+        .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
+        .interpolate(d3.interpolateHcl);
 
     var pack = d3.layout.pack()
         .size([diameter - 4, diameter - 4])
         .value(function(d) { 
-          return d["IPF"].c; 
+          return d["IPF"].c + d["Control"].c; 
+          // return d.size;
         });
 
     var svg = d3.select("#analysis-container").append("svg")
         .attr("width", diameter)
         .attr("height", diameter)
       .append("g")
-        .attr("transform", "translate(2,2)");
+        .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
 
-    var node = svg.datum(root).selectAll(".node")
-        .data(pack.nodes)
-      .enter().append("g")
-        .attr("class", function(d) { return d.children ? "node" : "leaf node"; })
-        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-    node.append("title")
-        .text(function(d) { return d.name + (d.children ? "" : ": " + format(d["IPF"].c)); });
-
-    node.append("circle")
-        .attr("r", function(d) { return d.r; });
-
-    node.filter(function(d) { return !d.children; }).append("text")
-        .attr("dy", ".3em")
-        .style("text-anchor", "middle")
-        .text(function(d) { return d.name.substring(0, d.r / 3); });
-
-  }
-
-  // http://bl.ocks.org/mbostock/1748247
-  function renderClusters2(abundancesObj) {
-    var width = 960,
-        height = 500,
-        padding = 1.5, // separation between same-color circles
-        clusterPadding = 36, // separation between different-color circles
-        maxRadius = 12;
-
-    var n = 200, // total number of circles
-        m = 10; // number of distinct clusters
-
-    var color = d3.scale.category10().domain(d3.range(m));
-
-    // The largest node for each cluster.
-    var clusters = new Array(m);
-
-    var nodes = d3.range(n).map(function() {
-      var i = Math.floor(Math.random() * m),
-          r = Math.sqrt((i + 1) / m * -Math.log(Math.random())) * maxRadius,
-          d = {
-            cluster: i, 
-            radius: r,
-            x: Math.cos(i / m * 2 * Math.PI) * 200 + width / 2 + Math.random(),
-            y: Math.sin(i / m * 2 * Math.PI) * 200 + height / 2 + Math.random()
-          };
-
-      if (!clusters[i] || (r > clusters[i].radius)) {
-        clusters[i] = d;
-      }
-
-      return d;
-    });
-
-    var force = d3.layout.force()
-        .nodes(nodes)
-        .size([width, height])
-        .gravity(0.1)
-        .charge(0)
-        // .on("tick", tick)
-        .start();
-
-    var svg = d3.select("#analysis-container").append("svg")
-        .attr("width", width)
-        .attr("height", height);
+    var focus = root,
+        nodes = pack.nodes(root),
+        view;
 
     var circle = svg.selectAll("circle")
         .data(nodes)
       .enter().append("circle")
-        .attr("r", function(d) { return d.radius; })
-        .style("fill", function(d) { return color(d.cluster); })
-        .each(collide(.5))
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+        .attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
+        .style("fill", function(d) { return d.children ? color(d.depth) : null; })
+        .on("click", function(d) { if (focus !== d) zoom(d), d3.event.stopPropagation(); });
 
-    // Resolves collisions between d and all other circles.
-    function collide(alpha) {
-      var quadtree = d3.geom.quadtree(nodes);
+    var text = svg.selectAll("text")
+        .data(nodes)
+      .enter().append("text")
+        .attr("class", "label")
+        .style("fill-opacity", function(d) { return d.parent === root ? 1 : 0; })
+        .style("display", function(d) { return d.parent === root ? "inline" : "none"; })
+        .text(function(d) { return d.name; });
 
-      return function(d) {
-        var r = d.radius + maxRadius + Math.max(padding, clusterPadding),
-            nx1 = d.x - r,
-            nx2 = d.x + r,
-            ny1 = d.y - r,
-            ny2 = d.y + r;
-        quadtree.visit(function(quad, x1, y1, x2, y2) {
-          if (quad.point && (quad.point !== d)) {
-            var x = d.x - quad.point.x,
-                y = d.y - quad.point.y,
-                l = Math.sqrt(x * x + y * y),
-                r = d.radius + quad.point.radius + (d.cluster === quad.point.cluster ? padding : clusterPadding);
-            if (l < r) {
-              l = (l - r) / l * alpha;
-              d.x -= x *= l;
-              d.y -= y *= l;
-              quad.point.x += x;
-              quad.point.y += y;
-            }
-          }
-          return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-        });
-      };
+    var node = svg.selectAll("circle,text");
+
+    d3.select("body")
+        .style("background", color(-1))
+        .on("click", function() { zoom(root); });
+
+    zoomTo([root.x, root.y, root.r * 2 + margin]);
+
+    function zoom(d) {
+      var focus0 = focus; focus = d;
+
+      var transition = d3.transition()
+          .duration(d3.event.altKey ? 7500 : 750)
+          .tween("zoom", function(d) {
+            var i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2 + margin]);
+            return function(t) { zoomTo(i(t)); };
+          });
+
+      transition.selectAll("text")
+        .filter(function(d) { return d.parent === focus || this.style.display === "inline"; })
+          .style("fill-opacity", function(d) { return d.parent === focus ? 1 : 0; })
+          .each("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
+          .each("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
+    }
+
+    function zoomTo(v) {
+      var k = diameter / v[2]; view = v;
+      node.attr("transform", function(d) { return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")"; });
+      circle.attr("r", function(d) { return d.r * k; });
     }
   }
 });

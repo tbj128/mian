@@ -260,6 +260,21 @@ def pca():
 	projectNames = getAllProjects(current_user.id)
 	return render_template('pca.html', projectNames=projectNames)
 
+@app.route('/nmds')
+@flask_login.login_required
+def nmds():
+	projectNames = getAllProjects(current_user.id)
+	return render_template('nmds.html', projectNames=projectNames)
+
+@app.route('/correlations')
+@flask_login.login_required
+def correlations():
+	# TODO: Consider using only factors in the future for catVars
+	projectNames = getAllProjects(current_user.id)
+	catVars, otuMetadata = analysis.getMetadataHeadersWithMetadata(current_user.id, projectNames[0])
+	numericCatVars = analysis.getNumericMetadata(otuMetadata)
+	return render_template('correlations.html', projectNames=projectNames, catVars=catVars, numericCatVars=numericCatVars)
+
 @app.route('/fisher_exact')
 @flask_login.login_required
 def fisher_exact():
@@ -267,6 +282,8 @@ def fisher_exact():
 	# TODO: Use default project name
 	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
+	numericCatVars
+
 	return render_template('fisher_exact.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
 @app.route('/enriched_selection')
@@ -278,6 +295,11 @@ def enriched_selection():
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
 	return render_template('enriched_selection.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
+@app.route('/tree')
+@flask_login.login_required
+def tree():
+	projectNames = getAllProjects(current_user.id)
+	return render_template('tree_view.html', projectNames=projectNames)
 
 # ----- Visualization endpoints -----
 
@@ -291,7 +313,6 @@ def getTaxonomies():
 
 	abundances = analysis.getTaxonomyMapping(user, pid)
 	return json.dumps(abundances)
-
 
 @app.route('/metadata_headers')
 @flask_login.login_required
@@ -331,6 +352,22 @@ def getAbundancesGrouping():
 	taxonomyGroupingSpecific = request.form['taxonomy_group_specific']
 
 	abundances = analysis.getAbundanceForOTUsByGrouping(user, pid, level, taxonomy, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific)
+	return json.dumps(abundances)
+
+@app.route('/tree', methods=['POST'])
+@flask_login.login_required
+def getTree():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+	taxonomy_display_level = request.form['taxonomy_display_level']
+	display_values = request.form['display_values']
+	exclude_unclassified = request.form['exclude_unclassified']
+
+	abundances = analysis.getTreeGrouping(user, pid, level, taxonomy, catvar, taxonomy_display_level, display_values, exclude_unclassified)
 	return json.dumps(abundances)
 
 @app.route('/alpha_diversity', methods=['POST'])
@@ -375,6 +412,36 @@ def getPCA():
 	pca2 = request.form['pca2']
 
 	abundances = analysis_r_visualizations.pca(user, pid, level, taxonomy, catvar, pca1, pca2)
+	return json.dumps(abundances)
+
+@app.route('/nmds', methods=['POST'])
+@flask_login.login_required
+def getNMDS():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	catvar = request.form['catvar']
+
+	abundances = analysis_r_visualizations.nmds(user, pid, level, taxonomy, catvar)
+	return json.dumps(abundances)
+
+@app.route('/correlations', methods=['POST'])
+@flask_login.login_required
+def getCorrelations():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	taxonomy = request.form['taxonomy']
+	corrvar1 = request.form['corrvar1']
+	corrvar2 = request.form['corrvar2']
+	colorvar = request.form['colorvar']
+	sizevar = request.form['sizevar']
+	samplestoshow = request.form['samplestoshow']
+
+	abundances = analysis_r_visualizations.correlations(user, pid, level, taxonomy, corrvar1, corrvar2, colorvar, sizevar, samplestoshow)
 	return json.dumps(abundances)
 
 @app.route('/fisher_exact', methods=['POST'])

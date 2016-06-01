@@ -2,6 +2,9 @@ import os
 import csv
 from scipy import stats
 import math
+import random
+import string
+import numpy as np
 
 # 
 # OTU table I/O
@@ -245,6 +248,28 @@ def getTaxonomyMapping(userID, projectID):
 
 # ================================
 
+def getRelevantOTUs(taxonomyMap, level, itemsOfInterest):
+	otus = {}
+	for otu, classification in taxonomyMap.iteritems():
+		if int(level) >= 0 and int(level) < len(classification):
+			if classification[int(level)] in itemsOfInterest:
+				otus[otu] = 1
+		else:
+			if otu in itemsOfInterest:
+				otus[otu] = 1
+	return otus
+
+def getRelevantCols(otuTable, relevantOTUs):
+	cols = {}
+	j = 1
+	while j < len(otuTable):
+		if otuTable[0][j] in relevantOTUs:
+			cols[j] = 1
+		j += 1
+	return cols
+
+# ================================
+
 def getMetadataHeaders(userID, projectID):
 	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
 	headers = [];
@@ -254,6 +279,30 @@ def getMetadataHeaders(userID, projectID):
 		i += 1
 	return headers
 
+def getMetadataHeadersWithMetadata(userID, projectID):
+	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	headers = [];
+	i = 1
+	while i < len(metadata[0]):
+		headers.append(metadata[0][i])
+		i += 1
+	return headers, metadata
+
+def getNumericMetadata(otuMetadata):
+	headers = []
+	j = 1
+	while j < len(otuMetadata[0]):
+		isNumeric = True
+		i = 1
+		while i < len(otuMetadata[i]):
+			if any(c.isalpha() for c in otuMetadata[i][j]):
+				isNumeric = False
+				break
+			i += 1
+		if isNumeric:
+			headers.append(otuMetadata[0][j])
+		j += 1
+	return headers
 
 def getMetadataUniqueVals(userID, projectID, catvar):
 	uniqueVals = []
@@ -497,22 +546,192 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 		j += 1
 
 	groupingPostProcess = {}
+	groupingPostProcess["name"] = ""
 	groupingPostProcess["children"] = []
 	for taxaGeneral,taxaSpecificObj in groupingPreAverage.iteritems():
 		generalObj = {}
 		generalObj["name"] = taxaGeneral
 		generalObj["children"] = []
+		taxaGeneralTotal = 0
+
 		for taxaSpecific,metadataObj in taxaSpecificObj.iteritems():
-			specificObj = metadataObj
-			specificObj["name"] = taxaSpecific
-			generalObj["children"].append(specificObj)
-		groupingPostProcess["children"].append(generalObj)
+			taxaSpecificTotal = 0
+			for metadata,countObj in metadataObj.iteritems():
+				taxaGeneralTotal += countObj["c"]
+				taxaSpecificTotal += countObj["c"]
+
+			if taxaSpecificTotal > 0:
+				specificObj = metadataObj
+				specificObj["name"] = taxaSpecific
+				generalObj["children"].append(specificObj)
+
+		if taxaGeneralTotal > 0:
+			groupingPostProcess["children"].append(generalObj)
 
 	abundancesObj = {}
 	abundancesObj["metaUnique"] = uniqueMetadataVals
 	abundancesObj["root"] = groupingPostProcess
 	return abundancesObj
 
+
+def getTreeGrouping(userID, projectID, level, itemsOfInterest, catvar, taxonomyDisplayLevel, displayValues, excludeUnclassified):
+	if itemsOfInterest is None or itemsOfInterest == "":
+		return {}
+
+	base = csvToTable(userID, projectID, "otuTable.csv")
+	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	taxonomyMap = getTaxonomyMapping(userID, projectID)
+	idToMetadata = mapIDToMetadata(metadata, getCatCol(metadata, catvar))
+	uniqueMetadataVals = getUniqueMetadataCatVals(metadata, getCatCol(metadata, catvar))
+
+	otuToColNum = {}
+	j = 1
+	while j < len(base[0]):
+		otuToColNum[base[0][j]] = j
+		j += 1
+
+	lenOfClassification = 0
+	for otu, classification in taxonomyMap.iteritems():
+		lenOfClassification = len(classification)
+		break
+
+	taxonomyDisplayLevel = int(taxonomyDisplayLevel)
+	if taxonomyDisplayLevel >= lenOfClassification:
+		taxonomyDisplayLevel = lenOfClassification
+	elif taxonomyDisplayLevel < 0:
+		taxonomyDisplayLevel = lenOfClassification
+
+	treeObj = {}
+	numLeaves = 0
+
+	for otu, classification in taxonomyMap.iteritems():
+		if otu in otuToColNum:
+			otuObj = {}
+
+			col = otuToColNum[otu]
+
+			i = 1
+			while i < len(base):
+				sampleID = base[i][0]
+				metaVal = idToMetadata[sampleID]
+				otuVal = float(base[i][col])
+				if displayValues == "nonzero":
+					if metaVal in otuObj:
+						if otuVal > 0:
+							otuObj[metaVal]["c"] += 1
+						otuObj[metaVal]["tc"] += 1
+					else:
+						otuObj[metaVal] = {}
+						if otuVal > 0:
+							otuObj[metaVal]["c"] = 1
+						else:
+							otuObj[metaVal]["c"] = 0
+						otuObj[metaVal]["tc"] = 1
+				else:
+					if metaVal in otuObj:
+						otuObj[metaVal]["v"].append(otuVal)
+					else:
+						otuObj[metaVal] = {}
+						otuObj[metaVal]["v"] = [otuVal]
+
+				i += 1
+
+			classification.append(otu)
+
+			# The user may want to exclude the unclassified OTUs (unclassified at the taxonomic display level)
+			if excludeUnclassified == "yes":
+				if classification[taxonomyDisplayLevel].lower() == "unclassified":
+					continue
+
+			numLeaves += treeGroupingHelper(treeObj, 0, taxonomyDisplayLevel, classification, uniqueMetadataVals, otuObj, displayValues)
+
+	# print treeObj
+
+	# Convert to D3 readable format
+	fTreeObj = {}
+	fTreeObj["name"] = "root"
+	fTreeObj["children"] = []
+	treeFormatterHelper(fTreeObj, treeObj, 0, taxonomyDisplayLevel, displayValues)
+	# print fTreeObj
+	abundancesObj = {}
+	abundancesObj["metaUnique"] = uniqueMetadataVals
+	abundancesObj["numLeaves"] = numLeaves
+	abundancesObj["root"] = fTreeObj
+	return abundancesObj
+
+def treeGroupingHelper(treeObj, taxLevel, taxonomyDisplayLevel, classification, uniqueMetadataVals, otuObj, displayValues):
+	levelClassification = classification[taxLevel]
+	if levelClassification not in treeObj:
+		treeObj[levelClassification] = {}
+
+	numLeaves = 0
+
+	if taxonomyDisplayLevel == taxLevel:
+		# Associate the values
+		for meta in uniqueMetadataVals:
+			if meta in otuObj:
+				if "nonzero" == displayValues:
+					if meta in treeObj[levelClassification]:
+						treeObj[levelClassification][meta]["c"] += otuObj[meta]["c"]
+						treeObj[levelClassification][meta]["tc"] += otuObj[meta]["tc"]
+					else:
+						treeObj[levelClassification][meta] = {}
+						treeObj[levelClassification][meta]["c"] = otuObj[meta]["c"]
+						treeObj[levelClassification][meta]["tc"] = otuObj[meta]["tc"]
+						numLeaves = 1
+				else:
+					if meta in treeObj[levelClassification]:
+						treeObj[levelClassification][meta]["v"].extend(otuObj[meta]["v"])
+					else:
+						treeObj[levelClassification][meta] = {}
+						treeObj[levelClassification][meta]["v"] = otuObj[meta]["v"]
+						numLeaves = 1
+	else:
+		return treeGroupingHelper(treeObj[levelClassification], taxLevel + 1, taxonomyDisplayLevel, classification, uniqueMetadataVals, otuObj, displayValues)
+
+	return numLeaves
+
+def treeFormatterHelper(fTreeArr, treeObj, level, taxonomyDisplayLevel, displayValues):
+	for taxa,child in treeObj.iteritems():
+		newChildObj = {}
+		newChildObj["name"] = taxa
+		if level == taxonomyDisplayLevel:
+			if "nonzero" == displayValues:
+				newChildObj["val"] = child
+			else:
+				# Collapse the array into specific values
+				if displayValues == "avgabun":
+					metas = child.keys()
+					for meta in metas:
+						metaVals = child[meta]
+						avg = np.mean(metaVals["v"])
+						child[meta] = round(avg, 2)
+						child["tc"] = len(metaVals["v"])
+				elif displayValues == "medianabun":
+					metas = child.keys()
+					for meta in metas:
+						metaVals = child[meta]
+						child[meta] = np.median(metaVals["v"])
+						child["tc"] = len(metaVals["v"])
+				elif displayValues == "maxabun":
+					metas = child.keys()
+					for meta in metas:
+						metaVals = child[meta]
+						child[meta] = np.amax(metaVals["v"])
+						child["tc"] = len(metaVals["v"])
+				else:
+					print "Unknown display value"
+					child[meta] = 0
+
+				newChildObj["val"] = child
+
+		else:
+			newChildObj["children"] = []
+			treeFormatterHelper(newChildObj, child, level + 1, taxonomyDisplayLevel, displayValues)
+		fTreeArr["children"].append(newChildObj)
+
+
 # ==================================
 
 # getAbundanceForOTUsByGrouping("1", "Test", 0, ["Bacteria"], "Disease", 1, 3)
+# getTreeGrouping("1", "Test", 0, ["Bacteria"], "Disease", -1, "avgabun", "yes")

@@ -13,6 +13,15 @@ import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
+# utils = importr('utils')
+# utils.install_packages('RColorBrewer')
+
+rprint = robjects.globalenv.get("print")
+grdevices = importr('grDevices')
+base = importr('base')
+lattice = importr('lattice')
+vegan = importr('vegan')
+
 r = robjects.r
 
 # 
@@ -20,6 +29,8 @@ r = robjects.r
 # 
 
 rcode = """
+library("RColorBrewer")
+
 pca <- function(allOTUs) {
 	# Removes any columns that only contain 0s
 	allOTUs <- allOTUs[, colSums(allOTUs) > 0]
@@ -34,9 +45,117 @@ pca_variance <- function(allOTUs) {
 	proportions = 100*(pca[["sdev"]]^2)/sum(pca[["sdev"]]^2)
 	return(proportions[1:min(length(proportions), 10)])
 }
+
+get_colors <- function(groups) {
+	cols <- brewer.pal(length(unique(groups)),"Set1")
+	names(cols) = levels(groups)
+	colors = c()
+	for (g in groups) {
+		colors = c(colors, cols[g])
+	}
+	return(colors) 
+}
+
+plot_NMDS <- function(example_NMDS, groups, colors) {
+	cols <- brewer.pal(length(unique(groups)),"Set1")
+	names(cols) = levels(groups)
+	# ordiplot(example_NMDS,type="points",display="species")
+	ordiplot(example_NMDS,type="n")
+ 	legend("topright",legend=unique(groups), cex=.8, col=cols, pch=15, lty=0)
+	for(i in unique(groups)) {
+		# orditorp(example_NMDS,display="species",pch=".",col="red",air=0.01)
+		orditorp(example_NMDS$point[grep(i,groups),],display="sites",col=colors[grep(i,groups)],air=0.01)
+	  	ordihull(example_NMDS$point[grep(i,groups),],draw="polygon", groups=groups[groups==i],col=colors[grep(i,groups)],label=F) 
+	}
+}
+
 """
 
 rViz = SignatureTranslatedAnonymousPackage(rcode, "rViz")
+
+def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, colorvar, sizevar, samplestoshow):
+	if itemsOfInterest is None or itemsOfInterest == "":
+		return {}
+
+	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
+	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+	relevantOTUs = analysis.getRelevantOTUs(taxonomyMap, level, itemsOfInterest)
+	relevantCols = analysis.getRelevantCols(otuTable, relevantOTUs)
+
+	sampleIDToMetadataRow = {}
+	i = 1
+	while i < len(otuMetadata):
+		sampleID = otuMetadata[i][0]
+		sampleIDToMetadataRow[sampleID] = i
+		i += 1
+
+	corrcol1 = -1
+	if corrvar1 != "Abundances":
+		corrcol1 = analysis.getCatCol(otuMetadata, corrvar1)
+
+	corrcol2 = -1
+	if corrvar2 != "Abundances":
+		corrcol2 = analysis.getCatCol(otuMetadata, corrvar2)
+
+	colorcol = -1
+	if colorvar != "":
+		colorcol = analysis.getCatCol(otuMetadata, colorvar)
+
+	sizecol = -1
+	if sizevar != "":
+		sizecol = analysis.getCatCol(otuMetadata, sizevar)
+
+	corrArr = []
+	i = 1
+	while i < len(otuTable):
+		totalAbundance = 0
+		j = 1
+		while j < len(otuTable[i]):
+			if j in relevantCols:
+				totalAbundance += float(otuTable[i][j])
+			j += 1
+
+		if (samplestoshow == "nonzero" and totalAbundance > 0) or (samplestoshow == "zero" and totalAbundance == 0) or samplestoshow == "both":
+			corrObj = {}
+			sampleID = otuTable[i][0]
+			metadataRow = sampleIDToMetadataRow[sampleID]
+
+			corrVal1 = 0
+			if corrvar1 == "Abundances":
+				corrVal1 = totalAbundance
+			else:
+				corrVal1 = otuMetadata[metadataRow][corrcol1]
+
+			corrVal2 = 0
+			if corrvar2 == "Abundances":
+				corrVal2 = totalAbundance
+			else:
+				corrVal2 = otuMetadata[metadataRow][corrcol2]
+
+			corrObj["s"] = sampleID
+			corrObj["c1"] = float(corrVal1)
+			corrObj["c2"] = float(corrVal2)
+
+			if colorcol > -1:
+				colorVal = otuMetadata[metadataRow][colorcol]
+				corrObj["color"] = colorVal
+			else:
+				corrObj["color"] = ""
+
+			if sizecol > -1:
+				sizeVal = otuMetadata[metadataRow][sizecol]
+				corrObj["size"] = sizeVal
+			else:
+				corrObj["size"] = 0
+
+			corrArr.append(corrObj)
+
+		i += 1
+
+	abundancesObj = {}
+	abundancesObj["corrArr"] = corrArr
+	return abundancesObj
 
 def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
 	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
@@ -100,4 +219,53 @@ def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
 	abundancesObj["pca2Min"] = pca2Min
 	return abundancesObj
 
+
+def nmds(userID, projectID, level, itemsOfInterest, catvar):
+	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
+	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	groups = robjects.FactorVector(robjects.StrVector(metaVals))
+
+	# Forms an OTU only table (without IDs)
+	allOTUs = [];
+	col = 1
+	while col < len(otuTable[0]):
+		colVals = []
+		row = 1
+		while row < len(otuTable):
+			colVals.append(otuTable[row][col])
+			row += 1
+		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
+		col += 1
+
+	od = rlc.OrdDict(allOTUs)
+	dataf = robjects.DataFrame(od)
+	example_NMDS = vegan.metaMDS(dataf, k=2) # The number of reduced dimensions
+
+	# print example_NMDS$points
+	# print example_NMDS$species
+
+	colors = rViz.get_colors(groups)
+
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "static")
+	dir = os.path.join(dir, "tmp")
+	dir = os.path.join(dir, userID)
+	dir = os.path.join(dir, projectID)
+
+	if not os.path.exists(dir):
+	    os.makedirs(dir)
+
+	fn = os.path.join(dir, "nmds.png")
+
+	grdevices.png(file=fn, width=640, height=640)
+	rViz.plot_NMDS(example_NMDS, groups, colors)
+	grdevices.dev_off()
+
+	abundancesObj = {}
+	abundancesObj["fn"] = "static/tmp/" + str(userID) + "/" + str(projectID) + "/nmds.png"
+	return abundancesObj
+
+
 # pca("1", "Test", 0, ["Bacteria"], "Disease", 1, 3)
+# nmds("1", "Test", 0, ["Bacteria"], "Disease", 1, 3)

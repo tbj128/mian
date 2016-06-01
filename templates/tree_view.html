@@ -2,14 +2,55 @@
 <html lang="en">
   <head>
     {% include 'header.html' %}
-    <title>Beta Diversity - mian</title>
+    <title>Tree View - mian</title>
   </head>
+
+  <style>
+
+    .tree-view .node circle {
+      fill: #fff;
+      stroke: steelblue;
+      stroke-width: 1.5px;
+      shape-rendering: auto;
+    }
+
+    .tree-view .node {
+      font: 10px sans-serif;
+    }
+
+    .tree-view .node-abun {
+      stroke-width: 0px !important;
+    }
+
+    .tree-view .node-abun:hover {
+      stroke-width: 1px !important;
+    }
+
+    .tree-view .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 1.5px;
+    }
+
+    .tree-view div.tooltip { 
+        position: absolute;
+        background:#FFF;
+        padding: 4px 8px;       
+        font: 12px sans-serif;
+        border: 1px solid steelblue;
+        border-radius: 4px;     
+        min-width:128px;
+        margin-right:12px;
+        pointer-events: none;     
+    }
+
+  </style>
 
   <body>
     {% include 'navigation.html' %}
 
     <div id="editor" class="editor">
-      <h3>Beta Diversity</h3>
+      <h3>Tree View</h3>
 
       <label class="control-label">Project</label>
       <select id="project" name="project" class="form-control">
@@ -41,15 +82,34 @@
       <select id="catvar" name="catvar" class="form-control">
       </select>
 
-      <label class="control-label">Diversity Type</label>
-      <select id="betaType" name="betaType" class="form-control">
-        <option value="bray">Bray-Curtis</option>
-        <option value="sor">Sorenson</option>
-        <option value="w">Whittaker</option>
+      <label class="control-label">Taxonomic Display Level</label>
+      <select id="taxonomy_display_level" name="taxonomy_display_level" class="form-control pad-bottom">
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum">Phylum</option>
+        <option value="Class" selected>Class</option>
+        <option value="Order">Order</option>
+        <option value="Family">Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU">OTU</option>
+      </select>
+      
+      <label class="control-label">Display Values</label>
+      <select id="display_values" name="display_values" class="form-control pad-bottom">
+        <option value="nonzero">Non-Zero Counts</option>
+        <option value="avgabun">Average Abundance</option>
+        <option value="medianabun">Median Abundance</option>
+        <option value="maxabun">Max Abundance</option>
+      </select>
+
+      <label class="control-label">Exclude Unclassified</label>
+      <select id="exclude_unclassified" name="exclude_unclassified" class="form-control pad-bottom">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
       </select>
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    <div id="analysis-container" class="analysis-container tree-view" style="min-height:500px;">
     </div><!-- /.container -->
 
     <hr style="margin-top:0px; margin-bottom:0px;" />
@@ -69,16 +129,6 @@
       </table>
     </div><!-- /.container -->
 
-    <div id="permanova-container" class="analysis-container" style="display:none;">
-      <h4>PERMANOVA</h4>
-      <span id="permanova" style="font-family:'Lucida Console', Monaco, monospace;"></span>
-    </div>
-
-    <div id="betadisper-container" class="analysis-container" style="display:none;">
-      <h4>Dispersion</h4>
-      <span id="betadisper" style="font-family:'Lucida Console', Monaco, monospace;"></span>
-    </div>
-
     {% include 'footer.html' %}
 
     <!-- Bootstrap core JavaScript
@@ -87,10 +137,9 @@
     <script src="static/js/jquery.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/d3.js"></script>
-    <script src="static/js/jquery.csv.js"></script>
     <script src="static/js/plugins/bootstrap-multiselect.js"></script>
     <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.beta.diversity.js"></script>
+    <script src="static/js/core.tree.js"></script>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->

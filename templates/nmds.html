@@ -2,14 +2,16 @@
 <html lang="en">
   <head>
     {% include 'header.html' %}
-    <title>Beta Diversity - mian</title>
+    <title>NMDS - mian</title>
+
+    <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css" />
   </head>
 
   <body>
     {% include 'navigation.html' %}
 
     <div id="editor" class="editor">
-      <h3>Beta Diversity</h3>
+      <h3>NMDS</h3>
 
       <label class="control-label">Project</label>
       <select id="project" name="project" class="form-control">
@@ -41,43 +43,13 @@
       <select id="catvar" name="catvar" class="form-control">
       </select>
 
-      <label class="control-label">Diversity Type</label>
-      <select id="betaType" name="betaType" class="form-control">
-        <option value="bray">Bray-Curtis</option>
-        <option value="sor">Sorenson</option>
-        <option value="w">Whittaker</option>
-      </select>
+      <hr />
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    <div id="analysis-container" class="analysis-container nmds" style="min-height:500px;">
     </div><!-- /.container -->
 
     <hr style="margin-top:0px; margin-bottom:0px;" />
-
-    <div id="stats-container" class="analysis-container" style="display:none;">
-      <h4>Welch's T-Test Summary</h4>
-      <table class="table table-hover"> 
-        <thead> 
-          <tr> 
-            <th>Category 1</th> 
-            <th>Category 2</th> 
-            <th>P-Value</th> 
-          </tr> 
-        </thead> 
-        <tbody id="stats-rows"> 
-        </tbody>
-      </table>
-    </div><!-- /.container -->
-
-    <div id="permanova-container" class="analysis-container" style="display:none;">
-      <h4>PERMANOVA</h4>
-      <span id="permanova" style="font-family:'Lucida Console', Monaco, monospace;"></span>
-    </div>
-
-    <div id="betadisper-container" class="analysis-container" style="display:none;">
-      <h4>Dispersion</h4>
-      <span id="betadisper" style="font-family:'Lucida Console', Monaco, monospace;"></span>
-    </div>
 
     {% include 'footer.html' %}
 
@@ -87,10 +59,10 @@
     <script src="static/js/jquery.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/d3.js"></script>
-    <script src="static/js/jquery.csv.js"></script>
     <script src="static/js/plugins/bootstrap-multiselect.js"></script>
+    <script src="static/js/plugins/bootstrap-slider.min.js"></script>
     <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.beta.diversity.js"></script>
+    <script src="static/js/core.nmds.js"></script>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->

@@ -38,10 +38,22 @@ alphaDiversity <- function(allOTUs, alphaType, alphaContext) {
 }
 
 betaDiversity <- function(allOTUs, groups, method) {
-	abc <- betadiver(allOTUs, method=method)
-	Habc = abc
-	if (method == "sor") {
-		Habc = 1 - abc
+	if (method == "bray") {
+		Habc = vegdist(allOTUs, method=method)
+
+		mod <- betadisper(Habc, groups)
+		distances = mod$distances
+		return(distances)
+	} else {
+		abc <- betadiver(allOTUs, method=method)
+		Habc = abc
+		if (method == "sor") {
+			Habc = 1 - abc
+		}
+
+		mod <- betadisper(Habc, groups)
+		distances = mod$distances
+		return(distances)
 	}
 
 	mod <- betadisper(Habc, groups)
@@ -54,15 +66,23 @@ betaDiversityPERMANOVA <- function(allOTUs, groups) {
 }
 
 betaDiversityDisper <- function(allOTUs, groups, method) {
-	abc <- betadiver(allOTUs, method=method)
-	Habc = abc
-	if (method == "sor") {
-		Habc = 1 - abc
-	}
+	if (method == "bray") {
+		Habc = vegdist(allOTUs, method=method)
+		
+		# TODO: Use bias adjust?
+		mod <- betadisper(Habc, groups)
+		return(anova(mod))
+	} else {
+		abc <- betadiver(allOTUs, method=method)
+		Habc = abc
+		if (method == "sor") {
+			Habc = 1 - abc
+		}
 
-	# TODO: Use bias adjust?
-	mod <- betadisper(Habc, groups)
-	return(anova(mod))
+		# TODO: Use bias adjust?
+		mod <- betadisper(Habc, groups)
+		return(anova(mod))
+	}
 }
 
 """
@@ -219,9 +239,10 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	od = rlc.OrdDict(allOTUs)
 	dataf = robjects.DataFrame(od)
 
+	print "a"
 	# See: http://stackoverflow.com/questions/35410860/permanova-multivariate-spread-among-groups-is-not-similar-to-variance-homogeneit
 	vals = veganR.betaDiversity(dataf, groups, betaType)
-
+	print "b"
 	# Calculate the statistical p-value
 	abundances = {}
 	statsAbundances = {}

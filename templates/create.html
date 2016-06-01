@@ -19,7 +19,7 @@
         <div class="row upload-item">
           <div class="col-md-9">
             <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;OTU Table</h3>
-            <h5>CSV-formatted file with OTUs across the top header and sample/group IDs as rows</h5>
+            <h5>Tab-delimited shared file with OTUs across the top header and sample/group IDs as rows</h5>
           </div>
           <div class="col-md-3 upload-status">
             <form id="otuTableForm" action="/upload" method="post" enctype="multipart/form-data">
@@ -29,7 +29,7 @@
                 <i class="fa fa-spinner upload-loading"></i>
               </span>
               <span id="otuTableWrapper" class="btn btn-default btn-file">
-                  <span id="otuTableText">Upload</span> <input type="file" name="upload" id="otuTable" accept=".csv" />
+                  <span id="otuTableText">Upload</span> <input type="file" name="upload" id="otuTable" accept=".shared" />
               </span>
             </form>
           </div>
@@ -38,7 +38,7 @@
         <div class="row upload-item">
           <div class="col-md-9">
             <h3 style="margin-top:0px"><i class="fa fa-map-o"></i>&nbsp;&nbsp;OTU Taxonomy Mapping</h3>
-            <h5>CSV-formatted file with each row representing an OTU and its corresponding taxonomy information</h5>
+            <h5>Tab-delimited taxonomy file with each row representing an OTU and its corresponding taxonomy information</h5>
           </div>
           <div class="col-md-3 upload-status">
             <form id="otuTaxonomyMappingForm" action="/upload" method="post" enctype="multipart/form-data">
@@ -48,7 +48,7 @@
                 <i class="fa fa-spinner upload-loading"></i>
               </span>
               <span id="otuTaxonomyMappingWrapper" class="btn btn-default btn-file">
-                  <span id="otuTaxonomyMappingText">Upload</span> <input type="file" name="upload" id="otuTaxonomyMapping" accept=".csv" />
+                  <span id="otuTaxonomyMappingText">Upload</span> <input type="file" name="upload" id="otuTaxonomyMapping" accept=".taxonomy" />
               </span>
             </form>
           </div>
@@ -57,7 +57,7 @@
         <div class="row upload-item">
           <div class="col-md-9">
             <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Sample ID Mapping</h3>
-            <h5>CSV-formatted file with each row representing an sample/group ID and its corresponding metadata</h5>
+            <h5>Tab-delimited file with each row representing an sample/group ID and its corresponding metadata</h5>
           </div>
           <div class="col-md-3 upload-status">
             <form id="otuMetadataForm" action="/upload" method="post" enctype="multipart/form-data">
@@ -67,7 +67,7 @@
                 <i class="fa fa-spinner upload-loading"></i>
               </span>
               <span id="otuMetadataWrapper" class="btn btn-default btn-file">
-                  <span id="otuMetadataText">Upload</span> <input type="file" name="upload" id="otuMetadata" accept=".csv" />
+                  <span id="otuMetadataText">Upload</span> <input type="file" name="upload" id="otuMetadata" accept=".txt,.tsv" />
               </span>
             </form>
           </div>

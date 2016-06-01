@@ -97,7 +97,7 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 	sampleIDToMetadataRow = {}
 	i = 1
 	while i < len(otuMetadata):
-		sampleID = otuMetadata[i][analysis.OTU_GROUP_ID_COL]
+		sampleID = otuMetadata[i][0]
 		sampleIDToMetadataRow[sampleID] = i
 		i += 1
 
@@ -130,37 +130,38 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 		if (samplestoshow == "nonzero" and totalAbundance > 0) or (samplestoshow == "zero" and totalAbundance == 0) or samplestoshow == "both":
 			corrObj = {}
 			sampleID = otuTable[i][analysis.OTU_GROUP_ID_COL]
-			metadataRow = sampleIDToMetadataRow[sampleID]
+			if sampleID in sampleIDToMetadataRow:
+				metadataRow = sampleIDToMetadataRow[sampleID]
 
-			corrVal1 = 0
-			if corrvar1 == "Abundances":
-				corrVal1 = totalAbundance
-			else:
-				corrVal1 = otuMetadata[metadataRow][corrcol1]
+				corrVal1 = 0
+				if corrvar1 == "Abundances":
+					corrVal1 = totalAbundance
+				else:
+					corrVal1 = otuMetadata[metadataRow][corrcol1]
 
-			corrVal2 = 0
-			if corrvar2 == "Abundances":
-				corrVal2 = totalAbundance
-			else:
-				corrVal2 = otuMetadata[metadataRow][corrcol2]
+				corrVal2 = 0
+				if corrvar2 == "Abundances":
+					corrVal2 = totalAbundance
+				else:
+					corrVal2 = otuMetadata[metadataRow][corrcol2]
 
-			corrObj["s"] = sampleID
-			corrObj["c1"] = float(corrVal1)
-			corrObj["c2"] = float(corrVal2)
+				corrObj["s"] = sampleID
+				corrObj["c1"] = float(corrVal1)
+				corrObj["c2"] = float(corrVal2)
 
-			if colorcol > -1:
-				colorVal = otuMetadata[metadataRow][colorcol]
-				corrObj["color"] = colorVal
-			else:
-				corrObj["color"] = ""
+				if colorcol > -1:
+					colorVal = otuMetadata[metadataRow][colorcol]
+					corrObj["color"] = colorVal
+				else:
+					corrObj["color"] = ""
 
-			if sizecol > -1:
-				sizeVal = otuMetadata[metadataRow][sizecol]
-				corrObj["size"] = sizeVal
-			else:
-				corrObj["size"] = 0
+				if sizecol > -1:
+					sizeVal = otuMetadata[metadataRow][sizecol]
+					corrObj["size"] = sizeVal
+				else:
+					corrObj["size"] = 0
 
-			corrArr.append(corrObj)
+				corrArr.append(corrObj)
 
 		i += 1
 
@@ -172,7 +173,8 @@ def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
-	
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
+
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
 	col = analysis.OTU_START_COL
@@ -180,7 +182,9 @@ def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
 		colVals = []
 		row = 1
 		while row < len(otuTable):
-			colVals.append(otuTable[row][col])
+			sampleID = otuTable[row][analysis.OTU_GROUP_ID_COL]
+			if sampleID in metaIDs:
+				colVals.append(otuTable[row][col])
 			row += 1
 		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
 		col += 1
@@ -236,6 +240,7 @@ def nmds(userID, projectID, level, itemsOfInterest, catvar):
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
@@ -244,7 +249,9 @@ def nmds(userID, projectID, level, itemsOfInterest, catvar):
 		colVals = []
 		row = 1
 		while row < len(otuTable):
-			colVals.append(otuTable[row][col])
+			sampleID = otuTable[row][analysis.OTU_GROUP_ID_COL]
+			if sampleID in metaIDs:
+				colVals.append(otuTable[row][col])
 			row += 1
 		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
 		col += 1

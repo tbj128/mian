@@ -3,6 +3,7 @@ data/*
 *.db
 config.py
 Tom/*
+static/tmp/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -109,6 +109,7 @@ def alphaDiversity(userID, projectID, level, itemsOfInterest, catvar, alphaType,
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 
 	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
 
@@ -120,7 +121,9 @@ def alphaDiversity(userID, projectID, level, itemsOfInterest, catvar, alphaType,
 		colVals = []
 		row = 1
 		while row < len(otuTable):
-			colVals.append(otuTable[row][col])
+			sampleID = otuTable[row][analysis.OTU_GROUP_ID_COL]
+			if sampleID in metaIDs:
+				colVals.append(otuTable[row][col])
 			row += 1
 		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
 		col += 1
@@ -164,7 +167,8 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
-	metaVals = getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
 	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
@@ -176,7 +180,9 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 		colVals = []
 		row = 1
 		while row < len(otuTable):
-			colVals.append(otuTable[row][col])
+			sampleID = otuTable[row][analysis.OTU_GROUP_ID_COL]
+			if sampleID in metaIDs:
+				colVals.append(otuTable[row][col])
 			row += 1
 		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
 		col += 1
@@ -184,10 +190,9 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	od = rlc.OrdDict(allOTUs)
 	dataf = robjects.DataFrame(od)
 
-	print "a"
 	# See: http://stackoverflow.com/questions/35410860/permanova-multivariate-spread-among-groups-is-not-similar-to-variance-homogeneit
 	vals = veganR.betaDiversity(dataf, groups, betaType)
-	print "b"
+	
 	# Calculate the statistical p-value
 	abundances = {}
 	statsAbundances = {}

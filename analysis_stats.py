@@ -91,6 +91,7 @@ def fisherExact(userID, projectID, level, itemsOfInterest, catvar, minthreshold,
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
 	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, itemsOfInterest, level)
@@ -102,7 +103,9 @@ def fisherExact(userID, projectID, level, itemsOfInterest, catvar, minthreshold,
 		colVals = []
 		row = 1
 		while row < len(otuTable):
-			colVals.append(otuTable[row][col])
+			sampleID = otuTable[row][analysis.OTU_GROUP_ID_COL]
+			if sampleID in metaIDs:
+				colVals.append(otuTable[row][col])
 			row += 1
 		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
 		col += 1
@@ -145,18 +148,19 @@ def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 
 	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, itemsOfInterest, level)
 
 	otuTablePercentAbundance = convertToPercentAbundance(otuTable, float(percentAbundanceThreshold))
 	otuTableCat1, otuTableCat2 = separateIntoGroups(otuTablePercentAbundance, otuMetadata, catvar, catVar1, catVar2)
-
-	otuTableCat1 = keepOnlyOTUs(otuTableCat1)
-	otuTableCat2 = keepOnlyOTUs(otuTableCat2)
-
+	
+	otuTableCat1 = keepOnlyOTUs(otuTableCat1, metaIDs)
+	otuTableCat2 = keepOnlyOTUs(otuTableCat2, metaIDs)
+	
 	diff1 = diffBase(otuTableCat1, otuTableCat2)
 	diff2 = diffBase(otuTableCat2, otuTableCat1)
-
+	
 	diff1Arr = []
 	for d in diff1:
 		dObj = {}
@@ -274,9 +278,9 @@ def separateIntoGroups(base, baseMetadata, catvar, catCol1, catCol2):
 	i = 1
 	while i < len(baseMetadata):
 		if baseMetadata[i][catvarCol] == catCol1:
-			catCol1Samples[baseMetadata[i][analysis.OTU_GROUP_ID_COL]] = 1
+			catCol1Samples[baseMetadata[i][0]] = 1
 		if baseMetadata[i][catvarCol] == catCol2:
-			catCol2Samples[baseMetadata[i][analysis.OTU_GROUP_ID_COL]] = 1
+			catCol2Samples[baseMetadata[i][0]] = 1
 		i += 1
 
 	baseCat1 = []
@@ -294,15 +298,19 @@ def separateIntoGroups(base, baseMetadata, catvar, catCol1, catCol2):
 		i = i + 1
 	return baseCat1, baseCat2
 
-def keepOnlyOTUs(base):
+def keepOnlyOTUs(base, metaIDs):
 	newBase = []
+	i = 0
 	for o in base:
-		newRow = []
-		j = analysis.OTU_START_COL
-		while j < len(o):
-			newRow.append(o[j])
-			j += 1
-		newBase.append(newRow)
+		sampleID = base[i][analysis.OTU_GROUP_ID_COL]
+		if i == 0 or sampleID in metaIDs:
+			newRow = []
+			j = analysis.OTU_START_COL
+			while j < len(o):
+				newRow.append(o[j])
+				j += 1
+			newBase.append(newRow)
+		i += 1
 	return newBase
 
 # fisherExact("1", "BatchsubOTULevel", 1, ["Firmicutes","Fusobacteria"], "Disease", 0, 5)

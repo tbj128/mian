@@ -20,7 +20,7 @@ import numpy as np
 # 
 # Global Attributes
 # 
-OTU_TABLE_NAME = "otuTable.tsv"
+OTU_TABLE_NAME = "otuTable.shared"
 TAXONOMY_MAP_NAME = "otuTaxonomyMapping.taxonomy"
 METADATA_NAME = "otuMetadata.tsv"
 
@@ -44,7 +44,7 @@ def csvToTable(userID, projectID, csvName):
 	with open(csvName, 'rb') as csvfile:
 		dialect = csv.Sniffer().sniff(csvfile.read(1024))
 		csvfile.seek(0)
-		baseCSV = csv.reader(csvfile, delimiter=dialect, quotechar='|')
+		baseCSV = csv.reader(csvfile, dialect, quotechar='|')
 		for o in baseCSV:
 			if len(o) > 1:
 				otuMap.append(o)
@@ -84,14 +84,19 @@ def getOTUTableAtLevel(base, taxonomyMap, itemsOfInterest, level):
 
 	newOTUTable = []
 	relevantCols = {}
-	relevantCols[OTU_GROUP_ID_COL] = 1
 
 	i = 0
 	while i < len(base):
 		if i == 0:
 			# Header row
 			# Ignores the first column (sample ID)
-			newRow = [base[i][OTU_GROUP_ID_COL]]
+			newRow = []
+			j = 0
+			while j < OTU_START_COL:
+				newRow.append(base[i][j])
+				relevantCols[j] = 1
+				j += 1
+
 			j = OTU_START_COL
 			while j < len(base[i]):
 				if base[i][j] in otus:
@@ -139,14 +144,20 @@ def getOTUTableAtLevelIntegrated(base, taxonomyMap, itemsOfInterest, level):
 
 	newOTUTable = []
 	relevantCols = {}
-	relevantCols[OTU_GROUP_ID_COL] = 1
 
 	i = 0
 	while i < len(base):
 		if i == 0:
 			# Header row
 			# Ignores the first column (sample ID)
-			newRow = [base[i][OTU_GROUP_ID_COL]]
+
+			newRow = []
+			j = 0
+			while j < OTU_START_COL:
+				newRow.append(base[i][j])
+				relevantCols[j] = 1
+				j += 1
+
 			j = OTU_START_COL
 			while j < len(base[i]):
 				if base[i][j] in otus:
@@ -178,7 +189,12 @@ def getOTUTableAtLevelIntegrated(base, taxonomyMap, itemsOfInterest, level):
 	newBase = []
 	i = 0
 	while i < len(base):
-		newRow = [base[i][0]]
+		newRow = []
+		j = 0
+		while j < OTU_START_COL:
+			newRow.append(base[i][j])
+			j += 1
+			
 		for specificTaxa in uniqueSpecificTax:
 			if i > 0:
 				relevantOTUs = taxaSpecificToOTU[specificTaxa]
@@ -346,7 +362,8 @@ def getMetadataInOTUTableOrder(otuTable, otuMetadata, metaCol):
 	metaVals = []
 	row = 1
 	while row < len(otuTable):
-		metaVals.append(metadataMap[otuTable[row][OTU_GROUP_ID_COL]])
+		if otuTable[row][OTU_GROUP_ID_COL] in metadataMap:
+			metaVals.append(metadataMap[otuTable[row][OTU_GROUP_ID_COL]])
 		row += 1
 	return metaVals
 
@@ -432,8 +449,9 @@ def getAbundanceForOTUs(userID, projectID, level, itemsOfInterest, catvar):
 				j += 1
 
 			row["a"] = totalAbundance
-			abundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(row)
-			statsAbundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(totalAbundance)
+			if base[i][OTU_GROUP_ID_COL] in metadataMap:
+				abundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(row)
+				statsAbundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(totalAbundance)
 		i += 1
 
 	# Calculate the statistical p-value
@@ -632,26 +650,27 @@ def getTreeGrouping(userID, projectID, level, itemsOfInterest, catvar, taxonomyD
 			i = 1
 			while i < len(base):
 				sampleID = base[i][OTU_GROUP_ID_COL]
-				metaVal = idToMetadata[sampleID]
-				otuVal = float(base[i][col])
-				if displayValues == "nonzero":
-					if metaVal in otuObj:
-						if otuVal > 0:
-							otuObj[metaVal]["c"] += 1
-						otuObj[metaVal]["tc"] += 1
-					else:
-						otuObj[metaVal] = {}
-						if otuVal > 0:
-							otuObj[metaVal]["c"] = 1
+				if sampleID in idToMetadata:
+					metaVal = idToMetadata[sampleID]
+					otuVal = float(base[i][col])
+					if displayValues == "nonzero":
+						if metaVal in otuObj:
+							if otuVal > 0:
+								otuObj[metaVal]["c"] += 1
+							otuObj[metaVal]["tc"] += 1
 						else:
-							otuObj[metaVal]["c"] = 0
-						otuObj[metaVal]["tc"] = 1
-				else:
-					if metaVal in otuObj:
-						otuObj[metaVal]["v"].append(otuVal)
+							otuObj[metaVal] = {}
+							if otuVal > 0:
+								otuObj[metaVal]["c"] = 1
+							else:
+								otuObj[metaVal]["c"] = 0
+							otuObj[metaVal]["tc"] = 1
 					else:
-						otuObj[metaVal] = {}
-						otuObj[metaVal]["v"] = [otuVal]
+						if metaVal in otuObj:
+							otuObj[metaVal]["v"].append(otuVal)
+						else:
+							otuObj[metaVal] = {}
+							otuObj[metaVal]["v"] = [otuVal]
 
 				i += 1
 

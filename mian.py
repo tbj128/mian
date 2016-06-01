@@ -314,7 +314,6 @@ def fisher_exact():
 	# TODO: Use default project name
 	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
-	numericCatVars
 
 	return render_template('fisher_exact.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
@@ -509,9 +508,11 @@ def getEnrichedSelection():
 	abundances = analysis_stats.enrichedSelection(user, pid, level, taxonomy, catvar, pwVar1, pwVar2, enrichedthreshold)
 	return json.dumps(abundances)
 
+
 # ----- Data processing endpoints -----
+
 def allowed_file(filename):
-	return '.' in filename and filename.rsplit('.', 1)[1] in ["csv"]
+	return '.' in filename and filename.rsplit('.', 1)[1] in ["csv", "taxonomy", "txt", "shared", "tsv"]
 
 @app.route('/upload', methods=['POST'])
 @flask_login.login_required

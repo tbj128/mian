@@ -1,3 +1,14 @@
+# ===========================================
+# 
+# mian Main Routing Component
+# @author: tbj128
+# 
+# ===========================================
+
+# 
+# Imports 
+# 
+
 from functools import wraps
 from flask import Flask, request, session, Response, render_template, redirect, url_for
 import flask.ext.login as flask_login
@@ -16,6 +27,11 @@ import analysis_diversity
 import analysis_r_visualizations
 import analysis_stats
 
+
+# 
+# Global Fields 
+# 
+
 DB_NAME = "mian.db"
 RELATIVE_PATH = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = os.path.join(RELATIVE_PATH, "data")
@@ -26,6 +42,11 @@ app = Flask(__name__)
 # Initialize the login manager
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
+
+
+# 
+# Auth helper methods 
+# 
 
 def createSalt():
 	ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -55,7 +76,6 @@ def getUserEmail(userID):
 		return ""
 	db.close()
 	return row[1]
-
 
 def checkAuth(username, password):
 	db = sqlite3.connect(DB_NAME)
@@ -105,6 +125,10 @@ def user_loader(id):
 
 # 
 # -------------------------------------------
+# 
+
+# 
+# Page Routes 
 # 
 
 @login_manager.unauthorized_handler
@@ -212,9 +236,17 @@ def create():
 		with open(mapFile, 'w') as outfile:
 			json.dump(dataMap, outfile)
 
-		os.rename(os.path.join(tempFolder, projectOTUTableName), os.path.join(tempFolder, 'otuTable.csv'))
-		os.rename(os.path.join(tempFolder, projectTaxaMapName), os.path.join(tempFolder, 'otuTaxonomyMapping.csv'))
-		os.rename(os.path.join(tempFolder, projectSampleIDName), os.path.join(tempFolder, 'otuMetadata.csv'))
+		# Convert from shared file to appropriate file type
+		# otuTablePath = os.path.join(tempFolder, projectOTUTableName)
+		# if not otuTablePath.endswith(".csv"):
+
+		os.rename(os.path.join(tempFolder, projectOTUTableName), os.path.join(tempFolder, 'otuTable.shared'))
+		os.rename(os.path.join(tempFolder, projectTaxaMapName), os.path.join(tempFolder, 'otuTaxonomyMapping.taxonomy'))
+		os.rename(os.path.join(tempFolder, projectSampleIDName), os.path.join(tempFolder, 'otuMetadata.tsv'))
+
+		# os.rename(os.path.join(tempFolder, projectOTUTableName), os.path.join(tempFolder, 'otuTable.csv'))
+		# os.rename(os.path.join(tempFolder, projectTaxaMapName), os.path.join(tempFolder, 'otuTaxonomyMapping.csv'))
+		# os.rename(os.path.join(tempFolder, projectSampleIDName), os.path.join(tempFolder, 'otuMetadata.csv'))
 
 		# TODO: Clean project name
 		os.rename(tempFolder, destFolder)

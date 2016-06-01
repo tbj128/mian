@@ -1,3 +1,14 @@
+# ===========================================
+# 
+# mian Analysis Core Library
+# @author: tbj128
+# 
+# ===========================================
+
+# 
+# Imports
+# 
+
 import os
 import csv
 from scipy import stats
@@ -5,6 +16,17 @@ import math
 import random
 import string
 import numpy as np
+
+# 
+# Global Attributes
+# 
+OTU_TABLE_NAME = "otuTable.tsv"
+TAXONOMY_MAP_NAME = "otuTaxonomyMapping.taxonomy"
+METADATA_NAME = "otuMetadata.tsv"
+
+OTU_GROUP_ID_COL = 1
+OTU_START_COL = 3
+
 
 # 
 # OTU table I/O
@@ -17,12 +39,15 @@ def csvToTable(userID, projectID, csvName):
 	dir = os.path.join(dir, userID)
 	dir = os.path.join(dir, projectID)
 
-	csvName = os.path.join(dir, csvName)
-	baseCSV = csv.reader(open(csvName), delimiter=',', quotechar='|')
 	otuMap = []
-	for o in baseCSV:
-		if len(o) > 1:
-			otuMap.append(o)
+	csvName = os.path.join(dir, csvName)
+	with open(csvName, 'rb') as csvfile:
+		dialect = csv.Sniffer().sniff(csvfile.read(1024))
+		csvfile.seek(0)
+		baseCSV = csv.reader(csvfile, delimiter=dialect, quotechar='|')
+		for o in baseCSV:
+			if len(o) > 1:
+				otuMap.append(o)
 	return otuMap
 
 # Exports a OTU table to CSV format
@@ -34,26 +59,18 @@ def tableToCSV(base, userID, projectID, csvName):
 	
 	dir = os.path.dirname(__file__) + "/data/"
 	csvName = os.path.join(dir, csvName)
-	outputCSV = csv.writer(open(csvName, 'wb'), delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+	outputCSV = csv.writer(open(csvName, 'wb'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 	for row in base:
 		outputCSV.writerow(row)
 
-def addFileNameAttr(csvName, attr):
-	csvName = csvName.lower().replace(".csv", "")
-	csvName = csvName + "." + attr + ".csv"
+# Adds an attribute right before the last dot of the postfix
+def addFileNameAttr(csvName, postfix, attr):
+	csvName = csvName.lower().replace("." + postfix, "")
+	csvName = csvName + "." + attr + "." + postfix
 	return csvName
 
 # ================================
 # OTU Table Processing Helpers
-
-def getMetadataInOTUTableOrder(otuTable, otuMetadata, metaCol):
-	metadataMap = mapIDToMetadata(otuMetadata, metaCol)
-	metaVals = []
-	row = 1
-	while row < len(otuTable):
-		metaVals.append(metadataMap[otuTable[row][0]])
-		row += 1
-	return metaVals
 
 def getOTUTableAtLevel(base, taxonomyMap, itemsOfInterest, level):
 	otus = {}
@@ -67,15 +84,15 @@ def getOTUTableAtLevel(base, taxonomyMap, itemsOfInterest, level):
 
 	newOTUTable = []
 	relevantCols = {}
-	relevantCols[0] = 1
+	relevantCols[OTU_GROUP_ID_COL] = 1
 
 	i = 0
 	while i < len(base):
 		if i == 0:
 			# Header row
 			# Ignores the first column (sample ID)
-			newRow = [base[i][0]]
-			j = 1
+			newRow = [base[i][OTU_GROUP_ID_COL]]
+			j = OTU_START_COL
 			while j < len(base[i]):
 				if base[i][j] in otus:
 					newRow.append(base[i][j])
@@ -122,15 +139,15 @@ def getOTUTableAtLevelIntegrated(base, taxonomyMap, itemsOfInterest, level):
 
 	newOTUTable = []
 	relevantCols = {}
-	relevantCols[0] = 1
+	relevantCols[OTU_GROUP_ID_COL] = 1
 
 	i = 0
 	while i < len(base):
 		if i == 0:
 			# Header row
 			# Ignores the first column (sample ID)
-			newRow = [base[i][0]]
-			j = 1
+			newRow = [base[i][OTU_GROUP_ID_COL]]
+			j = OTU_START_COL
 			while j < len(base[i]):
 				if base[i][j] in otus:
 					newRow.append(base[i][j])
@@ -151,7 +168,7 @@ def getOTUTableAtLevelIntegrated(base, taxonomyMap, itemsOfInterest, level):
 	# Merge the OTUs at the same taxa level
 	otuToColNum = {}
 	uniqueSpecificTax = []
-	j = 1
+	j = OTU_START_COL
 	while j < len(base[0]):
 		otuToColNum[base[0][j]] = j
 		if otuToTaxaSpecific[base[0][j]] not in uniqueSpecificTax:
@@ -236,7 +253,7 @@ def decomposeSilvaTaxonomy(tax):
 	return decomposed
 
 def getTaxonomyMapping(userID, projectID):
-	taxonomyMapping = csvToTable(userID, projectID, "otuTaxonomyMapping.csv")
+	taxonomyMapping = csvToTable(userID, projectID, TAXONOMY_MAP_NAME)
 	# TODO: Consider column naming and detect Silva/GreenGenes
 	taxonomyMap = {}
 	i = 0
@@ -261,7 +278,7 @@ def getRelevantOTUs(taxonomyMap, level, itemsOfInterest):
 
 def getRelevantCols(otuTable, relevantOTUs):
 	cols = {}
-	j = 1
+	j = OTU_START_COL
 	while j < len(otuTable):
 		if otuTable[0][j] in relevantOTUs:
 			cols[j] = 1
@@ -271,7 +288,7 @@ def getRelevantCols(otuTable, relevantOTUs):
 # ================================
 
 def getMetadataHeaders(userID, projectID):
-	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	headers = [];
 	i = 1
 	while i < len(metadata[0]):
@@ -280,7 +297,7 @@ def getMetadataHeaders(userID, projectID):
 	return headers
 
 def getMetadataHeadersWithMetadata(userID, projectID):
-	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	headers = [];
 	i = 1
 	while i < len(metadata[0]):
@@ -306,7 +323,7 @@ def getNumericMetadata(otuMetadata):
 
 def getMetadataUniqueVals(userID, projectID, catvar):
 	uniqueVals = []
-	otuMetadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	otuMetadata = csvToTable(userID, projectID, METADATA_NAME)
 	catvarCol = getCatCol(otuMetadata, catvar)
 	i = 1
 	while i < len(otuMetadata):
@@ -329,7 +346,7 @@ def getMetadataInOTUTableOrder(otuTable, otuMetadata, metaCol):
 	metaVals = []
 	row = 1
 	while row < len(otuTable):
-		metaVals.append(metadataMap[otuTable[row][0]])
+		metaVals.append(metadataMap[otuTable[row][OTU_GROUP_ID_COL]])
 		row += 1
 	return metaVals
 
@@ -359,8 +376,8 @@ def getAbundanceForOTUs(userID, projectID, level, itemsOfInterest, catvar):
 	if itemsOfInterest is None:
 		return {}
 
-	base = csvToTable(userID, projectID, "otuTable.csv")
-	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
 
 	statsAbundances = {}
@@ -397,26 +414,26 @@ def getAbundanceForOTUs(userID, projectID, level, itemsOfInterest, catvar):
 		if i == 0:
 			# Header row
 			# Ignores the first column (sample ID)
-			j = 1
+			j = OTU_START_COL
 			while j < len(base[i]):
 				if base[i][j] in otus:
 					relevantCols.append(j)
 				j += 1
 		else:
 			row = {}
-			row["s"] = str(base[i][0])
+			row["s"] = str(base[i][OTU_GROUP_ID_COL])
 
 			totalAbundance = 0
 
-			j = 1
+			j = OTU_START_COL
 			while j < len(base[i]):
 				if j in relevantCols:
 					totalAbundance += float(base[i][j])
 				j += 1
 
 			row["a"] = totalAbundance
-			abundances[metadataMap[base[i][0]]].append(row)
-			statsAbundances[metadataMap[base[i][0]]].append(totalAbundance)
+			abundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(row)
+			statsAbundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(totalAbundance)
 		i += 1
 
 	# Calculate the statistical p-value
@@ -431,8 +448,8 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 	if itemsOfInterest is None or itemsOfInterest == "" or int(taxonomyGroupingGeneral) >= int(taxonomyGroupingSpecific):
 		return {}
 
-	base = csvToTable(userID, projectID, "otuTable.csv")
-	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
 
 	# Get map of specific tax grouping to general tax grouping
@@ -475,9 +492,9 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 	i = 0
 	while i < len(base):
 		newRow = []
-		j = 0
+		j = OTU_START_COL
 		while j < len(base[i]):
-			if j == 0 or base[0][j] in otus:
+			if j == OTU_GROUP_ID_COL or base[0][j] in otus:
 				newRow.append(base[i][j])
 			j += 1
 		i += 1
@@ -487,6 +504,8 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 	# Merge the OTUs at the same taxa level
 	otuToColNum = {}
 	uniqueSpecificTax = []
+
+	# base now only has sample ID as the first column
 	j = 1
 	while j < len(base[0]):
 		otuToColNum[base[0][j]] = j
@@ -578,14 +597,14 @@ def getTreeGrouping(userID, projectID, level, itemsOfInterest, catvar, taxonomyD
 	if itemsOfInterest is None or itemsOfInterest == "":
 		return {}
 
-	base = csvToTable(userID, projectID, "otuTable.csv")
-	metadata = csvToTable(userID, projectID, "otuMetadata.csv")
+	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
 	idToMetadata = mapIDToMetadata(metadata, getCatCol(metadata, catvar))
 	uniqueMetadataVals = getUniqueMetadataCatVals(metadata, getCatCol(metadata, catvar))
 
 	otuToColNum = {}
-	j = 1
+	j = OTU_START_COL
 	while j < len(base[0]):
 		otuToColNum[base[0][j]] = j
 		j += 1
@@ -612,7 +631,7 @@ def getTreeGrouping(userID, projectID, level, itemsOfInterest, catvar, taxonomyD
 
 			i = 1
 			while i < len(base):
-				sampleID = base[i][0]
+				sampleID = base[i][OTU_GROUP_ID_COL]
 				metaVal = idToMetadata[sampleID]
 				otuVal = float(base[i][col])
 				if displayValues == "nonzero":

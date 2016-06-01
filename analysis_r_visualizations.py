@@ -1,3 +1,14 @@
+# ===========================================
+# 
+# mian Analysis R-based Visualizations
+# @author: tbj128
+# 
+# ===========================================
+
+# 
+# Imports
+# 
+
 import os
 import csv
 from scipy import stats
@@ -77,8 +88,8 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 	if itemsOfInterest is None or itemsOfInterest == "":
 		return {}
 
-	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
-	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 	relevantOTUs = analysis.getRelevantOTUs(taxonomyMap, level, itemsOfInterest)
 	relevantCols = analysis.getRelevantCols(otuTable, relevantOTUs)
@@ -86,7 +97,7 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 	sampleIDToMetadataRow = {}
 	i = 1
 	while i < len(otuMetadata):
-		sampleID = otuMetadata[i][0]
+		sampleID = otuMetadata[i][analysis.OTU_GROUP_ID_COL]
 		sampleIDToMetadataRow[sampleID] = i
 		i += 1
 
@@ -110,7 +121,7 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 	i = 1
 	while i < len(otuTable):
 		totalAbundance = 0
-		j = 1
+		j = analysis.OTU_START_COL
 		while j < len(otuTable[i]):
 			if j in relevantCols:
 				totalAbundance += float(otuTable[i][j])
@@ -118,7 +129,7 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 
 		if (samplestoshow == "nonzero" and totalAbundance > 0) or (samplestoshow == "zero" and totalAbundance == 0) or samplestoshow == "both":
 			corrObj = {}
-			sampleID = otuTable[i][0]
+			sampleID = otuTable[i][analysis.OTU_GROUP_ID_COL]
 			metadataRow = sampleIDToMetadataRow[sampleID]
 
 			corrVal1 = 0
@@ -158,13 +169,13 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 	return abundancesObj
 
 def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
-	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
-	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
-	col = 1
+	col = analysis.OTU_START_COL
 	while col < len(otuTable[0]):
 		colVals = []
 		row = 1
@@ -221,14 +232,14 @@ def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
 
 
 def nmds(userID, projectID, level, itemsOfInterest, catvar):
-	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
-	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
-	col = 1
+	col = analysis.OTU_START_COL
 	while col < len(otuTable[0]):
 		colVals = []
 		row = 1

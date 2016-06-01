@@ -1,3 +1,14 @@
+# ===========================================
+# 
+# mian Analysis Data Mining/ML Library
+# @author: tbj128
+# 
+# ===========================================
+
+# 
+# Imports
+# 
+
 import os
 import csv
 from scipy import stats
@@ -75,8 +86,8 @@ def fisherExact(userID, projectID, level, itemsOfInterest, catvar, minthreshold,
 	if itemsOfInterest is None or itemsOfInterest == "":
 		return []
 
-	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
-	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
@@ -86,7 +97,7 @@ def fisherExact(userID, projectID, level, itemsOfInterest, catvar, minthreshold,
 
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
-	col = 1
+	col = analysis.OTU_START_COL
 	while col < len(otuTable[0]):
 		colVals = []
 		row = 1
@@ -129,8 +140,8 @@ def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1
 	if itemsOfInterest is None or itemsOfInterest == "":
 		return []
 
-	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
-	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
@@ -179,7 +190,7 @@ def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1
 
 def convertToPercentAbundance(base, perThreshold):
 	baseNew = []
-	OTU_START = 1
+	OTU_START = analysis.OTU_START_COL
 
 	i = 0
 	for row in base:
@@ -263,9 +274,9 @@ def separateIntoGroups(base, baseMetadata, catvar, catCol1, catCol2):
 	i = 1
 	while i < len(baseMetadata):
 		if baseMetadata[i][catvarCol] == catCol1:
-			catCol1Samples[baseMetadata[i][0]] = 1
+			catCol1Samples[baseMetadata[i][analysis.OTU_GROUP_ID_COL]] = 1
 		if baseMetadata[i][catvarCol] == catCol2:
-			catCol2Samples[baseMetadata[i][0]] = 1
+			catCol2Samples[baseMetadata[i][analysis.OTU_GROUP_ID_COL]] = 1
 		i += 1
 
 	baseCat1 = []
@@ -276,9 +287,9 @@ def separateIntoGroups(base, baseMetadata, catvar, catCol1, catCol2):
 			baseCat1.append(o)
 			baseCat2.append(o)
 		else:
-			if o[0] in catCol1Samples:
+			if o[analysis.OTU_GROUP_ID_COL] in catCol1Samples:
 				baseCat1.append(o)
-			elif o[0] in catCol2Samples:
+			elif o[analysis.OTU_GROUP_ID_COL] in catCol2Samples:
 				baseCat2.append(o)
 		i = i + 1
 	return baseCat1, baseCat2
@@ -287,7 +298,7 @@ def keepOnlyOTUs(base):
 	newBase = []
 	for o in base:
 		newRow = []
-		j = 1
+		j = analysis.OTU_START_COL
 		while j < len(o):
 			newRow.append(o[j])
 			j += 1

@@ -1,3 +1,14 @@
+# ===========================================
+# 
+# mian Analysis Alpha/Beta Diversity Library
+# @author: tbj128
+# 
+# ===========================================
+
+# 
+# Imports
+# 
+
 import os
 import csv
 from scipy import stats
@@ -89,88 +100,22 @@ betaDiversityDisper <- function(allOTUs, groups, method) {
 
 veganR = SignatureTranslatedAnonymousPackage(rcode, "veganR")
 
-def mapIDToMetadata(otuMetadata, metaCol):
-	metaVals = {}
-	i = 1
-	while i < len(otuMetadata):
-		# Maps the ID column to metadata column
-		metaVals[otuMetadata[i][0]] = otuMetadata[i][metaCol]
-		i += 1
-	return metaVals
-
-def getMetadataInOTUTableOrder(otuTable, otuMetadata, metaCol):
-	metadataMap = mapIDToMetadata(otuMetadata, metaCol)
-	metaVals = []
-	row = 1
-	while row < len(otuTable):
-		metaVals.append(metadataMap[otuTable[row][0]])
-		row += 1
-	return metaVals
-
-def getOTUTableAtLevel(base, taxonomyMap, itemsOfInterest, level):
-	otus = {}
-	for otu, classification in taxonomyMap.iteritems():
-		if int(level) >= 0 and int(level) < len(classification):
-			if classification[int(level)] in itemsOfInterest:
-				otus[otu] = 1
-		else:
-			if otu in itemsOfInterest:
-				otus[otu] = 1
-
-	newOTUTable = []
-	relevantCols = {}
-	relevantCols[0] = 1
-
-	i = 0
-	while i < len(base):
-		if i == 0:
-			# Header row
-			# Ignores the first column (sample ID)
-			newRow = [base[i][0]]
-			j = 1
-			while j < len(base[i]):
-				if base[i][j] in otus:
-					newRow.append(base[i][j])
-					relevantCols[j] = 1
-				j += 1
-			newOTUTable.append(newRow)
-		else:
-			newRow = []
-			j = 0
-			while j < len(base[i]):
-				if j in relevantCols:
-					newRow.append(base[i][j])
-				j += 1
-			newOTUTable.append(newRow)
-		i += 1
-	return newOTUTable
-
-def getCatCol(otuMetadata, catvar):
-	catCol = 1
-	j = 0
-	while j < len(otuMetadata[0]):
-		if otuMetadata[0][j] == catvar:
-			catCol = j
-		j += 1
-	return catCol
-
-
 def alphaDiversity(userID, projectID, level, itemsOfInterest, catvar, alphaType, alphaContext):
 	if itemsOfInterest is None or itemsOfInterest == "":
 		return []
 		
-	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
-	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
-	metaVals = getMetadataInOTUTableOrder(otuTable, otuMetadata, getCatCol(otuMetadata, catvar))
+	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 
-	otuTable = getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
 
 
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
-	col = 1
+	col = analysis.OTU_START_COL
 	while col < len(otuTable[0]):
 		colVals = []
 		row = 1
@@ -191,7 +136,7 @@ def alphaDiversity(userID, projectID, level, itemsOfInterest, catvar, alphaType,
 	i = 0
 	while i < len(vals):
 		obj = {}
-		obj["s"] = str(otuTable[i][0])
+		obj["s"] = str(otuTable[i][analysis.OTU_GROUP_ID_COL])
 		obj["a"] = vals[i]
 
 		meta = metaVals[i]
@@ -215,18 +160,18 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	if itemsOfInterest is None or itemsOfInterest == "":
 		return []
 
-	otuTable = analysis.csvToTable(userID, projectID, "otuTable.csv")
-	otuMetadata = analysis.csvToTable(userID, projectID, "otuMetadata.csv")
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
 
-	metaVals = getMetadataInOTUTableOrder(otuTable, otuMetadata, getCatCol(otuMetadata, catvar))
+	metaVals = getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
-	otuTable = getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
 
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
-	col = 1
+	col = analysis.OTU_START_COL
 	while col < len(otuTable[0]):
 		colVals = []
 		row = 1
@@ -249,7 +194,7 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	i = 0
 	while i < len(vals):
 		obj = {}
-		obj["s"] = str(otuTable[i][0])
+		obj["s"] = str(otuTable[i][analysis.OTU_GROUP_ID_COL])
 		obj["a"] = vals[i]
 
 		if metaVals[i] in statsAbundances:

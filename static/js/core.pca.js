@@ -14,7 +14,10 @@ $(document).ready(function() {
 
   function createListeners() {
     $("#project").change(function () {
-      updateAnalysis();
+      updateTaxonomicLevel(false, function() {
+        updateAnalysis();
+      });
+      updateCatVar();
     });
 
     $("#taxonomy").change(function () {
@@ -219,6 +222,7 @@ $(document).ready(function() {
   }
 
   function updateAnalysis() {
+    showLoading();
     var level = taxonomyLevels[getTaxonomicLevel()];
     var taxonomy = $("#taxonomy-specific").val();
     if (taxonomy == null) {
@@ -243,6 +247,7 @@ $(document).ready(function() {
       url: "pca",
       data: data,
       success: function(result) {
+        hideLoading();
         abundancesObj = JSON.parse(result);
         boundX = [];
         boundY = [];

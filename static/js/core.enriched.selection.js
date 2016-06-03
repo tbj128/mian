@@ -12,7 +12,10 @@ $(document).ready(function() {
     $('#pwVar2 option:eq(1)').attr('selected', 'selected');
 
     $("#project").change(function () {
-      updateAnalysis();
+      updateTaxonomicLevel(false, function() {
+        updateAnalysis();
+      });
+      updateCatVar();
     });
 
     $("#taxonomy").change(function () {
@@ -80,6 +83,7 @@ $(document).ready(function() {
 
 
   function updateAnalysis() {
+    showLoading();
     var level = taxonomyLevels[getTaxonomicLevel()];
     var taxonomy = $("#taxonomy-specific").val();
     if (taxonomy == null) {
@@ -107,6 +111,7 @@ $(document).ready(function() {
       url: "enriched_selection",
       data: data,
       success: function(result) {
+        hideLoading();
         var abundancesObj = JSON.parse(result);
         renderEnrichedTable(abundancesObj);
       },

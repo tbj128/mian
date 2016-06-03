@@ -7,6 +7,23 @@ hr {
   margin-bottom:0px;
 }
 
+.loading {
+  position: fixed;
+  top:50px;
+  left:50%;
+  margin-left: -70px;
+  width:140px;
+  text-align: center;
+  padding:12px 24px;
+  background:rgb(31, 119, 180);
+  color:#FFF;
+  border-radius:0 0 6px 6px;
+}
+
+.loading .upload-loading {
+  margin-right: 4px !important;
+}
+
 .overlay {
   position:fixed;
   width:100%;

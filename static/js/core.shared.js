@@ -10,6 +10,15 @@ var taxonomyLevels = {
 };
 var taxonomiesMap = [];
 
+
+function showLoading() {
+  $("#loading").show();
+}
+
+function hideLoading() {
+  $("#loading").hide();
+}
+
 // 
 // Sidebar Shared
 // 

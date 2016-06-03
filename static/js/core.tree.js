@@ -7,6 +7,13 @@ $(document).ready(function() {
   createListeners();
 
   function createListeners() {
+    $("#project").change(function () {
+      updateTaxonomicLevel(false, function() {
+        updateAnalysis();
+      });
+      updateCatVar();
+    });
+
     $("#taxonomy").change(function () {
       updateTaxonomicLevel(false, function() {
         updateAnalysis();
@@ -35,6 +42,7 @@ $(document).ready(function() {
   }
 
   function updateAnalysis(abundancesObj) {
+    showLoading();
     var level = taxonomyLevels[getTaxonomicLevel()];
     var taxonomy = $("#taxonomy-specific").val();
     if (taxonomy == null) {
@@ -61,6 +69,7 @@ $(document).ready(function() {
       url: "tree",
       data: data,
       success: function(result) {
+        hideLoading();
         var abundancesObj = JSON.parse(result);
         renderTree(abundancesObj);
       },
@@ -76,6 +85,7 @@ $(document).ready(function() {
     $("#analysis-container").empty();
 
     var root = abundancesObj["root"];
+    var metaUnique = abundancesObj["metaUnique"];
     root = root["children"][0]
     console.log(root)
 
@@ -88,11 +98,11 @@ $(document).ready(function() {
 
     var numLeaves = abundancesObj["numLeaves"];
 
-    var width = 320 * taxLevelMultiplier,
+    var width = 300 * taxLevelMultiplier + 26 * metaUnique.length,
         height = 20 * numLeaves;
 
     var cluster = d3.layout.cluster()
-        .size([height, width - 160]);
+        .size([height, width - 32 * metaUnique.length - 80]);
 
     var diagonal = d3.svg.diagonal()
         .projection(function(d) { return [d.y, d.x]; });
@@ -140,7 +150,6 @@ $(document).ready(function() {
       }
     });
 
-    var metaUnique = abundancesObj["metaUnique"];
     var display_values = $("#display_values").val();
     //   var maxSValue = abundancesObj["maxPerAbun"];
     var sValue = function(d) {
@@ -165,7 +174,7 @@ $(document).ready(function() {
       }
     };
     var maxSValue = d3.max(nodes, sValue);
-    var sScale = d3.scale.linear().domain([0, maxSValue]).range([2, 8]);
+    var sScale = d3.scale.linear().domain([0, maxSValue]).range([0.5, 8]);
 
     var color = d3.scale.category10();
 
@@ -194,8 +203,8 @@ $(document).ready(function() {
               tooltip.transition()
                   .duration(100)
                   .style("opacity", 1);
-              tooltip.html("Count: <strong>" + c + " / " + tc + "</strong><br />Percent: <strong>" + per.toFixed(2) + "</strong>")
-                  .style("left", (d3.event.pageX - 64) + "px")
+              tooltip.html("<strong>" + meta + "</strong><br />Count: <strong>" + c + " / " + tc + "</strong><br />Percent: <strong>" + per.toFixed(2) + "</strong>")
+                  .style("left", (d3.event.pageX - 128) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             } else {
               var c = d["val"][meta];
@@ -213,8 +222,8 @@ $(document).ready(function() {
                 header = "Max Abundance";
               }
 
-              tooltip.html(header + ": <strong>" + c + "</strong><br />Total Count: <strong>" + tc + "</strong>")
-                  .style("left", (d3.event.pageX - 64) + "px")
+              tooltip.html("<strong>" + meta + "</strong><br />" + header + ": <strong>" + c + "</strong><br />Total Count: <strong>" + tc + "</strong>")
+                  .style("left", (d3.event.pageX - 128) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             }
           })

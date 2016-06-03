@@ -7,6 +7,13 @@ $(document).ready(function() {
   createListeners();
 
   function createListeners() {
+    $("#project").change(function () {
+      updateTaxonomicLevel(false, function() {
+        updateAnalysis();
+      });
+      updateCatVar();
+    });
+
     $("#taxonomy").change(function () {
       updateTaxonomicLevel(false, function() {
         updateAnalysis();
@@ -31,6 +38,7 @@ $(document).ready(function() {
   }
 
   function updateAnalysis(abundancesObj) {
+    showLoading();
     var level = taxonomyLevels[getTaxonomicLevel()];
     var taxonomy = $("#taxonomy-specific").val();
     if (taxonomy == null) {
@@ -55,6 +63,7 @@ $(document).ready(function() {
       url: "abundances_grouping",
       data: data,
       success: function(result) {
+        hideLoading();
         var abundancesObj = JSON.parse(result);
         renderClusters(abundancesObj);
       },

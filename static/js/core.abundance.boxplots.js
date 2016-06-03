@@ -8,7 +8,10 @@ $(document).ready(function() {
 
   function createListeners() {
     $("#project").change(function () {
-      updateAnalysis();
+      updateTaxonomicLevel(false, function() {
+        updateAnalysis();
+      });
+      updateCatVar();
     });
 
     $("#taxonomy").change(function () {
@@ -106,6 +109,7 @@ $(document).ready(function() {
   }
 
   function updateAnalysis() {
+    showLoading();
     $("#stats-container").fadeIn(250);
     var level = taxonomyLevels[getTaxonomicLevel()];
     var taxonomy = $("#taxonomy-specific").val();
@@ -127,6 +131,7 @@ $(document).ready(function() {
       url: "abundances",
       data: data,
       success: function(result) {
+        hideLoading();
         var abundancesObj = JSON.parse(result);
         renderBoxplots(abundancesObj);
         renderPvaluesTable(abundancesObj);

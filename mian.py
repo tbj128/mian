@@ -223,6 +223,10 @@ def create():
 		projectTaxaMapName = request.form['projectTaxaMapName']
 		projectSampleIDName = request.form['projectSampleIDName']
 
+		projectOTUTableName = secure_filename(projectOTUTableName)
+		projectTaxaMapName = secure_filename(projectTaxaMapName)
+		projectSampleIDName = secure_filename(projectSampleIDName)
+
 		dataMap = {}
 		dataMap["otuTable"] = projectOTUTableName
 		dataMap["otuTaxonomyMapping"] = projectTaxaMapName
@@ -238,7 +242,6 @@ def create():
 
 		# Convert from shared file to appropriate file type
 		# otuTablePath = os.path.join(tempFolder, projectOTUTableName)
-		# if not otuTablePath.endswith(".csv"):
 
 		os.rename(os.path.join(tempFolder, projectOTUTableName), os.path.join(tempFolder, 'otuTable.shared'))
 		os.rename(os.path.join(tempFolder, projectTaxaMapName), os.path.join(tempFolder, 'otuTaxonomyMapping.taxonomy'))

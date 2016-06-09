@@ -33,7 +33,7 @@ OTU_START_COL = 3
 # 
 
 # Converts a CSV formatted OTU table to an array based format 
-def csvToTable(userID, projectID, csvName):
+def csvToTable(userID, projectID, csvName, sep="\t"):
 	dir = os.path.dirname(__file__)
 	dir = os.path.join(dir, "data")
 	dir = os.path.join(dir, userID)
@@ -42,9 +42,9 @@ def csvToTable(userID, projectID, csvName):
 	otuMap = []
 	csvName = os.path.join(dir, csvName)
 	with open(csvName, 'rb') as csvfile:
-		dialect = csv.Sniffer().sniff(csvfile.read(1024))
-		csvfile.seek(0)
-		baseCSV = csv.reader(csvfile, dialect, quotechar='|')
+		# dialect = csv.Sniffer().sniff(csvfile.read(1024))
+		# csvfile.seek(0)
+		baseCSV = csv.reader(csvfile, delimiter=sep, quotechar='|')
 		for o in baseCSV:
 			if len(o) > 1:
 				otuMap.append(o)
@@ -275,6 +275,8 @@ def getTaxonomyMapping(userID, projectID):
 	i = 0
 	for row in taxonomyMapping:
 		if i > 0:
+			if 2 >= len(row):
+				print row
 			taxonomyMap[row[0]] = decomposeSilvaTaxonomy(row[2])
 		i += 1
 	return taxonomyMap

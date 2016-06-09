@@ -10,11 +10,12 @@ $(document).ready(function() {
   function createListeners() {
     $('#corrvar2 option:eq(1)').attr('selected', 'selected');
 
-    $("#project").change(function () {
+    $("#project").change(function() {
       updateTaxonomicLevel(false, function() {
-        updateAnalysis();
+        updateCorrVar(function() {
+          updateAnalysis();
+        });
       });
-      updateCatVar();
     });
 
     $("#taxonomy").change(function () {
@@ -48,10 +49,17 @@ $(document).ready(function() {
     });
   }
 
-  function renderCorrelations(data) {
-    if ($.isEmptyObject(data)) {
+  function renderCorrelations(abundancesObj) {
+    if ($.isEmptyObject(abundancesObj)) {
       return;
     }
+
+    var data = abundancesObj["corrArr"];
+    var coef = abundancesObj["coef"];
+    var pValue = abundancesObj["pval"];
+
+    $("#stats-coef").text(coef);
+    $("#stats-pval").text(pValue);
 
     $("#analysis-container").empty();
 
@@ -187,13 +195,56 @@ $(document).ready(function() {
       url: "correlations",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
         abundancesObj = JSON.parse(result);
-        renderCorrelations(abundancesObj["corrArr"]);
+        renderCorrelations(abundancesObj);
       },
       error: function(err) {
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
         console.log(err)
       }
     });
+  }
+
+  function updateCorrVar(callback) {
+    $.ajax({
+      url: "metadata_headers?pid=" + $("#project").val(), 
+      success: function(result) {
+        var json = ["None"];
+        json.push.apply(json, JSON.parse(result));
+        json.push("Abundances");
+        $("#corrvar1").empty();
+        $("#corrvar2").empty();
+        $("#sizevar").empty();
+        $("#colorvar").empty();
+        for (var i = 0; i < json.length; i++) {
+          if (i != 0) {
+            addCorrOption("corrvar1", json[i]);
+            addCorrOption("corrvar2", json[i]);
+          }
+          addCorrOption("sizevar", json[i]);
+          addCorrOption("colorvar", json[i]);
+        }
+        $('#corrvar2 option:eq(1)').attr('selected', 'selected');
+        callback();
+      }
+    });
+  }
+
+  function addCorrOption(elemID, val) {
+    var o = document.createElement("option");
+    o.setAttribute("value", val);
+    var t = document.createTextNode(val);
+    if (val == "Abundances") {
+      t = document.createTextNode("Aggregate Abundances");
+    }
+    o.appendChild(t);
+    document.getElementById(elemID).appendChild(o);
   }
 });

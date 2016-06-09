@@ -14,6 +14,7 @@ import csv
 from scipy import stats
 import analysis
 import numpy as np
+import math
 
 # 
 # ======== R specific setup =========
@@ -118,6 +119,9 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 		sizecol = analysis.getCatCol(otuMetadata, sizevar)
 
 	corrArr = []
+	corrValArr1 = []
+	corrValArr2 = []
+
 	i = 1
 	while i < len(otuTable):
 		totalAbundance = 0
@@ -148,6 +152,8 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 				corrObj["s"] = sampleID
 				corrObj["c1"] = float(corrVal1)
 				corrObj["c2"] = float(corrVal2)
+				corrValArr1.append(float(corrVal1))
+				corrValArr2.append(float(corrVal2))
 
 				if colorcol > -1:
 					colorVal = otuMetadata[metadataRow][colorcol]
@@ -165,8 +171,16 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 
 		i += 1
 
+	coef, pval = stats.pearsonr(corrValArr1, corrValArr2)
+	if math.isnan(coef): 
+		coef = 0
+	if math.isnan(pval): 
+		coef = 1
+
 	abundancesObj = {}
 	abundancesObj["corrArr"] = corrArr
+	abundancesObj["coef"] = coef
+	abundancesObj["pval"] = pval
 	return abundancesObj
 
 def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):

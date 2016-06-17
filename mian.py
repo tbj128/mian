@@ -144,19 +144,16 @@ def signup():
 		password = request.form['inputPassword']
 		addUser(email, password)
 
-		# Checks that the user does not already exist
+		# Checks that the user account was created properly and obtains the user ID
 		isAuth, userID = checkAuth(email, password)
-		if isAuth:
-			return 'User already exists'
 
 		# Sets up the user folder
 		dataPath = os.path.join(RELATIVE_PATH, 'data')
-		dataPath = os.path.join(dataPath, userID)
+		dataPath = os.path.join(dataPath, str(userID))
 		if not os.path.exists(dataPath):
 			os.makedirs(dataPath)
 
 		# Auto logs in the user
-		isAuth, userID = checkAuth(email, password)
 		if isAuth:
 			user = User(email, userID, True)
 			flask_login.login_user(user)
@@ -358,6 +355,18 @@ def getMetadataHeaders():
 
 	abundances = analysis.getMetadataHeaders(user, pid)
 	return json.dumps(abundances)
+
+@app.route('/metadata_vals')
+@flask_login.login_required
+def getMetadataVals():
+	user = current_user.id
+	pid = request.args.get('pid', '')
+	catvar = request.args.get('catvar', '')
+	if pid == '' or catvar == '':
+		return json.dumps({})
+
+	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, pid, catvar)
+	return json.dumps(uniqueCatVals)
 
 @app.route('/abundances', methods=['POST'])
 @flask_login.login_required

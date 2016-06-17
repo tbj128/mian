@@ -5,16 +5,17 @@ $(document).ready(function() {
   updateTaxonomicLevel(true, function() {
     updateAnalysis();
   });
-
+  
   function createListeners() {
     // Alter the second option so that the pairwise aren't both the same value
     $('#pwVar2 option:eq(1)').attr('selected', 'selected');
 
     $("#project").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
+      $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
+        updatePWComparisonSidebar(function() {
+          updateAnalysis();
+        });
       });
-      updateCatVar();
     });
 
     $("#taxonomy").change(function () {
@@ -45,6 +46,39 @@ $(document).ready(function() {
 
     $("#pwVar2").change(function () {
       updateAnalysis();
+    });
+  }
+
+  function updatePWComparisonSidebar(callback) {
+    var data = {
+      "pid": $("#project").val(),
+      "catvar": $("#catvar").val(),
+    };
+
+    $.ajax({
+      type: "GET",
+      url: "metadata_vals",
+      data: data,
+      success: function(result) {
+        hideLoading();
+        $("#pwVar1").empty();
+        $("#pwVar2").empty();
+        var uniqueVals = JSON.parse(result);
+
+        for (var i = 0; i < uniqueVals.length; i++) {
+          $("#pwVar1").append("<option value='" + uniqueVals[i] + "'>" + uniqueVals[i] + "</option>");
+          if (i == 1) {
+            $("#pwVar2").append("<option value='" + uniqueVals[i] + "' selected>" + uniqueVals[i] + "</option>");
+          } else {
+            $("#pwVar2").append("<option value='" + uniqueVals[i] + "'>" + uniqueVals[i] + "</option>");
+          }
+        }
+
+        callback();
+      },
+      error: function(err) {
+        console.log(err);
+      }
     });
   }
 

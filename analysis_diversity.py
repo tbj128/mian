@@ -72,7 +72,11 @@ betaDiversity <- function(allOTUs, groups, method) {
 	return(distances)
 }
 
-betaDiversityPERMANOVA <- function(allOTUs, groups) {
+betaDiversityPERMANOVA <- function(allOTUs, groups, strata) {
+	return(adonis(allOTUs~groups, strata=strata))
+}
+
+betaDiversityPERMANOVA2 <- function(allOTUs, groups) {
 	return(adonis(allOTUs~groups))
 }
 
@@ -171,6 +175,17 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
+	# =====================================================================
+	# TODO: FIX
+	# 
+	metaVals2 = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, "Individual"))
+	
+	strata = robjects.FactorVector(robjects.StrVector(metaVals2))
+	# 
+	# TODO: FIX
+	# =====================================================================
+
+
 	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
 
 	# Forms an OTU only table (without IDs)
@@ -217,7 +232,11 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	abundancesObj["abundances"] = abundances
 	abundancesObj["stats"] = statistics
 
-	permanova = veganR.betaDiversityPERMANOVA(dataf, groups)
+	# permanova = veganR.betaDiversityPERMANOVA(dataf, groups, strata)
+	permanova = veganR.betaDiversityPERMANOVA2(dataf, groups)
+	# print strata
+	# print permanova
+	# print permanova2
 	dispersions = veganR.betaDiversityDisper(dataf, groups, betaType)
 	abundancesObj["permanova"] = str(permanova)
 	abundancesObj["dispersions"] = str(dispersions)

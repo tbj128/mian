@@ -4,12 +4,13 @@ $(document).ready(function() {
   var boundY = [];
   var boundXLastFire = 0;
   var boundYLastFire = 0;
+  var slider1 = null, slider2 = null;
 
   // Initialization
-  updateTaxonomicLevel(true, function() {
+  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
     updateAnalysis();
   });
-  updateCatVar();
+  
   createListeners();
 
   function createListeners() {
@@ -242,6 +243,7 @@ $(document).ready(function() {
       "pca2": pca2
     };
 
+
     $.ajax({
       type: "POST",
       url: "pca",
@@ -253,43 +255,65 @@ $(document).ready(function() {
         boundY = [];
 
         // Update sliders
-        $("#pca1-range").show();
+
         document.getElementById("pca1-range").setAttribute("data-slider-min", abundancesObj["pca1Min"]);
         document.getElementById("pca1-range").setAttribute("data-slider-max", abundancesObj["pca1Max"]);
         document.getElementById("pca1-range").setAttribute("data-slider-value", "[" + abundancesObj["pca1Min"] + "," + abundancesObj["pca1Max"] + "]");
-        $("#pca1-range").slider({
-          formatter: function(value) {
-            if ($.isArray(value)) {
-              boundX = value;
-            }
-            var diff = event.timeStamp - boundXLastFire;
-            // Prevents the event from firing too often
-            if (diff >= 300) {
-              boundXLastFire = event.timeStamp;
-              renderPCA(abundancesObj["pca"]);
-            }
-            return value;
-          }
-        });
+        
+        if (slider1 === null) {
+          $("#pca1-range").show();
+          slider1 = $("#pca1-range").slider({
+            formatter: function(value) {
+              if ($.isArray(value)) {
+                boundX = value;
+                value[0] = Math.round(value[0] * 100) / 100;
+                value[1] = Math.round(value[1] * 100) / 100;
+              } else {
+                value = Math.round(value * 100) / 100;
+              }
 
-        $("#pca2-range").show();
+              var diff = event.timeStamp - boundXLastFire;
+              // Prevents the event from firing too often
+              if (diff >= 300) {
+                boundXLastFire = event.timeStamp;
+                renderPCA(abundancesObj["pca"]);
+              }
+
+              return value;
+            }
+          });
+        } else {
+          slider1.slider('refresh');
+        }
+
         document.getElementById("pca2-range").setAttribute("data-slider-min", abundancesObj["pca2Min"]);
         document.getElementById("pca2-range").setAttribute("data-slider-max", abundancesObj["pca2Max"]);
         document.getElementById("pca2-range").setAttribute("data-slider-value", "[" + abundancesObj["pca2Min"] + "," + abundancesObj["pca2Max"] + "]");
-        $("#pca2-range").slider({
-          formatter: function(value) {
-            if ($.isArray(value)) {
-              boundY = value;
+        
+        if (slider2 === null) {
+          $("#pca2-range").show();
+          slider2 = $("#pca2-range").slider({
+            formatter: function(value) {
+              if ($.isArray(value)) {
+                boundY = value;
+                value[0] = Math.round(value[0] * 100) / 100;
+                value[1] = Math.round(value[1] * 100) / 100;
+              } else {
+                value = Math.round(value * 100) / 100;
+              }
+
+              var diff = event.timeStamp - boundYLastFire;
+              // Prevents the event from firing too often
+              if (diff >= 300) {
+                boundYLastFire = event.timeStamp;
+                renderPCA(abundancesObj["pca"]);
+              }
+              return value;
             }
-            var diff = event.timeStamp - boundYLastFire;
-            // Prevents the event from firing too often
-            if (diff >= 300) {
-              boundYLastFire = event.timeStamp;
-              renderPCA(abundancesObj["pca"]);
-            }
-            return value;
-          }
-        });
+          });
+        } else {
+          slider2.slider('refresh');
+        }
 
         renderPCA(abundancesObj["pca"]);
         renderPCAVar(abundancesObj["pcaVar"])

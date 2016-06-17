@@ -30,7 +30,7 @@ function getTaxonomicLevel() {
 function updateTaxonomicLevel(firstLoad, callback) {
   if (taxonomiesMap.length == 0) {
     // Load taxonomy map
-    $.ajax({
+    return $.ajax({
       url: "taxonomies?pid=" + $("#project").val(), 
       success: function(result) {
         var json = JSON.parse(result);
@@ -42,11 +42,12 @@ function updateTaxonomicLevel(firstLoad, callback) {
   } else {
     renderTaxonomicLevel(firstLoad);
     callback();
+    return null;
   }
 }
 
-function updateCatVar() {
-  $.ajax({
+function updateCatVar(callback) {
+  return $.ajax({
     url: "metadata_headers?pid=" + $("#project").val(), 
     success: function(result) {
       var json = JSON.parse(result);
@@ -58,6 +59,10 @@ function updateCatVar() {
         var t = document.createTextNode(json[i]);
         o.appendChild(t);
         document.getElementById("catvar").appendChild(o);
+      }
+
+      if (callback !== undefined) {
+        callback();
       }
     }
   });

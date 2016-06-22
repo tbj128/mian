@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'header.html' %}
+    <title>Rarefaction - mian</title>
+
+    <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css" />
+    <style>
+
+    </style>
+  </head>
+
+  <body>
+    {% include 'navigation.html' %}
+
+    <div id="editor" class="editor">
+      <h3>Rarefaction</h3>
+
+      <label class="control-label">Project</label>
+      <select id="project" name="project" class="form-control">
+        {% for projectName in projectNames %}
+          <option value="{{ projectName }}">{{ projectName }}</option>
+        {% endfor %}
+      </select>
+
+      <hr />
+
+      <label class="control-label">Taxonomic Level</label>
+      <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum">Phylum</option>
+        <option value="Class">Class</option>
+        <option value="Order">Order</option>
+        <option value="Family">Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU">OTU</option>
+      </select>
+
+      <select style="display:none;" id="taxonomy-specific" name="taxonomy-specific" class="form-control pad-bottom" multiple="multiple">
+      </select>
+
+      <hr />
+
+      <label class="control-label">Correlation Variable 1</label>
+      <select id="corrvar1" name="corrvar1" class="form-control">
+        {% for catVar in numericCatVars %}
+          <option value="{{ catVar }}">{{ catVar }}</option>
+        {% endfor %}
+        <option value="Abundances">Aggregate Abundances</option>
+      </select>
+
+      <label class="control-label">Correlation Variable 2</label>
+      <select id="corrvar2" name="corrvar2" class="form-control">
+        {% for catVar in numericCatVars %}
+          <option value="{{ catVar }}">{{ catVar }}</option>
+        {% endfor %}
+        <option value="Abundances">Aggregate Abundances</option>
+      </select>
+
+      <label class="control-label">Color Variable</label>
+      <select id="colorvar" name="colorvar" class="form-control">
+        <option value="">None</option>
+        {% for catVar in catVars %}
+          <option value="{{ catVar }}">{{ catVar }}</option>
+        {% endfor %}
+      </select>
+
+      <label class="control-label">Size Variable</label>
+      <select id="sizevar" name="sizevar" class="form-control">
+        <option value="">None</option>
+        {% for catVar in catVars %}
+          <option value="{{ catVar }}">{{ catVar }}</option>
+        {% endfor %}
+      </select>
+
+      <label class="control-label">Samples to Show</label>
+      <select id="samplestoshow" name="samplestoshow" class="form-control">
+        <option value="both">All Samples</option>
+        <option value="nonzero">Non-Zero Value Samples</option>
+        <option value="zero">Zero Value Samples</option>
+      </select>
+    </div>
+
+    <div id="display-error" class="project-empty" style="display:none;">
+      <i class="fa fa-exclamation-o fa-4x"></i>
+      <h3>Visualization cannot be displayed with these parameters</h3>
+    </div>
+
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    </div><!-- /.container -->
+
+    <div id="stats-container" class="analysis-container" style="min-height:500px;">
+      <table class="table table-hover"> 
+        <thead> 
+          <tr>
+            <th>Coefficient</th>
+            <th>P-Value</th>
+          </tr> 
+        </thead>
+        <tbody id="stats-rows"> 
+          <td id="stats-coef"></td>
+          <td id="stats-pval"></td>
+        </tbody>
+      </table>
+    </div><!-- /.container -->
+
+    <hr style="margin-top:0px; margin-bottom:0px;" />
+
+    {% include 'footer.html' %}
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/d3.js"></script>
+    <script src="static/js/plugins/bootstrap-multiselect.js"></script>
+    <script src="static/js/plugins/bootstrap-slider.min.js"></script>
+    <script src="static/js/core.shared.js"></script>
+    <script src="static/js/core.correlations.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+  </body>
+</html>

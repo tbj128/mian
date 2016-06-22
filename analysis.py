@@ -612,6 +612,92 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 	abundancesObj["root"] = groupingPostProcess
 	return abundancesObj
 
+def getCompositionAnalysis(userID, projectID, level, catvar):
+	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
+	taxonomyMap = getTaxonomyMapping(userID, projectID)
+
+	# Merges the OTUs based on their taxonomic classification at the specified level
+	base = getOTUTableAtLevelIntegrated(base, taxonomyMap, "All", level)
+
+	# Stores the tax classification to the relative abun (averaged)
+	# {
+	# 	"phylum" -> {
+	# 		"IPF": []
+	# 		"Control": []
+	# 	}
+	# }
+	compositionAbun = {}
+
+	# Maps the ID to the metadata value
+	metadataMap = {}
+	uniqueMetadataVals = {}
+
+	# TODO: Refactor
+	catCol = -1
+	i = 0
+	while i < len(metadata):
+		if i == 0:
+			j = 0
+			while j < len(metadata[i]):
+				if metadata[i][j] == catvar:
+					catCol = j
+				j += 1
+		else:
+			if catCol == -1:
+				metadataMap[metadata[i][0]] = "All"
+				uniqueMetadataVals["All"] = 1
+			else:
+				metadataMap[metadata[i][0]] = metadata[i][catCol]
+				uniqueMetadataVals[metadata[i][catCol]] = 1
+		i += 1
+
+	# Maps id to total
+	totalAbun = {}
+	i = 1
+	while i < len(base):
+		sampleID = base[i][OTU_GROUP_ID_COL]
+		total = 0
+		j = OTU_START_COL
+		while j < len(base[i]):
+			total += float(base[i][j])
+			j += 1
+		totalAbun[sampleID] = total
+		i += 1
+
+	# Iterates through each tax classification and calculates the relative abundance for each category
+	colToTax = {}
+	j = OTU_START_COL
+	while j < len(base[0]):
+		tax = base[0][j]
+		compositionAbun[tax] = {}
+		for m, v in uniqueMetadataVals.iteritems():
+			compositionAbun[tax][m] = []
+
+		i = 1
+		while i < len(base):
+			sampleID = base[i][OTU_GROUP_ID_COL]
+			if sampleID in metadataMap:
+				m = metadataMap[sampleID]
+				compositionAbun[tax][m].append(float(base[i][j]) / float(totalAbun[sampleID]))
+			i += 1
+
+		for m, v in uniqueMetadataVals.iteritems():
+			compositionAbun[tax][m] = round(np.mean(compositionAbun[tax][m]), 3)
+
+		j += 1
+
+	formattedCompositionAbun = []
+	for t, obj in compositionAbun.iteritems():
+		newObj = {}
+		newObj["t"] = t
+		newObj["o"] = obj
+		formattedCompositionAbun.append(newObj)
+
+	abundancesObj = {}
+	abundancesObj["abundances"] = formattedCompositionAbun
+	abundancesObj["metaVals"] = uniqueMetadataVals.keys()
+	return abundancesObj
 
 def getTreeGrouping(userID, projectID, level, itemsOfInterest, catvar, taxonomyDisplayLevel, displayValues, excludeUnclassified):
 	if itemsOfInterest is None or itemsOfInterest == "":
@@ -775,3 +861,4 @@ def treeFormatterHelper(fTreeArr, treeObj, level, taxonomyDisplayLevel, displayV
 
 # getAbundanceForOTUsByGrouping("1", "Test", 0, ["Bacteria"], "Disease", 1, 3)
 # getTreeGrouping("1", "Test", 0, ["Bacteria"], "Disease", -1, "avgabun", "yes")
+# print getCompositionAnalysis("1", "BatchsubOTULevel", 0, "Disease")

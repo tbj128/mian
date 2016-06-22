@@ -286,6 +286,12 @@ def cluster_gravity():
 	projectNames = getAllProjects(current_user.id)
 	return render_template('cluster_gravity.html', projectNames=projectNames)
 
+@app.route('/composition')
+@flask_login.login_required
+def composition():
+	projectNames = getAllProjects(current_user.id)
+	return render_template('composition.html', projectNames=projectNames)
+
 @app.route('/pca')
 @flask_login.login_required
 def pca():
@@ -395,6 +401,18 @@ def getAbundancesGrouping():
 	taxonomyGroupingSpecific = request.form['taxonomy_group_specific']
 
 	abundances = analysis.getAbundanceForOTUsByGrouping(user, pid, level, taxonomy, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific)
+	return json.dumps(abundances)
+
+@app.route('/composition', methods=['POST'])
+@flask_login.login_required
+def getComposition():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	catvar = request.form['catvar']
+
+	abundances = analysis.getCompositionAnalysis(user, pid, level, catvar)
 	return json.dumps(abundances)
 
 @app.route('/tree', methods=['POST'])

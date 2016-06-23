@@ -19,12 +19,12 @@
     }
 
     .analysis-container .bar:hover {
-      fill: rgb(180,31,31) !important;
+      fill-opacity:0.8 !important;
     }
 
     .analysis-container .arc:hover {
-      stroke-width: 2px !important;
-      stroke: rgb(51, 122, 183) !important;
+      stroke-width: 5px !important;
+      fill-opacity:0.8 !important;
       pointer-events:all;
     }
 
@@ -81,8 +81,14 @@
 
     </div>
 
+    <div class="download-container">
+      <button id="download-svg" class="btn btn-default" type="button">Download</button>
+    </div>
+
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
     </div><!-- /.container -->
+
+    <canvas id="donwload-canvas" width="1000px" height="600px" style="display:none;"></canvas> 
 
     {% include 'footer.html' %}
 
@@ -94,6 +100,10 @@
     <script src="static/js/d3.js"></script>
     <script src="static/js/core.shared.js"></script>
     <script src="static/js/core.composition.js"></script>
+    <script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
+    <script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
+    <script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
+    <script type="text/javascript" src="static/js/plugins/FileSaver.js"></script> 
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->

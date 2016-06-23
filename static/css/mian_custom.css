@@ -171,6 +171,16 @@ hr {
  * D3 Custom
  */
 
+.download-container {    
+  margin: 12px 0 0 0px;
+  height: 34px;
+}
+
+#download-svg {
+  position:fixed;
+  right: 12px;
+}
+
 .axis text {
   font-size: 14px;
 }

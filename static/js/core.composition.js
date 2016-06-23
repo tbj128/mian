@@ -1,5 +1,6 @@
 $(document).ready(function() {
   // Global variables storing the data
+  var uniqueCatvarVals = [];
 
   // Initialization
   updateCatVar(function() {
@@ -30,6 +31,10 @@ $(document).ready(function() {
 
     $("#plotType").change(function () {
       updateAnalysis();
+    });
+
+    $("#download-svg").click(function() {
+      download();
     });
   }
 
@@ -77,7 +82,7 @@ $(document).ready(function() {
     $('#analysis-container').empty();
 
     var data = abundancesObj["abundances"];
-    var uniqueCatvarVals = abundancesObj["metaVals"];
+    uniqueCatvarVals = abundancesObj["metaVals"];
     var uniqueTaxas = data.map(function(d) { return d.t; });
 
     var margin = {top: 20, right: 20, bottom: 30, left: 56},
@@ -191,7 +196,7 @@ $(document).ready(function() {
     $('#analysis-container').empty();
 
     var data = abundancesObj["abundances"];
-    var uniqueCatvarVals = abundancesObj["metaVals"];
+    uniqueCatvarVals = abundancesObj["metaVals"];
     var uniqueTaxas = [];
     data.forEach(function(d) {
       var pos = false;
@@ -271,7 +276,62 @@ $(document).ready(function() {
       g.append("text")
           .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
           .attr("dy", ".35em")
-          .text(function(d) { return d.t; });
+          .attr("text-anchor", "middle")
+          .attr("fill", "#333")
+          .text(function(d) {
+            if (d.data.o[cat] >= 0.05) {
+              return d.data.t; 
+            }
+          });
+    });
+  }
+
+  function download() {
+    $("#donwload-canvas").empty();
+    var svgsElems = $("#analysis-container").children();
+    var svgElemWidth = $("#analysis-container svg").width();
+    var svgContainerWidth = svgElemWidth;
+    if ($("#plotType").val() != "bar") {
+      svgContainerWidth = uniqueCatvarVals.length*svgElemWidth
+    }
+
+    var $tmpCanvas = $("#donwload-canvas");
+    $tmpCanvas.height($("#analysis-container svg").height());
+    $tmpCanvas.width(svgContainerWidth);
+
+    var svgContainer = document.createElement("svg");
+    $svgContainer = $(svgContainer);
+    $svgContainer.attr("id", "analysis-group");
+    $svgContainer.attr("width", svgContainerWidth);
+
+    var index = 0;
+    var svg = "";
+    for (var i = 0; i < svgsElems.length; i++) {
+      if (svgsElems[i].tagName === "svg") {
+        var e = svgsElems[i];
+        e.setAttribute("x", index * svgElemWidth);
+        $svgContainer.append($(e).clone());
+        index++;
+      }
+    }
+
+    canvg($tmpCanvas[0], $svgContainer[0].outerHTML, {
+      renderCallback: function() {
+        var dataURL = $tmpCanvas[0].toDataURL('image/png');
+        var ctx = $tmpCanvas[0].getContext("2d");
+
+        var project = $("#project").val();
+        var plotType = $("#plotType").val();
+        var tax = $("#taxonomy").val();
+        var catvar = $("#catvar").val();
+        var filename = project + "." + plotType + "." + tax + "." + catvar + ".png";
+
+        $tmpCanvas[0].toBlob(function(blob) {
+            saveAs(blob, filename);
+        });
+
+        $tmpCanvas.empty();
+      }
     });
   }
 });

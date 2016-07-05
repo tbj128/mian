@@ -24,6 +24,26 @@ hr {
   margin-right: 4px !important;
 }
 
+.message {
+  position: fixed;
+  top:50px;
+  left:50%;
+  margin-left: -160px;
+  width:320px;
+  text-align: center;
+  padding:12px 24px;
+  color:#FFF;
+  border-radius:0 0 6px 6px;
+}
+
+.message-success {
+  background:#3c763d;
+}
+
+.message-danger {
+  background:#a41123;
+}
+
 .overlay {
   position:fixed;
   width:100%;
@@ -159,6 +179,11 @@ hr {
 
 .project-item-meta {
   width:92px;
+  text-align:right;
+}
+
+.project-item th, .project-item td {
+  word-wrap: break-word;
 }
 
 .project-empty {
@@ -208,7 +233,6 @@ hr {
 circle {
   fill: #242C70;
   stroke: none;
-  shape-rendering: crispEdges;
 }
 
 circle:hover {

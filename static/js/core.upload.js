@@ -11,6 +11,31 @@ $(document).ready(function() {
   document.getElementById('otuTaxonomyMapping').addEventListener('change', uploadTaxonomyMapping, false);
   document.getElementById('otuMetadata').addEventListener('change', uploadMetadata, false);
 
+  document.getElementById('subsampleType').addEventListener('change', function() {
+    $("#subsampleTo").hide();
+    $("#auto-prompt").hide();
+    $("#manual-prompt").hide();
+    $("#no-prompt").hide();
+
+    var type = $("#subsampleType").val();
+    if (type === "manual") {
+      $("#subsampleTo").show();
+      $("#manual-prompt").show();
+    } else if (type === "auto") {
+      $("#auto-prompt").show();
+    } else {
+      $("#subsampleTo").hide();
+      $("#no-prompt").show();
+    }
+
+    $("#projectSubsampleType").val(type);
+  }, false);
+
+  document.getElementById('subsampleTo').addEventListener('change', function() {
+    $("#projectSubsampleTo").val($('#subsampleTo'));
+  }, false);
+
+
   function nameChange() {
     $("#projectName").val($("#inputName").val());
     checkComplete();

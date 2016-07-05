@@ -3,6 +3,30 @@
   <head>
     {% include 'header.html' %}
     <title>Projects - mian</title>
+    <style>
+      .blackout {
+        opacity: .5;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1040;
+        background-color: #000;
+      }
+
+      .change-box {
+        position: fixed;
+        top: 80px;
+        left:50%;
+        width:400px;
+        padding:42px;
+        margin-left:-200px;
+        z-index: 1042;
+        background:#FFF;
+        border-radius: 6px;
+      }
+    </style>
   </head>
 
   <body>
@@ -12,6 +36,29 @@
       <strong>Welcome!</strong> Start by creating a new project below. 
     </div>
     {% endif %}
+
+    <div id="otu-table-modified" class="message message-success" style="display:none;">
+      <strong>Success</strong> The OTU table has been successfully modified.
+    </div>
+
+    <div id="otu-table-modified-error" class="message message-danger" style="display:none;">
+      <strong>Error</strong> The OTU table has not been modified.
+    </div>
+
+    <div id="change-box" class="change-box" style="display:none;">
+      <h3>Modify Subsampling</h3>
+      <input style="width:50%;" class="form-control" id="change-subsampling" name="change-subsampling" type="number" value="1020" />
+      <div class="btn-group" role="group" style="margin-top:8px;">
+        <button type="button" class="btn btn-default change-cancel" data-project="{{ projectName }}">Cancel</button>
+        <button type="button" class="btn btn-primary change-confirm" data-project="{{ projectName }}" >Change</button>
+      </div>
+      <hr />
+      <h4>Other Options</h4>
+      <button type="button" class="btn btn-default change-auto" data-project="{{ projectName }}">Auto Subsampling</button>
+      <button type="button" class="btn btn-default change-reset" data-project="{{ projectName }}" >Reset</button>
+      <a id="change-close" href="javascript:void(0);" style="position:absolute; top:18px; right:20px;cursor:pointer;font-size:24px;text-decoration:none;">&times;</a>
+    </div>
+    <div id="blackout" class="blackout" style="display:none;"></div>
 
     <div class="container project-container">
       <div class="section-heading project-heading">
@@ -31,28 +78,44 @@
             {% for projectName in projectNames %}
               <div class="project-item" id="p-{{ projectName }}">
                 <h4>{{ projectName }}</h4>
-                <a title="Delete this project" href="#" data-project="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
-                <table class="table table-hover">
+                <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
+                <table class="table table-hover" style="table-layout:fixed;">
                   <tbody> 
                     <tr> 
-                      <th scope="row">{{ items[projectName]["otuTable"] }}</th> 
-                      <td>OTU Table</td> 
-                      <td class="project-item-meta">
-                        <a href="#">Replace</a>
+                      <th scope="row" class="col-md-5">{{ items[projectName]["otuTable"] }}</th> 
+                      <td class="col-md-3">
+                        <span id="subsampleDisplayContainer-{{ projectName }}">
+                          {% if items[projectName]["subsampleVal"] == 0 %}
+                          Not Subsampled
+                          {% else %}
+                          Subsampled to 
+                          <b id="subsampleDisplayVal-{{ projectName }}">
+                            {{ items[projectName]["subsampleVal"] }}
+                          </b> Seqs
+                          {% endif %} 
+                        </span>
+                        &nbsp;&nbsp;
+                        <a class="project-change-subsampling" data-subsampled="{{ items[projectName]["subsampleVal"] }}" data-project="{{ projectName }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+                      </td> 
+                      <td class="col-md-2">OTU Table</td> 
+                      <td class="project-item-meta col-md-1">
+                        <a class="project-replace-otu" href="javascript:void(0);" data-project="{{ projectName }}" title="Replace the OTU table">Replace</a>
                       </td>
                     </tr>
                     <tr> 
                       <th scope="row">{{ items[projectName]["otuTaxonomyMapping"] }}</th> 
+                      <td></td> 
                       <td>Taxonomy Mapping</td> 
                       <td class="project-item-meta">
-                        <a href="#">Replace</a>
+                        <a class="project-replace-taxonomy" href="javascript:void(0);" data-project="{{ projectName }}" title="Replace the taxonomy mapping">Replace</a>
                       </td>
                     </tr>
                     <tr> 
                       <th scope="row">{{ items[projectName]["otuMetadata"] }}</th> 
+                      <td></td> 
                       <td>Metadata</td> 
                       <td class="project-item-meta">
-                        <a href="#">Replace</a>
+                        <a class="project-replace-metadata" href="javascript:void(0);" data-project="{{ projectName }}" title="Replace the metadata">Replace</a>
                       </td>
                     </tr>
                   </tbody> 
@@ -64,12 +127,7 @@
       </div>
     </div>
 
-    <div class="highlight-default" style="text-align:center;">
-      <div class="container">
-        Built at the University of British Columbia. See the source on <a href="https://github.com/tbj128/OTUViz">Github</a>
-      </div>
-    </div>
-
+    {% include 'footer.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -77,6 +135,7 @@
     <script src="static/js/jquery.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/plugins/bootbox.min.js"></script>
+    <script src="static/js/core.shared.js"></script>
     <script src="static/js/core.projects.js"></script>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->

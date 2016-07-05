@@ -31,6 +31,17 @@ r = robjects.r
 # 
 
 rcode = """
+library(Boruta)
+library(glmnet)
+
+boruta <- function(base, groups, keepthreshold, pval, maxruns) {
+	# Remove any OTUs with presence < keepthreshold (for efficiency)
+	x = base[,colSums(base!=0)>=keepthreshold]
+	y.1 = as.factor(groups)
+	b <- Boruta(x, y.1, doTrace=0, holdHistory=FALSE, pValue=pval, maxRuns=maxruns)
+	return (b$finalDecision)
+}
+
 fisher_exact <- function(base, groups, minthreshold, keepthreshold) {
 
 	cat1 = levels(groups)[1]
@@ -77,9 +88,101 @@ fisher_exact <- function(base, groups, minthreshold, keepthreshold) {
 
 	return(results)
 }
+
+run_glmnet <- function(base, groups, keepthreshold, alphaVal, familyType, lambda_threshold_type, lambda_val) {
+	# Remove any OTUs with presence < keepthreshold (for efficiency)
+	x = base[,colSums(base!=0)>=keepthreshold]
+	y.1 = as.factor(groups)
+
+	# x = x[,2:ncol(x)];
+	x <- as.matrix(data.frame(x))
+	y <- as.factor(groups)
+	yN = as.numeric(y)
+	# y <- base[,SAV]
+	cv <- cv.glmnet(x,y,alpha=alphaVal,family=familyType)
+
+	# plot(cv,cex=2)
+	if (lambda_threshold_type == "Custom") {
+		scAll = coef(cv,s=exp(lambda_val))
+	} else if (lambda_threshold_type == "lambda1se") {
+		scAll = coef(cv,s=cv$lambda.1se)
+	} else {
+		scAll = coef(cv,s=cv$lambda.min)
+	}
+
+
+	uniqueGroups = unique(groups)
+	if (familyType == "binomial") {
+		results = matrix(,(length(scAll) - 1)*length(uniqueGroups), 3)
+	} else {
+		results = matrix(,(length(scAll[[uniqueGroups[1]]]) - 1)*length(uniqueGroups), 3)
+	}
+	index = 1
+	for (g in 1:length(uniqueGroups)) {
+		if (familyType == "binomial") {
+			sc = scAll
+		} else {
+			sc = scAll[[uniqueGroups[g]]]
+		}
+		
+		# Start at 2 to discount the intercept entry
+		for (s in 2:length(sc)) {
+			results[index, 1] = as.character(uniqueGroups[g])
+			results[index, 2] = rownames(sc)[s]
+			results[index, 3] = sc[s]
+			index = index + 1
+		}
+	}
+	return(results)
+}
+
 """
 
 rStats = SignatureTranslatedAnonymousPackage(rcode, "rStats")
+
+
+def boruta(userID, projectID, level, catvar, keepthreshold, pval, maxruns):
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
+	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+
+	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
+	groups = robjects.FactorVector(robjects.StrVector(metaVals))
+
+	# Forms an OTU only table (without IDs)
+	allOTUs = [];
+	col = analysis.OTU_START_COL
+	while col < len(otuTable[0]):
+		colVals = []
+		row = 1
+		while row < len(otuTable):
+			sampleID = otuTable[row][analysis.OTU_GROUP_ID_COL]
+			if sampleID in metaIDs:
+				colVals.append(otuTable[row][col])
+			row += 1
+		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
+		col += 1
+
+	od = rlc.OrdDict(allOTUs)
+	dataf = robjects.DataFrame(od)
+
+	borutaResults = rStats.boruta(dataf, groups, int(keepthreshold), float(pval), int(maxruns))
+	
+	assignments = {}
+
+	i = 0
+	for lab in borutaResults.iter_labels():
+		if lab in assignments:
+			assignments[lab].append(allOTUs[i][0])
+		else:
+			assignments[lab] = [allOTUs[i][0]]
+		i += 1
+
+	abundancesObj = {}
+	abundancesObj["results"] = assignments
+
+	return abundancesObj
 
 
 def fisherExact(userID, projectID, level, itemsOfInterest, catvar, minthreshold, keepthreshold, catVar1, catVar2):
@@ -189,6 +292,54 @@ def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1
 
 	return abundancesObj
 
+
+def glmnet(userID, projectID, level, catvar, keepthreshold, alphaVal, family, lambda_threshold_type, lambda_val):
+	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
+	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
+	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+
+	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
+	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
+	groups = robjects.FactorVector(robjects.StrVector(metaVals))
+
+	# Forms an OTU only table (without IDs)
+	allOTUs = [];
+	col = analysis.OTU_START_COL
+	while col < len(otuTable[0]):
+		colVals = []
+		row = 1
+		while row < len(otuTable):
+			sampleID = otuTable[row][analysis.OTU_GROUP_ID_COL]
+			if sampleID in metaIDs:
+				colVals.append(otuTable[row][col])
+			row += 1
+		allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
+		col += 1
+
+	od = rlc.OrdDict(allOTUs)
+	dataf = robjects.DataFrame(od)
+	glmnetResult = rStats.run_glmnet(dataf, groups, int(keepthreshold), float(alphaVal), family, lambda_threshold_type, float(lambda_val))
+	
+	accumResults = {}
+	i = 1
+	while i <= glmnetResult.nrow:
+		newRow = []
+		newRow.append(glmnetResult.rx(i,2)[0])
+		newRow.append(float(glmnetResult.rx(i,3)[0]))
+
+		g = glmnetResult.rx(i,1)[0]
+		if g in accumResults:
+			accumResults[g].append(newRow)
+		else:
+			accumResults[g] = [newRow]
+
+		i += 1
+
+	abundancesObj = {}
+	print accumResults
+	abundancesObj["results"] = accumResults
+
+	return abundancesObj
 
 # Helpers
 
@@ -315,3 +466,7 @@ def keepOnlyOTUs(base, metaIDs):
 
 # fisherExact("1", "BatchsubOTULevel", 1, ["Firmicutes","Fusobacteria"], "Disease", 0, 5)
 # enrichedSelection("1", "BatchsubOTULevel", 7, "All", "Disease", "IPF", "Control", 0.25)
+# boruta("1", "BatchsubSequenceLevel", 1, "Disease", 5, 0.01, 100)
+# glmnet("1", "BatchsubSequenceLevel", 1, "Disease", 5, 0.5, "multinomial", "Custom", -2)
+# glmnet("1", "BatchsubSequenceLevel", 1, "Disease", 5, 0.5, "binomial", "Custom", -2)
+# glmnet("1", "BatchsubSequenceLevel", 1, "Disease", 5, 0.5, "binomial", "lambda1se", -2)

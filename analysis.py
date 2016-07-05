@@ -16,10 +16,14 @@ import math
 import random
 import string
 import numpy as np
+import shutil
+from subprocess import Popen, PIPE
 
 # 
 # Global Attributes
 # 
+OTU_TABLE_NAME_PRESUBSAMPLE = "otuTable.presubsample.shared"
+OTU_TABLE_NAME_MOTHUR_SUBSAMPLE = "otuTable.presubsample.subsample.shared"
 OTU_TABLE_NAME = "otuTable.shared"
 TAXONOMY_MAP_NAME = "otuTaxonomyMapping.taxonomy"
 METADATA_NAME = "otuMetadata.tsv"
@@ -210,6 +214,60 @@ def getOTUTableAtLevelIntegrated(base, taxonomyMap, itemsOfInterest, level):
 	base = newBase
 
 	return base
+
+def subsampleOTUTable(userID, projectID, projectSubsampleType, projectSubsampleTo):
+	base = csvToTable(userID, projectID, OTU_TABLE_NAME_PRESUBSAMPLE)
+	subsampleTo = 0
+
+	if projectSubsampleType == "auto":
+		# Picks the sample with the lowest sequences as the subsample to value
+		lowestSequences = 0
+		i = 1
+		while i < len(base):
+			total = 0
+			j = OTU_START_COL
+			while j < len(base[i]):
+				total += float(base[i][j])
+				j += 1
+			if total > lowestSequences:
+				lowestSequences = total
+			i += 1
+		subsampleTo = lowestSequences
+	elif projectSubsampleType == "manual":
+		if projectSubsampleTo.isdigit():
+			subsampleTo = int(projectSubsampleTo)
+
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "data")
+	dir = os.path.join(dir, userID)
+	dir = os.path.join(dir, projectID)
+	sharedName = os.path.join(dir, OTU_TABLE_NAME_PRESUBSAMPLE)
+	generatedSharedName = ""
+	permSharedName = os.path.join(dir, OTU_TABLE_NAME)
+
+	for f in os.listdir(dir):
+	    if ".subsample.shared" in f and "presubsample" in f: 
+	    	generatedSharedName = f
+	    	break
+
+	generatedSharedName = os.path.join(dir, generatedSharedName)
+	
+	if projectSubsampleType == "auto" or projectSubsampleType == "manual":
+		print str(subsampleTo)
+		c = Popen(['mothur'], shell=True, stdin=PIPE)
+		c.communicate(input="sub.sample(shared=" + sharedName + ", size=" + str(subsampleTo) + ")\nquit()")
+
+		if generatedSharedName != "":
+			if os.path.isfile(permSharedName):
+				os.remove(permSharedName)
+
+			shutil.copy(generatedSharedName, permSharedName)
+	else:
+		if os.path.isfile(permSharedName):
+			os.remove(permSharedName)
+		shutil.copy(sharedName, permSharedName)
+	
+	return subsampleTo
 
 # ================================
 # Statistics Helpers
@@ -857,8 +915,54 @@ def treeFormatterHelper(fTreeArr, treeObj, level, taxonomyDisplayLevel, displayV
 		fTreeArr["children"].append(newChildObj)
 
 
+def getRarefaction(userID, projectID):
+	rarefactionBase = csvToTable(userID, projectID, "otuTable.groups.rarefaction")
+	retVal = {}
+	subsampleVals = []
+	maxVal = 0
+	maxSubsampleVal = 0
+	maxSubsample = 10000
+	j = 1
+	while j < len(rarefactionBase[0]):
+		if rarefactionBase[0][j].find("lci") != -1 or rarefactionBase[0][j].find("hci") != -1:
+			j += 1
+			continue
+
+		newArr = []
+		numNA = 0
+		i = 1
+		while i < len(rarefactionBase):
+			if float(rarefactionBase[i][0]) > maxSubsample:
+				break
+
+			if j == 1:
+				subsampleVals.append(float(rarefactionBase[i][0]))
+				if float(rarefactionBase[i][0]) > maxSubsampleVal:
+					maxSubsampleVal = float(rarefactionBase[i][0])
+
+			if (rarefactionBase[i][j] == "NA"):
+				newArr.append(-1)
+				numNA += 1
+			else:
+				newArr.append(float(rarefactionBase[i][j]))
+				if float(rarefactionBase[i][j]) > maxVal:
+					maxVal = float(rarefactionBase[i][j])
+			i += 1
+
+		retVal[rarefactionBase[0][j]] = newArr
+
+		j += 1
+
+	abundancesObj = {}
+	abundancesObj["result"] = retVal
+	abundancesObj["subsampleVals"] = subsampleVals
+	abundancesObj["max"] = maxVal
+	abundancesObj["maxSubsampleVal"] = maxSubsampleVal
+	return abundancesObj
+
 # ==================================
 
 # getAbundanceForOTUsByGrouping("1", "Test", 0, ["Bacteria"], "Disease", 1, 3)
 # getTreeGrouping("1", "Test", 0, ["Bacteria"], "Disease", -1, "avgabun", "yes")
 # print getCompositionAnalysis("1", "BatchsubOTULevel", 0, "Disease")
+# print getRarefaction("1", "BatchsubSequenceLevel")

@@ -21,6 +21,7 @@ import string
 import json
 import hashlib
 import shutil
+from subprocess import Popen, PIPE
 
 import analysis
 import analysis_diversity
@@ -201,7 +202,7 @@ def projects():
 		    	item = {}
 		    	dirPath = os.path.join(subdir, dir)
 		    	mapPath = os.path.join(dirPath, 'map.txt')
-		    	print mapPath
+
 		    	with open(mapPath) as outfile:
 					item = json.load(outfile)
 		    	items[dir] = item
@@ -219,7 +220,10 @@ def create():
 		projectOTUTableName = request.form['projectOTUTableName']
 		projectTaxaMapName = request.form['projectTaxaMapName']
 		projectSampleIDName = request.form['projectSampleIDName']
+		projectSubsampleType = request.form['projectSubsampleType']
+		projectSubsampleTo = request.form['projectSubsampleTo']
 
+		projectName = secure_filename(projectName)
 		projectOTUTableName = secure_filename(projectOTUTableName)
 		projectTaxaMapName = secure_filename(projectTaxaMapName)
 		projectSampleIDName = secure_filename(projectSampleIDName)
@@ -234,8 +238,6 @@ def create():
 		mapFile = os.path.join(tempFolder, 'map.txt')
 		destFolder = os.path.join(userUploadFolder, projectName)
 
-		with open(mapFile, 'w') as outfile:
-			json.dump(dataMap, outfile)
 
 		# Convert from shared file to appropriate file type
 		# otuTablePath = os.path.join(tempFolder, projectOTUTableName)
@@ -251,6 +253,13 @@ def create():
 		# TODO: Clean project name
 		os.rename(tempFolder, destFolder)
 
+		# Perform OTU subsampling
+		subsampleVal = subsampleOTUTable(current_user.id, projectName, projectSubsampleType, projectSubsampleTo)
+		dataMap["subsampleVal"] = subsampleVal
+
+		with open(mapFile, 'w') as outfile:
+			json.dump(dataMap, outfile)
+
 		return redirect(url_for('projects'))
 
 @app.route('/')
@@ -261,6 +270,10 @@ def home():
 		return render_template('index.html')
 
 # ----- Analysis Pages -----
+
+# 
+# Visualization Pages
+# 
 
 @app.route('/abundance_boxplots')
 @flask_login.login_required
@@ -292,6 +305,15 @@ def composition():
 	projectNames = getAllProjects(current_user.id)
 	return render_template('composition.html', projectNames=projectNames)
 
+@app.route('/correlations')
+@flask_login.login_required
+def correlations():
+	# TODO: Consider using only factors in the future for catVars
+	projectNames = getAllProjects(current_user.id)
+	catVars, otuMetadata = analysis.getMetadataHeadersWithMetadata(current_user.id, projectNames[0])
+	numericCatVars = analysis.getNumericMetadata(otuMetadata)
+	return render_template('correlations.html', projectNames=projectNames, catVars=catVars, numericCatVars=numericCatVars)
+
 @app.route('/pca')
 @flask_login.login_required
 def pca():
@@ -304,14 +326,24 @@ def nmds():
 	projectNames = getAllProjects(current_user.id)
 	return render_template('nmds.html', projectNames=projectNames)
 
-@app.route('/correlations')
+@app.route('/rarefaction')
 @flask_login.login_required
-def correlations():
-	# TODO: Consider using only factors in the future for catVars
+def rarefaction():
 	projectNames = getAllProjects(current_user.id)
-	catVars, otuMetadata = analysis.getMetadataHeadersWithMetadata(current_user.id, projectNames[0])
-	numericCatVars = analysis.getNumericMetadata(otuMetadata)
-	return render_template('correlations.html', projectNames=projectNames, catVars=catVars, numericCatVars=numericCatVars)
+	return render_template('rarefaction.html', projectNames=projectNames)
+
+# 
+# Stats Pages
+# 
+
+@app.route('/boruta')
+@flask_login.login_required
+def boruta():
+	projectNames = getAllProjects(current_user.id)
+	# TODO: Use default project name
+	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+
+	return render_template('boruta.html', projectNames=projectNames, catVars=catVars)
 
 @app.route('/fisher_exact')
 @flask_login.login_required
@@ -332,13 +364,27 @@ def enriched_selection():
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
 	return render_template('enriched_selection.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
+@app.route('/glmnet')
+@flask_login.login_required
+def glmnet():
+	projectNames = getAllProjects(current_user.id)
+	# TODO: Use default project name
+	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+
+	return render_template('glmnet.html', projectNames=projectNames, catVars=catVars)
+
 @app.route('/tree')
 @flask_login.login_required
 def tree():
 	projectNames = getAllProjects(current_user.id)
 	return render_template('tree_view.html', projectNames=projectNames)
 
-# ----- Visualization endpoints -----
+
+# ----- REST endpoints -----
+
+# 
+# Visualization endpoints
+# 
 
 @app.route('/taxonomies')
 @flask_login.login_required
@@ -431,6 +477,24 @@ def getTree():
 	abundances = analysis.getTreeGrouping(user, pid, level, taxonomy, catvar, taxonomy_display_level, display_values, exclude_unclassified)
 	return json.dumps(abundances)
 
+@app.route('/rarefaction', methods=['POST'])
+@flask_login.login_required
+def getRarefaction():
+	user = current_user.id
+	pid = request.form['pid']
+	subsamplestep = int(request.form['subsamplestep'])
+
+	userUploadFolder = os.path.join(UPLOAD_FOLDER, user)
+	destFolder = os.path.join(userUploadFolder, pid)
+	destPath = os.path.join(destFolder, "otuTable.shared")
+
+	c = Popen(['mothur'], shell=True, stdin=PIPE)
+	c.communicate(input="rarefaction.single(shared=" + destPath + ", freq=" + str(subsamplestep) + ")\nquit()")
+
+	abundances = analysis.getRarefaction(user, pid)
+	return json.dumps(abundances)
+
+
 @app.route('/alpha_diversity', methods=['POST'])
 @flask_login.login_required
 def getAlphaDiversity():
@@ -505,6 +569,25 @@ def getCorrelations():
 	abundances = analysis_r_visualizations.correlations(user, pid, level, taxonomy, corrvar1, corrvar2, colorvar, sizevar, samplestoshow)
 	return json.dumps(abundances)
 
+# 
+# Stats endpoints
+# 
+
+@app.route('/boruta', methods=['POST'])
+@flask_login.login_required
+def getBoruta():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	catvar = request.form['catvar']
+	keepthreshold = request.form['keepthreshold']
+	pval = request.form['pval']
+	maxruns = request.form['maxruns']
+
+	abundances = analysis_stats.boruta(user, pid, level, catvar, keepthreshold, pval, maxruns)
+	return json.dumps(abundances)
+
 @app.route('/fisher_exact', methods=['POST'])
 @flask_login.login_required
 def getFisherExact():
@@ -538,6 +621,22 @@ def getEnrichedSelection():
 	abundances = analysis_stats.enrichedSelection(user, pid, level, taxonomy, catvar, pwVar1, pwVar2, enrichedthreshold)
 	return json.dumps(abundances)
 
+@app.route('/glmnet', methods=['POST'])
+@flask_login.login_required
+def getGlmnet():
+	user = current_user.id
+
+	pid = request.form['pid']
+	level = request.form['level']
+	catvar = request.form['catvar']
+	keepthreshold = request.form['keepthreshold']
+	alpha = request.form['alpha']
+	family = request.form['family']
+	lambdathreshold = request.form['lambdathreshold']
+	lambdaval = request.form['lambdaval']
+
+	abundances = analysis_stats.glmnet(user, pid, level, catvar, keepthreshold, alpha, family, lambdathreshold, lambdaval)
+	return json.dumps(abundances)
 
 # ----- Data processing endpoints -----
 
@@ -576,6 +675,32 @@ def deleteProject():
 				shutil.rmtree(userProjectFolder)
 				return "OK"
 		return "Error"
+
+@app.route('/changeSubsampling', methods=['POST'])
+@flask_login.login_required
+def changeSubsampling():
+	user = current_user.id
+	pid = request.form['pid']
+	subsampleType = request.form['subsampleType']
+	subsampleTo = request.form['subsampleTo']
+
+	subsampleTo = analysis.subsampleOTUTable(user, pid, subsampleType, subsampleTo)
+
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "data")
+	dir = os.path.join(dir, user)
+	dir = os.path.join(dir, pid)
+	mapPath = os.path.join(dir, 'map.txt')
+
+	item = {}
+	with open(mapPath) as outfile:
+		item = json.load(outfile)
+	item["subsampleVal"] = subsampleTo
+	
+	with open(mapPath, 'w') as outfile:
+		json.dump(item, outfile)
+
+	return json.dumps(subsampleTo)
 
 # ------------------
 # Helpers

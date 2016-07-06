@@ -280,58 +280,67 @@ def home():
 @flask_login.login_required
 def abundance_boxplots():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('abundance_boxplots.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('abundance_boxplots.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/alpha_diversity')
 @flask_login.login_required
 def alpha_diversity():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('alpha_diversity.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('alpha_diversity.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/beta_diversity')
 @flask_login.login_required
 def beta_diversity():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('beta_diversity.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('beta_diversity.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/cluster_gravity')
 @flask_login.login_required
 def cluster_gravity():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('cluster_gravity.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('cluster_gravity.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/composition')
 @flask_login.login_required
 def composition():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('composition.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('composition.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/correlations')
 @flask_login.login_required
 def correlations():
 	# TODO: Consider using only factors in the future for catVars
 	projectNames = getAllProjects(current_user.id)
+	currProject = request.args.get('pid', '')
 	catVars, otuMetadata = analysis.getMetadataHeadersWithMetadata(current_user.id, projectNames[0])
 	numericCatVars = analysis.getNumericMetadata(otuMetadata)
-	return render_template('correlations.html', projectNames=projectNames, catVars=catVars, numericCatVars=numericCatVars)
+	return render_template('correlations.html', projectNames=projectNames, currProject=currProject, catVars=catVars, numericCatVars=numericCatVars)
 
 @app.route('/pca')
 @flask_login.login_required
 def pca():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('pca.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('pca.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/nmds')
 @flask_login.login_required
 def nmds():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('nmds.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('nmds.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/rarefaction')
 @flask_login.login_required
 def rarefaction():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('rarefaction.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('rarefaction.html', projectNames=projectNames, currProject=currProject)
 
 # 
 # Stats Pages
@@ -341,44 +350,49 @@ def rarefaction():
 @flask_login.login_required
 def boruta():
 	projectNames = getAllProjects(current_user.id)
+	currProject = request.args.get('pid', '')
 	# TODO: Use default project name
 	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
 
-	return render_template('boruta.html', projectNames=projectNames, catVars=catVars)
+	return render_template('boruta.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
 
 @app.route('/fisher_exact')
 @flask_login.login_required
 def fisher_exact():
 	projectNames = getAllProjects(current_user.id)
+	currProject = request.args.get('pid', '')
 	# TODO: Use default project name
 	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
 
-	return render_template('fisher_exact.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
+	return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
 @app.route('/enriched_selection')
 @flask_login.login_required
 def enriched_selection():
 	projectNames = getAllProjects(current_user.id)
+	currProject = request.args.get('pid', '')
 	# TODO: Use default project name
 	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
-	return render_template('enriched_selection.html', projectNames=projectNames, catVars=catVars, uniqueCatVals=uniqueCatVals)
+	return render_template('enriched_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
 @app.route('/glmnet')
 @flask_login.login_required
 def glmnet():
 	projectNames = getAllProjects(current_user.id)
+	currProject = request.args.get('pid', '')
 	# TODO: Use default project name
 	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
 
-	return render_template('glmnet.html', projectNames=projectNames, catVars=catVars)
+	return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
 
 @app.route('/tree')
 @flask_login.login_required
 def tree():
 	projectNames = getAllProjects(current_user.id)
-	return render_template('tree_view.html', projectNames=projectNames)
+	currProject = request.args.get('pid', '')
+	return render_template('tree_view.html', projectNames=projectNames, currProject=currProject)
 
 
 # ----- REST endpoints -----

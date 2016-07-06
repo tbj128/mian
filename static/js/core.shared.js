@@ -19,6 +19,35 @@ function hideLoading() {
   $("#loading").hide();
 }
 
+function setExtraNavLinks(attr) {
+  $(".nav-link").each(function() {
+    var currHref = $(this).attr("href");
+    var currHrefArr = currHref.split("?");
+    if (currHrefArr.length > 1) {
+      currHref = currHrefArr[0];
+    }
+    $(this).attr("href", currHref + "?pid=" + attr);
+  });
+}
+
+$(document).ready(function() {
+  var params = decodeURIComponent(window.location.search.substring(1));
+  if (params != undefined && params != "") {
+    var paramsArr = params.split("&");
+    for (var i = 0; i < paramsArr.length; i++) {
+      var param = paramsArr[i];
+      var paramSplit = param.split("=");
+      if (paramSplit.length == 2 && paramSplit[0] === "pid") {
+        setExtraNavLinks(paramSplit[1]);
+      }
+    }
+  }
+
+  $("#project").change(function() {
+    setExtraNavLinks($("#project").val());
+  });
+});
+
 // 
 // Sidebar Shared
 // 

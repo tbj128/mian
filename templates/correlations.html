@@ -19,7 +19,11 @@
       <label class="control-label">Project</label>
       <select id="project" name="project" class="form-control">
         {% for projectName in projectNames %}
-          <option value="{{ projectName }}">{{ projectName }}</option>
+          {% if projectName == currProject %}
+            <option value="{{ projectName }}" selected>{{ projectName }}</option>
+          {% else %}
+            <option value="{{ projectName }}">{{ projectName }}</option>
+          {% endif %}
         {% endfor %}
       </select>
 

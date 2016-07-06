@@ -256,6 +256,7 @@ def create():
 		# Perform OTU subsampling
 		subsampleVal = subsampleOTUTable(current_user.id, projectName, projectSubsampleType, projectSubsampleTo)
 		dataMap["subsampleVal"] = subsampleVal
+		dataMap["subsampleType"] = projectSubsampleType
 
 		with open(mapFile, 'w') as outfile:
 			json.dump(dataMap, outfile)
@@ -477,6 +478,18 @@ def getTree():
 	abundances = analysis.getTreeGrouping(user, pid, level, taxonomy, catvar, taxonomy_display_level, display_values, exclude_unclassified)
 	return json.dumps(abundances)
 
+@app.route('/isSubsampled', methods=['POST'])
+@flask_login.login_required
+def getIsSubsampled():
+	user = current_user.id
+	pid = request.form['pid']
+
+	isSubsampled = analysis.getIsSubsampled(user, pid)
+	if isSubsampled:
+		return json.dumps(1)
+	else:
+		return json.dumps(0)
+
 @app.route('/rarefaction', methods=['POST'])
 @flask_login.login_required
 def getRarefaction():
@@ -486,7 +499,7 @@ def getRarefaction():
 
 	userUploadFolder = os.path.join(UPLOAD_FOLDER, user)
 	destFolder = os.path.join(userUploadFolder, pid)
-	destPath = os.path.join(destFolder, "otuTable.shared")
+	destPath = os.path.join(destFolder, analysis.OTU_TABLE_NAME_PRESUBSAMPLE)
 
 	c = Popen(['mothur'], shell=True, stdin=PIPE)
 	c.communicate(input="rarefaction.single(shared=" + destPath + ", freq=" + str(subsamplestep) + ")\nquit()")
@@ -662,6 +675,78 @@ def upload():
 
 		return "Error"
 
+
+@app.route('/uploadReplace', methods=['POST'])
+@flask_login.login_required
+def uploadReplace():
+	if request.method == 'POST':
+		user = current_user.id
+		file = request.files['upload']
+		pid = request.form['project']
+		fileType = request.form['fileType']
+		if file and allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+
+			userUploadFolder = os.path.join(UPLOAD_FOLDER, current_user.id)
+			uploadFolder = os.path.join(userUploadFolder, pid)
+
+			if fileType == "otuTable":
+				presubsampleFile = os.path.join(uploadFolder, analysis.OTU_TABLE_NAME_PRESUBSAMPLE)
+				otuFile = os.path.join(uploadFolder, analysis.OTU_TABLE_NAME)
+				if os.path.isfile(presubsampleFile):
+					os.remove(presubsampleFile)
+				if os.path.isfile(otuFile):
+					os.remove(otuFile)
+
+				file.save(presubsampleFile)
+
+				subsampleType = request.form['subsampleType']
+				subsampleTo = request.form['subsampleTo']
+				print subsampleTo
+				subsampleTo = analysis.subsampleOTUTable(user, pid, subsampleType, subsampleTo)
+
+				analysis.changeMapSubsampleType(user, pid, subsampleType)
+				analysis.changeMapSubsampleVal(user, pid, subsampleTo)
+
+				analysis.changeMapFilename(user, pid, "otuTable", filename)
+
+				retObj = {}
+				retObj["status"] = "OK"
+				retObj["subsampleType"] = subsampleType
+				retObj["subsampleTo"] = subsampleTo
+				retObj["fn"] = filename
+				return json.dumps(retObj)
+
+			elif fileType == "otuTaxonomyMapping":
+				taxFile = os.path.join(uploadFolder, analysis.TAXONOMY_MAP_NAME)
+				if os.path.isfile(taxFile):
+					os.remove(taxFile)
+
+				file.save(taxFile)
+				analysis.changeMapFilename(user, pid, "otuTaxonomyMapping", filename)
+
+				retObj = {}
+				retObj["status"] = "OK"
+				retObj["fn"] = filename
+				return json.dumps(retObj)
+
+			elif fileType == "otuMetadata":
+				metadataFile = os.path.join(uploadFolder, analysis.METADATA_NAME)
+				if os.path.isfile(metadataFile):
+					os.remove(metadataFile)
+
+				file.save(metadataFile)
+				analysis.changeMapFilename(user, pid, "otuMetadata", filename)
+
+				retObj = {}
+				retObj["status"] = "OK"
+				retObj["fn"] = filename
+				return json.dumps(retObj)
+
+		retObj = {}
+		retObj["status"] = "Error"
+		return retObj
+
 @app.route('/deleteProject', methods=['POST'])
 @flask_login.login_required
 def deleteProject():
@@ -686,19 +771,8 @@ def changeSubsampling():
 
 	subsampleTo = analysis.subsampleOTUTable(user, pid, subsampleType, subsampleTo)
 
-	dir = os.path.dirname(__file__)
-	dir = os.path.join(dir, "data")
-	dir = os.path.join(dir, user)
-	dir = os.path.join(dir, pid)
-	mapPath = os.path.join(dir, 'map.txt')
-
-	item = {}
-	with open(mapPath) as outfile:
-		item = json.load(outfile)
-	item["subsampleVal"] = subsampleTo
-	
-	with open(mapPath, 'w') as outfile:
-		json.dump(item, outfile)
+	analysis.changeMapSubsampleType(user, pid, subsampleType)
+	analysis.changeMapSubsampleVal(user, pid, subsampleTo)
 
 	return json.dumps(subsampleTo)
 

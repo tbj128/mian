@@ -17,13 +17,13 @@ import random
 import string
 import numpy as np
 import shutil
+import json
 from subprocess import Popen, PIPE
 
 # 
 # Global Attributes
 # 
 OTU_TABLE_NAME_PRESUBSAMPLE = "otuTable.presubsample.shared"
-OTU_TABLE_NAME_MOTHUR_SUBSAMPLE = "otuTable.presubsample.subsample.shared"
 OTU_TABLE_NAME = "otuTable.shared"
 TAXONOMY_MAP_NAME = "otuTaxonomyMapping.taxonomy"
 METADATA_NAME = "otuMetadata.tsv"
@@ -72,6 +72,54 @@ def addFileNameAttr(csvName, postfix, attr):
 	csvName = csvName.lower().replace("." + postfix, "")
 	csvName = csvName + "." + attr + "." + postfix
 	return csvName
+
+# ================================
+# Mapping File Processing Helpers
+
+def changeMapSubsampleType(user, pid, subsampleType):
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "data")
+	dir = os.path.join(dir, user)
+	dir = os.path.join(dir, pid)
+	mapPath = os.path.join(dir, 'map.txt')
+
+	item = {}
+	with open(mapPath) as outfile:
+		item = json.load(outfile)
+	item["subsampleType"] = subsampleType
+
+	with open(mapPath, 'w') as outfile:
+		json.dump(item, outfile)
+
+def changeMapSubsampleVal(user, pid, subsampleTo):
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "data")
+	dir = os.path.join(dir, user)
+	dir = os.path.join(dir, pid)
+	mapPath = os.path.join(dir, 'map.txt')
+
+	item = {}
+	with open(mapPath) as outfile:
+		item = json.load(outfile)
+	item["subsampleVal"] = subsampleTo
+
+	with open(mapPath, 'w') as outfile:
+		json.dump(item, outfile)
+
+def changeMapFilename(user, pid, fileType, newFilename):
+	dir = os.path.dirname(__file__)
+	dir = os.path.join(dir, "data")
+	dir = os.path.join(dir, user)
+	dir = os.path.join(dir, pid)
+	mapPath = os.path.join(dir, 'map.txt')
+
+	item = {}
+	with open(mapPath) as outfile:
+		item = json.load(outfile)
+	item[fileType] = newFilename
+
+	with open(mapPath, 'w') as outfile:
+		json.dump(item, outfile)
 
 # ================================
 # OTU Table Processing Helpers
@@ -227,7 +275,7 @@ def subsampleOTUTable(userID, projectID, projectSubsampleType, projectSubsampleT
 			total = 0
 			j = OTU_START_COL
 			while j < len(base[i]):
-				total += float(base[i][j])
+				total += int(base[i][j])
 				j += 1
 			if total > lowestSequences:
 				lowestSequences = total
@@ -914,6 +962,23 @@ def treeFormatterHelper(fTreeArr, treeObj, level, taxonomyDisplayLevel, displayV
 			treeFormatterHelper(newChildObj, child, level + 1, taxonomyDisplayLevel, displayValues)
 		fTreeArr["children"].append(newChildObj)
 
+def getIsSubsampled(userID, projectID):
+	base = csvToTable(userID, projectID, OTU_TABLE_NAME_PRESUBSAMPLE)
+	isSubsampled = True
+	lastTotal = -1
+	i = 1
+	while i < len(base):
+		total = 0
+		j = OTU_START_COL
+		while j < len(base[i]):
+			total += float(base[i][j])
+			j += 1
+		if lastTotal > -1 and lastTotal != total:
+			isSubsampled = False
+			break
+		lastTotal = total
+		i += 1 
+	return isSubsampled
 
 def getRarefaction(userID, projectID):
 	rarefactionBase = csvToTable(userID, projectID, "otuTable.groups.rarefaction")

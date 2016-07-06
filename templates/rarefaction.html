@@ -24,7 +24,19 @@
     {% include 'navigation.html' %}
 
     <div id="editor" class="editor">
-      <h3>Rarefaction</h3>
+      <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Rarefaction</h3>
+      
+      <div class="alert alert-info" role="alert">
+        <b>Note</b><br />
+        <ul>
+          <li>This tool may take longer than usual.</li>
+          <li>This tool operates on the original OTU table (before sub-sampling was applied).</li>
+        </ul>
+      </div>
+
+      <div id="already-subsampled" class="alert alert-warning" role="alert" style="display:none;">
+        <b>Warning</b>&nbsp;&nbsp;The originally uploaded OTU table may have already been sub-sampled.
+      </div>
 
       <label class="control-label">Project</label>
       <select id="project" name="project" class="form-control">
@@ -34,18 +46,6 @@
       </select>
 
       <hr />
-
-<!--       <label class="control-label">Taxonomic Level</label>
-      <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-        <option value="Kingdom">Kingdom</option>
-        <option value="Phylum">Phylum</option>
-        <option value="Class">Class</option>
-        <option value="Order">Order</option>
-        <option value="Family">Family</option>
-        <option value="Genus">Genus</option>
-        <option value="Species">Species</option>
-        <option value="OTU">OTU</option>
-      </select> -->
 
       <label class="control-label">Max Subsample</label>
       <input class="form-control" id="maxsubsample" name="maxsubsample" type="number" value="10000" />

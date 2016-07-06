@@ -3,12 +3,22 @@ $(document).ready(function() {
 
   // Initialization
 
+  checkSubsampleWarning();
   updateAnalysis();
 
   createListeners();
 
   function createListeners() {
     $("#project").change(function() {
+      checkSubsampleWarning();
+      updateAnalysis();
+    });
+
+    $("#maxsubsample").change(function() {
+      updateAnalysis();
+    });
+
+    $("#subsamplestep").change(function() {
       updateAnalysis();
     });
   }
@@ -116,30 +126,26 @@ $(document).ready(function() {
           });
 
     });
+  }
 
-    // if ($("#colorvar").val() != "" && $("#colorvar").val() != "None") {
-    //   // draw legend
-    //   var legend = svg.selectAll(".legend")
-    //       .data(color.domain())
-    //     .enter().append("g")
-    //       .attr("class", "legend")
-    //       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+  function checkSubsampleWarning() {
+    var data = {
+      "pid": $("#project").val()
+    };
 
-    //   // draw legend colored rectangles
-    //   legend.append("rect")
-    //       .attr("x", width - 18)
-    //       .attr("width", 18)
-    //       .attr("height", 18)
-    //       .style("fill", color);
-
-    //   // draw legend text
-    //   legend.append("text")
-    //       .attr("x", width - 24)
-    //       .attr("y", 9)
-    //       .attr("dy", ".35em")
-    //       .style("text-anchor", "end")
-    //       .text(function(d) { return d;})
-    // }
+    $.ajax({
+      type: "POST",
+      url: "isSubsampled",
+      data: data,
+      success: function(result) {
+        if (result == 1) {
+          $("#already-subsampled").show();
+        }
+      },
+      error: function(err) {
+        console.log(err)
+      }
+    });
   }
 
   function updateAnalysis() {

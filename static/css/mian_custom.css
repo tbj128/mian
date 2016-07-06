@@ -288,3 +288,19 @@ circle:hover {
     cursor: inherit;
     display: block;
 }
+
+.project-btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width:80px;
+    cursor: pointer;
+    min-height: 100%;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}

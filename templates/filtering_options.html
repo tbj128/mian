@@ -1,0 +1,32 @@
+
+      <h4>Data Filtering</h4>
+
+      <label class="control-label">OTU Filtering (By Taxonomy Level)</label>
+      <select id="filter-otu" name="filter-otu" class="form-control pad-bottom">
+        <option value="none">Don't Filter</option>
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum">Phylum</option>
+        <option value="Class">Class</option>
+        <option value="Order">Order</option>
+        <option value="Family">Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU">OTU</option>
+      </select>
+
+      <div id="filter-otu-wrapper" style="display:none;">
+        <select style="display:none;" id="taxonomy-specific" name="taxonomy-specific" class="form-control pad-bottom" multiple="multiple">
+        </select>
+      </div>
+
+
+      <label class="control-label">Sample Filtering (By Metadata)</label>
+      <select id="filter-sample" name="filter-sample" class="form-control pad-bottom">
+        <option value="none">Don't Filter</option>
+        <option value="mian-sample-id">Sample ID</option>
+      </select>
+      
+      <div id="filter-sample-wrapper" style="display:none;">
+        <select style="display:none;" id="filter-sample-specific" name="filter-sample-specific" class="form-control pad-bottom" multiple="multiple">
+        </select>
+      </div>

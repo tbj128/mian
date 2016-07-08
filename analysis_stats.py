@@ -141,10 +141,14 @@ run_glmnet <- function(base, groups, keepthreshold, alphaVal, familyType, lambda
 rStats = SignatureTranslatedAnonymousPackage(rcode, "rStats")
 
 
-def boruta(userID, projectID, level, catvar, keepthreshold, pval, maxruns):
+def boruta(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, keepthreshold, pval, maxruns):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
@@ -185,19 +189,19 @@ def boruta(userID, projectID, level, catvar, keepthreshold, pval, maxruns):
 	return abundancesObj
 
 
-def fisherExact(userID, projectID, level, itemsOfInterest, catvar, minthreshold, keepthreshold, catVar1, catVar2):
-	if itemsOfInterest is None or itemsOfInterest == "":
-		return []
-
+def fisherExact(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, minthreshold, keepthreshold, catVar1, catVar2):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
-	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, itemsOfInterest, level)
 
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];
@@ -242,10 +246,7 @@ def fisherExact(userID, projectID, level, itemsOfInterest, catvar, minthreshold,
 	return abundancesObj
 
 
-def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1, catVar2, percentAbundanceThreshold):
-	if itemsOfInterest is None or itemsOfInterest == "":
-		return []
-
+def enrichedSelection(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, catVar1, catVar2, percentAbundanceThreshold):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
@@ -253,7 +254,9 @@ def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 
-	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, itemsOfInterest, level)
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
 
 	otuTablePercentAbundance = convertToPercentAbundance(otuTable, float(percentAbundanceThreshold))
 	otuTableCat1, otuTableCat2 = separateIntoGroups(otuTablePercentAbundance, otuMetadata, catvar, catVar1, catVar2)
@@ -293,10 +296,14 @@ def enrichedSelection(userID, projectID, level, itemsOfInterest, catvar, catVar1
 	return abundancesObj
 
 
-def glmnet(userID, projectID, level, catvar, keepthreshold, alphaVal, family, lambda_threshold_type, lambda_val):
+def glmnet(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, keepthreshold, alphaVal, family, lambda_threshold_type, lambda_val):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)

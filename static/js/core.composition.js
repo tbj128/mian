@@ -45,16 +45,23 @@ $(document).ready(function() {
   function updateAnalysis() {
     showLoading();
     $("#stats-container").fadeIn(250);
+
     var level = taxonomyLevels[getTaxonomicLevel()];
-    var taxonomy = $("#taxonomy-specific").val();
-    if (taxonomy == null) {
-      taxonomy = []
-    }
+
+    var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterVals = getSelectedTaxFilterVals();
+
+    var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
 
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterVals": taxonomyFilterVals,
+      "sampleFilter": sampleFilter,
+      "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar
     };

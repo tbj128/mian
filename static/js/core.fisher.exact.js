@@ -113,11 +113,14 @@ $(document).ready(function() {
 
   function updateAnalysis() {
     showLoading();
+    
     var level = taxonomyLevels[getTaxonomicLevel()];
-    var taxonomy = $("#taxonomy-specific").val();
-    if (taxonomy == null) {
-      taxonomy = []
-    }
+
+    var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterVals = getSelectedTaxFilterVals();
+
+    var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
     var minthreshold = $("#minthreshold").val();
@@ -127,9 +130,11 @@ $(document).ready(function() {
 
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterVals": taxonomyFilterVals,
+      "sampleFilter": sampleFilter,
+      "sampleFilterVals": sampleFilterVals,
       "level": level,
-      // "taxonomy": taxonomy.join(","),
-      "taxonomy": "All", // TODO: FIX
       "catvar": catvar,
       "minthreshold": minthreshold,
       "keepthreshold": keepthreshold,

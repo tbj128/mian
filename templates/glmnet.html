@@ -24,6 +24,12 @@
 
       <hr />
 
+      {% include 'filtering_options.html' %}
+
+      <hr />
+
+      <h4>Analysis Parameters</h4>
+
       <label class="control-label">Taxonomic Level</label>
       <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
         <option value="Kingdom">Kingdom</option>
@@ -33,10 +39,8 @@
         <option value="Family">Family</option>
         <option value="Genus">Genus</option>
         <option value="Species">Species</option>
-        <option value="OTU">OTU</option>
+        <option value="OTU" selected>OTU</option>
       </select>
-
-      <hr />
 
       <label class="control-label">Categorical Variable</label>
       <select id="catvar" name="catvar" class="form-control">

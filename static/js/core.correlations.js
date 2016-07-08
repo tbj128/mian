@@ -167,11 +167,14 @@ $(document).ready(function() {
 
   function updateAnalysis() {
     showLoading();
+    
     var level = taxonomyLevels[getTaxonomicLevel()];
-    var taxonomy = $("#taxonomy-specific").val();
-    if (taxonomy == null) {
-      taxonomy = []
-    }
+
+    var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterVals = getSelectedTaxFilterVals();
+
+    var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterVals = getSelectedSampleFilterVals();
 
     var corrvar1 = $("#corrvar1").val();
     var corrvar2 = $("#corrvar2").val();
@@ -181,8 +184,11 @@ $(document).ready(function() {
 
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterVals": taxonomyFilterVals,
+      "sampleFilter": sampleFilter,
+      "sampleFilterVals": sampleFilterVals,
       "level": level,
-      "taxonomy": taxonomy.join(","),
       "corrvar1": corrvar1,
       "corrvar2": corrvar2,
       "colorvar": colorvar,

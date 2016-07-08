@@ -85,14 +85,15 @@ plot_NMDS <- function(example_NMDS, groups, colors) {
 
 rViz = SignatureTranslatedAnonymousPackage(rcode, "rViz")
 
-def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, colorvar, sizevar, samplestoshow):
-	if itemsOfInterest is None or itemsOfInterest == "":
-		return {}
-
+def correlations(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, corrvar1, corrvar2, colorvar, sizevar, samplestoshow):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
-	relevantOTUs = analysis.getRelevantOTUs(taxonomyMap, level, itemsOfInterest)
+
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+
+	relevantOTUs = analysis.getRelevantOTUs(taxonomyMap, taxonomyFilter, taxonomyFilterVals)
 	relevantCols = analysis.getRelevantCols(otuTable, relevantOTUs)
 
 	sampleIDToMetadataRow = {}
@@ -183,9 +184,15 @@ def correlations(userID, projectID, level, itemsOfInterest, corrvar1, corrvar2, 
 	abundancesObj["pval"] = pval
 	return abundancesObj
 
-def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
+def pca(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, pca1, pca2):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
+	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
+
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 
@@ -249,9 +256,15 @@ def pca(userID, projectID, level, itemsOfInterest, catvar, pca1, pca2):
 	return abundancesObj
 
 
-def nmds(userID, projectID, level, itemsOfInterest, catvar):
+def nmds(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
+	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+	
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
+
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	groups = robjects.FactorVector(robjects.StrVector(metaVals))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)

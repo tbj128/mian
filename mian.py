@@ -398,8 +398,19 @@ def tree():
 # ----- REST endpoints -----
 
 # 
-# Visualization endpoints
+# Sidebar endpoints 
 # 
+
+@app.route('/samples')
+@flask_login.login_required
+def getSamples():
+	user = current_user.id
+	pid = request.args.get('pid', '')
+	if pid == '':
+		return json.dumps({})
+
+	abundances = analysis.getMetadataSamples(user, pid)
+	return json.dumps(abundances)
 
 @app.route('/taxonomies')
 @flask_login.login_required
@@ -435,17 +446,23 @@ def getMetadataVals():
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, pid, catvar)
 	return json.dumps(uniqueCatVals)
 
+# 
+# Visualization endpoints 
+# 
+
 @app.route('/abundances', methods=['POST'])
 @flask_login.login_required
 def getAbundances():
 	user = current_user.id
 
 	pid = request.form['pid']
-	level = request.form['level']
-	taxonomy = request.form['taxonomy']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	catvar = request.form['catvar']
 
-	abundances = analysis.getAbundanceForOTUs(user, pid, level, taxonomy, catvar)
+	abundances = analysis.getAbundanceForOTUs(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar)
 	return json.dumps(abundances)
 
 @app.route('/abundances_grouping', methods=['POST'])
@@ -454,14 +471,16 @@ def getAbundancesGrouping():
 	user = current_user.id
 
 	pid = request.form['pid']
-	level = request.form['level']
-	taxonomy = request.form['taxonomy']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	catvar = request.form['catvar']
 
 	taxonomyGroupingGeneral = request.form['taxonomy_group_general']
 	taxonomyGroupingSpecific = request.form['taxonomy_group_specific']
 
-	abundances = analysis.getAbundanceForOTUsByGrouping(user, pid, level, taxonomy, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific)
+	abundances = analysis.getAbundanceForOTUsByGrouping(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific)
 	return json.dumps(abundances)
 
 @app.route('/composition', methods=['POST'])
@@ -470,10 +489,14 @@ def getComposition():
 	user = current_user.id
 
 	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	level = request.form['level']
 	catvar = request.form['catvar']
 
-	abundances = analysis.getCompositionAnalysis(user, pid, level, catvar)
+	abundances = analysis.getCompositionAnalysis(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar)
 	return json.dumps(abundances)
 
 @app.route('/tree', methods=['POST'])
@@ -482,14 +505,16 @@ def getTree():
 	user = current_user.id
 
 	pid = request.form['pid']
-	level = request.form['level']
-	taxonomy = request.form['taxonomy']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	catvar = request.form['catvar']
 	taxonomy_display_level = request.form['taxonomy_display_level']
 	display_values = request.form['display_values']
 	exclude_unclassified = request.form['exclude_unclassified']
 
-	abundances = analysis.getTreeGrouping(user, pid, level, taxonomy, catvar, taxonomy_display_level, display_values, exclude_unclassified)
+	abundances = analysis.getTreeGrouping(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, taxonomy_display_level, display_values, exclude_unclassified)
 	return json.dumps(abundances)
 
 @app.route('/isSubsampled', methods=['POST'])
@@ -522,48 +547,22 @@ def getRarefaction():
 	return json.dumps(abundances)
 
 
-@app.route('/alpha_diversity', methods=['POST'])
-@flask_login.login_required
-def getAlphaDiversity():
-	user = current_user.id
-
-	pid = request.form['pid']
-	level = request.form['level']
-	taxonomy = request.form['taxonomy']
-	catvar = request.form['catvar']
-	alphaType = request.form['alphaType']
-	alphaContext = request.form['alphaContext']
-
-	abundances = analysis_diversity.alphaDiversity(user, pid, level, taxonomy, catvar, alphaType, alphaContext)
-	return json.dumps(abundances)
-
-@app.route('/beta_diversity', methods=['POST'])
-@flask_login.login_required
-def getBetaDiversity():
-	user = current_user.id
-
-	pid = request.form['pid']
-	level = request.form['level']
-	taxonomy = request.form['taxonomy']
-	catvar = request.form['catvar']
-	betaType = request.form['betaType']
-
-	abundances = analysis_diversity.betaDiversity(user, pid, level, taxonomy, catvar, betaType)
-	return json.dumps(abundances)
-
 @app.route('/pca', methods=['POST'])
 @flask_login.login_required
 def getPCA():
 	user = current_user.id
 
 	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	level = request.form['level']
-	taxonomy = request.form['taxonomy']
 	catvar = request.form['catvar']
 	pca1 = request.form['pca1']
 	pca2 = request.form['pca2']
 
-	abundances = analysis_r_visualizations.pca(user, pid, level, taxonomy, catvar, pca1, pca2)
+	abundances = analysis_r_visualizations.pca(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, pca1, pca2)
 	return json.dumps(abundances)
 
 @app.route('/nmds', methods=['POST'])
@@ -572,11 +571,14 @@ def getNMDS():
 	user = current_user.id
 
 	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	level = request.form['level']
-	taxonomy = request.form['taxonomy']
 	catvar = request.form['catvar']
 
-	abundances = analysis_r_visualizations.nmds(user, pid, level, taxonomy, catvar)
+	abundances = analysis_r_visualizations.nmds(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar)
 	return json.dumps(abundances)
 
 @app.route('/correlations', methods=['POST'])
@@ -585,15 +587,58 @@ def getCorrelations():
 	user = current_user.id
 
 	pid = request.form['pid']
-	level = request.form['level']
-	taxonomy = request.form['taxonomy']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	corrvar1 = request.form['corrvar1']
 	corrvar2 = request.form['corrvar2']
 	colorvar = request.form['colorvar']
 	sizevar = request.form['sizevar']
 	samplestoshow = request.form['samplestoshow']
 
-	abundances = analysis_r_visualizations.correlations(user, pid, level, taxonomy, corrvar1, corrvar2, colorvar, sizevar, samplestoshow)
+	abundances = analysis_r_visualizations.correlations(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, corrvar1, corrvar2, colorvar, sizevar, samplestoshow)
+	return json.dumps(abundances)
+
+
+
+# 
+# Alpha Diversity endpoints
+# 
+
+@app.route('/alpha_diversity', methods=['POST'])
+@flask_login.login_required
+def getAlphaDiversity():
+	user = current_user.id
+
+	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
+	level = request.form['level']
+	catvar = request.form['catvar']
+	alphaType = request.form['alphaType']
+	alphaContext = request.form['alphaContext']
+
+	abundances = analysis_diversity.alphaDiversity(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, alphaType, alphaContext)
+	return json.dumps(abundances)
+
+@app.route('/beta_diversity', methods=['POST'])
+@flask_login.login_required
+def getBetaDiversity():
+	user = current_user.id
+
+	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
+	level = request.form['level']
+	catvar = request.form['catvar']
+	betaType = request.form['betaType']
+
+	abundances = analysis_diversity.betaDiversity(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, betaType)
 	return json.dumps(abundances)
 
 # 
@@ -606,13 +651,17 @@ def getBoruta():
 	user = current_user.id
 
 	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	level = request.form['level']
 	catvar = request.form['catvar']
 	keepthreshold = request.form['keepthreshold']
 	pval = request.form['pval']
 	maxruns = request.form['maxruns']
 
-	abundances = analysis_stats.boruta(user, pid, level, catvar, keepthreshold, pval, maxruns)
+	abundances = analysis_stats.boruta(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, keepthreshold, pval, maxruns)
 	return json.dumps(abundances)
 
 @app.route('/fisher_exact', methods=['POST'])
@@ -621,15 +670,18 @@ def getFisherExact():
 	user = current_user.id
 
 	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	level = request.form['level']
-	taxonomy = request.form['taxonomy']
 	catvar = request.form['catvar']
 	minthreshold = request.form['minthreshold']
 	keepthreshold = request.form['keepthreshold']
 	pwVar1 = request.form['pwVar1']
 	pwVar2 = request.form['pwVar2']
 
-	abundances = analysis_stats.fisherExact(user, pid, level, taxonomy, catvar, minthreshold, keepthreshold, pwVar1, pwVar2)
+	abundances = analysis_stats.fisherExact(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, minthreshold, keepthreshold, pwVar1, pwVar2)
 	return json.dumps(abundances)
 
 @app.route('/enriched_selection', methods=['POST'])
@@ -638,14 +690,17 @@ def getEnrichedSelection():
 	user = current_user.id
 
 	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	level = request.form['level']
-	taxonomy = request.form['taxonomy']
 	catvar = request.form['catvar']
 	enrichedthreshold = request.form['enrichedthreshold']
 	pwVar1 = request.form['pwVar1']
 	pwVar2 = request.form['pwVar2']
 
-	abundances = analysis_stats.enrichedSelection(user, pid, level, taxonomy, catvar, pwVar1, pwVar2, enrichedthreshold)
+	abundances = analysis_stats.enrichedSelection(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, pwVar1, pwVar2, enrichedthreshold)
 	return json.dumps(abundances)
 
 @app.route('/glmnet', methods=['POST'])
@@ -654,6 +709,10 @@ def getGlmnet():
 	user = current_user.id
 
 	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
 	level = request.form['level']
 	catvar = request.form['catvar']
 	keepthreshold = request.form['keepthreshold']
@@ -662,7 +721,7 @@ def getGlmnet():
 	lambdathreshold = request.form['lambdathreshold']
 	lambdaval = request.form['lambdaval']
 
-	abundances = analysis_stats.glmnet(user, pid, level, catvar, keepthreshold, alpha, family, lambdathreshold, lambdaval)
+	abundances = analysis_stats.glmnet(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, keepthreshold, alpha, family, lambdathreshold, lambdaval)
 	return json.dumps(abundances)
 
 # ----- Data processing endpoints -----

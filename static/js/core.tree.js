@@ -43,11 +43,12 @@ $(document).ready(function() {
 
   function updateAnalysis(abundancesObj) {
     showLoading();
-    var level = taxonomyLevels[getTaxonomicLevel()];
-    var taxonomy = $("#taxonomy-specific").val();
-    if (taxonomy == null) {
-      taxonomy = []
-    }
+
+    var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterVals = getSelectedTaxFilterVals();
+
+    var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
     var taxonomy_display_level = $("#taxonomy_display_level").val();
@@ -56,8 +57,10 @@ $(document).ready(function() {
 
     var data = {
       "pid": $("#project").val(),
-      "level": level,
-      "taxonomy": taxonomy.join(","),
+      "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterVals": taxonomyFilterVals,
+      "sampleFilter": sampleFilter,
+      "sampleFilterVals": sampleFilterVals,
       "catvar": catvar,
       "taxonomy_display_level": taxonomyLevels[taxonomy_display_level],
       "display_values": display_values,

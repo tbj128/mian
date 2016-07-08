@@ -14,7 +14,7 @@
     {% include 'navigation.html' %}
 
     <div id="editor" class="editor">
-      <h3>Correlations</h3>
+      <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations</h3>
 
       <label class="control-label">Project</label>
       <select id="project" name="project" class="form-control">
@@ -29,22 +29,11 @@
 
       <hr />
 
-      <label class="control-label">Taxonomic Level</label>
-      <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-        <option value="Kingdom">Kingdom</option>
-        <option value="Phylum">Phylum</option>
-        <option value="Class">Class</option>
-        <option value="Order">Order</option>
-        <option value="Family">Family</option>
-        <option value="Genus">Genus</option>
-        <option value="Species">Species</option>
-        <option value="OTU">OTU</option>
-      </select>
-
-      <select style="display:none;" id="taxonomy-specific" name="taxonomy-specific" class="form-control pad-bottom" multiple="multiple">
-      </select>
+      {% include 'filtering_options.html' %}
 
       <hr />
+
+      <h4>Visualization Parameters</h4>
 
       <label class="control-label">Correlation Variable 1</label>
       <select id="corrvar1" name="corrvar1" class="form-control">

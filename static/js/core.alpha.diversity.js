@@ -1,26 +1,34 @@
 $(document).ready(function() {
   // Initialization
-  updateTaxonomicLevel(true, function() {
+
+  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
     updateAnalysis();
   });
-  updateCatVar();
+
   createListeners();
 
   function createListeners() {
     $("#project").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-      updateCatVar();
-    });
-    
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false, function() {
+      $.when(updateTaxonomicLevel(false, function() {}), updateCatVar()).done(function(a1, a2) {
         updateAnalysis();
       });
     });
 
-    $("#taxonomy-specific").change(function () {
+    $("#filter-sample").change(function() {
+      var filterVal = $("#filter-sample").val();
+      if (filterVal === "none" || filterVal === "mian-sample-id") {
+        updateAnalysis();
+      }
+    });
+
+    $("#filter-otu").change(function() {
+      var filterVal = $("#filter-otu").val();
+      if (filterVal === "none") {
+        updateAnalysis();
+      }
+    });
+
+    $("#taxonomy").change(function () {
       updateAnalysis();
     });
 
@@ -41,10 +49,12 @@ $(document).ready(function() {
   function updateAnalysis() {
     showLoading();
     var level = taxonomyLevels[getTaxonomicLevel()];
-    var taxonomy = $("#taxonomy-specific").val();
-    if (taxonomy == null) {
-      taxonomy = []
-    }
+
+    var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterVals = getSelectedTaxFilterVals();
+
+    var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
     var alphaType = $("#alphaType").val();
@@ -52,8 +62,11 @@ $(document).ready(function() {
 
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterVals": taxonomyFilterVals,
+      "sampleFilter": sampleFilter,
+      "sampleFilterVals": sampleFilterVals,
       "level": level,
-      "taxonomy": taxonomy.join(","),
       "catvar": catvar,
       "alphaType": alphaType,
       "alphaContext": alphaContext

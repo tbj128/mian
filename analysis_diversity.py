@@ -104,10 +104,7 @@ betaDiversityDisper <- function(allOTUs, groups, method) {
 
 veganR = SignatureTranslatedAnonymousPackage(rcode, "veganR")
 
-def alphaDiversity(userID, projectID, level, itemsOfInterest, catvar, alphaType, alphaContext):
-	if itemsOfInterest is None or itemsOfInterest == "":
-		return []
-		
+def alphaDiversity(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, alphaType, alphaContext):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
@@ -115,7 +112,9 @@ def alphaDiversity(userID, projectID, level, itemsOfInterest, catvar, alphaType,
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
 
-	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
 
 
 	# Forms an OTU only table (without IDs)
@@ -163,13 +162,14 @@ def alphaDiversity(userID, projectID, level, itemsOfInterest, catvar, alphaType,
 	return abundancesObj
 
 
-def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
-	if itemsOfInterest is None or itemsOfInterest == "":
-		return []
-
+def betaDiversity(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, betaType):
 	otuTable = analysis.csvToTable(userID, projectID, analysis.OTU_TABLE_NAME)
 	otuMetadata = analysis.csvToTable(userID, projectID, analysis.METADATA_NAME)
 	taxonomyMap = analysis.getTaxonomyMapping(userID, projectID)
+
+	otuTable = analysis.filterOTUTableByMetadata(otuTable, otuMetadata, sampleFilter, sampleFilterVals)
+	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	otuTable = analysis.getOTUTableAtLevelIntegrated(otuTable, taxonomyMap, "All", level)
 
 	metaVals = analysis.getMetadataInOTUTableOrder(otuTable, otuMetadata, analysis.getCatCol(otuMetadata, catvar))
 	metaIDs = analysis.mapIDToMetadata(otuMetadata, 1)
@@ -184,9 +184,6 @@ def betaDiversity(userID, projectID, level, itemsOfInterest, catvar, betaType):
 	# 
 	# TODO: FIX
 	# =====================================================================
-
-
-	otuTable = analysis.getOTUTableAtLevel(otuTable, taxonomyMap, itemsOfInterest, level)
 
 	# Forms an OTU only table (without IDs)
 	allOTUs = [];

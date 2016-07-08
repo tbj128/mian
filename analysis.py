@@ -124,15 +124,64 @@ def changeMapFilename(user, pid, fileType, newFilename):
 # ================================
 # OTU Table Processing Helpers
 
+def filterOTUTableByMetadata(base, metadata, catvar, values):	
+	if values is None or values == "":
+		values = []
+
+	if catvar == "none" or catvar == "":
+		return base
+
+	metaCol = getCatCol(metadata, catvar)
+	metadataMap = mapIDToMetadata(metadata, metaCol)
+
+	samples = {}
+
+	metaVals = []
+	row = 1
+	while row < len(base):
+		sampleID = base[row][OTU_GROUP_ID_COL]
+		if sampleID in metadataMap:
+			if metadataMap[sampleID] in values:
+				samples[sampleID] = 1
+		row += 1
+
+	return filterOTUBySamples(base, samples)
+
+def filterOTUBySamples(base, samples):	
+	if samples is None or samples == "":
+		samples = []
+
+	newOTUTable = []
+
+	i = 0
+	while i < len(base):
+		if i == 0:
+			newOTUTable.append(base[i])
+		else:
+			sampleID = base[i][OTU_GROUP_ID_COL]
+			if sampleID in samples:
+				newOTUTable.append(base[i])
+		i += 1
+
+	return newOTUTable
+
 def getOTUTableAtLevel(base, taxonomyMap, itemsOfInterest, level):
+	if itemsOfInterest is None or itemsOfInterest == "":
+		itemsOfInterest = []
+
+	if itemsOfInterest == "mian-select-all":
+		level = -2
+
 	otus = {}
 	for otu, classification in taxonomyMap.iteritems():
 		if int(level) >= 0 and int(level) < len(classification):
 			if classification[int(level)] in itemsOfInterest:
 				otus[otu] = 1
-		else:
+		elif int(level) == -1:
 			if otu in itemsOfInterest:
 				otus[otu] = 1
+		else:
+			otus[otu] = 1
 
 	newOTUTable = []
 	relevantCols = {}
@@ -174,7 +223,7 @@ def getOTUTableAtLevelIntegrated(base, taxonomyMap, itemsOfInterest, level):
 	otuToTaxaSpecific = {}
 	for otu, classification in taxonomyMap.iteritems():
 		if int(level) >= 0 and int(level) < len(classification):
-			if itemsOfInterest == "All" or classification[int(level)] in itemsOfInterest:
+			if itemsOfInterest == "All" or itemsOfInterest == "mian-select-all" or classification[int(level)] in itemsOfInterest:
 				otus[otu] = 1
 				otuToTaxaSpecific[otu] = classification[int(level)]
 
@@ -184,7 +233,7 @@ def getOTUTableAtLevelIntegrated(base, taxonomyMap, itemsOfInterest, level):
 					taxaSpecificToOTU[classification[int(level)]].append(otu)
 		else:
 			# OTU level
-			if itemsOfInterest == "All" or otu in itemsOfInterest:
+			if int(level) == -2 or itemsOfInterest == "All" or itemsOfInterest == "mian-select-all" or otu in itemsOfInterest:
 				otus[otu] = 1
 				otuToTaxaSpecific[otu] = otu
 
@@ -395,9 +444,12 @@ def getRelevantOTUs(taxonomyMap, level, itemsOfInterest):
 		if int(level) >= 0 and int(level) < len(classification):
 			if classification[int(level)] in itemsOfInterest:
 				otus[otu] = 1
-		else:
+		elif int(level) == -1:
 			if otu in itemsOfInterest:
 				otus[otu] = 1
+		else:
+			otus[otu] = 1
+
 	return otus
 
 def getRelevantCols(otuTable, relevantOTUs):
@@ -410,6 +462,18 @@ def getRelevantCols(otuTable, relevantOTUs):
 	return cols
 
 # ================================
+
+def getMetadataSamples(userID, projectID):
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
+	samples = [];
+	samplesUnique = {}
+	i = 1
+	while i < len(metadata):
+		if metadata[i][0] not in samplesUnique:
+			samplesUnique[metadata[i][0]] = 1
+			samples.append(metadata[i][0])
+		i += 1
+	return samples
 
 def getMetadataHeaders(userID, projectID):
 	metadata = csvToTable(userID, projectID, METADATA_NAME)
@@ -449,6 +513,7 @@ def getMetadataUniqueVals(userID, projectID, catvar):
 	uniqueVals = []
 	otuMetadata = csvToTable(userID, projectID, METADATA_NAME)
 	catvarCol = getCatCol(otuMetadata, catvar)
+
 	i = 1
 	while i < len(otuMetadata):
 		if otuMetadata[i][catvarCol] not in uniqueVals:
@@ -476,6 +541,9 @@ def getMetadataInOTUTableOrder(otuTable, otuMetadata, metaCol):
 	return metaVals
 
 def getCatCol(otuMetadata, catvar):
+	if catvar == "mian-sample-id":
+		return 0
+
 	catCol = 1
 	j = 0
 	while j < len(otuMetadata[0]):
@@ -497,17 +565,18 @@ def getUniqueMetadataCatVals(otuMetadata, metaCol):
 
 # ================================
 
-def getAbundanceForOTUs(userID, projectID, level, itemsOfInterest, catvar):
-	if itemsOfInterest is None:
-		return {}
-
+def getAbundanceForOTUs(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar):
 	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
 	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
 
+	base = filterOTUTableByMetadata(base, metadata, sampleFilter, sampleFilterVals)
+	# base = getOTUTableAtLevel(base, taxonomyMap, itemsOfInterest, level)
+	
 	statsAbundances = {}
 	abundances = {}
 	metadataMap = {}
+
 	catCol = 1
 	i = 0
 	while i < len(metadata):
@@ -526,12 +595,15 @@ def getAbundanceForOTUs(userID, projectID, level, itemsOfInterest, catvar):
 
 	otus = {}
 	for otu, classification in taxonomyMap.iteritems():
-		if int(level) >= 0 and int(level) < len(classification):
-			if classification[int(level)] in itemsOfInterest:
+		if int(taxonomyFilter) >= 0 and int(taxonomyFilter) < len(classification):
+			if classification[int(taxonomyFilter)] in taxonomyFilterVals:
+				otus[otu] = 1
+		elif int(taxonomyFilter) == -1:
+			if otu in tax:
 				otus[otu] = 1
 		else:
-			if otu in itemsOfInterest:
-				otus[otu] = 1
+			otus[otu] = 1
+
 
 	relevantCols = []
 	i = 0
@@ -564,19 +636,22 @@ def getAbundanceForOTUs(userID, projectID, level, itemsOfInterest, catvar):
 
 	# Calculate the statistical p-value
 	statistics = getTtest(statsAbundances)
+	print statsAbundances
 
 	abundancesObj = {}
 	abundancesObj["abundances"] = abundances
 	abundancesObj["stats"] = statistics
 	return abundancesObj
 
-def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific):
-	if itemsOfInterest is None or itemsOfInterest == "" or int(taxonomyGroupingGeneral) >= int(taxonomyGroupingSpecific):
+def getAbundanceForOTUsByGrouping(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific):
+	if taxonomyFilterVals is None or taxonomyFilterVals == "" or int(taxonomyGroupingGeneral) >= int(taxonomyGroupingSpecific):
 		return {}
 
 	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
 	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
+
+	base = filterOTUTableByMetadata(base, metadata, sampleFilter, sampleFilterVals)
 
 	# Get map of specific tax grouping to general tax grouping
 	otus = {}
@@ -589,7 +664,7 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 			specificTaxa = classification[int(taxonomyGroupingSpecific)]
 			generalTaxa = classification[int(taxonomyGroupingGeneral)]
 
-			if specificTaxa not in itemsOfInterest:
+			if specificTaxa not in taxonomyFilterVals:
 				taxGroupingMap[specificTaxa] = generalTaxa
 
 			if generalTaxa not in uniqueGeneralTax:
@@ -603,11 +678,13 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 			otuToTaxaSpecific[otu] = specificTaxa
 	
 		if int(level) >= 0 and int(level) < len(classification):
-			if classification[int(level)] in itemsOfInterest:
+			if classification[int(level)] in taxonomyFilterVals:
+				otus[otu] = 1
+		elif int(level) == -1:
+			if otu in taxonomyFilterVals:
 				otus[otu] = 1
 		else:
-			if otu in itemsOfInterest:
-				otus[otu] = 1
+			otus[otu] = 1
 
 	# Grouped by catvar, then by the (eg.) averaged phylum, then by (eg.) averaged family
 	idToMetadata = mapIDToMetadata(metadata, getCatCol(metadata, catvar))
@@ -718,12 +795,15 @@ def getAbundanceForOTUsByGrouping(userID, projectID, level, itemsOfInterest, cat
 	abundancesObj["root"] = groupingPostProcess
 	return abundancesObj
 
-def getCompositionAnalysis(userID, projectID, level, catvar):
+def getCompositionAnalysis(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar):
 	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
 	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
 
+	base = filterOTUTableByMetadata(base, metadata, sampleFilter, sampleFilterVals)
+
 	# Merges the OTUs based on their taxonomic classification at the specified level
+	base = getOTUTableAtLevel(base, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
 	base = getOTUTableAtLevelIntegrated(base, taxonomyMap, "All", level)
 
 	# Stores the tax classification to the relative abun (averaged)
@@ -805,13 +885,14 @@ def getCompositionAnalysis(userID, projectID, level, catvar):
 	abundancesObj["metaVals"] = uniqueMetadataVals.keys()
 	return abundancesObj
 
-def getTreeGrouping(userID, projectID, level, itemsOfInterest, catvar, taxonomyDisplayLevel, displayValues, excludeUnclassified):
-	if itemsOfInterest is None or itemsOfInterest == "":
-		return {}
-
+def getTreeGrouping(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, taxonomyDisplayLevel, displayValues, excludeUnclassified):
 	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
 	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
+
+	base = filterOTUTableByMetadata(base, metadata, sampleFilter, sampleFilterVals)
+	base = getOTUTableAtLevel(base, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+
 	idToMetadata = mapIDToMetadata(metadata, getCatCol(metadata, catvar))
 	uniqueMetadataVals = getUniqueMetadataCatVals(metadata, getCatCol(metadata, catvar))
 

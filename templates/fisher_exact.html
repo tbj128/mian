@@ -9,7 +9,7 @@
     {% include 'navigation.html' %}
 
     <div id="editor" class="editor">
-      <h3>Fisher Exact</h3>
+      <h3><i class="fa fa-th-large"></i>&nbsp;&nbsp;Fisher Exact</h3>
 
       <label class="control-label">Project</label>
       <select id="project" name="project" class="form-control">
@@ -24,6 +24,12 @@
 
       <hr />
 
+      {% include 'filtering_options.html' %}
+
+      <hr />
+
+      <h4>Analysis Parameters</h4>
+
       <label class="control-label">Taxonomic Level</label>
       <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
         <option value="Kingdom">Kingdom</option>
@@ -33,15 +39,10 @@
         <option value="Family">Family</option>
         <option value="Genus">Genus</option>
         <option value="Species">Species</option>
-        <option value="OTU">OTU</option>
+        <option value="OTU" selected>OTU</option>
       </select>
 
-      <select style="display:none;" id="taxonomy-specific" name="taxonomy-specific" class="form-control pad-bottom" multiple="multiple">
-      </select>
-
-      <hr />
-
-      <label class="control-label">Categorical Variable</label>
+      <label class="control-label">Category Breakdown</label>
       <select id="catvar" name="catvar" class="form-control">
         {% for catVar in catVars %}
           <option value="{{ catVar }}">{{ catVar }}</option>

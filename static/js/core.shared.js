@@ -30,6 +30,50 @@ function setExtraNavLinks(attr) {
   });
 }
 
+function getTaxonomicLevel() {
+  return $("#taxonomy").val();
+}
+
+function getSelectedTaxFilter() {
+  var taxLevel = $("#filter-otu").val();
+  if (taxLevel === "none") {
+    return -2;
+  }
+  return taxonomyLevels[taxLevel];
+}
+
+function getSelectedTaxFilterVals() {
+  var taxonomy = $("#taxonomy-specific").val();
+  if (taxonomy == null) {
+    taxonomy = [];
+  }
+
+  var taxLevel = $("#filter-otu").val();
+  if (taxLevel === "none") {
+    taxonomy = [];
+  }
+
+  if ($("#taxonomy-specific option").size() === taxonomy.length) {
+    // Select all is enabled
+    return "mian-select-all";
+  }
+
+  return taxonomy.join(",");
+}
+
+function getSelectedSampleFilter() {
+  var filter = $("#filter-sample").val();
+  return filter;
+}
+
+function getSelectedSampleFilterVals() {
+  var samples = $("#filter-sample-specific").val();
+  if (samples == null) {
+    samples = []
+  }
+  return samples.join(",");
+}
+
 $(document).ready(function() {
   var params = decodeURIComponent(window.location.search.substring(1));
   if (params != undefined && params != "") {
@@ -46,14 +90,102 @@ $(document).ready(function() {
   $("#project").change(function() {
     setExtraNavLinks($("#project").val());
   });
+
+  $("#filter-sample").change(function() {
+    var filterVal = $("#filter-sample").val();
+    if (filterVal === "none") {
+      $("#filter-sample-wrapper").hide();
+    } else {
+      $("#filter-sample-wrapper").show();
+      getSampleFilteringOptions();
+    }
+  });
+
+  $("#filter-otu").change(function() {
+    var filterVal = $("#filter-otu").val();
+    if (filterVal === "none") {
+      $("#filter-otu-wrapper").hide();
+    } else {
+      $("#filter-otu-wrapper").show();
+      updateTaxonomicLevel(false);
+    }
+  });
+
+  function getSampleFilteringOptions() {
+    $.ajax({
+      url: "metadata_vals?pid=" + $("#project").val() + "&catvar=" + $("#filter-sample").val(), 
+      success: function(result) {
+        var json = JSON.parse(result);
+
+        var $filterSampleSpecific = $("#filter-sample-specific");
+
+        var options = [];
+        for (var i = 0; i < json.length; i++) {
+          var option = {
+            "label": json[i],
+            "title": json[i],
+            "value": json[i],
+            // "selected": true
+          };
+          options.push(option);
+        }
+
+        $filterSampleSpecific.multiselect({
+          buttonWidth: '320px',
+          includeSelectAllOption: true,
+          enableFiltering: true,
+          maxHeight: 400
+        });
+
+        $filterSampleSpecific.multiselect('dataprovider', options);
+      }
+    });
+
+  }
 });
+
+
+
+
 
 // 
 // Sidebar Shared
 // 
 
-function getTaxonomicLevel() {
-  return $("#taxonomy").val();
+function updateCatVar(callback) {
+  return $.ajax({
+    url: "metadata_headers?pid=" + $("#project").val(), 
+    success: function(result) {
+      var json = JSON.parse(result);
+
+      var $catvar = $("#catvar");
+      var $filterSample = $("#filter-sample");
+
+      $catvar.empty();
+      $filterSample.empty();
+      $filterSample.append("<option value='none'>Don't Filter</option>");
+      $filterSample.append("<option value='mian-sample-id'>Sample ID</option>");
+
+      var options = [];
+      for (var i = 0; i < json.length; i++) {
+        var option = {
+          "label": json[i],
+          "title": json[i],
+          "value": json[i]
+        };
+        options.push(option);
+      }
+
+      for (var i = 0; i < json.length; i++) {
+        $catvar.append("<option value='" + json[i] + "'>" + json[i] + "</option>");
+        $filterSample.append("<option value='" + json[i] + "'>" + json[i] + "</option>");
+      }
+
+      if (callback !== undefined) {
+        callback();
+      }
+    }
+  });
 }
 
 function updateTaxonomicLevel(firstLoad, callback) {
@@ -65,42 +197,25 @@ function updateTaxonomicLevel(firstLoad, callback) {
         var json = JSON.parse(result);
         taxonomiesMap = json;
         renderTaxonomicLevel(firstLoad);
-        callback();
+        if (callback != null && callback != undefined) {
+          callback();
+        }
       }
     });
   } else {
     renderTaxonomicLevel(firstLoad);
-    callback();
+    if (callback != null && callback != undefined) {
+      callback();
+    }
     return null;
   }
 }
 
-function updateCatVar(callback) {
-  return $.ajax({
-    url: "metadata_headers?pid=" + $("#project").val(), 
-    success: function(result) {
-      var json = JSON.parse(result);
-
-      $("#catvar").empty();
-      for (var i = 0; i < json.length; i++) {
-        var o = document.createElement("option");
-        o.setAttribute("value", json[i]);
-        var t = document.createTextNode(json[i]);
-        o.appendChild(t);
-        document.getElementById("catvar").appendChild(o);
-      }
-
-      if (callback !== undefined) {
-        callback();
-      }
-    }
-  });
-}
 
 function renderTaxonomicLevel(firstLoad) {
   var taxas = {};
 
-  var level = taxonomyLevels[getTaxonomicLevel()];
+  var level = getSelectedTaxFilter();
 
   if (getTaxonomicLevel() == "OTU") {
     $.each(taxonomiesMap, function(otu, classification) {
@@ -118,27 +233,59 @@ function renderTaxonomicLevel(firstLoad) {
   var taxasArr = Object.keys(taxas);
   taxasArr = taxasArr.sort();
   
-  $("#taxonomy-specific").empty();
-  options = ""
+  var $filterOTUSpecific = $("#taxonomy-specific");
+  var options = [];
   for (var i = 0; i < taxasArr.length; i++) {
-    if (level == 0) {
-      options += "<option value='" + taxasArr[i] + "' selected>" + taxasArr[i] + "</option>";
-    } else {
-      options += "<option value='" + taxasArr[i] + "'>" + taxasArr[i] + "</option>";
-    }
+    var option = {
+      "label": taxasArr[i],
+      "title": taxasArr[i],
+      "value": taxasArr[i],
+      // "selected": true
+    };
+    options.push(option);
   }
-  $("#taxonomy-specific").append(options)
+
+  $filterOTUSpecific.multiselect({
+    buttonWidth: '320px',
+    includeSelectAllOption: true,
+    enableFiltering: true,
+    maxHeight: 400
+  });
+
+  $filterOTUSpecific.multiselect('dataprovider', options);
+}
+
+
+function updateSamples(firstLoad) {
+  return $.ajax({
+    url: "samples?pid=" + $("#project").val(), 
+    success: function(result) {
+      var json = JSON.parse(result);
+      renderSamples(json, firstLoad);
+    }
+  });
+}
+
+function renderSamples(json, firstLoad) {
+  $("#samples").empty();
+  options = ""
+  for (var i = 0; i < json.length; i++) {
+    options += "<option value='" + json[i] + "'>" + json[i] + "</option>";
+  }
+  $("#samples").append(options)
 
   if (firstLoad) {
-    $('#taxonomy-specific').multiselect({
+    $('#samples').multiselect({
       buttonWidth: '320px',
       enableFiltering: true,
-      //filterBehavior: 'value',
-      maxHeight: 400
+      includeSelectAllOption: true,
+      maxHeight: 200
     });
   } else {
-    $('#taxonomy-specific').multiselect('rebuild');
+    $('#samples').multiselect('rebuild');
   }
+  $('#samples').multiselect('selectAll', false);
+  $('#samples').multiselect('updateButtonText');
 }
 
 

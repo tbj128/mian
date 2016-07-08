@@ -2,8 +2,10 @@ $(document).ready(function() {
   // Global variables storing the data
 
   // Initialization
-  updateTaxonomicLevel(true);
-  updateCatVar();
+  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
+    updateAnalysis();
+  });
+  
   createListeners();
 
   function createListeners() {
@@ -14,11 +16,25 @@ $(document).ready(function() {
       updateCatVar();
     });
 
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false);
+    $("#filter-sample").change(function() {
+      var filterVal = $("#filter-sample").val();
+      if (filterVal === "none" || filterVal === "mian-sample-id") {
+        updateAnalysis();
+      }
+    });
+
+    $("#filter-otu").change(function() {
+      var filterVal = $("#filter-otu").val();
+      if (filterVal === "none") {
+        updateAnalysis();
+      }
     });
 
     $("#taxonomy-specific").change(function () {
+      updateAnalysis();
+    });
+
+    $("#filter-sample-specific").change(function () {
       updateAnalysis();
     });
 
@@ -27,102 +43,24 @@ $(document).ready(function() {
     });
   }
 
-  function getTaxonomicLevel() {
-    return $("#taxonomy").val();
-  }
-
-  function renderTaxonomicLevel(firstLoad) {
-    var taxas = {};
-
-    if (getTaxonomicLevel() == "OTU") {
-      $.each(taxonomiesMap, function(otu, classification) {
-        taxas[otu] = true;
-      });
-    } else {
-      var level = taxonomyLevels[getTaxonomicLevel()];
-    
-      $.each(taxonomiesMap, function(otu, classification) {
-        if (!taxas.hasOwnProperty(classification[level])) {
-          taxas[classification[level]] = true;
-        }
-      });
-    }
-
-    var taxasArr = Object.keys(taxas);
-    taxasArr = taxasArr.sort();
-    
-    $("#taxonomy-specific").empty();
-    for (var i = 0; i < taxasArr.length; i++) {
-      var o = document.createElement("option");
-      o.setAttribute("value", taxasArr[i]);
-      var t = document.createTextNode(taxasArr[i]);
-      o.appendChild(t);
-      document.getElementById("taxonomy-specific").appendChild(o);
-    }
-
-    if (firstLoad) {
-      $('#taxonomy-specific').multiselect({
-        buttonWidth: '320px',
-        enableFiltering: true,
-        //filterBehavior: 'value',
-        maxHeight: 400
-      });
-    } else {
-      $('#taxonomy-specific').multiselect('rebuild');
-    }
-
-    updateAnalysis();
-  }
-
-  function updateTaxonomicLevel(firstLoad) {
-    if (taxonomiesMap.length == 0) {
-      // Load taxonomy map
-      $.ajax({
-        url: "taxonomies?pid=" + $("#project").val(), 
-        success: function(result) {
-          var json = JSON.parse(result);
-          taxonomiesMap = json;
-          renderTaxonomicLevel(firstLoad);
-        }
-      });
-    } else {
-      renderTaxonomicLevel(firstLoad);
-    }
-  }
-
-  function updateCatVar() {
-    $.ajax({
-      url: "metadata_headers?pid=" + $("#project").val(), 
-      success: function(result) {
-        var json = JSON.parse(result);
-
-        $("#catvar").empty();
-        for (var i = 0; i < json.length; i++) {
-          var o = document.createElement("option");
-          o.setAttribute("value", json[i]);
-          var t = document.createTextNode(json[i]);
-          o.appendChild(t);
-          document.getElementById("catvar").appendChild(o);
-        }
-      }
-    });
-  }
-
   function updateAnalysis() {
     showLoading();
     $("#stats-container").fadeIn(250);
-    var level = taxonomyLevels[getTaxonomicLevel()];
-    var taxonomy = $("#taxonomy-specific").val();
-    if (taxonomy == null) {
-      taxonomy = []
-    }
+
+    var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterVals = getSelectedTaxFilterVals();
+
+    var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
 
     var data = {
       "pid": $("#project").val(),
-      "level": level,
-      "taxonomy": taxonomy.join(","),
+      "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterVals": taxonomyFilterVals,
+      "sampleFilter": sampleFilter,
+      "sampleFilterVals": sampleFilterVals,
       "catvar": catvar
     };
 
@@ -140,14 +78,6 @@ $(document).ready(function() {
         console.log(err)
       }
     });
-  }
-
-  function renderPvaluesTable(abundancesObj) {
-    $('#stats-rows').empty();
-    var statsArr = abundancesObj["stats"];
-    for (var i = 0; i < statsArr.length; i++) {
-      $('#stats-rows').append('<tr><td>' + statsArr[i]["c1"] + '</td> <td>' + statsArr[i]["c2"] + '</td> <td>' + statsArr[i]["pval"] + '</td> </tr>')
-    }
   }
 
   function renderBoxplots(abundancesObj) {
@@ -220,6 +150,9 @@ $(document).ready(function() {
 
     for (var i = 0; i < categories.length; i++) {
       var dataCat = dataObj[categories[i]];
+      if (dataCat.length == 0) {
+        continue;
+      }
 
       // Calculate offset of this particular boxplot
       var midline = margin.left + (boxplotWidth + 2*padding)/2 + i*(boxplotWidth + 2*padding);

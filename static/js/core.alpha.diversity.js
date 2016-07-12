@@ -28,6 +28,14 @@ $(document).ready(function() {
       }
     });
 
+    $("#taxonomy-specific").change(function () {
+      updateAnalysis();
+    });
+
+    $("#filter-sample-specific").change(function () {
+      updateAnalysis();
+    });
+
     $("#taxonomy").change(function () {
       updateAnalysis();
     });

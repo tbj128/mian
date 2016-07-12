@@ -2,20 +2,41 @@ $(document).ready(function() {
   var abundancesObj = {};
 
   // Initialization
-  updateTaxonomicLevel(true, function() {
+  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar(), updateCorrVar()).done(function(a1, a2, a3) {
     updateAnalysis();
   });
+
   createListeners();
 
   function createListeners() {
     $('#corrvar2 option:eq(1)').attr('selected', 'selected');
 
     $("#project").change(function() {
-      updateTaxonomicLevel(false, function() {
-        updateCorrVar(function() {
-          updateAnalysis();
-        });
+      $.when(updateTaxonomicLevel(true, function() {}), updateCatVar(), updateCorrVar()).done(function(a1, a2, a3) {
+        updateAnalysis();
       });
+    });
+
+    $("#filter-sample").change(function() {
+      var filterVal = $("#filter-sample").val();
+      if (filterVal === "none" || filterVal === "mian-sample-id") {
+        updateAnalysis();
+      }
+    });
+
+    $("#filter-otu").change(function() {
+      var filterVal = $("#filter-otu").val();
+      if (filterVal === "none") {
+        updateAnalysis();
+      }
+    });
+
+    $("#taxonomy-specific").change(function () {
+      updateAnalysis();
+    });
+
+    $("#filter-sample-specific").change(function () {
+      updateAnalysis();
     });
 
     $("#taxonomy").change(function () {
@@ -218,8 +239,8 @@ $(document).ready(function() {
     });
   }
 
-  function updateCorrVar(callback) {
-    $.ajax({
+  function updateCorrVar() {
+    return $.ajax({
       url: "metadata_headers?pid=" + $("#project").val(), 
       success: function(result) {
         var json = ["None"];
@@ -238,7 +259,6 @@ $(document).ready(function() {
           addCorrOption("colorvar", json[i]);
         }
         $('#corrvar2 option:eq(1)').attr('selected', 'selected');
-        callback();
       }
     });
   }

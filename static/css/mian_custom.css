@@ -79,7 +79,7 @@ hr {
 	border-right:1px solid #E8E8E8;
   background:#F3F3F3;
 	padding:20px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .editor label {
@@ -188,7 +188,7 @@ hr {
 }
 
 .project-empty {
-  margin:64px;
+  margin:64px 64px 64px 360px;
   color:#999;
   text-align:center;
 }

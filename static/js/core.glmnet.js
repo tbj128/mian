@@ -11,6 +11,28 @@ $(document).ready(function() {
       });
     });
 
+    $("#filter-sample").change(function() {
+      var filterVal = $("#filter-sample").val();
+      if (filterVal === "none" || filterVal === "mian-sample-id") {
+        updateAnalysis();
+      }
+    });
+
+    $("#filter-otu").change(function() {
+      var filterVal = $("#filter-otu").val();
+      if (filterVal === "none") {
+        updateAnalysis();
+      }
+    });
+
+    $("#taxonomy-specific").change(function () {
+      updateAnalysis();
+    });
+
+    $("#filter-sample-specific").change(function () {
+      updateAnalysis();
+    });
+
     $("#taxonomy").change(function () {
       updateAnalysis();
     });
@@ -56,11 +78,23 @@ $(document).ready(function() {
 
     $("#analysis-container").empty();
 
+    var familyType = $("#family").val();
+
     var stats = abundancesObj["results"];
     var render = "<div>";
 
+    var s = 0;
     $.each( stats, function( key, value ) {
-      render += "<h3>" + key + "</h3>";
+      if (familyType != "binomial") {
+        render += "<h3>" + key + "</h3>";
+      }
+
+      if (familyType == "binomial" && s == 1) {
+        return;
+      } else {
+        s = 1;
+      }
+
       var numPos = 0;
       var numNeg = 0;
       value.forEach(function(val) {

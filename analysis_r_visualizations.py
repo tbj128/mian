@@ -95,7 +95,7 @@ def correlations(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFi
 
 	relevantOTUs = analysis.getRelevantOTUs(taxonomyMap, taxonomyFilter, taxonomyFilterVals)
 	relevantCols = analysis.getRelevantCols(otuTable, relevantOTUs)
-
+	
 	sampleIDToMetadataRow = {}
 	i = 1
 	while i < len(otuMetadata):
@@ -127,10 +127,12 @@ def correlations(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFi
 	while i < len(otuTable):
 		totalAbundance = 0
 		j = analysis.OTU_START_COL
-		while j < len(otuTable[i]):
-			if j in relevantCols:
-				totalAbundance += float(otuTable[i][j])
-			j += 1
+
+		if corrvar1 == "Abundances" or corrvar2 == "Abundances":
+			while j < len(otuTable[i]):
+				if j in relevantCols:
+					totalAbundance += float(otuTable[i][j])
+				j += 1
 
 		if (samplestoshow == "nonzero" and totalAbundance > 0) or (samplestoshow == "zero" and totalAbundance == 0) or samplestoshow == "both":
 			corrObj = {}

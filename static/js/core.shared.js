@@ -182,7 +182,7 @@ function updateCatVar(callback) {
       }
 
       if (callback !== undefined) {
-        callback();
+        callback(json);
       }
     }
   });
@@ -217,7 +217,7 @@ function renderTaxonomicLevel(firstLoad) {
 
   var level = getSelectedTaxFilter();
 
-  if (getTaxonomicLevel() == "OTU") {
+  if (getSelectedTaxFilter() < 0) {
     $.each(taxonomiesMap, function(otu, classification) {
       taxas[otu] = true;
     });

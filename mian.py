@@ -317,7 +317,9 @@ def correlations():
 	# TODO: Consider using only factors in the future for catVars
 	projectNames = getAllProjects(current_user.id)
 	currProject = request.args.get('pid', '')
-	catVars, otuMetadata = analysis.getMetadataHeadersWithMetadata(current_user.id, projectNames[0])
+	if currProject == "":
+		currProject = projectNames[0]
+	catVars, otuMetadata = analysis.getMetadataHeadersWithMetadata(current_user.id, currProject)
 	numericCatVars = analysis.getNumericMetadata(otuMetadata)
 	return render_template('correlations.html', projectNames=projectNames, currProject=currProject, catVars=catVars, numericCatVars=numericCatVars)
 

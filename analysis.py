@@ -455,7 +455,7 @@ def getRelevantOTUs(taxonomyMap, level, itemsOfInterest):
 def getRelevantCols(otuTable, relevantOTUs):
 	cols = {}
 	j = OTU_START_COL
-	while j < len(otuTable):
+	while j < len(otuTable[0]):
 		if otuTable[0][j] in relevantOTUs:
 			cols[j] = 1
 		j += 1
@@ -599,7 +599,7 @@ def getAbundanceForOTUs(userID, projectID, taxonomyFilter, taxonomyFilterVals, s
 			if classification[int(taxonomyFilter)] in taxonomyFilterVals:
 				otus[otu] = 1
 		elif int(taxonomyFilter) == -1:
-			if otu in tax:
+			if otu in taxonomyFilterVals:
 				otus[otu] = 1
 		else:
 			otus[otu] = 1
@@ -636,7 +636,6 @@ def getAbundanceForOTUs(userID, projectID, taxonomyFilter, taxonomyFilterVals, s
 
 	# Calculate the statistical p-value
 	statistics = getTtest(statsAbundances)
-	print statsAbundances
 
 	abundancesObj = {}
 	abundancesObj["abundances"] = abundances

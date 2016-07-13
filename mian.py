@@ -353,8 +353,9 @@ def rarefaction():
 def boruta():
 	projectNames = getAllProjects(current_user.id)
 	currProject = request.args.get('pid', '')
-	# TODO: Use default project name
-	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+	if currProject == "":
+		currProject = projectNames[0]
+	catVars = analysis.getMetadataHeaders(current_user.id, currProject)
 
 	return render_template('boruta.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
 
@@ -363,8 +364,9 @@ def boruta():
 def fisher_exact():
 	projectNames = getAllProjects(current_user.id)
 	currProject = request.args.get('pid', '')
-	# TODO: Use default project name
-	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+	if currProject == "":
+		currProject = projectNames[0]
+	catVars = analysis.getMetadataHeaders(current_user.id, currProject)
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
 
 	return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
@@ -374,8 +376,9 @@ def fisher_exact():
 def enriched_selection():
 	projectNames = getAllProjects(current_user.id)
 	currProject = request.args.get('pid', '')
-	# TODO: Use default project name
-	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+	if currProject == "":
+		currProject = projectNames[0]
+	catVars = analysis.getMetadataHeaders(current_user.id, currProject)
 	uniqueCatVals = analysis.getMetadataUniqueVals(current_user.id, projectNames[0], catVars[0])
 	return render_template('enriched_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
@@ -384,8 +387,9 @@ def enriched_selection():
 def glmnet():
 	projectNames = getAllProjects(current_user.id)
 	currProject = request.args.get('pid', '')
-	# TODO: Use default project name
-	catVars = analysis.getMetadataHeaders(current_user.id, projectNames[0])
+	if currProject == "":
+		currProject = projectNames[0]
+	catVars = analysis.getMetadataHeaders(current_user.id, currProject)
 
 	return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
 

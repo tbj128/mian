@@ -42,10 +42,7 @@ boruta <- function(base, groups, keepthreshold, pval, maxruns) {
 	return (b$finalDecision)
 }
 
-fisher_exact <- function(base, groups, minthreshold, keepthreshold) {
-
-	cat1 = levels(groups)[1]
-	cat2 = levels(groups)[2]
+fisher_exact <- function(base, groups, cat2, cat1, minthreshold, keepthreshold) {
 
 	base = base[,colSums(base!=0)>keepthreshold, drop=FALSE]
 
@@ -220,7 +217,7 @@ def fisherExact(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFil
 	od = rlc.OrdDict(allOTUs)
 	dataf = robjects.DataFrame(od)
 
-	fisherResults = rStats.fisher_exact(dataf, groups, int(minthreshold), int(keepthreshold))
+	fisherResults = rStats.fisher_exact(dataf, groups, catVar1, catVar2, int(minthreshold), int(keepthreshold))
 	
 	results = []
 	i = 1

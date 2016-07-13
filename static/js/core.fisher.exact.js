@@ -51,7 +51,9 @@ $(document).ready(function() {
     });
 
     $("#catvar").change(function () {
-      updateAnalysis();
+      updatePWComparisonSidebar(function() {
+        updateAnalysis();
+      });
     });
 
     $("#minthreshold").change(function () {

@@ -84,7 +84,7 @@ $(document).ready(function() {
 
     $("#analysis-container").empty();
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 56},
+    var margin = {top: 20, right: 20, bottom: 20, left: 56},
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
 
@@ -118,8 +118,10 @@ $(document).ready(function() {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // don't want dots overlapping axis, so add in buffer to data domain
-    xScale.domain([d3.min(data, xValue)-d3.max(data, xValue)*0.01, d3.max(data, xValue)+d3.max(data, xValue)*0.01]);
-    yScale.domain([d3.min(data, yValue)-d3.max(data, yValue)*0.01, d3.max(data, yValue)+d3.max(data, yValue)*0.01]);
+    var xBuffer = d3.max(data, xValue) * 0.01;
+    var yBuffer = d3.max(data, yValue) * 0.01;
+    xScale.domain([d3.min(data, xValue) - xBuffer, d3.max(data, xValue) + xBuffer]);
+    yScale.domain([d3.min(data, yValue) - yBuffer, d3.max(data, yValue) + yBuffer]);
 
     // x-axis
     svg.append("g")
@@ -154,7 +156,7 @@ $(document).ready(function() {
             if ($("#sizevar").val() != "" && $("#sizevar").val() != "None") {
               return sScale(sValue(d)); 
             } else {
-              return 3;
+              return 6;
             }
           })
         .attr("cx", xMap)

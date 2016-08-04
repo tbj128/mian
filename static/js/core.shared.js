@@ -130,8 +130,9 @@ $(document).ready(function() {
           options.push(option);
         }
 
+        var outWidth = $("#project").outerWidth();
         $filterSampleSpecific.multiselect({
-          buttonWidth: '320px',
+          buttonWidth: outWidth ? outWidth + 'px' : '320px',
           includeSelectAllOption: true,
           enableFiltering: true,
           maxHeight: 400
@@ -245,8 +246,9 @@ function renderTaxonomicLevel(firstLoad) {
     options.push(option);
   }
 
+  var outWidth = $("#project").outerWidth();
   $filterOTUSpecific.multiselect({
-    buttonWidth: '320px',
+    buttonWidth: outWidth ? outWidth + 'px' : '320px',
     includeSelectAllOption: true,
     enableFiltering: true,
     maxHeight: 400
@@ -275,8 +277,9 @@ function renderSamples(json, firstLoad) {
   $("#samples").append(options)
 
   if (firstLoad) {
+    var outWidth = $("#project").outerWidth();
     $('#samples').multiselect({
-      buttonWidth: '320px',
+      buttonWidth: outWidth ? outWidth + 'px' : '320px',
       enableFiltering: true,
       includeSelectAllOption: true,
       maxHeight: 200

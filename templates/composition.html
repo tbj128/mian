@@ -40,6 +40,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
 
     <div id="editor" class="editor">
       <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Analysis</h3>
@@ -89,16 +90,20 @@
 
     </div>
 
-    <div class="download-container">
-      <button id="download-svg" class="btn btn-default" type="button">Download</button>
+    <div class="content-wrapper">
+      <div class="download-container">
+        <button id="download-svg" class="btn btn-default" type="button">Download</button>
+      </div>
+
+      <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+      </div><!-- /.container -->
+
+      <canvas id="donwload-canvas" width="1000px" height="600px" style="display:none;"></canvas> 
+      
+      <div id="push" style="height:42px;"></div>
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-    </div><!-- /.container -->
-
-    <canvas id="donwload-canvas" width="1000px" height="600px" style="display:none;"></canvas> 
-
-    {% include 'footer.html' %}
+    {% include 'footer-viz.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

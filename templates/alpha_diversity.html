@@ -7,6 +7,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
 
     <div id="editor" class="editor">
       <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Alpha Diversity</h3>
@@ -61,27 +62,31 @@
       </select>
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    <div class="content-wrapper">
+      <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+      </div>
+
+      <hr style="margin-top:0px; margin-bottom:0px;" />
+
+      <div id="stats-container" class="analysis-container" style="display:none;">
+        <h4>Welch's T-Test Summary</h4>
+        <table class="table table-hover"> 
+          <thead> 
+            <tr> 
+              <th>Category 1</th> 
+              <th>Category 2</th> 
+              <th>P-Value</th> 
+            </tr> 
+          </thead> 
+          <tbody id="stats-rows"> 
+          </tbody>
+        </table>
+      </div>
+
+      <div id="push" style="height:42px;"></div>
     </div>
-
-    <hr style="margin-top:0px; margin-bottom:0px;" />
-
-    <div id="stats-container" class="analysis-container" style="display:none;">
-      <h4>Welch's T-Test Summary</h4>
-      <table class="table table-hover"> 
-        <thead> 
-          <tr> 
-            <th>Category 1</th> 
-            <th>Category 2</th> 
-            <th>P-Value</th> 
-          </tr> 
-        </thead> 
-        <tbody id="stats-rows"> 
-        </tbody>
-      </table>
-    </div>
-
-    {% include 'footer.html' %}
+    
+    {% include 'footer-viz.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

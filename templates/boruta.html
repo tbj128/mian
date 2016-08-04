@@ -7,6 +7,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
 
     <div id="editor" class="editor">
       <h3><i class="fa fa-th-large"></i>&nbsp;Boruta Feature Selection</h3>
@@ -59,20 +60,21 @@
       <input class="form-control" id="keepthreshold" name="keepthreshold" type="number" value="5" />
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-      <table class="table table-hover"> 
-        <thead> 
-          <tr id="stats-headers">
-          </tr> 
-        </thead>
-        <tbody id="stats-rows"> 
-        </tbody>
-      </table>
-    </div><!-- /.container -->
+    <div class="content-wrapper">
+      <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+        <table class="table table-hover"> 
+          <thead> 
+            <tr id="stats-headers">
+            </tr> 
+          </thead>
+          <tbody id="stats-rows"> 
+          </tbody>
+        </table>
+      </div><!-- /.container -->
 
-    <hr style="margin-top:0px; margin-bottom:0px;" />
-
-    {% include 'footer.html' %}
+      <div id="push" style="height:42px;"></div>
+    </div>
+    {% include 'footer-viz.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

@@ -7,6 +7,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
 
     <div id="editor" class="editor">
       <h3><i class="fa fa-th-large"></i>&nbsp;Glmnet Feature Selection</h3>
@@ -72,12 +73,13 @@
       <input class="form-control" id="lambdaval" name="lambdaval" type="number" value="-2" />
     </div>
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-    </div><!-- /.container -->
+    <div class="content-wrapper">
+      <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+      </div><!-- /.container -->
+      <div id="push" style="height:42px;"></div>
+    </div>
 
-    <hr style="margin-top:0px; margin-bottom:0px;" />
-
-    {% include 'footer.html' %}
+    {% include 'footer-viz.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

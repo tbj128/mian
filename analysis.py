@@ -19,6 +19,7 @@ import numpy as np
 import shutil
 import json
 from subprocess import Popen, PIPE
+from datetime import datetime
 
 # 
 # Global Attributes
@@ -565,19 +566,19 @@ def getUniqueMetadataCatVals(otuMetadata, metaCol):
 
 # ================================
 
-def getAbundanceForOTUs(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar):
+def getMetadataForCategory(userID, projectID, sampleFilter, sampleFilterVals, catvar, metavar):
 	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
 	metadata = csvToTable(userID, projectID, METADATA_NAME)
 	taxonomyMap = getTaxonomyMapping(userID, projectID)
 
 	base = filterOTUTableByMetadata(base, metadata, sampleFilter, sampleFilterVals)
-	# base = getOTUTableAtLevel(base, taxonomyMap, itemsOfInterest, level)
-	
+
 	statsAbundances = {}
 	abundances = {}
 	metadataMap = {}
 
 	catCol = 1
+	metaCol = 1
 	i = 0
 	while i < len(metadata):
 		if i == 0:
@@ -585,53 +586,23 @@ def getAbundanceForOTUs(userID, projectID, taxonomyFilter, taxonomyFilterVals, s
 			while j < len(metadata[i]):
 				if metadata[i][j] == catvar:
 					catCol = j
-				j += 1
-		else:
-			metadataMap[metadata[i][0]] = metadata[i][catCol]
-			if metadata[i][catCol] not in abundances:
-				abundances[metadata[i][catCol]] = []
-				statsAbundances[metadata[i][catCol]] = []
-		i += 1
-
-	otus = {}
-	for otu, classification in taxonomyMap.iteritems():
-		if int(taxonomyFilter) >= 0 and int(taxonomyFilter) < len(classification):
-			if classification[int(taxonomyFilter)] in taxonomyFilterVals:
-				otus[otu] = 1
-		elif int(taxonomyFilter) == -1:
-			if otu in taxonomyFilterVals:
-				otus[otu] = 1
-		else:
-			otus[otu] = 1
-
-
-	relevantCols = []
-	i = 0
-	while i < len(base):
-		if i == 0:
-			# Header row
-			# Ignores the first column (sample ID)
-			j = OTU_START_COL
-			while j < len(base[i]):
-				if base[i][j] in otus:
-					relevantCols.append(j)
+				if metadata[i][j] == metavar:
+					metaCol = j
 				j += 1
 		else:
 			row = {}
-			row["s"] = str(base[i][OTU_GROUP_ID_COL])
+			row["s"] = str(base[i][0])
+			row["a"] = float(base[i][metaCol])
+			if base[i][catCol] in abundances:
+				abundances[base[i][catCol]].append(row)
+			else:
+				abundances[base[i][catCol]] = [row]
 
-			totalAbundance = 0
+			if base[i][catCol] in statsAbundances:
+				statsAbundances[base[i][catCol]].append(row["a"])
+			else:
+				statsAbundances[base[i][catCol]] = [row["a"]]
 
-			j = OTU_START_COL
-			while j < len(base[i]):
-				if j in relevantCols:
-					totalAbundance += float(base[i][j])
-				j += 1
-
-			row["a"] = totalAbundance
-			if base[i][OTU_GROUP_ID_COL] in metadataMap:
-				abundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(row)
-				statsAbundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(totalAbundance)
 		i += 1
 
 	# Calculate the statistical p-value
@@ -641,6 +612,108 @@ def getAbundanceForOTUs(userID, projectID, taxonomyFilter, taxonomyFilterVals, s
 	abundancesObj["abundances"] = abundances
 	abundancesObj["stats"] = statistics
 	return abundancesObj
+
+def getStatsAbundanceForOTUs(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, level, statType):
+	base = csvToTable(userID, projectID, OTU_TABLE_NAME)
+	metadata = csvToTable(userID, projectID, METADATA_NAME)
+	taxonomyMap = getTaxonomyMapping(userID, projectID)
+
+	base = filterOTUTableByMetadata(base, metadata, sampleFilter, sampleFilterVals)
+
+	base = getOTUTableAtLevel(base, taxonomyMap, taxonomyFilterVals, taxonomyFilter)
+	base = getOTUTableAtLevelIntegrated(base, taxonomyMap, "All", level)
+
+	statsAbundances = {}
+	abundances = {}
+	metadataMap = {}
+
+	catCol = -1
+	i = 0
+	while i < len(metadata):
+		if i == 0:
+			j = 0
+			while j < len(metadata[i]):
+				if metadata[i][j] == catvar:
+					catCol = j
+				j += 1
+		else:
+			if catCol > -1:
+				metadataMap[metadata[i][0]] = metadata[i][catCol]
+				if metadata[i][catCol] not in abundances:
+					abundances[metadata[i][catCol]] = []
+					statsAbundances[metadata[i][catCol]] = []
+			else:
+				metadataMap[metadata[i][0]] = "All"
+				abundances["All"] = []
+				statsAbundances["All"] = []
+
+		i += 1
+
+	# Maps are used for speedup
+	taxonomyFilterValsMap = {}
+	for t in taxonomyFilterVals:
+		taxonomyFilterValsMap[t] = 1
+
+	otus = {}
+	for otu, classification in taxonomyMap.iteritems():
+		if int(taxonomyFilter) >= 0 and int(taxonomyFilter) < len(classification):
+			if classification[int(taxonomyFilter)] in taxonomyFilterValsMap:
+				otus[otu] = 1
+		elif int(taxonomyFilter) == -1:
+			if otu in taxonomyFilterValsMap:
+				otus[otu] = 1
+		else:
+			otus[otu] = 1
+
+	relevantCols = {}
+	i = 0
+	while i < len(base):
+		if i == 0:
+			# Header row
+			# Ignores the first column (sample ID)
+			j = OTU_START_COL
+			while j < len(base[i]):
+				if base[i][j] in otus:
+					relevantCols[j] = 1
+				j += 1
+		else:
+			row = {}
+			row["s"] = str(base[i][OTU_GROUP_ID_COL])
+
+			abunArr = []
+
+			j = OTU_START_COL
+			while j < len(base[i]):
+				if j in relevantCols:
+					abunArr.append(float(base[i][j]))
+				j += 1
+
+			if statType == "mian-min":
+				row["a"] = np.min(abunArr)
+			elif statType == "mian-max":
+				row["a"] = np.max(abunArr)
+			elif statType == "mian-median":
+				row["a"] = np.median(abunArr)
+			elif statType == "mian-mean":
+				row["a"] = np.average(abunArr)
+			elif statType == "mian-abundance":
+				row["a"] = np.sum(abunArr)
+			else:
+				row["a"] = 0
+
+			if base[i][OTU_GROUP_ID_COL] in metadataMap:
+				abundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(row)
+				statsAbundances[metadataMap[base[i][OTU_GROUP_ID_COL]]].append(row["a"])
+		i += 1
+
+	# Calculate the statistical p-value
+	statistics = getTtest(statsAbundances)
+
+	abundancesObj = {}
+	abundancesObj["abundances"] = abundances
+	abundancesObj["stats"] = statistics
+	return abundancesObj
+
 
 def getAbundanceForOTUsByGrouping(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific):
 	if taxonomyFilterVals is None or taxonomyFilterVals == "" or int(taxonomyGroupingGeneral) >= int(taxonomyGroupingSpecific):

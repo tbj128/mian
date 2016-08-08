@@ -163,6 +163,8 @@ function updateCatVar(callback) {
       var $filterSample = $("#filter-sample");
 
       $catvar.empty();
+      $catvar.append("<option value='none'>None</option>");
+
       $filterSample.empty();
       $filterSample.append("<option value='none'>Don't Filter</option>");
       $filterSample.append("<option value='mian-sample-id'>Sample ID</option>");

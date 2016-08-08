@@ -104,11 +104,11 @@ def correlations(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFi
 		i += 1
 
 	corrcol1 = -1
-	if corrvar1 != "Abundances":
+	if corrvar1 != "mian-abundance" and corrvar1 != "mian-max":
 		corrcol1 = analysis.getCatCol(otuMetadata, corrvar1)
 
 	corrcol2 = -1
-	if corrvar2 != "Abundances":
+	if corrvar2 != "mian-abundance" and corrvar2 != "mian-max":
 		corrcol2 = analysis.getCatCol(otuMetadata, corrvar2)
 
 	colorcol = -1
@@ -125,13 +125,22 @@ def correlations(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFi
 
 	i = 1
 	while i < len(otuTable):
+		maxAbundance = 0
 		totalAbundance = 0
-		j = analysis.OTU_START_COL
 
-		if corrvar1 == "Abundances" or corrvar2 == "Abundances":
+		j = analysis.OTU_START_COL
+		if corrvar1 == "mian-abundance" or corrvar2 == "mian-abundance":
 			while j < len(otuTable[i]):
 				if j in relevantCols:
 					totalAbundance += float(otuTable[i][j])
+				j += 1
+
+		j = analysis.OTU_START_COL
+		if corrvar1 == "mian-max" or corrvar2 == "mian-max":
+			while j < len(otuTable[i]):
+				if j in relevantCols:
+					if float(otuTable[i][j]) > maxAbundance:
+						maxAbundance = float(otuTable[i][j])
 				j += 1
 
 		if (samplestoshow == "nonzero" and totalAbundance > 0) or (samplestoshow == "zero" and totalAbundance == 0) or samplestoshow == "both":
@@ -141,14 +150,18 @@ def correlations(userID, projectID, taxonomyFilter, taxonomyFilterVals, sampleFi
 				metadataRow = sampleIDToMetadataRow[sampleID]
 
 				corrVal1 = 0
-				if corrvar1 == "Abundances":
+				if corrvar1 == "mian-abundance":
 					corrVal1 = totalAbundance
+				elif corrvar1 == "mian-max":
+					corrVal1 = maxAbundance
 				else:
 					corrVal1 = otuMetadata[metadataRow][corrcol1]
 
 				corrVal2 = 0
-				if corrvar2 == "Abundances":
+				if corrvar2 == "mian-abundance":
 					corrVal2 = totalAbundance
+				elif corrvar2 == "mian-max":
+					corrVal2 = maxAbundance
 				else:
 					corrVal2 = otuMetadata[metadataRow][corrcol2]
 

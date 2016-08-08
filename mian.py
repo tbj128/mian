@@ -276,12 +276,12 @@ def home():
 # Visualization Pages
 # 
 
-@app.route('/abundance_boxplots')
+@app.route('/boxplots')
 @flask_login.login_required
-def abundance_boxplots():
+def boxplots():
 	projectNames = getAllProjects(current_user.id)
 	currProject = request.args.get('pid', '')
-	return render_template('abundance_boxplots.html', projectNames=projectNames, currProject=currProject)
+	return render_template('boxplots.html', projectNames=projectNames, currProject=currProject)
 
 @app.route('/alpha_diversity')
 @flask_login.login_required
@@ -456,21 +456,6 @@ def getMetadataVals():
 # Visualization endpoints 
 # 
 
-@app.route('/abundances', methods=['POST'])
-@flask_login.login_required
-def getAbundances():
-	user = current_user.id
-
-	pid = request.form['pid']
-	taxonomyFilter = request.form['taxonomyFilter']
-	taxonomyFilterVals = request.form['taxonomyFilterVals']
-	sampleFilter = request.form['sampleFilter']
-	sampleFilterVals = request.form['sampleFilterVals']
-	catvar = request.form['catvar']
-
-	abundances = analysis.getAbundanceForOTUs(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar)
-	return json.dumps(abundances)
-
 @app.route('/abundances_grouping', methods=['POST'])
 @flask_login.login_required
 def getAbundancesGrouping():
@@ -489,6 +474,28 @@ def getAbundancesGrouping():
 	abundances = analysis.getAbundanceForOTUsByGrouping(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, taxonomyGroupingGeneral, taxonomyGroupingSpecific)
 	return json.dumps(abundances)
 
+@app.route('/boxplots', methods=['POST'])
+@flask_login.login_required
+def getBoxplots():
+	user = current_user.id
+
+	pid = request.form['pid']
+	taxonomyFilter = request.form['taxonomyFilter']
+	taxonomyFilterVals = request.form['taxonomyFilterVals']
+	sampleFilter = request.form['sampleFilter']
+	sampleFilterVals = request.form['sampleFilterVals']
+	catvar = request.form['catvar']
+	yvals = request.form['yvals']
+	taxLevel = request.form['level']
+
+	if yvals == "mian-max" or yvals == "mian-abundance":
+		abundances = analysis.getStatsAbundanceForOTUs(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, taxLevel, yvals)
+		return json.dumps(abundances)
+	else:
+		abundances = analysis.getMetadataForCategory(user, pid, sampleFilter, sampleFilterVals, catvar, yvals)
+		return json.dumps(abundances)
+
+
 @app.route('/composition', methods=['POST'])
 @flask_login.login_required
 def getComposition():
@@ -505,9 +512,9 @@ def getComposition():
 	abundances = analysis.getCompositionAnalysis(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar)
 	return json.dumps(abundances)
 
-@app.route('/tree', methods=['POST'])
+@app.route('/correlations', methods=['POST'])
 @flask_login.login_required
-def getTree():
+def getCorrelations():
 	user = current_user.id
 
 	pid = request.form['pid']
@@ -515,12 +522,13 @@ def getTree():
 	taxonomyFilterVals = request.form['taxonomyFilterVals']
 	sampleFilter = request.form['sampleFilter']
 	sampleFilterVals = request.form['sampleFilterVals']
-	catvar = request.form['catvar']
-	taxonomy_display_level = request.form['taxonomy_display_level']
-	display_values = request.form['display_values']
-	exclude_unclassified = request.form['exclude_unclassified']
+	corrvar1 = request.form['corrvar1']
+	corrvar2 = request.form['corrvar2']
+	colorvar = request.form['colorvar']
+	sizevar = request.form['sizevar']
+	samplestoshow = request.form['samplestoshow']
 
-	abundances = analysis.getTreeGrouping(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, taxonomy_display_level, display_values, exclude_unclassified)
+	abundances = analysis_r_visualizations.correlations(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, corrvar1, corrvar2, colorvar, sizevar, samplestoshow)
 	return json.dumps(abundances)
 
 @app.route('/isSubsampled', methods=['POST'])
@@ -587,9 +595,9 @@ def getNMDS():
 	abundances = analysis_r_visualizations.nmds(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level, catvar)
 	return json.dumps(abundances)
 
-@app.route('/correlations', methods=['POST'])
+@app.route('/tree', methods=['POST'])
 @flask_login.login_required
-def getCorrelations():
+def getTree():
 	user = current_user.id
 
 	pid = request.form['pid']
@@ -597,13 +605,12 @@ def getCorrelations():
 	taxonomyFilterVals = request.form['taxonomyFilterVals']
 	sampleFilter = request.form['sampleFilter']
 	sampleFilterVals = request.form['sampleFilterVals']
-	corrvar1 = request.form['corrvar1']
-	corrvar2 = request.form['corrvar2']
-	colorvar = request.form['colorvar']
-	sizevar = request.form['sizevar']
-	samplestoshow = request.form['samplestoshow']
+	catvar = request.form['catvar']
+	taxonomy_display_level = request.form['taxonomy_display_level']
+	display_values = request.form['display_values']
+	exclude_unclassified = request.form['exclude_unclassified']
 
-	abundances = analysis_r_visualizations.correlations(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, corrvar1, corrvar2, colorvar, sizevar, samplestoshow)
+	abundances = analysis.getTreeGrouping(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, catvar, taxonomy_display_level, display_values, exclude_unclassified)
 	return json.dumps(abundances)
 
 

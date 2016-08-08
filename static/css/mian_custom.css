@@ -170,6 +170,19 @@ hr {
 	margin-left:6px;
 }
 
+.navbar-brand {
+  padding: 3px 15px 0 15px !important;
+}
+
+.navbar-brand img {
+  width:42px;
+  height:42px;
+}
+
+.navbar-brand img:hover {
+  opacity: 0.9;
+}
+
 /**
  * Projects Page
  */

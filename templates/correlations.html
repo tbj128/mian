@@ -38,18 +38,18 @@
 
       <label class="control-label">Correlation Variable 1</label>
       <select id="corrvar1" name="corrvar1" class="form-control">
+        <option value="mian-abundance">Aggregate Abundances</option>
         {% for catVar in numericCatVars %}
           <option value="{{ catVar }}">{{ catVar }}</option>
         {% endfor %}
-        <option value="Abundances">Aggregate Abundances</option>
       </select>
 
       <label class="control-label">Correlation Variable 2</label>
       <select id="corrvar2" name="corrvar2" class="form-control">
+        <option value="mian-abundance">Aggregate Abundances</option>
         {% for catVar in numericCatVars %}
           <option value="{{ catVar }}">{{ catVar }}</option>
         {% endfor %}
-        <option value="Abundances">Aggregate Abundances</option>
       </select>
 
       <label class="control-label">Color Variable</label>
@@ -74,6 +74,20 @@
         <option value="nonzero">Non-Zero Value Samples</option>
         <option value="zero">Zero Value Samples</option>
       </select>
+
+      <div id="taxonomic-level" style="display:none;">
+        <label id="taxonomic-level-label" class="control-label">Taxonomic Level</label>
+        <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+          <option value="Kingdom">Kingdom</option>
+          <option value="Phylum">Phylum</option>
+          <option value="Class">Class</option>
+          <option value="Order">Order</option>
+          <option value="Family">Family</option>
+          <option value="Genus">Genus</option>
+          <option value="Species">Species</option>
+          <option value="OTU" selected>OTU</option>
+        </select>
+      </div>
     </div>
 
     <div class="content-wrapper">

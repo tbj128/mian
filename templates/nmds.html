@@ -9,6 +9,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
 
     <div id="editor" class="editor">
       <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;NMDS</h3>
@@ -54,12 +55,14 @@
       <hr />
     </div>
 
-    <div id="analysis-container" class="analysis-container nmds" style="min-height:500px;">
-    </div><!-- /.container -->
+    <div class="content-wrapper">
+      <div id="analysis-container" class="analysis-container nmds" style="min-height:500px;">
+      </div><!-- /.container -->
 
-    <hr style="margin-top:0px; margin-bottom:0px;" />
+      <div id="push" style="height:42px;"></div>
+    </div>
 
-    {% include 'footer.html' %}
+    {% include 'footer-viz.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

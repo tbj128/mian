@@ -7,6 +7,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
 
     <div id="editor" class="editor">
       <h3><i class="fa fa-th-large"></i>&nbsp;&nbsp;Enriched Selection</h3>
@@ -66,39 +67,41 @@
 
     </div>
 
-    <div id="analysis-container-cat1" class="analysis-container" style="display:none;">
-      <h4>Enriched in <span id="cat1-present"></h4>
-      <table class="table table-hover"> 
-        <thead> 
-          <tr>
-            <th>Taxonomy</th> 
-            <th>Info</th>
-          </tr> 
-        </thead>
-        <tbody id="stats-rows-cat1"> 
-        </tbody>
-      </table>
-    </div><!-- /.container -->
+    <div class="content-wrapper">
 
-    <hr style="margin-top:0px; margin-bottom:0px;" />
+      <div id="analysis-container-cat1" class="analysis-container" style="display:none;">
+        <h4>Enriched in <span id="cat1-present"></h4>
+        <table class="table table-hover"> 
+          <thead> 
+            <tr>
+              <th>Taxonomy</th> 
+              <th>Info</th>
+            </tr> 
+          </thead>
+          <tbody id="stats-rows-cat1"> 
+          </tbody>
+        </table>
+      </div><!-- /.container -->
 
-    <div id="analysis-container-cat2" class="analysis-container" style="display:none;">
-      <h4>Enriched in <span id="cat2-present"></h4>
-      <table class="table table-hover"> 
-        <thead> 
-          <tr>
-            <th>Taxonomy</th> 
-            <th>Info</th>
-          </tr> 
-        </thead>
-        <tbody id="stats-rows-cat2"> 
-        </tbody>
-      </table>
-    </div><!-- /.container -->
+      <hr style="margin-top:0px; margin-bottom:0px;" />
 
-    <hr style="margin-top:0px; margin-bottom:0px;" />
+      <div id="analysis-container-cat2" class="analysis-container" style="display:none;">
+        <h4>Enriched in <span id="cat2-present"></h4>
+        <table class="table table-hover"> 
+          <thead> 
+            <tr>
+              <th>Taxonomy</th> 
+              <th>Info</th>
+            </tr> 
+          </thead>
+          <tbody id="stats-rows-cat2"> 
+          </tbody>
+        </table>
+      </div><!-- /.container -->
 
-    {% include 'footer.html' %}
+      <div id="push" style="height:42px;"></div>
+    </div>
+    {% include 'footer-viz.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

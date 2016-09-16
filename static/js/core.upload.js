@@ -1,4 +1,7 @@
 $(document).ready(function() {
+  // Hides loading bar
+  $("#loading").hide();
+
   // Global variables
   var isNameValid = false;
   var otuTableUploaded = false;

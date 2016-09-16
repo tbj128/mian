@@ -2,20 +2,41 @@ $(document).ready(function() {
   var abundancesObj = {};
 
   // Initialization
-  updateTaxonomicLevel(true, function() {
+  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar(function(json) {updateCorrVar(json)})).done(function(a1, a2) {
     updateAnalysis();
   });
+
   createListeners();
 
   function createListeners() {
     $('#corrvar2 option:eq(1)').attr('selected', 'selected');
 
     $("#project").change(function() {
-      updateTaxonomicLevel(false, function() {
-        updateCorrVar(function() {
-          updateAnalysis();
-        });
+      $.when(updateTaxonomicLevel(true, function() {}), updateCatVar(function(json) {updateCorrVar(json)})).done(function(a1, a2) {
+        updateAnalysis();
       });
+    });
+
+    $("#filter-sample").change(function() {
+      var filterVal = $("#filter-sample").val();
+      if (filterVal === "none" || filterVal === "mian-sample-id") {
+        updateAnalysis();
+      }
+    });
+
+    $("#filter-otu").change(function() {
+      var filterVal = $("#filter-otu").val();
+      if (filterVal === "none") {
+        updateAnalysis();
+      }
+    });
+
+    $("#taxonomy-specific").change(function () {
+      updateAnalysis();
+    });
+
+    $("#filter-sample-specific").change(function () {
+      updateAnalysis();
     });
 
     $("#taxonomy").change(function () {
@@ -29,24 +50,40 @@ $(document).ready(function() {
     });
 
     $("#corrvar1").change(function () {
+      showTaxLevelIfNeeded($("#corrvar1").val());
       updateAnalysis();
     });
 
     $("#corrvar2").change(function () {
+      showTaxLevelIfNeeded($("#corrvar2").val());
       updateAnalysis();
     });
 
     $("#colorvar").change(function () {
+      showTaxLevelIfNeeded($("#colorvar").val());
       updateAnalysis();
     });
 
     $("#sizevar").change(function () {
+      showTaxLevelIfNeeded($("#sizevar").val());
       updateAnalysis();
     });
 
     $("#samplestoshow").change(function () {
       updateAnalysis();
     });
+
+    $("#samplestoshow").change(function () {
+      updateAnalysis();
+    });
+  }
+
+  function showTaxLevelIfNeeded(val) {
+    if (val === "mian-max" || val === "mian-min" || val === "mian-abundance") {
+      $("#taxonomic-level").show();
+    } else {
+      $("#taxonomic-level").hide();
+    }
   }
 
   function renderCorrelations(abundancesObj) {
@@ -63,7 +100,7 @@ $(document).ready(function() {
 
     $("#analysis-container").empty();
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 56},
+    var margin = {top: 20, right: 20, bottom: 20, left: 56},
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
 
@@ -97,8 +134,10 @@ $(document).ready(function() {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // don't want dots overlapping axis, so add in buffer to data domain
-    xScale.domain([d3.min(data, xValue)-d3.max(data, xValue)*0.01, d3.max(data, xValue)+d3.max(data, xValue)*0.01]);
-    yScale.domain([d3.min(data, yValue)-d3.max(data, yValue)*0.01, d3.max(data, yValue)+d3.max(data, yValue)*0.01]);
+    var xBuffer = d3.max(data, xValue) * 0.01;
+    var yBuffer = d3.max(data, yValue) * 0.01;
+    xScale.domain([d3.min(data, xValue) - xBuffer, d3.max(data, xValue) + xBuffer]);
+    yScale.domain([d3.min(data, yValue) - yBuffer, d3.max(data, yValue) + yBuffer]);
 
     // x-axis
     svg.append("g")
@@ -133,7 +172,7 @@ $(document).ready(function() {
             if ($("#sizevar").val() != "" && $("#sizevar").val() != "None") {
               return sScale(sValue(d)); 
             } else {
-              return 3;
+              return 6;
             }
           })
         .attr("cx", xMap)
@@ -218,35 +257,42 @@ $(document).ready(function() {
     });
   }
 
-  function updateCorrVar(callback) {
-    $.ajax({
-      url: "metadata_headers?pid=" + $("#project").val(), 
-      success: function(result) {
-        var json = ["None"];
-        json.push.apply(json, JSON.parse(result));
-        json.push("Abundances");
-        $("#corrvar1").empty();
-        $("#corrvar2").empty();
-        $("#sizevar").empty();
-        $("#colorvar").empty();
-        for (var i = 0; i < json.length; i++) {
-          if (i != 0) {
-            addCorrOption("corrvar1", json[i]);
-            addCorrOption("corrvar2", json[i]);
-          }
-          addCorrOption("sizevar", json[i]);
-          addCorrOption("colorvar", json[i]);
-        }
-        $('#corrvar2 option:eq(1)').attr('selected', 'selected');
-        callback();
+  function updateCorrVar(result) {
+    var json = ["None"];
+    json.push.apply(json, JSON.parse(result));
+    
+    addCorrGroup("mian-none", "None Selected");
+
+    $("#corrvar1").empty();
+    $("#corrvar2").empty();
+    $("#sizevar").empty();
+    $("#colorvar").empty();
+    for (var i = 0; i < json.length; i++) {
+      if (i != 0) {
+        addCorrOption("corrvar1", json[i], json[i]);
+        addCorrOption("corrvar2", json[i], json[i]);
       }
-    });
+      addCorrOption("sizevar", json[i], json[i]);
+      addCorrOption("colorvar", json[i], json[i]);
+    }
+
+    addCorrGroup("mian-abundance", "Aggregate Abundance");
+    addCorrGroup("mian-max", "Max Abundance");
+
+    // $('#corrvar2 option:eq(1)').attr('selected', 'selected');
   }
 
-  function addCorrOption(elemID, val) {
+  function addCorrGroup(val, text) {
+    addCorrOption("corrvar1", val, text);
+    addCorrOption("corrvar2", val, text);
+    addCorrOption("sizevar", val, text);
+    addCorrOption("colorvar", val, text);
+  }
+
+  function addCorrOption(elemID, val, text) {
     var o = document.createElement("option");
     o.setAttribute("value", val);
-    var t = document.createTextNode(val);
+    var t = document.createTextNode(text);
     if (val == "Abundances") {
       t = document.createTextNode("Aggregate Abundances");
     }

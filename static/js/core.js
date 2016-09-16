@@ -160,8 +160,9 @@ $(document).ready(function() {
       $("#taxonomy-specific").append("<option value=\"" + keys[i] + "\">" + keys[i] + "</option>");
     }
     if (firstLoad) {
+      var outWidth = $("#project").outerWidth();
       $('#taxonomy-specific').multiselect({
-        buttonWidth: '320px',
+        buttonWidth: outWidth ? outWidth + 'px' : '320px',
         enableFiltering: true,
         //filterBehavior: 'value',
         maxHeight: 400

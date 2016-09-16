@@ -27,6 +27,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
 
     <div id="editor" class="editor">
       <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;PCA</h3>
@@ -93,15 +94,17 @@
       <input id="pca2-range" type="text" value="" data-slider-min="10" data-slider-max="1000" data-slider-step="0.1" data-slider-value="[250,450]" style="display:none;"/>
     </div>
 
-    <div id="analysis-container" class="analysis-container pca" style="min-height:500px;">
-    </div><!-- /.container -->
+    <div class="content-wrapper">
+      <div id="analysis-container" class="analysis-container pca" style="min-height:500px;">
+      </div><!-- /.container -->
 
-    <div id="variance-container" class="analysis-container line-chart" style="min-height:500px;">
-    </div><!-- /.container -->
+      <div id="variance-container" class="analysis-container line-chart" style="min-height:500px;">
+      </div><!-- /.container -->
 
-    <hr style="margin-top:0px; margin-bottom:0px;" />
+      <div id="push" style="height:42px;"></div>
+    </div>
 
-    {% include 'footer.html' %}
+    {% include 'footer-viz.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

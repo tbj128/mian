@@ -18,6 +18,28 @@ $(document).ready(function() {
       });
     });
 
+    $("#filter-sample").change(function() {
+      var filterVal = $("#filter-sample").val();
+      if (filterVal === "none" || filterVal === "mian-sample-id") {
+        updateAnalysis();
+      }
+    });
+
+    $("#filter-otu").change(function() {
+      var filterVal = $("#filter-otu").val();
+      if (filterVal === "none") {
+        updateAnalysis();
+      }
+    });
+
+    $("#taxonomy-specific").change(function () {
+      updateAnalysis();
+    });
+
+    $("#filter-sample-specific").change(function () {
+      updateAnalysis();
+    });
+
     $("#taxonomy").change(function () {
       updateTaxonomicLevel(false, function() {
         updateAnalysis();
@@ -29,7 +51,9 @@ $(document).ready(function() {
     });
 
     $("#catvar").change(function () {
-      updateAnalysis();
+      updatePWComparisonSidebar(function() {
+        updateAnalysis();
+      });
     });
 
     $("#minthreshold").change(function () {

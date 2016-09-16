@@ -31,6 +31,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    
     {% if newSignup %}
     <div class="alert alert-success">
       <strong>Welcome!</strong> Start by creating a new project below. 
@@ -60,94 +61,98 @@
     </div>
     <div id="blackout" class="blackout" style="display:none;"></div>
 
-    <div class="container project-container">
-      <div class="section-heading project-heading">
-          <h2><i class="fa fa-folder"></i>&nbsp;&nbsp;Projects</h2>
-      </div>
-      <div class="row">
-        <div class="col-md-2">
-          <a href="create" class="btn btn-primary project-new">New Project</a>
+    <div class="content-wrapper">
+      <div class="container project-container">
+        <div class="section-heading project-heading">
+            <h2><i class="fa fa-folder"></i>&nbsp;&nbsp;Projects</h2>
         </div>
-        <div class="col-md-10 project-main">
-          {% if items|length == 0 %}
-            <div class="project-empty">
-              <i class="fa fa-folder-o fa-4x"></i>
-              <h3>No projects yet</h3>
-            </div>
-          {% else %}
-            {% for projectName in projectNames %}
-              <div class="project-item" id="p-{{ projectName }}">
-                <h4>{{ projectName }}</h4>
-                <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
-                <table class="table table-hover" style="table-layout:fixed;">
-                  <tbody> 
-                    <tr> 
-                      <th scope="row" class="project-fn col-md-5">{{ items[projectName]["otuTable"] }}</th> 
-                      <td class="col-md-3 subsampleDisplayContainer">
-                        <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectName }}">
-                          {% if items[projectName]["subsampleVal"] == 0 %}
-                          Not Subsampled
-                          {% else %}
-                          Subsampled to 
-                          <b id="subsampleDisplayVal-{{ projectName }}">
-                            {{ items[projectName]["subsampleVal"] }}
-                            {% if items[projectName]["subsampleType"] == "auto" %}
-                              (auto)
-                            {% endif %}
-                          </b>
-                          {% endif %} 
-                        </span>
-                        &nbsp;
-                        <a class="project-change-subsampling" data-subsampletype="{{ items[projectName]['subsampleType'] }}" data-subsampleval="{{ items[projectName]['subsampleVal'] }}" data-project="{{ projectName }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
-                      </td> 
-                      <td class="col-md-2">OTU Table</td> 
-                      <td class="project-item-meta col-md-1">
-                        <form data-project="{{ projectName }}" action="/upload" method="post" enctype="multipart/form-data">
-                          <a class="project-trig-otu" href="javascript:void(0);" title="Replace the OTU table">Replace</a>
-                          <input type="file" name="upload" class="project-replace-otu" data-project="{{ projectName }}" accept=".shared" style="display:none;" />
-                          <input class="replace-fileType" name="fileType" type="hidden" value="otuTable" />
-                          <input class="replace-subsampleType" name="subsampleType" type="hidden" value="" />
-                          <input class="replace-subsampleTo" name="subsampleTo" type="hidden" value="" />
-                          <input type="hidden" name="project" value="{{ projectName }}" />
-                        </form>
-                      </td>
-                    </tr>
-                    <tr> 
-                      <th scope="row" class="project-fn">{{ items[projectName]["otuTaxonomyMapping"] }}</th> 
-                      <td class="subsampleDisplayContainer"></td> 
-                      <td>Taxonomy Map</td> 
-                      <td class="project-item-meta">
-                        <form data-project="{{ projectName }}" action="/upload" method="post" enctype="multipart/form-data">
-                          <a class="project-trig-tax" href="javascript:void(0);" title="Replace the taxonomy mapping">Replace</a>
-                          <input type="file" name="upload" class="project-replace-taxonomy" data-project="{{ projectName }}" accept=".taxonomy" style="display:none;" />
-                          <input class="replace-fileType" name="fileType" type="hidden" value="otuTaxonomyMapping" />
-                          <input type="hidden" name="project" value="{{ projectName }}" />
-                        </form>
-                      </td>
-                    </tr>
-                    <tr> 
-                      <th scope="row" class="project-fn">{{ items[projectName]["otuMetadata"] }}</th> 
-                      <td class="subsampleDisplayContainer"></td> 
-                      <td>Metadata</td> 
-                      <td class="project-item-meta">
-                        <form data-project="{{ projectName }}" action="/upload" method="post" enctype="multipart/form-data">
-                          <a class="project-trig-metadata" href="javascript:void(0);" title="Replace the metadata">Replace</a>
-                          <input type="file" name="upload" class="project-replace-metadata" data-project="{{ projectName }}" accept=".tsv,.txt" style="display:none;" />
-                          <input class="replace-fileType" name="fileType" type="hidden" value="otuMetadata" />
-                          <input type="hidden" name="project" value="{{ projectName }}" />
-                        </td>
-                      </form>
-                    </tr>
-                  </tbody> 
-                </table>
+        <div class="row">
+          <div class="col-md-2">
+            <a href="create" class="btn btn-primary project-new">New Project</a>
+          </div>
+          <div class="col-md-10 project-main">
+            {% if items|length == 0 %}
+              <div class="project-empty">
+                <i class="fa fa-folder-o fa-4x"></i>
+                <h3>No projects yet</h3>
               </div>
-            {% endfor %}
-          {% endif %}
+            {% else %}
+              {% for projectName in projectNames %}
+                <div class="project-item" id="p-{{ projectName }}">
+                  <h4>{{ projectName }}</h4>
+                  <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
+                  <table class="table table-hover" style="table-layout:fixed;">
+                    <tbody> 
+                      <tr> 
+                        <th scope="row" class="project-fn col-md-5">{{ items[projectName]["otuTable"] }}</th> 
+                        <td class="col-md-3 subsampleDisplayContainer">
+                          <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectName }}">
+                            {% if items[projectName]["subsampleVal"] == 0 %}
+                            Not Subsampled
+                            {% else %}
+                            Subsampled to 
+                            <b id="subsampleDisplayVal-{{ projectName }}">
+                              {{ items[projectName]["subsampleVal"] }}
+                              {% if items[projectName]["subsampleType"] == "auto" %}
+                                (auto)
+                              {% endif %}
+                            </b>
+                            {% endif %} 
+                          </span>
+                          &nbsp;
+                          <a class="project-change-subsampling" data-subsampletype="{{ items[projectName]['subsampleType'] }}" data-subsampleval="{{ items[projectName]['subsampleVal'] }}" data-project="{{ projectName }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+                        </td> 
+                        <td class="col-md-2">OTU Table</td> 
+                        <td class="project-item-meta col-md-1">
+                          <form data-project="{{ projectName }}" action="/upload" method="post" enctype="multipart/form-data">
+                            <a class="project-trig-otu" href="javascript:void(0);" title="Replace the OTU table">Replace</a>
+                            <input type="file" name="upload" class="project-replace-otu" data-project="{{ projectName }}" accept=".shared" style="display:none;" />
+                            <input class="replace-fileType" name="fileType" type="hidden" value="otuTable" />
+                            <input class="replace-subsampleType" name="subsampleType" type="hidden" value="" />
+                            <input class="replace-subsampleTo" name="subsampleTo" type="hidden" value="" />
+                            <input type="hidden" name="project" value="{{ projectName }}" />
+                          </form>
+                        </td>
+                      </tr>
+                      <tr> 
+                        <th scope="row" class="project-fn">{{ items[projectName]["otuTaxonomyMapping"] }}</th> 
+                        <td class="subsampleDisplayContainer"></td> 
+                        <td>Taxonomy Map</td> 
+                        <td class="project-item-meta">
+                          <form data-project="{{ projectName }}" action="/upload" method="post" enctype="multipart/form-data">
+                            <a class="project-trig-tax" href="javascript:void(0);" title="Replace the taxonomy mapping">Replace</a>
+                            <input type="file" name="upload" class="project-replace-taxonomy" data-project="{{ projectName }}" accept=".taxonomy" style="display:none;" />
+                            <input class="replace-fileType" name="fileType" type="hidden" value="otuTaxonomyMapping" />
+                            <input type="hidden" name="project" value="{{ projectName }}" />
+                          </form>
+                        </td>
+                      </tr>
+                      <tr> 
+                        <th scope="row" class="project-fn">{{ items[projectName]["otuMetadata"] }}</th> 
+                        <td class="subsampleDisplayContainer"></td> 
+                        <td>Metadata</td> 
+                        <td class="project-item-meta">
+                          <form data-project="{{ projectName }}" action="/upload" method="post" enctype="multipart/form-data">
+                            <a class="project-trig-metadata" href="javascript:void(0);" title="Replace the metadata">Replace</a>
+                            <input type="file" name="upload" class="project-replace-metadata" data-project="{{ projectName }}" accept=".tsv,.txt" style="display:none;" />
+                            <input class="replace-fileType" name="fileType" type="hidden" value="otuMetadata" />
+                            <input type="hidden" name="project" value="{{ projectName }}" />
+                          </td>
+                        </form>
+                      </tr>
+                    </tbody> 
+                  </table>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
         </div>
       </div>
+
+      <div id="push" style="height:42px;"></div>
     </div>
 
-    {% include 'footer.html' %}
+    {% include 'footer-full.html' %}
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

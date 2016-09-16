@@ -1,6 +1,7 @@
 $(document).ready(function() {
   var changeProject = "";
   var changeSubsamplingAnchor = null;
+  hideLoading();
 
   $(".project-delete").click(function() {
     var project = $(this).data("project");

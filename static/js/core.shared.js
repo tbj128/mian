@@ -130,8 +130,9 @@ $(document).ready(function() {
           options.push(option);
         }
 
+        var outWidth = $("#project").outerWidth();
         $filterSampleSpecific.multiselect({
-          buttonWidth: '320px',
+          buttonWidth: outWidth ? outWidth + 'px' : '320px',
           includeSelectAllOption: true,
           enableFiltering: true,
           maxHeight: 400
@@ -162,6 +163,8 @@ function updateCatVar(callback) {
       var $filterSample = $("#filter-sample");
 
       $catvar.empty();
+      $catvar.append("<option value='none'>None</option>");
+
       $filterSample.empty();
       $filterSample.append("<option value='none'>Don't Filter</option>");
       $filterSample.append("<option value='mian-sample-id'>Sample ID</option>");
@@ -182,7 +185,7 @@ function updateCatVar(callback) {
       }
 
       if (callback !== undefined) {
-        callback();
+        callback(json);
       }
     }
   });
@@ -217,7 +220,7 @@ function renderTaxonomicLevel(firstLoad) {
 
   var level = getSelectedTaxFilter();
 
-  if (getTaxonomicLevel() == "OTU") {
+  if (getSelectedTaxFilter() < 0) {
     $.each(taxonomiesMap, function(otu, classification) {
       taxas[otu] = true;
     });
@@ -245,8 +248,9 @@ function renderTaxonomicLevel(firstLoad) {
     options.push(option);
   }
 
+  var outWidth = $("#project").outerWidth();
   $filterOTUSpecific.multiselect({
-    buttonWidth: '320px',
+    buttonWidth: outWidth ? outWidth + 'px' : '320px',
     includeSelectAllOption: true,
     enableFiltering: true,
     maxHeight: 400
@@ -275,8 +279,9 @@ function renderSamples(json, firstLoad) {
   $("#samples").append(options)
 
   if (firstLoad) {
+    var outWidth = $("#project").outerWidth();
     $('#samples').multiselect({
-      buttonWidth: '320px',
+      buttonWidth: outWidth ? outWidth + 'px' : '320px',
       enableFiltering: true,
       includeSelectAllOption: true,
       maxHeight: 200

@@ -37,6 +37,7 @@ r_package_install.importr_custom("glmnet")
 #
 # mian imports
 #
+import db.db as db
 import analysis
 import analysis_diversity
 import analysis_r_visualizations
@@ -69,23 +70,7 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
 # Initialize the database if applicable
-initDB()
-
-# 
-# DB helper methods 
-# 
-
-def initDB():
-	if not os.path.isfile(DB_PATH):
-		print('Database does not exist. Creating new database at ' + DB_PATH)
-		connection = sqlite3.connect(DB_PATH)
-		cur = connection.cursor()
-		with open(SCHEMA_PATH, mode='r') as f:
-			cur.executescript(f.read())
-		connection.commit()
-	else:
-		print('Database already exists.')
-
+db.initDB(DB_PATH, SCHEMA_PATH)
 
 # 
 # Auth helper methods 

@@ -1,4 +1,5 @@
 import os
+from sqlite3 import dbapi2 as sqlite3
 
 # 
 # DB helper methods 

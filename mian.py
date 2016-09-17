@@ -6,7 +6,7 @@
 # ===========================================
 
 # 
-# Imports 
+# Generic Imports 
 # 
 
 from functools import wraps
@@ -23,7 +23,20 @@ import hashlib
 import shutil
 from subprocess import Popen, PIPE
 
+#
+# Imports and installs R packages as needed
+#
+import utils.r_package_install as r_package_install
+r_package_install.importr_custom("vegan")
+r_package_install.importr_custom("RColorBrewer")
+r_package_install.importr_custom("ranger")
+r_package_install.importr_custom("Boruta")
+r_package_install.importr_custom("glmnet")
 
+
+#
+# mian imports
+#
 import analysis
 import analysis_diversity
 import analysis_r_visualizations
@@ -35,8 +48,18 @@ import analysis_stats
 # 
 
 DB_NAME = "mian.db"
+SCHEMA_NAME = "schema.sql"
+
 RELATIVE_PATH = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = os.path.join(RELATIVE_PATH, "data")
+DB_PATH = os.path.join(RELATIVE_PATH, DB_NAME) 
+SCHEMA_PATH = os.path.join(RELATIVE_PATH, SCHEMA_NAME) 
+
+
+#
+# Main App
+#
+
 
 # Initialize the web app
 app = Flask(__name__)
@@ -44,6 +67,24 @@ app = Flask(__name__)
 # Initialize the login manager
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
+
+# Initialize the database if applicable
+initDB()
+
+# 
+# DB helper methods 
+# 
+
+def initDB():
+	if not os.path.isfile(DB_PATH):
+		print('Database does not exist. Creating new database at ' + DB_PATH)
+		connection = sqlite3.connect(DB_PATH)
+		cur = connection.cursor()
+		with open(SCHEMA_PATH, mode='r') as f:
+			cur.executescript(f.read())
+		connection.commit()
+	else:
+		print('Database already exists.')
 
 
 # 
@@ -58,7 +99,7 @@ def createSalt():
 	return "".join(chars)
 
 def addUser(username, password):
-	db = sqlite3.connect(DB_NAME)
+	db = sqlite3.connect(DB_PATH)
 	c = db.cursor()
 	t = (username,)
 
@@ -69,7 +110,7 @@ def addUser(username, password):
 	db.close()
 
 def getUserEmail(userID):
-	db = sqlite3.connect(DB_NAME)
+	db = sqlite3.connect(DB_PATH)
 	c = db.cursor()
 	t = (userID,)
 	c.execute('SELECT id, user_email FROM accounts WHERE id=?', t)
@@ -80,7 +121,7 @@ def getUserEmail(userID):
 	return row[1]
 
 def checkAuth(username, password):
-	db = sqlite3.connect(DB_NAME)
+	db = sqlite3.connect(DB_PATH)
 	c = db.cursor()
 	t = (username,)
 	c.execute('SELECT password_hash, salt, id FROM accounts WHERE user_email=?', t)

@@ -21,6 +21,7 @@ import string
 import json
 import hashlib
 import shutil
+import uuid
 from subprocess import Popen, PIPE
 
 #
@@ -55,6 +56,7 @@ RELATIVE_PATH = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = os.path.join(RELATIVE_PATH, "data")
 DB_PATH = os.path.join(RELATIVE_PATH, DB_NAME) 
 SCHEMA_PATH = os.path.join(RELATIVE_PATH, SCHEMA_NAME) 
+TEMP_UPLOAD_FOLDER = str(uuid.uuid4())
 
 
 #
@@ -224,7 +226,7 @@ def projects():
 	userDir = os.path.join(UPLOAD_FOLDER, current_user.id)
 	for subdir, dirs, files in os.walk(userDir):
 	    for dir in dirs:
-	    	if dir != "temp":
+	    	if dir != TEMP_UPLOAD_FOLDER:
 	    		projectName = dir
 		    	item = {}
 		    	dirPath = os.path.join(subdir, dir)
@@ -261,15 +263,14 @@ def create():
 		dataMap["otuMetadata"] = projectSampleIDName
 		
 		userUploadFolder = os.path.join(UPLOAD_FOLDER, current_user.id)
-		tempFolder = os.path.join(userUploadFolder, 'temp')
-		mapFile = os.path.join(tempFolder, 'map.txt')
+		tempFolder = os.path.join(userUploadFolder, TEMP_UPLOAD_FOLDER)
 		destFolder = os.path.join(userUploadFolder, projectName)
 
 
 		# Convert from shared file to appropriate file type
 		# otuTablePath = os.path.join(tempFolder, projectOTUTableName)
 
-		os.rename(os.path.join(tempFolder, projectOTUTableName), os.path.join(tempFolder, 'otuTable.shared'))
+		os.rename(os.path.join(tempFolder, projectOTUTableName), os.path.join(tempFolder, analysis.OTU_TABLE_NAME_PRESUBSAMPLE))
 		os.rename(os.path.join(tempFolder, projectTaxaMapName), os.path.join(tempFolder, 'otuTaxonomyMapping.taxonomy'))
 		os.rename(os.path.join(tempFolder, projectSampleIDName), os.path.join(tempFolder, 'otuMetadata.tsv'))
 
@@ -285,6 +286,8 @@ def create():
 		dataMap["subsampleVal"] = subsampleVal
 		dataMap["subsampleType"] = projectSubsampleType
 
+		# Writes the map.txt to file which will hold the original names of the uploaded files
+		mapFile = os.path.join(destFolder, 'map.txt')
 		with open(mapFile, 'w') as outfile:
 			json.dump(dataMap, outfile)
 
@@ -778,7 +781,7 @@ def upload():
 			filename = secure_filename(file.filename)
 
 			userUploadFolder = os.path.join(UPLOAD_FOLDER, current_user.id)
-			uploadFolder = os.path.join(userUploadFolder, 'temp')
+			uploadFolder = os.path.join(userUploadFolder, TEMP_UPLOAD_FOLDER)
 
 			if not os.path.exists(uploadFolder):
 				os.makedirs(uploadFolder)
@@ -898,7 +901,7 @@ def getAllProjects(userID):
 	userDir = os.path.join(UPLOAD_FOLDER, userID)
 	for subdir, dirs, files in os.walk(userDir):
 		for dir in dirs:
-			if dir != "temp":
+			if dir != TEMP_UPLOAD_FOLDER:
 				projectName = dir
 				projectNames.append(projectName)
 	return projectNames
@@ -907,6 +910,6 @@ if __name__ == '__main__':
 	app.secret_key = 'Twilight Sparkle'
 	app.config['SESSION_TYPE'] = 'filesystem'
 	print "App Startup"
-	# app.run(debug=True, port=8080)
+	#app.run(debug=True, port=8080)
 	# app.run(host='0.0.0.0', debug=True, port=8080)
 	app.run()

@@ -281,7 +281,7 @@ def create():
 		os.rename(tempFolder, destFolder)
 
 		# Perform OTU subsampling
-		subsampleVal = subsampleOTUTable(current_user.id, projectName, projectSubsampleType, projectSubsampleTo)
+		subsampleVal = analysis.subsampleOTUTable(current_user.id, projectName, projectSubsampleType, projectSubsampleTo)
 		dataMap["subsampleVal"] = subsampleVal
 		dataMap["subsampleType"] = projectSubsampleType
 

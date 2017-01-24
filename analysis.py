@@ -1276,4 +1276,4 @@ def getRarefaction(userID, projectID):
 # print getCompositionAnalysis("1", "BatchsubOTULevel", 0, "Disease")
 # print getRarefaction("1", "BatchsubSequenceLevel")
 
-getDistanceAnalysis("1", "BatchsubOTULevel", 0, "mian-select-all", "none", "mian-select-all", 4)
+#getDistanceAnalysis("1", "BatchsubOTULevel", 0, "mian-select-all", "none", "mian-select-all", 4)

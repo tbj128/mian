@@ -4,16 +4,16 @@ from rpy2.robjects.packages import importr
 utils = importr('utils')
 
 
-# 
+#
 # Initialization including database creation of the project
-# 
+#
 
 def init_db():
-	connection = sqlite3.connect("mian.db")
-	cur = connection.cursor()
-	with open('schema.sql', mode='r') as f:
-		cur.executescript(f.read())
-	connection.commit()
+    connection = sqlite3.connect("mian.db")
+    cur = connection.cursor()
+    with open('schema.sql', mode='r') as f:
+        cur.executescript(f.read())
+    connection.commit()
 
 def importr_custom(package_name):
     try:

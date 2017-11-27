@@ -1,8 +1,14 @@
-language: python
-python:
-  - 3.6
-install:
-  - pip install pipenv
-  - pipenv install -d --system
-script:
-  - pytest
+
+matrix:
+  include:
+    - language: r
+      cache: packages
+
+    - language: python
+      python:
+        - 3.6
+      install:
+        - pip install pipenv
+        - pipenv install -d --system
+      script:
+        - pytest

@@ -1,8 +1,10 @@
 # mian
 
-1) Install R <= 3.3.3 (due to clash with rpy2)
-2) Install pipenv
+[![Build Status](https://travis-ci.org/tbj128/mian.svg?branch=master)](https://travis-ci.org/tbj128/mian)
+
+1) Install R (ensure R version is compatible with the rpy2 version used)
+2) pip install pipenv
 3) pipenv --three
-3) pipenv install
 4) pipenv shell
-5) python3 mian.py
+5) pipenv install
+6) python3 mian.py

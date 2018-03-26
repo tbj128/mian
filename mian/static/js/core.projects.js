@@ -4,8 +4,9 @@ $(document).ready(function() {
   hideLoading();
 
   $(".project-delete").click(function() {
+    var project_name = $(this).data("projectname");
     var project = $(this).data("project");
-    bootbox.confirm("Are you sure you want to delete " + project + "?", function(result) {
+    bootbox.confirm("Are you sure you want to delete " + project_name + "?", function(result) {
       if (result) {
         var data = {
           "project": project,

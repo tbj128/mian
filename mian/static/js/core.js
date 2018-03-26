@@ -12,10 +12,33 @@ $(document).ready(function() {
   var sampleIDMappingRow = {};
   var sampleIDMappingCol = {};
 
+  // TODO: IS THIS STILL USED?
+
+  // Event listeners to switch tabs
+  $("#upload-biom-tab").click(function() {
+    $(this).removeClass("btn-primary").addClass("btn-default");
+    $("#upload-otu-tab").removeClass("btn-primary").addClass("btn-default");
+    $("#otu-upload-container").fadeOut(10);
+    $("#biom-upload-container").fadeIn(10);
+    $("#projectUploadType").val("biom");
+  });
+  $("#upload-otu-tab").click(function() {
+    $(this).removeClass("btn-primary").addClass("btn-default");
+    $("#upload-biom-tab").removeClass("btn-primary").addClass("btn-default");
+    $("#otu-upload-container").fadeIn(10);
+    $("#biom-upload-container").fadeOut(10);
+    $("#projectUploadType").val("otu");
+  });
+
   // The event listener for the file upload
+  document.getElementById('biomInput').addEventListener('change', uploadBiom, false);
   document.getElementById('otuTable').addEventListener('change', uploadOTUTable, false);
   document.getElementById('otuTaxonomyMapping').addEventListener('change', uploadTaxonomyMapping, false);
   document.getElementById('otuMetadata').addEventListener('change', uploadMetadata, false);
+
+  function uploadBiom() {
+    upload("biomForm");
+  }
 
   function uploadOTUTable() {
     upload("otuTableForm");
@@ -90,7 +113,7 @@ $(document).ready(function() {
 
   // Catch the form submit and upload the files
   function upload(formID) {
-    var form = $('#' + formID)[0]; // You need to use standart javascript object here
+    var form = $('#' + formID)[0]; // You need to use standard javascript object here
     var formData = new FormData(form);
 
     $.ajax({
@@ -102,6 +125,10 @@ $(document).ready(function() {
         contentType: false, // Set content type to false as jQuery will tell the server its a query string request
         success: function(data, textStatus, jqXHR) {
           console.log('Success');
+          if (formID == "biomForm") {
+            $('#biomOK').show();
+            $('#biomText').text("Replace");
+          }
           if (formID == "otuTableForm") {
             $('#otuTableOK').show();
             $('#otuTableText').text("Replace");

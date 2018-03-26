@@ -70,7 +70,7 @@ $(document).ready(function() {
 
   function updateYAxisVals(json) {
     $("#yvals").empty();
-    $("#yvals").append('<option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-alpha">Alpha Diversity</option>');
+    $("#yvals").append('<option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>');
     for (var i = 0; i < json.length; i++) {
       $("#yvals").append('<option value="' + json[i] + '">' + json[i] + '</option>')
     }

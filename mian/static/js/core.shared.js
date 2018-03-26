@@ -120,11 +120,20 @@ $(document).ready(function() {
         var $filterSampleSpecific = $("#filter-sample-specific");
 
         var options = [];
-        for (var i = 0; i < json.length; i++) {
+//        for (var i = 0; i < json.length; i++) {
+//          var option = {
+//            "label": json[i],
+//            "title": json[i],
+//            "value": json[i],
+//            // "selected": true
+//          };
+//          options.push(option);
+//        }
+        for (var i = 0; i < 100; i++) {
           var option = {
-            "label": json[i],
-            "title": json[i],
-            "value": json[i],
+            "label": i,
+            "title": i,
+            "value": i,
             // "selected": true
           };
           options.push(option);
@@ -143,6 +152,27 @@ $(document).ready(function() {
     });
 
   }
+
+    console.log("blah");
+
+    $('input').tagsinput({
+      typeahead: {
+        source: ['Amsterdam', 'Washington', 'Sydney', 'Beijing', 'Cairo']
+      }
+    });
+
+
+//    $('#test').tagsinput({
+//      typeaheadjs: {
+//        name: 'citynames',
+//        displayKey: 'name',
+//        valueKey: 'name',
+//        source: function(query, callback) {
+//            console.log(query);
+//            callback(["apple"]);
+//        }
+//      }
+//    });
 });
 
 
@@ -192,6 +222,7 @@ function updateCatVar(callback) {
 }
 
 function updateTaxonomicLevel(firstLoad, callback) {
+  console.log("Updating taxonomic level")
   if (taxonomiesMap.length == 0) {
     // Load taxonomy map
     return $.ajax({
@@ -216,6 +247,7 @@ function updateTaxonomicLevel(firstLoad, callback) {
 
 
 function renderTaxonomicLevel(firstLoad) {
+  console.log("Rendering taxonomic level");
   var taxas = {};
 
   var level = getSelectedTaxFilter();
@@ -248,15 +280,17 @@ function renderTaxonomicLevel(firstLoad) {
     options.push(option);
   }
 
-  var outWidth = $("#project").outerWidth();
-  $filterOTUSpecific.multiselect({
-    buttonWidth: outWidth ? outWidth + 'px' : '320px',
-    includeSelectAllOption: true,
-    enableFiltering: true,
-    maxHeight: 400
-  });
+//  var outWidth = $("#project").outerWidth();
+//  $filterOTUSpecific.multiselect({
+//    buttonWidth: outWidth ? outWidth + 'px' : '320px',
+//    includeSelectAllOption: true,
+//    enableFiltering: true,
+//    maxHeight: 400
+//  });
+//
+//  $filterOTUSpecific.multiselect('dataprovider', options);
 
-  $filterOTUSpecific.multiselect('dataprovider', options);
+  console.log("Finished rendering taxonomic level");
 }
 
 
@@ -308,8 +342,12 @@ function renderPvaluesTable(abundancesObj) {
 
   $('#stats-rows').empty();
   var statsArr = abundancesObj["stats"];
-  for (var i = 0; i < statsArr.length; i++) {
-    $('#stats-rows').append('<tr><td>' + statsArr[i]["c1"] + '</td> <td>' + statsArr[i]["c2"] + '</td> <td>' + statsArr[i]["pval"] + '</td> </tr>')
+  if (statsArr.length == 0) {
+    $('#stats-rows').append('<tr><td colspan=3>No p-values could be generated. Try adjusting the search parameters. <br /><i style="color:#999">Try changing the Category Breakdown on the left.</i></td></tr>');
+  } else {
+    for (var i = 0; i < statsArr.length; i++) {
+       $('#stats-rows').append('<tr><td>' + statsArr[i]["c1"] + '</td> <td>' + statsArr[i]["c2"] + '</td> <td>' + statsArr[i]["pval"] + '</td> </tr>');
+    }
   }
   
   $("#stats-container").fadeIn(250);

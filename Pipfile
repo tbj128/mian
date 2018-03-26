@@ -12,11 +12,16 @@ pytest = "*"
 
 [packages]
 
+biom-format = "==2.1.6"
 flask = "==0.11.1"
-werkzeug = "==0.9.4"
 flask-login = "==0.4.0"
-scipy = "*"
+h5py = "*"
 "rpy2" = "==2.8.6"
+scikit-learn = "*"
+scipy = "*"
+werkzeug = "==0.9.4"
+mothur-py = "*"
+scikit-bio = "*"
 
 
 [requires]

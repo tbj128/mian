@@ -1,8 +1,8 @@
 # Custom
-data/*
+mian/data/*
 *.db
 config.py
-static/tmp/*
+mian/static/tmp/*
 *.out
 *.logfile
 

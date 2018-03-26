@@ -14,6 +14,15 @@
         <option value="OTU">OTU</option>
       </select>
 
+      <div class="fmultiselect-container" style="width:320px;">
+          <span class="tag label label-include" title="Include OTU123">+ OTU123<a class="tag tag-remove" data-role="remove">&times;</a></span>
+          <span class="tag label label-include" title="Include OTU123">+ OTU153<a class="tag tag-remove" data-role="remove">&times;</a></span>
+          <span class="tag label label-include" title="Include OTU123">+ OTU663<a class="tag tag-remove" data-role="remove">&times;</a></span>
+          <span class="tag label label-include" title="Include OTU123">+ OTUAA3<a class="tag tag-remove" data-role="remove">&times;</a></span>
+          <span class="tag label label-exclude" title="Exclude OTU123">- OTU511<a class="tag tag-remove" data-role="remove">&times;</a></span>
+          <input class="invisible-input" type="text" placeholder="" size="1">
+      </div>
+
       <div id="filter-otu-wrapper" style="display:none;">
         <select style="display:none;" id="taxonomy-specific" name="taxonomy-specific" class="form-control pad-bottom" multiple="multiple">
         </select>
@@ -25,8 +34,19 @@
         <option value="none">Don't Filter</option>
         <option value="mian-sample-id">Sample ID</option>
       </select>
-      
-      <div id="filter-sample-wrapper" style="display:none;">
-        <select style="display:none;" id="filter-sample-specific" name="filter-sample-specific" class="form-control pad-bottom" multiple="multiple">
-        </select>
+
+
+      <div id="filter-sample-wrapper" style="display:none;position:relative;">
+        Include:
+        <input id="test1" type="text" value="Amsterdam,Washington" />
+        Exclude:
+        <input id="test2" type="text" value="Amsterdam,Washington" />
+
+        <!--<select style="display:none;" id="filter-sample-specific" name="filter-sample-specific" class="form-control pad-bottom" multiple="multiple">-->
+        <!--</select>-->
+        <!--<ul class="multiselect-container dropdown-menu" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">-->
+            <!--<li class="multiselect-item multiselect-all active"><a tabindex="0" class="multiselect-all"><label class="checkbox"><input type="checkbox" value="multiselect-all">  Select all</label></a></li>-->
+            <!--<li class="multiselect-item search-mode" style="display: list-item;"><i class="fa fa-info-circle"></i>&nbsp;&nbsp;Search for your data above</li>-->
+            <!--<li class="active"><a tabindex="0"><label class="checkbox" title="1"><input type="checkbox" value="1"> 1</label></a></li><li class="active"><a tabindex="0"><label class="checkbox" title="10"><input type="checkbox" value="10"> 10</label></a></li>-->
+        <!--</ul>-->
       </div>

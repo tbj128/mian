@@ -1,0 +1,116 @@
+
+.fmultiselect-container {
+    background-color: #FFF;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.035);
+    display: inline-block;
+    padding: 4px 6px;
+    color: #555;
+    vertical-align: middle;
+    border-radius: 5px;
+    max-width: 100%;
+    cursor: text;
+}
+
+.fmultiselect-container .invisible-input, .fmultiselect-container .invisible-input:focus {
+    background-color: #FFF;
+    border: 0px;
+    outline: none;
+}
+
+.fmultiselect-container .tag {
+    line-height: 24px;
+    padding: 0.5em 0.6em 0.5em;
+}
+
+.fmultiselect-container .tag-remove {
+    margin-left: 8px;
+    color: #CCC;
+    text-decoration:none;
+    cursor: pointer;
+}
+
+.fmultiselect-container .tag-remove:hover {
+    margin-left: 8px;
+    color: #EEE;
+    text-decoration:none;
+}
+
+.fmultiselect-container .label-include {
+    background-color: #3379b7;
+}
+
+.fmultiselect-container .label-exclude {
+    background-color: #9f9f9f;
+}
+
+.multiselect-container .search-mode {
+    padding: 12px 6px;
+}
+
+.multiselect-container {
+    position: absolute;
+    list-style-type: none;
+    margin: 0;
+    padding: 0
+}
+
+.multiselect-container .input-group {
+    margin: 5px
+}
+
+.multiselect-container>li {
+    padding: 0
+}
+
+.multiselect-container>li>a.multiselect-all label {
+    font-weight: 700
+}
+
+.multiselect-container>li.multiselect-group label {
+    margin: 0;
+    padding: 3px 20px 3px 20px;
+    height: 100%;
+    font-weight: 700
+}
+
+.multiselect-container>li.multiselect-group-clickable label {
+    cursor: pointer
+}
+
+.multiselect-container>li>a {
+    padding: 0
+}
+
+.multiselect-container>li>a>label {
+    margin: 0;
+    height: 100%;
+    cursor: pointer;
+    font-weight: 400;
+    padding: 3px 20px 3px 40px
+}
+
+.multiselect-container>li>a>label.radio,
+.multiselect-container>li>a>label.checkbox {
+    margin: 0
+}
+
+.multiselect-container>li>a>label>input[type=checkbox] {
+    margin-bottom: 5px
+}
+
+.btn-group>.btn-group:nth-child(2)>.multiselect.btn {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px
+}
+
+.form-inline .multiselect-container label.checkbox,
+.form-inline .multiselect-container label.radio {
+    padding: 3px 20px 3px 40px
+}
+
+.form-inline .multiselect-container li a label.checkbox input[type=checkbox],
+.form-inline .multiselect-container li a label.radio input[type=radio] {
+    margin-left: -20px;
+    margin-right: 0
+}

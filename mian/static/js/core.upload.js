@@ -4,12 +4,35 @@ $(document).ready(function() {
 
   // Global variables
   var isNameValid = false;
+  var biomUploaded = false;
   var otuTableUploaded = false;
   var otuTaxonomyMappingUploaded = false;
   var otuMetadataUploaded = false;
 
+  // Event listener for main create button
+  $("#upload-submit").click(function() {
+    $("#loading").show();
+  });
+
+  // Event listeners to switch tabs
+  $("#upload-biom-tab").click(function() {
+    $(this).removeClass("btn-default").addClass("btn-primary");
+    $("#upload-otu-tab").removeClass("btn-primary").addClass("btn-default");
+    $("#otu-upload-container").fadeOut(250);
+    $("#biom-upload-container").fadeIn(250);
+    $("#projectUploadType").val("biom");
+  });
+  $("#upload-otu-tab").click(function() {
+    $(this).removeClass("btn-primary").addClass("btn-primary");
+    $("#upload-biom-tab").removeClass("btn-primary").addClass("btn-default");
+    $("#otu-upload-container").fadeIn(250);
+    $("#biom-upload-container").fadeOut(250);
+    $("#projectUploadType").val("otu");
+  });
+
   // The event listener for the file upload
   document.getElementById('inputName').addEventListener('change', nameChange, false);
+  document.getElementById('biomInput').addEventListener('change', uploadBiom, false);
   document.getElementById('otuTable').addEventListener('change', uploadOTUTable, false);
   document.getElementById('otuTaxonomyMapping').addEventListener('change', uploadTaxonomyMapping, false);
   document.getElementById('otuMetadata').addEventListener('change', uploadMetadata, false);
@@ -34,10 +57,33 @@ $(document).ready(function() {
     $("#projectSubsampleType").val(type);
   }, false);
 
+  document.getElementById('biomSubsampleType').addEventListener('change', function() {
+    $("#biomSubsampleTo").hide();
+    $("#biom-auto-prompt").hide();
+    $("#biom-manual-prompt").hide();
+    $("#biom-no-prompt").hide();
+
+    var type = $("#biomSubsampleType").val();
+    if (type === "manual") {
+      $("#biomSubsampleTo").show();
+      $("#biom-manual-prompt").show();
+    } else if (type === "auto") {
+      $("#biom-auto-prompt").show();
+    } else {
+      $("#biomSubsampleTo").hide();
+      $("#biom-no-prompt").show();
+    }
+
+    $("#projectSubsampleType").val(type);
+  }, false);
+
   document.getElementById('subsampleTo').addEventListener('change', function() {
     $("#projectSubsampleTo").val($('#subsampleTo'));
   }, false);
 
+  document.getElementById('biomSubsampleTo').addEventListener('change', function() {
+    $("#projectSubsampleTo").val($('#biomSubsampleTo'));
+  }, false);
 
   function nameChange() {
     $("#projectName").val($("#inputName").val());
@@ -51,11 +97,15 @@ $(document).ready(function() {
       isNameValid = false;
     }
 
-    if (isNameValid && otuTableUploaded && otuTaxonomyMappingUploaded && otuMetadataUploaded) {
+    if (isNameValid && (biomUploaded || (otuTableUploaded && otuTaxonomyMappingUploaded && otuMetadataUploaded))) {
       $("#upload-submit").prop('disabled', false);
     } else {
       $("#upload-submit").prop('disabled', true);
     }
+  }
+
+  function uploadBiom() {
+    upload("biomForm");
   }
 
   function uploadOTUTable() {
@@ -76,6 +126,10 @@ $(document).ready(function() {
     var filename = "";
     var formData = new FormData(form);
 
+    if (formID == "biomForm") {
+      $('#biomLoading').show();
+      filename = $('#biomInput').val();
+    }
     if (formID == "otuTableForm") {
       $('#otuTableLoading').show();
       filename = $('#otuTable').val();
@@ -100,6 +154,13 @@ $(document).ready(function() {
         contentType: false, // Set content type to false as jQuery will tell the server its a query string request
         success: function(data, textStatus, jqXHR) {
           console.log('Success');
+          if (formID == "biomForm") {
+            $('#biomLoading').hide();
+            $('#biomOK').show();
+            $('#biomText').text("Replace");
+            $('#projectBiomName').val(filename);
+            biomUploaded = true;
+          }
           if (formID == "otuTableForm") {
             $('#otuTableLoading').hide();
             $('#otuTableOK').show();

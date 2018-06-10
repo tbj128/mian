@@ -45,9 +45,10 @@
     this.multiple = (this.isSelect && element.hasAttribute('multiple'));
     this.objectItems = options && options.itemValue;
     this.placeholderText = element.hasAttribute('placeholder') ? this.$element.attr('placeholder') : '';
+    this.backgroundText = this.$element.attr('data-background') ? this.$element.data('background') : '';
     this.inputSize = Math.max(1, this.placeholderText.length);
 
-    this.$container = $('<div class="bootstrap-tagsinput"></div>');
+    this.$container = $('<div class="bootstrap-tagsinput" style="width:235px;min-height:34px;border-radius: 0 4px 4px 0;"><div class="background">' + this.backgroundText + '</div></div>');
     this.$input = $('<input type="text" placeholder="' + this.placeholderText + '"/>').appendTo(this.$container);
 
     this.$element.before(this.$container);
@@ -409,6 +410,8 @@
           return;
         }
 
+        self.$container.find(".background").hide();
+
         switch (event.which) {
           // BACKSPACE
           case 8:
@@ -456,6 +459,7 @@
         var textLength = $input.val().length,
             wordSpace = Math.ceil(textLength / 5),
             size = textLength + wordSpace + 1;
+        this.inputSize = size;
         $input.attr('size', Math.max(this.inputSize, $input.val().length));
       }, self));
 

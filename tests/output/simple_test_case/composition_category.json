@@ -1,0 +1,1 @@
+{"abundances": [{"t": "Otu00001", "o": {"Control": 0.428, "Disease": 0.002}}, {"t": "Otu00002", "o": {"Control": 0.479, "Disease": 0.492}}, {"t": "Otu00003", "o": {"Control": 0.086, "Disease": 0.352}}, {"t": "Otu00004", "o": {"Control": 0.003, "Disease": 0.072}}, {"t": "Otu00005", "o": {"Control": 0.004, "Disease": 0.082}}], "metaVals": ["Control", "Disease"]}

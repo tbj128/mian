@@ -50,7 +50,6 @@ class ProjectManager(object):
         # Renames the uploaded files to a standard file schema and moves to the project directory
         user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
         os.rename(os.path.join(user_staging_dir, otu_filename), os.path.join(project_dir, RAW_OTU_TABLE_FILENAME))
-        ### TODO: PROCESS THE TAXONOMY FILE
         os.rename(os.path.join(user_staging_dir, taxonomy_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
         os.rename(os.path.join(user_staging_dir, sample_metadata_filename), os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
 

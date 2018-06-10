@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     {% include 'header.html' %}
     <title>Tree View - mian</title>
-  </head>
+</head>
 
-  <style>
+<style>
 
     .tree-view .node circle {
       fill: #fff;
@@ -44,31 +44,32 @@
         pointer-events: none;     
     }
 
-  </style>
 
-  <body>
-    {% include 'navigation.html' %}
-    {% include 'loading-bar.html' %}
+</style>
 
-    <div id="editor" class="editor">
-      <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Tree View</h3>
+<body>
+{% include 'navigation.html' %}
+{% include 'loading-bar.html' %}
 
-      {% include 'project_list.html' %}
+<div id="editor" class="editor">
+    <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Tree View <i class="fa fa-info-circle" data-toggle="popover" data-title="Tree View" data-content="Renders a taxonomic tree up until the specified taxonomic level. At each taxonomic level, show the OTUs grouped by a specified metadata parameter" data-trigger="hover"></i></h3>
 
-      <hr />
+    {% include 'project_list.html' %}
 
-      {% include 'filtering_options.html' %}
+    <hr/>
 
-      <hr />
+    {% include 'filtering_options.html' %}
 
-      <h4>Visualization Parameters</h4>
+    <hr/>
 
-      <label class="control-label">Categorical Variable</label>
-      <select id="catvar" name="catvar" class="form-control">
-      </select>
+    <h4>Visualization Parameters</h4>
 
-      <label class="control-label">Taxonomic Display Level</label>
-      <select id="taxonomy_display_level" name="taxonomy_display_level" class="form-control pad-bottom">
+    <label class="control-label">Categorical Variable</label>
+    <select id="catvar" name="catvar" class="form-control">
+    </select>
+
+    <label class="control-label">Taxonomic Display Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied."></i></label>
+    <select id="taxonomy_display_level" name="taxonomy_display_level" class="form-control pad-bottom">
         <option value="Kingdom">Kingdom</option>
         <option value="Phylum">Phylum</option>
         <option value="Class" selected>Class</option>
@@ -77,61 +78,60 @@
         <option value="Genus">Genus</option>
         <option value="Species">Species</option>
         <option value="OTU">OTU</option>
-      </select>
-      
-      <label class="control-label">Display Values</label>
-      <select id="display_values" name="display_values" class="form-control pad-bottom">
+    </select>
+
+    <label class="control-label">Display Values <i class="fa fa-info-circle" data-toggle="popover" data-title="Display Values" data-content="Indicate which metric to display: <ul><li><strong>Non-Zero Counts</strong> The number of samples with a non-zero count for the indicated taxonomy</li><li><strong>Average Abundance</strong> The mean of the counts across the samples for the indicated taxonomy</li><li><strong>Median Abundance</strong> The median of the counts across the samples for the indicated taxonomy</li><li><strong>Max Abundance</strong> The max of the counts across the samples for the indicated taxonomy</li></ul>"></i></label>
+    <select id="display_values" name="display_values" class="form-control pad-bottom">
         <option value="nonzero">Non-Zero Counts</option>
         <option value="avgabun">Average Abundance</option>
         <option value="medianabun">Median Abundance</option>
         <option value="maxabun">Max Abundance</option>
-      </select>
+    </select>
 
-      <label class="control-label">Exclude Unclassified</label>
-      <select id="exclude_unclassified" name="exclude_unclassified" class="form-control pad-bottom">
+    <label class="control-label">Exclude Unclassified <i class="fa fa-info-circle" data-toggle="popover" data-title="Exclude Unclassified" data-content="<ul><li><strong>Yes</strong> Ignores all counts coming from OTUs unclassified at the specified taxonomic level</li><li><strong>No</strong> Include counts from all OTUs</li></ul>"></i></label>
+    <select id="exclude_unclassified" name="exclude_unclassified" class="form-control pad-bottom">
         <option value="yes">Yes</option>
         <option value="no">No</option>
-      </select>
+    </select>
+</div>
+
+<div class="content-wrapper">
+    <div id="display-error" class="project-empty" style="display:none;">
+        <i class="fa fa-exclamation-circle fa-4x"></i>
+        <h3>Analysis cannot be performed with these parameters</h3>
+        <h5>Try changing the Category Breakdown parameter and try again</h5>
     </div>
 
-    <div class="content-wrapper">
-      <div id="analysis-container" class="analysis-container tree-view" style="min-height:500px;">
-      </div><!-- /.container -->
+    <div id="analysis-container" class="analysis-container tree-view" style="min-height:500px;">
+    </div><!-- /.container -->
 
-      <hr style="margin-top:0px; margin-bottom:0px;" />
+    <hr style="margin-top:0px; margin-bottom:0px;"/>
 
-      <div id="stats-container" class="analysis-container" style="display:none;">
+    <div id="stats-container" class="analysis-container" style="display:none;">
         <h4>Welch's T-Test Summary</h4>
-        <table class="table table-hover"> 
-          <thead> 
-            <tr> 
-              <th>Category 1</th> 
-              <th>Category 2</th> 
-              <th>P-Value</th> 
-            </tr> 
-          </thead> 
-          <tbody id="stats-rows"> 
-          </tbody>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Category 1</th>
+                <th>Category 2</th>
+                <th>P-Value</th>
+            </tr>
+            </thead>
+            <tbody id="stats-rows">
+            </tbody>
         </table>
-      </div><!-- /.container -->
+    </div><!-- /.container -->
 
-      <div id="push" style="height:42px;"></div>
-    </div>
-    
-    {% include 'footer-viz.html' %}
+    <div id="push" style="height:42px;"></div>
+</div>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/d3.js"></script>
-    <script src="static/js/plugins/bootstrap-multiselect.js"></script>
-    <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.tree.js"></script>
+{% include 'footer-viz.html' %}
 
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!-- Include custom JS here -->
+<script src="static/js/core.tree.js"></script>
 
-  </body>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+</body>
 </html>

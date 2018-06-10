@@ -1,54 +1,22 @@
-$(document).ready(function() {
-  // Initialization
-  createListeners();
+// ============================================================
+// Fisher Exact JS Component
+// ============================================================
 
-  updateTaxonomicLevel(true, function() {
-    updateAnalysis();
-  });
-  
-  function createListeners() {
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
+
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     // Alter the second option so that the pairwise aren't both the same value
     $('#pwVar2 option:eq(1)').attr('selected', 'selected');
-
-    $("#project").change(function () {
-      $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
-        updatePWComparisonSidebar(function() {
-          updateAnalysis();
-        });
-      });
-    });
-
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
 
     $("#catvar").change(function () {
       updatePWComparisonSidebar(function() {
@@ -71,9 +39,17 @@ $(document).ready(function() {
     $("#pwVar2").change(function () {
       updateAnalysis();
     });
-  }
+}
 
-  function updatePWComparisonSidebar(callback) {
+//
+// Analysis Specific Methods
+//
+
+function customLoading() {
+    return updatePWComparisonSidebar();
+}
+
+function updatePWComparisonSidebar(callback) {
     var data = {
       "pid": $("#project").val(),
       "catvar": $("#catvar").val(),
@@ -104,9 +80,9 @@ $(document).ready(function() {
         console.log(err);
       }
     });
-  }
+}
 
-  function renderFisherTable(abundancesObj) {
+function renderFisherTable(abundancesObj) {
     $("#stats-container").hide();
 
     if ($.isEmptyObject(abundancesObj)) {
@@ -132,18 +108,20 @@ $(document).ready(function() {
     }
     
     $("#stats-container").fadeIn(250);
-  }
+}
 
 
-  function updateAnalysis() {
+function updateAnalysis() {
     showLoading();
     
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -155,8 +133,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar,
@@ -171,13 +151,20 @@ $(document).ready(function() {
       url: "fisher_exact",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
+
         var abundancesObj = JSON.parse(result);
         renderFisherTable(abundancesObj);
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
-});
+}

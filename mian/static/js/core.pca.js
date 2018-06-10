@@ -1,64 +1,37 @@
-$(document).ready(function() {
-  var abundancesObj = {};
-  var boundX = [];
-  var boundY = [];
-  var boundXLastFire = 0;
-  var boundYLastFire = 0;
-  var slider1 = null, slider2 = null;
+// ============================================================
+// PCA JS Component
+// ============================================================
 
-  // Initialization
-  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
-    updateAnalysis();
-  });
-  
-  createListeners();
 
-  function createListeners() {
-    $("#project").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-      updateCatVar();
-    });
+var abundancesObj = {};
+var boundX = [];
+var boundY = [];
+var boundXLastFire = 0;
+var boundYLastFire = 0;
+var slider1 = null, slider2 = null;
 
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
 
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     $("#catvar").change(function () {
       updateAnalysis();
     });
-  }
+}
 
-  function renderPCA(data) {
+//
+// Analysis Specific Methods
+//
+function renderPCA(data) {
     $("#analysis-container").empty();
 
     var margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -178,9 +151,9 @@ $(document).ready(function() {
           .style("text-anchor", "end")
           .text(function(d) { return d;})
     }
-  }
+}
 
-  function renderPCAVar(data) {
+function renderPCAVar(data) {
     $("#variance-container").empty();
 
     var margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -242,17 +215,19 @@ $(document).ready(function() {
         .datum(data)
         .attr("class", "line")
         .attr("d", line);
-  }
+}
 
-  function updateAnalysis() {
+function updateAnalysis() {
     showLoading();
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -262,8 +237,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar,
@@ -277,7 +254,11 @@ $(document).ready(function() {
       url: "pca",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
+
         abundancesObj = JSON.parse(result);
         boundX = [];
         boundY = [];
@@ -347,8 +328,11 @@ $(document).ready(function() {
         renderPCAVar(abundancesObj["pcaVar"])
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
-});
+}

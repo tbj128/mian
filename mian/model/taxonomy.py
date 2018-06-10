@@ -11,6 +11,7 @@ class Taxonomy(object):
     def __init__(self, user_id, pid):
         self.user_id = user_id
         self.pid = pid
+        self.taxonomy_map = {}
         self.__load_taxonomy()
 
     def __load_taxonomy(self):

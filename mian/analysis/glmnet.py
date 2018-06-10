@@ -79,11 +79,15 @@ class GLMNet(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.sample_filter,
-                                                                    user_request.sample_filter_vals,
+        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
+                                                                    user_request.taxonomy_filter_role,
                                                                     user_request.taxonomy_filter_vals,
-                                                                    user_request.taxonomy_filter)
-        metadata_vals = table.get_sample_metadata().get_metadata_in_otu_table_order(user_request.catvar)
+                                                                    user_request.sample_filter,
+                                                                    user_request.sample_filter_role,
+                                                                    user_request.sample_filter_vals,
+                                                                    user_request.level)
+
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
         return self.analyse(user_request, otu_table, metadata_vals, sample_ids_to_metadata_map)
@@ -113,6 +117,8 @@ class GLMNet(object):
         lambda_threshold_type = user_request.get_custom_attr("lambdathreshold")
         lambda_val = user_request.get_custom_attr("lambdaval")
 
+        print("Analyse GLMNET")
+
         glmnetResult = self.rStats.run_glmnet(dataf, groups, int(keepthreshold), float(alphaVal), family,
                                               lambda_threshold_type, float(lambda_val))
 
@@ -121,7 +127,7 @@ class GLMNet(object):
         while i <= glmnetResult.nrow:
             newRow = []
             newRow.append(glmnetResult.rx(i, 2)[0])
-            newRow.append(float(glmnetResult.rx(i, 3)[0]))
+            newRow.append(round(float(glmnetResult.rx(i, 3)[0]), 6))
 
             g = glmnetResult.rx(i, 1)[0]
             if g in accumResults:
@@ -137,6 +143,3 @@ class GLMNet(object):
 
         return abundancesObj
 
-    # glmnet("1", "BatchsubSequenceLevel", 1, "Disease", 5, 0.5, "multinomial", "Custom", -2)
-    # glmnet("1", "BatchsubSequenceLevel", 1, "Disease", 5, 0.5, "binomial", "Custom", -2)
-    # glmnet("1", "BatchsubSequenceLevel", 1, "Disease", 5, 0.5, "binomial", "lambda1se", -2)

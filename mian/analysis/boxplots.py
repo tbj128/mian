@@ -18,18 +18,20 @@ class Boxplots(AnalysisBase):
         else:
             return self.__getMetadataForCategory(user_request, yvals)
 
-    def __getStatsAbundanceForOTUs(self, user_request, statType):
-        logger.info("Starting to read OTU table")
+    def abundance_boxplots(self, user_request, yvals):
+        logger.info("Starting abundance_boxplots")
         table = OTUTable(user_request.user_id, user_request.pid)
-        ## TODO: Should not aggregate
-        base = table.get_table_after_filtering_and_aggregation(user_request.sample_filter,
-                                                               user_request.sample_filter_vals,
+        base = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
+                                                               user_request.taxonomy_filter_role,
                                                                user_request.taxonomy_filter_vals,
-                                                               user_request.taxonomy_filter)
-
+                                                               user_request.sample_filter,
+                                                               user_request.sample_filter_role,
+                                                               user_request.sample_filter_vals,
+                                                               user_request.level)
         metadata = table.get_sample_metadata().get_as_table()
+        return self.process_abundance_boxplots(user_request, yvals, base, metadata)
 
-        logger.info("Loaded OTU table")
+    def process_abundance_boxplots(self, user_request, yvals, base, metadata):
 
         statsAbundances = {}
         abundances = {}
@@ -71,15 +73,15 @@ class Boxplots(AnalysisBase):
                     abunArr.append(float(base[i][j]))
                     j += 1
 
-                if statType == "mian-min":
+                if yvals == "mian-min":
                     row["a"] = np.min(abunArr)
-                elif statType == "mian-max":
+                elif yvals == "mian-max":
                     row["a"] = np.max(abunArr)
-                elif statType == "mian-median":
+                elif yvals == "mian-median":
                     row["a"] = np.median(abunArr)
-                elif statType == "mian-mean":
+                elif yvals == "mian-mean":
                     row["a"] = np.average(abunArr)
-                elif statType == "mian-abundance":
+                elif yvals == "mian-abundance":
                     row["a"] = np.sum(abunArr)
                 else:
                     row["a"] = 0
@@ -89,8 +91,6 @@ class Boxplots(AnalysisBase):
                     statsAbundances[metadataMap[base[i][OTUTable.SAMPLE_ID_COL]]].append(row["a"])
             i += 1
 
-        logger.info("Processed OTU table")
-
         # Calculate the statistical p-value
         statistics = Statistics.getTtest(statsAbundances)
 
@@ -99,15 +99,18 @@ class Boxplots(AnalysisBase):
         abundances_obj = {"abundances": abundances, "stats": statistics}
         return abundances_obj
 
-    def __getMetadataForCategory(self, user_request, metavar):
+    def metadata_boxplots(self, user_request, yvals):
+        logger.info("Starting metadata_boxplots")
+
         # This code path is used only when the user wants to draw boxplots from only the metadata data
 
         table = OTUTable(user_request.user_id, user_request.pid)
         metadata = table.get_sample_metadata().get_as_filtered_table(user_request.sample_filter,
+                                                                     user_request.sample_filter_role,
                                                                      user_request.sample_filter_vals)
+        return self.process_metadata_boxplots(user_request, yvals, metadata)
 
-        logger.info(metadata)
-
+    def process_metadata_boxplots(self, user_request, yvals, metadata):
         statsAbundances = {}
         abundances = {}
 
@@ -122,7 +125,7 @@ class Boxplots(AnalysisBase):
                 while j < len(metadata[i]):
                     if metadata[i][j] == user_request.catvar:
                         catCol = j
-                    if metadata[i][j] == metavar:
+                    if metadata[i][j] == yvals:
                         metaCol = j
                     j += 1
                 logger.info("Found metadata col of %s and cat col of %s", str(metaCol), str(catCol))

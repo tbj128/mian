@@ -1,51 +1,24 @@
-$(document).ready(function() {
-  // Global variables storing the data
-  var uniqueCatvarVals = [];
+// ============================================================
+// Composition JS Component
+// ============================================================
 
-  // Initialization
-  updateCatVar(function() {
-    $("#catvar").prepend("<option value='All'>None</option>");
-    updateAnalysis();
-  });
-  createListeners();
+// Global variables storing the data
+var uniqueCatvarVals = [];
 
-  function createListeners() {
-    $("#project").change(function () {
-      updateCatVar(function() {
-        $("#catvar").prepend("<option value='All'>None</option>");
-        updateAnalysis();
-      });
-    });
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
+$("#catvar").prepend("<option value='All'>None</option>");
 
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateCatVar(function() {
-        $("#catvar").prepend("<option value='All'>None</option>");
-        updateAnalysis();
-      });
-    });
-
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     $("#catvar").change(function () {
       $("#catvar").prepend("<option value='All'>None</option>");
       updateAnalysis();
@@ -58,22 +31,32 @@ $(document).ready(function() {
     $("#download-svg").click(function() {
       download();
     });
-  }
+}
 
-  function getTaxonomicLevel() {
+
+//
+// Analysis Specific Methods
+//
+function customLoading() {
+    $("#catvar").prepend("<option value='All'>None</option>");
+}
+
+function getTaxonomicLevel() {
     return $("#taxonomy").val();
-  }
+}
 
-  function updateAnalysis() {
+function updateAnalysis() {
     showLoading();
     $("#stats-container").fadeIn(250);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -81,8 +64,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar
@@ -93,7 +78,11 @@ $(document).ready(function() {
       url: "composition",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
+
         var abundancesObj = JSON.parse(result);
         if ($("#plotType").val() == "bar") {
           renderBarplot(abundancesObj);
@@ -102,12 +91,16 @@ $(document).ready(function() {
         }
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
+}
 
-  function renderBarplot(abundancesObj) {
+function renderBarplot(abundancesObj) {
     $('#analysis-container').empty();
 
     var data = abundancesObj["abundances"];
@@ -217,11 +210,9 @@ $(document).ready(function() {
           .attr("dy", ".35em")
           .style("text-anchor", "end")
           .text(function(d) { return d; });
-  }
+}
 
-
-
-  function renderDonut(abundancesObj) {
+function renderDonut(abundancesObj) {
     $('#analysis-container').empty();
 
     var data = abundancesObj["abundances"];
@@ -313,9 +304,9 @@ $(document).ready(function() {
             }
           });
     });
-  }
+}
 
-  function download() {
+function download() {
     $("#donwload-canvas").empty();
     var svgsElems = $("#analysis-container").children();
     var svgElemWidth = $("#analysis-container svg").width();
@@ -362,5 +353,4 @@ $(document).ready(function() {
         $tmpCanvas.empty();
       }
     });
-  }
-});
+}

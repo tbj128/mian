@@ -104,13 +104,23 @@ hr {
 	bottom:0px;
 	width:360px;
 	border-right:1px solid #E8E8E8;
-  background:#FAFAFA;
+    background:#FAFAFA;
 	padding:20px;
-  overflow-y: auto;
+    overflow-y: auto;
 }
 
 .editor label {
 	margin-top:12px;
+}
+
+.editor h3 {
+    margin-top:10px;
+}
+
+.editor .analysis-help {
+    font-size: 0.75em;
+    padding-bottom: 3px;
+    padding-left: 3px;
 }
 
 .editor .pad-bottom {
@@ -267,12 +277,12 @@ hr {
   shape-rendering: crispEdges;
 }
 
-circle {
+.analysis-container circle {
   fill: #242C70;
   stroke: none;
 }
 
-circle:hover {
+.analysis-container circle:hover {
   fill: orange;
   stroke: orange;
   opacity: 1;
@@ -301,6 +311,17 @@ circle:hover {
     shape-rendering: crispEdges;
 }
 
+.tooltip {
+    position: absolute;
+    background:#FFF;
+    padding: 4px 8px;
+    font: 12px sans-serif;
+    border: 1px solid steelblue;
+    border-radius: 4px;
+    min-width:128px;
+    margin-right:12px;
+    pointer-events: none;
+}
 
 /**
  * Form

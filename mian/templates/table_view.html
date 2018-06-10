@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'header.html' %}
+    <title>Table - mian</title>
+</head>
+
+<body>
+{% include 'navigation.html' %}
+{% include 'loading-bar.html' %}
+
+<div id="editor" class="editor">
+    <h3><i class="fa fa-th-large"></i>&nbsp;&nbsp;Table <i class="fa fa-info-circle" data-toggle="popover" data-title="Table" data-content="Renders the OTU table in a raw tabular format, after applying the specified filters and grouping parameters below" data-trigger="hover"></i></h3>
+
+    {% include 'project_list.html' %}
+
+    <hr/>
+
+    {% include 'filtering_options.html' %}
+
+    <hr/>
+
+    <h4>Analysis Parameters</h4>
+
+    <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum">Phylum</option>
+        <option value="Class">Class</option>
+        <option value="Order">Order</option>
+        <option value="Family">Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU" selected>OTU</option>
+    </select>
+</div>
+
+<div class="content-wrapper">
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+        <table class="table table-hover">
+            <thead>
+                <tr id="stats-headers">
+                </tr>
+            </thead>
+            <tbody id="stats-rows">
+            </tbody>
+        </table>
+    </div><!-- /.container -->
+
+    <div id="push" style="height:42px;"></div>
+</div>
+
+{% include 'footer-viz.html' %}
+
+<!-- Include custom JS here -->
+<script src="static/js/core.table.js"></script>
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+</body>
+</html>

@@ -23,11 +23,6 @@ from datetime import datetime
 
 
 class Project(object):
-
-
-
-
-
     @staticmethod
     def add_file_name_attr(csv_name, postfix, attr):
         """

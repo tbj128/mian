@@ -1,51 +1,21 @@
-$(document).ready(function() {
-  // Initialization
-  updateTaxonomicLevel(true, function() {
-    updateAnalysis();
-  });
-  updateCatVar();
-  createListeners();
 
-  function createListeners() {
-    $("#project").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-      updateCatVar();
-    });
+// ============================================================
+// Tree JS Component
+// ============================================================
 
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
 
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     $("#catvar").change(function () {
       updateAnalysis();
     });
@@ -61,15 +31,20 @@ $(document).ready(function() {
     $("#exclude_unclassified").change(function () {
       updateAnalysis();
     });
-  }
+}
 
-  function updateAnalysis(abundancesObj) {
+//
+// Analysis Specific Methods
+//
+function updateAnalysis(abundancesObj) {
     showLoading();
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -80,8 +55,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "catvar": catvar,
       "taxonomy_display_level": taxonomyLevels[taxonomy_display_level],
@@ -94,23 +71,32 @@ $(document).ready(function() {
       url: "tree",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
+
         var abundancesObj = JSON.parse(result);
         renderTree(abundancesObj);
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
+}
 
-  // GPL V3 
-  // http://bl.ocks.org/mbostock/4063570
-  function renderTree(abundancesObj) {
+// GPL V3
+// http://bl.ocks.org/mbostock/4063570
+function renderTree(abundancesObj) {
     $("#analysis-container").empty();
 
     var root = abundancesObj["root"];
     var metaUnique = abundancesObj["metaUnique"];
+    var numSamples = abundancesObj["numSamples"];
     root = root["children"][0]
     console.log(root)
 
@@ -140,7 +126,8 @@ $(document).ready(function() {
 
     var tooltip = d3.select("#analysis-container").append("div") 
         .attr("class", "tooltip")       
-        .style("opacity", 0);
+        .style("opacity", 0)
+        .style("width", "160px");
 
     var nodes = cluster.nodes(root),
         links = cluster.links(nodes);
@@ -224,16 +211,18 @@ $(document).ready(function() {
             if (display_values == "nonzero") {
               var c = d["val"][meta].c;
               var tc = d["val"][meta].tc;
-              var per = c / tc;
+              var numOTUs = tc / numSamples;
+              var per = 100 * c / tc;
               tooltip.transition()
                   .duration(100)
                   .style("opacity", 1);
-              tooltip.html("<strong>" + meta + "</strong><br />Count: <strong>" + c + " / " + tc + "</strong><br />Percent: <strong>" + per.toFixed(2) + "</strong>")
-                  .style("left", (d3.event.pageX - 128) + "px")
+              tooltip.html("<strong>" + meta + "</strong><br />Non-Zero Count: <strong>" + c + " / " + tc + " (" + per.toFixed(2) + "%)</strong><br />Number of OTUs: <strong>" + numOTUs + "</strong>")
+                  .style("left", (d3.event.pageX - 160) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             } else {
               var c = d["val"][meta];
               var tc = d["val"]["tc"];
+              var numOTUs = tc / numSamples;
               tooltip.transition()
                   .duration(100)
                   .style("opacity", 1);
@@ -247,8 +236,8 @@ $(document).ready(function() {
                 header = "Max Abundance";
               }
 
-              tooltip.html("<strong>" + meta + "</strong><br />" + header + ": <strong>" + c + "</strong><br />Total Count: <strong>" + tc + "</strong>")
-                  .style("left", (d3.event.pageX - 128) + "px")
+              tooltip.html("<strong>" + meta + "</strong><br />" + header + ": <strong>" + c + "</strong><br />Number of OTUs: <strong>" + numOTUs + "</strong><br />Number of Samples: <strong>" + numSamples + "</strong>")
+                  .style("left", (d3.event.pageX - 160) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             }
           })
@@ -281,5 +270,4 @@ $(document).ready(function() {
           .text(function(d) { return d;})
 
     d3.select(self.frameElement).style("height", height + "px");
-  }
-});
+}

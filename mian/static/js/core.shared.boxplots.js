@@ -1,86 +1,8 @@
-$(document).ready(function() {
-  // Global variables storing the data
+// ============================================================
+// Boxplot JS Shared Component
+// ============================================================
 
-  // Initialization
-  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
-    updateAnalysis();
-  });
-  
-  createListeners();
-
-  function createListeners() {
-    $("#project").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-      updateCatVar();
-    });
-
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#catvar").change(function () {
-      updateAnalysis();
-    });
-  }
-
-  function updateAnalysis() {
-    showLoading();
-    $("#stats-container").fadeIn(250);
-
-    var taxonomyFilter = getSelectedTaxFilter();
-    var taxonomyFilterVals = getSelectedTaxFilterVals();
-
-    var sampleFilter = getSelectedSampleFilter();
-    var sampleFilterVals = getSelectedSampleFilterVals();
-
-    var catvar = $("#catvar").val();
-
-    var data = {
-      "pid": $("#project").val(),
-      "taxonomyFilter": taxonomyFilter,
-      "taxonomyFilterVals": taxonomyFilterVals,
-      "sampleFilter": sampleFilter,
-      "sampleFilterVals": sampleFilterVals,
-      "catvar": catvar
-    };
-
-    $.ajax({
-      type: "POST",
-      url: "abundances",
-      data: data,
-      success: function(result) {
-        hideLoading();
-        var abundancesObj = JSON.parse(result);
-        renderBoxplots(abundancesObj);
-        renderPvaluesTable(abundancesObj);
-      },
-      error: function(err) {
-        console.log(err)
-      }
-    });
-  }
-
-  function renderBoxplots(abundancesObj) {
+function renderBoxplots(abundancesObj) {
     $('#analysis-container').empty();
 
     var dataObj = abundancesObj["abundances"];
@@ -108,13 +30,13 @@ $(document).ready(function() {
         height = 520 - margin.top - margin.bottom;
 
     // Initialize the y axis scale
-    var yScale = d3.scale.linear().range([height + margin.top, 0 + margin.top]);  
+    var yScale = d3.scale.linear().range([height + margin.top, 0 + margin.top]);
     yScale.domain([0, maxVal*1.10]);
 
     // Initialize the x axis scale
     var xScale = d3.scale.ordinal()
                 .domain(categories)
-                .rangeRoundBands([0, width]); 
+                .rangeRoundBands([0, width]);
 
     // Initialize the y axis
     var yAxis = d3.svg.axis()
@@ -139,7 +61,14 @@ $(document).ready(function() {
     svgContainer.append("g")
        .attr("class", "axis")
        .attr("transform", "translate(" + margin.left + ", 0)")
-       .call(yAxis);
+       .call(yAxis)
+      .append("text")
+        .attr("class", "label")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text($("#yvals option:selected").text());
 
     svgContainer.append("g")
        .attr("class", "axis")
@@ -219,7 +148,7 @@ $(document).ready(function() {
          .attr("x2", midline + boxplotWidth/2);
 
       //draw vertical line for upperWhisker
-      svg.append("line")  
+      svg.append("line")
          .attr("class", "whisker")
          .attr("y1", yScale(upperWhisker))
          .attr("y2", yScale(upperWhisker))
@@ -237,7 +166,7 @@ $(document).ready(function() {
          .attr("x2", midline);
 
       //draw rect for iqr
-      svg.append("rect")    
+      svg.append("rect")
          .attr("class", "box")
          .attr("stroke", "black")
          .attr("fill", "white")
@@ -263,19 +192,19 @@ $(document).ready(function() {
            .attr("class", function() {
             if (d.a < lowerWhisker || d.a > upperWhisker)
               return "outlier";
-            else 
+            else
               return "point";
-           })     
+           })
            .attr("cx", function() {
             return random_jitter(midline);
-           }) 
+           })
            .attr("cy", function() {
-            return yScale(d.a);   
+            return yScale(d.a);
            })
            .append("title")
            .text(function() {
             return "Sample: " + d.s + ", Abundance: " + d.a;
-           }); 
+           });
       }
 
 
@@ -283,10 +212,8 @@ $(document).ready(function() {
         if (Math.round(Math.random() * 1) == 0)
           var seed = -10;
         else
-          var seed = 10; 
+          var seed = 10;
         return m + Math.floor((Math.random() * seed) + 1);
       }
     }
-  }
-
-});
+}

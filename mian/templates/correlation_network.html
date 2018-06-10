@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'header.html' %}
+    <title>Correlation Network - mian</title>
+</head>
+
+<style>
+
+.links line {
+  stroke-opacity: 0.6;
+}
+
+.links line:hover {
+  stroke: orange;
+  stroke-width: 2px;
+  stroke-opacity: 0.8;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.nodes circle:hover {
+  fill: orange;
+  stroke: orange;
+  opacity: 1;
+}
+
+.analysis-container-corr svg {
+    width:100%;
+    height:100%;
+}
+
+.tooltip {
+    position: absolute;
+    padding: 8px;
+    font-size: 12px;
+    background-color: #ddd;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+</style>
+
+<body>
+{% include 'navigation.html' %}
+{% include 'loading-bar.html' %}
+
+<div id="editor" class="editor">
+    <h3><i class="fa fa-th-large"></i>&nbsp;&nbsp;Correlation Network <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlation Network" data-content="Generates a co-correlation network that shows the most positively and negatively correlated taxonomic items (grouped at the indicated taxonomic level)" data-trigger="hover"></i></h3>
+
+    {% include 'project_list.html' %}
+
+    <hr/>
+
+    {% include 'filtering_options.html' %}
+
+    <hr/>
+
+    <h4>Analysis Parameters</h4>
+
+    <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+        <option value="Kingdom">Kingdom</option>
+        <option value="Phylum">Phylum</option>
+        <option value="Class">Class</option>
+        <option value="Order">Order</option>
+        <option value="Family">Family</option>
+        <option value="Genus">Genus</option>
+        <option value="Species">Species</option>
+        <option value="OTU" selected>OTU</option>
+    </select>
+
+    <label class="control-label">Max Features to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Features to Show" data-content="Determines the maximum number of taxonomic items that should be displayed in the network (only the taxonomic items with the largest values are retained)"></i></label>
+    <input class="form-control" id="maxFeatures" name="maxFeatures" type="number" value="100" step="1" min="1" max="500"/>
+
+    <label class="control-label">Correlation Cut-Off <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Cut-Off" data-content="Determines when to draw a correlation line between two nodes in the network. This cutoff is based on the absolute value of the Pearson product-moment correlation coefficient."></i></label>
+    <input class="form-control" id="cutoff" name="cutoff" type="number" value="0.75" max="1" step="0.01"/>
+
+</div>
+
+<div class="content-wrapper">
+    <div id="display-error" class="project-empty" style="display:none;">
+        <i class="fa fa-exclamation-circle fa-4x"></i>
+        <h3>Analysis cannot be performed with these parameters</h3>
+        <h5>Try changing the Category Breakdown parameter and try again</h5>
+    </div>
+    <div id="analysis-container" class="analysis-container-corr tree-view" style="min-height:500px;">
+        <svg height="900"></svg>
+    </div><!-- /.container -->
+
+    <div id="push" style="height:42px;"></div>
+</div>
+
+{% include 'footer-viz-d3v4.html' %}
+
+<!-- Include custom JS here -->
+<script src="static/js/core.correlation.network.js"></script>
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+</body>
+</html>

@@ -20,7 +20,6 @@ import random
 import json
 import hashlib
 import shutil
-from subprocess import Popen, PIPE
 import logging
 
 #
@@ -35,12 +34,15 @@ from mian.analysis.boruta import Boruta
 from mian.analysis.boxplots import Boxplots
 from mian.analysis.composition import Composition
 from mian.analysis.correlations import Correlations
+from mian.analysis.correlation_network import CorrelationNetwork
 from mian.analysis.enriched_selection import EnrichedSelection
 from mian.analysis.fisher_exact import FisherExact
 from mian.analysis.glmnet import GLMNet
-from mian.analysis.gravity_cluster import GravityCluster
 from mian.analysis.nmds import NMDS
 from mian.analysis.pca import PCA
+from mian.analysis.random_forest import RandomForest
+from mian.analysis.rarefaction_curves import RarefactionCurves
+from mian.analysis.table_view import TableView
 from mian.analysis.tree_view import TreeView
 from mian.core.project import Project
 from mian.core.subsample import Subsample
@@ -242,20 +244,11 @@ def beta_diversity():
 @flask_login.login_required
 def boruta():
     projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    if currProject == "":
-        currProject = projectNames[0]
-    catVars = Metadata.get_metadata_headers(current_user.id, currProject)
+    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
+    metadata = Metadata(current_user.id, currProject)
+    catVars = metadata.get_metadata_headers()
 
     return render_template('boruta.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
-
-
-@app.route('/cluster_gravity')
-@flask_login.login_required
-def cluster_gravity():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('cluster_gravity.html', projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/composition')
@@ -271,23 +264,32 @@ def composition():
 def correlations():
     # TODO: Consider using only factors in the future for catVars
     projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    if currProject == "":
-        currProject = projectNames[0]
-    catVars, otuMetadata = Metadata.get_metadata_headers_with_metadata(current_user.id, currProject)
-    numericCatVars = Metadata.get_numeric_metadata(otuMetadata)
+    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
+    metadata = Metadata(current_user.id, currProject)
+    catVars = metadata.get_metadata_headers()
+    numericCatVars = metadata.get_numeric_metadata_headers()
     return render_template('correlations.html', projectNames=projectNames, currProject=currProject, catVars=catVars, numericCatVars=numericCatVars)
+
+
+@app.route('/correlation_network')
+@flask_login.login_required
+def correlation_network():
+    projectNames = get_project_ids_to_info(current_user.id)
+    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
+    metadata = Metadata(current_user.id, currProject)
+    catVars = metadata.get_metadata_headers()
+
+    return render_template('correlation_network.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
 
 
 @app.route('/enriched_selection')
 @flask_login.login_required
 def enriched_selection():
     projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    if currProject == "":
-        currProject = projectNames[0]
-    catVars = Metadata.get_metadata_headers(current_user.id, currProject)
-    uniqueCatVals = Metadata.get_metadata_unique_vals(current_user.id, projectNames[0], catVars[0])
+    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
+    metadata = Metadata(current_user.id, currProject)
+    catVars = metadata.get_metadata_headers()
+    uniqueCatVals = metadata.get_metadata_unique_vals(catVars[0])
     return render_template('enriched_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
 
@@ -295,11 +297,10 @@ def enriched_selection():
 @flask_login.login_required
 def fisher_exact():
     projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    if currProject == "":
-        currProject = projectNames[0]
-    catVars = Metadata.get_metadata_headers(current_user.id, currProject)
-    uniqueCatVals = Metadata.get_metadata_unique_vals(current_user.id, projectNames[0], catVars[0])
+    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
+    metadata = Metadata(current_user.id, currProject)
+    catVars = metadata.get_metadata_headers()
+    uniqueCatVals = metadata.get_metadata_unique_vals(catVars[0])
 
     return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
@@ -308,10 +309,9 @@ def fisher_exact():
 @flask_login.login_required
 def glmnet():
     projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    if currProject == "":
-        currProject = projectNames[0]
-    catVars = Metadata.get_metadata_headers(current_user.id, currProject)
+    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
+    metadata = Metadata(current_user.id, currProject)
+    catVars = metadata.get_metadata_headers()
 
     return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
 
@@ -332,12 +332,28 @@ def pca():
     return render_template('pca.html', projectNames=projectNames, currProject=currProject)
 
 
+@app.route('/random_forest')
+@flask_login.login_required
+def random_forest():
+    projectNames = get_project_ids_to_info(current_user.id)
+    currProject = request.args.get('pid', '')
+    return render_template('random_forest.html', projectNames=projectNames, currProject=currProject)
+
+
 @app.route('/rarefaction')
 @flask_login.login_required
 def rarefaction():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
     return render_template('rarefaction.html', projectNames=projectNames, currProject=currProject)
+
+
+@app.route('/table')
+@flask_login.login_required
+def table():
+    projectNames = get_project_ids_to_info(current_user.id)
+    currProject = request.args.get('pid', '')
+    return render_template('table_view.html', projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/tree')
@@ -393,6 +409,17 @@ def getMetadataHeaders():
     abundances = metadata.get_metadata_headers()
     return json.dumps(abundances)
 
+@app.route('/metadata_numeric_headers')
+@flask_login.login_required
+def getMetadataNumericHeaders():
+    user = current_user.id
+    pid = request.args.get('pid', '')
+    if pid == '':
+        return json.dumps({})
+
+    metadata = Metadata(user, pid)
+    abundances = metadata.get_numeric_metadata_headers()
+    return json.dumps(abundances)
 
 @app.route('/metadata_vals')
 @flask_login.login_required
@@ -410,18 +437,6 @@ def getMetadataVals():
 
 
 # Visualization endpoints
-
-@app.route('/abundances_grouping', methods=['POST'])
-@flask_login.login_required
-def getAbundancesGrouping():
-    user_request = __get_user_request(request)
-    user_request.set_custom_attr("taxonomy_group_general", request.form['taxonomy_group_general'])
-    user_request.set_custom_attr("taxonomy_group_specific", request.form['taxonomy_group_specific'])
-
-    plugin = GravityCluster()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
-
 
 @app.route('/alpha_diversity', methods=['POST'])
 @flask_login.login_required
@@ -494,6 +509,18 @@ def getCorrelations():
     return json.dumps(abundances)
 
 
+@app.route('/correlation_network', methods=['POST'])
+@flask_login.login_required
+def getCorrelationNetwork():
+    user_request = __get_user_request(request)
+    user_request.set_custom_attr("maxFeatures", request.form['maxFeatures'])
+    user_request.set_custom_attr("cutoff", request.form['cutoff'])
+
+    plugin = CorrelationNetwork()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
 @app.route('/enriched_selection', methods=['POST'])
 @flask_login.login_required
 def getEnrichedSelection():
@@ -536,21 +563,27 @@ def getGlmnet():
     return json.dumps(abundances)
 
 
+@app.route('/random_forest', methods=['POST'])
+@flask_login.login_required
+def getRandomForest():
+    user_request = __get_user_request(request)
+    user_request.set_custom_attr("numTrees", request.form['numTrees'])
+    user_request.set_custom_attr("maxDepth", request.form['maxDepth'])
+
+    plugin = RandomForest()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
 @app.route('/rarefaction', methods=['POST'])
 @flask_login.login_required
 def getRarefaction():
-    user = current_user.id
-    pid = request.form['pid']
-    subsamplestep = int(request.form['subsamplestep'])
+    print("getRarefaction")
+    user_request = __get_user_request(request)
+    # subsamplestep = int(request.form['subsamplestep'])
 
-    userUploadFolder = os.path.join(UPLOAD_FOLDER, user)
-    destFolder = os.path.join(userUploadFolder, pid)
-    destPath = os.path.join(destFolder, RAW_OTU_TABLE_FILENAME)
-
-    c = Popen(['mothur'], shell=True, stdin=PIPE)
-    c.communicate(input="rarefaction.single(shared=" + destPath + ", freq=" + str(subsamplestep) + ")\nquit()")
-
-    abundances = Subsample.get_rarefaction(user, pid)
+    plugin = RarefactionCurves()
+    abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
@@ -562,7 +595,6 @@ def getNMDS():
     return json.dumps(abundances)
 
 
-
 @app.route('/pca', methods=['POST'])
 @flask_login.login_required
 def getPCA():
@@ -571,6 +603,14 @@ def getPCA():
     user_request.set_custom_attr("pca2", request.form['pca2'])
 
     plugin = PCA()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+@app.route('/table', methods=['POST'])
+@flask_login.login_required
+def getTable():
+    user_request = __get_user_request(request)
+    plugin = TableView()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
@@ -596,30 +636,31 @@ def getIsSubsampled():
     user = current_user.id
     pid = request.form['pid']
 
-    isSubsampled = Subsample.get_is_subsampled(user, pid)
-    if isSubsampled:
-        return json.dumps(1)
-    else:
-        return json.dumps(0)
+    return json.dumps(1)
+
+    # isSubsampled = Subsample.get_is_subsampled(user, pid)
+    # if isSubsampled:
+    #     return json.dumps(1)
+    # else:
+    #     return json.dumps(0)
 
 
 
 # ----- Data processing endpoints -----
 
-
 def __get_user_request(request):
     user = current_user.id
     pid = request.form['pid']
-    taxonomyFilter = request.form['taxonomyFilter']
-    taxonomyFilterVals = request.form['taxonomyFilterVals']
-    sampleFilter = request.form['sampleFilter']
-    sampleFilterVals = request.form['sampleFilterVals']
-    catvar = request.form['catvar']
-    level = -2
-    if 'level' in request.form:
-        level = request.form['level']
-    user_request = UserRequest(user, pid, taxonomyFilter, taxonomyFilterVals, sampleFilter, sampleFilterVals, level,
-                               catvar)
+    taxonomyFilter = request.form['taxonomyFilter'] if 'taxonomyFilter' in request.form else ""
+    taxonomyFilterRole = request.form['taxonomyFilterRole'] if 'taxonomyFilterRole' in request.form else ""
+    taxonomyFilterVals = request.form['taxonomyFilterVals'] if 'taxonomyFilterVals' in request.form else ""
+    sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
+    sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
+    sampleFilterVals = request.form['sampleFilterVals'] if 'sampleFilterVals' in request.form else ""
+    catvar = request.form['catvar'] if 'catvar' in request.form else ""
+    level = request.form['level'] if 'level' in request.form else -2
+    user_request = UserRequest(user, pid, taxonomyFilter, taxonomyFilterRole, taxonomyFilterVals,
+                               sampleFilter, sampleFilterRole, sampleFilterVals, level, catvar)
     return user_request
 
 @app.route('/upload', methods=['POST'])

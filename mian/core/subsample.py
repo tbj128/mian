@@ -4,7 +4,6 @@ from mian.core.data_io import DataIO
 
 class Subsample(object):
 
-
     @staticmethod
     def get_rarefaction(userID, projectID):
         rarefactionBase = DataIO.tsv_to_table(userID, projectID, "otuTable.groups.rarefaction")

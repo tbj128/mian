@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     {% include 'header.html' %}
     <title>Glmnet Feature Selection - mian</title>
-  </head>
+</head>
 
-  <body>
-    {% include 'navigation.html' %}
-    {% include 'loading-bar.html' %}
+<body>
+{% include 'navigation.html' %}
+{% include 'loading-bar.html' %}
 
-    <div id="editor" class="editor">
-      <h3><i class="fa fa-th-large"></i>&nbsp;Glmnet Feature Selection</h3>
+<div id="editor" class="editor">
+    <h3><i class="fa fa-th-large"></i>&nbsp;Glmnet Feature Selection <i class="fa fa-info-circle" data-toggle="popover" data-title="Glmnet" data-content="Selects the relevant features that predict the grouping metadata using Generalized Linear Models.<br /><br />This test relies on the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf' target='_blank'>here</a>" data-trigger="hover"></i></h3>
 
-      {% include 'project_list.html' %}
+    {% include 'project_list.html' %}
 
-      <hr />
+    <hr/>
 
-      {% include 'filtering_options.html' %}
+    {% include 'filtering_options.html' %}
 
-      <hr />
+    <hr/>
 
-      <h4>Analysis Parameters</h4>
+    <h4>Analysis Parameters</h4>
 
-      <label class="control-label">Taxonomic Level</label>
-      <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+    <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
         <option value="Kingdom">Kingdom</option>
         <option value="Phylum">Phylum</option>
         <option value="Class">Class</option>
@@ -32,57 +32,57 @@
         <option value="Genus">Genus</option>
         <option value="Species">Species</option>
         <option value="OTU" selected>OTU</option>
-      </select>
+    </select>
 
-      <label class="control-label">Categorical Variable</label>
-      <select id="catvar" name="catvar" class="form-control">
+    <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+    <select id="catvar" name="catvar" class="form-control">
         {% for catVar in catVars %}
-          <option value="{{ catVar }}">{{ catVar }}</option>
+        <option value="{{ catVar }}">{{ catVar }}</option>
         {% endfor %}
-      </select>
+    </select>
 
-      <label class="control-label">Taxa Exclusion Threshold (Keep >=)</label>
-      <input class="form-control" id="keepthreshold" name="keepthreshold" type="number" value="5" />
+    <label class="control-label">Taxa Exclusion Threshold (Keep >=) <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomy Exclusion Threshold" data-content="Any taxonomic items with a total value less than this threshold will be excluded from this analysis (helps processing time and reduces noise in the resulting graph)"></i></label>
+    <input class="form-control" id="keepthreshold" name="keepthreshold" type="number" value="5"/>
 
-      <label class="control-label">Alpha</label>
-      <input class="form-control" id="alpha" name="alpha" type="number" value="0.5" />
+    <label class="control-label">Alpha <i class="fa fa-info-circle" data-toggle="popover" data-title="Alpha" data-content="The elasticnet mixing parameter (as described in the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a>)"></i></label>
+    <input class="form-control" id="alpha" name="alpha" type="number" value="0.1" max="1" min="0" />
 
-      <label class="control-label">Family</label>
-      <select id="family" name="family" class="form-control">
+    <label class="control-label">Family <i class="fa fa-info-circle" data-toggle="popover" data-title="Family" data-content="Should be binomial if the metadata contains two groups, multinomial otherwise (as described in the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a>)"></i></label>
+    <select id="family" name="family" class="form-control">
         <option value="binomial">Binomial</option>
         <option value="multinomial">Multinomial</option>
-      </select>
+    </select>
 
-      <label class="control-label">Lambda Threshold</label>
-      <select id="lambdathreshold" name="lambdathreshold" class="form-control">
+    <label class="control-label">Lambda Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="Lambda" data-content="The lambda parameter where 'custom' would take the user defined values below (as described in the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a>)"></i></label>
+    <select id="lambdathreshold" name="lambdathreshold" class="form-control">
         <option value="lambda">lambda.min</option>
         <option value="lambda1se">lambda.1se</option>
         <option value="Custom" selected>Custom</option>
-      </select>
+    </select>
 
-      <label id="lambdatitle" class="control-label">Custom Lambda Threshold <br />(Exponential Factor)</label>
-      <input class="form-control" id="lambdaval" name="lambdaval" type="number" value="-2" />
+    <label id="lambdatitle" class="control-label">Custom Lambda Threshold <br/>(Exponential Factor)  <i class="fa fa-info-circle" data-toggle="popover" data-title="Alpha" data-content="The optional custom-defined lambda parameter (as described in the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a>)"></i></label>
+    <input class="form-control" id="lambdaval" name="lambdaval" type="number" value="-2"/>
+</div>
+
+<div class="content-wrapper">
+    <div id="display-error" class="project-empty" style="display:none;">
+        <i class="fa fa-exclamation-circle fa-4x"></i>
+        <h3>Analysis cannot be performed with these parameters</h3>
+        <h5>Try changing the Category Breakdown parameter and try again. Note that there must be more than one sample in each metadata group in order to use this analysis</h5>
     </div>
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    </div><!-- /.container -->
+    <div id="push" style="height:42px;"></div>
+</div>
 
-    <div class="content-wrapper">
-      <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-      </div><!-- /.container -->
-      <div id="push" style="height:42px;"></div>
-    </div>
+{% include 'footer-viz.html' %}
 
-    {% include 'footer-viz.html' %}
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/d3.js"></script>
-    <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.glmnet.js"></script>
+<!-- Include custom JS here -->
+<script src="static/js/core.glmnet.js"></script>
 
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
 
-  </body>
+</body>
 </html>

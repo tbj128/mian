@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     {% include 'header.html' %}
     <title>Rarefaction - mian</title>
 
-    <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css" />
+    <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
     <style>
       .analysis-container div.tooltip { 
           position: absolute;
@@ -17,68 +17,64 @@
           margin-right:12px;
           pointer-events: none;     
       }
+
     </style>
-  </head>
+</head>
 
-  <body>
-    {% include 'navigation.html' %}
-    {% include 'loading-bar.html' %}
+<body>
+{% include 'navigation.html' %}
+{% include 'loading-bar.html' %}
 
-    <div id="editor" class="editor">
-      <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Rarefaction</h3>
-      
-      <div class="alert alert-info" role="alert">
-        <b>Note</b><br />
+<div id="editor" class="editor">
+    <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Rarefaction <i class="fa fa-info-circle" data-toggle="popover" data-title="Rarefaction" data-content="Draws a series of rarefaction curves on the OTU table prior to subsampling<br /><br />This analysis relies on the rarecurve function in the R 'vegan' package <a href='https://www.rdocumentation.org/packages/vegan/versions/2.4-2/topics/rarefy' target='_blank'>here</a>" data-trigger="hover"></i></h3>
+
+    <div class="alert alert-info" role="alert">
+        <b>Note</b><br/>
         <ul>
-          <li>This tool may take longer than usual.</li>
-          <li>This tool operates on the original OTU table (before sub-sampling was applied).</li>
+            <li>This tool may take up to a few minutes to complete.</li>
+            <li>This tool operates on the original OTU table (before sub-sampling was applied).</li>
         </ul>
-      </div>
-
-      <div id="already-subsampled" class="alert alert-warning" role="alert" style="display:none;">
-        <b>Warning</b>&nbsp;&nbsp;The originally uploaded OTU table may have already been sub-sampled.
-      </div>
-
-      {% include 'project_list.html' %}
-
-      <label class="control-label">Samples</label>
-      <select style="display:none;" id="samples" name="samples" class="form-control pad-bottom" multiple="multiple">
-      </select>
-
-      <hr />
-
-      <label class="control-label">Max Subsample</label>
-      <input class="form-control" id="maxsubsample" name="maxsubsample" type="number" value="10000" />
-
-      <label class="control-label">Subsample Step</label>
-      <input class="form-control" id="subsamplestep" name="subsamplestep" type="number" value="100" />
     </div>
 
-    <div class="content-wrapper">
-      <div id="display-error" class="project-empty analysis-container" style="display:none;">
+    <div id="already-subsampled" class="alert alert-warning" role="alert" style="display:none;">
+        <b>Warning</b> Make sure that the originally uploaded OTU table has not been sub-sampled yet.
+    </div>
+
+    {% include 'project_list.html' %}
+
+    <!-- TODO: Stretch Goals: Have sample filtering and subsampling step adjustments -->
+    <!--<label class="control-label">Samples</label>
+    <select style="display:none;" id="samples" name="samples" class="form-control pad-bottom" multiple="multiple">
+    </select>
+
+    <hr/>
+
+    <label class="control-label">Max Subsample</label>
+    <input class="form-control" id="maxsubsample" name="maxsubsample" type="number" value="10000"/>
+
+    <label class="control-label">Subsample Step</label>
+    <input class="form-control" id="subsamplestep" name="subsamplestep" type="number" value="100"/>-->
+</div>
+
+<div class="content-wrapper">
+    <div id="display-error" class="project-empty analysis-container" style="display:none;">
         <i class="fa fa-exclamation-o fa-4x"></i>
         <h3>Visualization cannot be displayed with these parameters</h3>
-      </div>
-
-      <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-      </div><!-- /.container -->
-
-      <div id="push" style="height:42px;"></div>
     </div>
 
-    {% include 'footer-viz.html' %}
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    </div><!-- /.container -->
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/d3.js"></script>
-    <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.rarefaction.js"></script>
+    <div id="push" style="height:42px;"></div>
+</div>
 
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+{% include 'footer-viz.html' %}
 
-  </body>
+<!-- Include custom JS here -->
+<script src="static/js/core.rarefaction.js"></script>
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+</body>
 </html>

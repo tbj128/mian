@@ -10,7 +10,7 @@ SUBSAMPLE_TYPE_DISABLED = "no"
 #OTU_TABLE_NAME_PRESUBSAMPLE = "otuTable.presubsample.shared"
 #OTU_TABLE_NAME = "otuTable.shared"
 #TAXONOMY_MAP_NAME = "otuTaxonomyMapping.taxonomy"
-#METADATA_NAME = "metadata.tsv"
+#SAMPLE_METADATA_FILENAME = "metadata.tsv"
 
 BIOM_FILENAME = "table.biom"
 RAW_OTU_TABLE_FILENAME = "table.raw.tsv"

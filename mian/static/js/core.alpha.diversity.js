@@ -1,45 +1,20 @@
-$(document).ready(function() {
-  // Initialization
+// ============================================================
+// Alpha Diversity Boxplot JS Component
+// ============================================================
 
-  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
-    updateAnalysis();
-  });
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
 
-  createListeners();
-
-  function createListeners() {
-    $("#project").change(function () {
-      $.when(updateTaxonomicLevel(false, function() {}), updateCatVar()).done(function(a1, a2) {
-        updateAnalysis();
-      });
-    });
-
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateAnalysis();
-    });
-
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     $("#catvar").change(function () {
       updateAnalysis();
     });
@@ -51,17 +26,38 @@ $(document).ready(function() {
     $("#alphaContext").change(function () {
       updateAnalysis();
     });
-  }
 
+    $("#yvals").change(function () {
+      var val = $("#yvals").val();
+      if (val === "mian-max" || val === "mian-min") {
+        if (val === "mian-max") {
+          $("#taxonomic-level-label").text("Max Abundance Taxonomic Level");
+        } else if (val === "mian-min") {
+          $("#taxonomic-level-label").text("Min Abundance Taxonomic Level");
+        }
 
-  function updateAnalysis() {
+        $("#taxonomic-level").show();
+      } else {
+        $("#taxonomic-level").hide();
+      }
+
+      updateAnalysis();
+    });
+}
+
+//
+// Analysis Specific Methods
+//
+function updateAnalysis() {
     showLoading();
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -71,8 +67,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar,
@@ -85,14 +83,28 @@ $(document).ready(function() {
       url: "alpha_diversity",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
         var abundancesObj = JSON.parse(result);
         renderBoxplots(abundancesObj);
         renderPvaluesTable(abundancesObj);
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
-});
+}
+
+function customLoading() {
+    $("#yvals").empty();
+    $("#yvals").append('<option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>');
+    for (var i = 0; i < catVars.length; i++) {
+      $("#yvals").append('<option value="' + catVars[i] + '">' + catVars[i] + '</option>')
+    }
+}

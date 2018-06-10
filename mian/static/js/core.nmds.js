@@ -1,72 +1,46 @@
-$(document).ready(function() {
-  var abundancesObj = {};
+// ============================================================
+// NMDS JS Component
+// ============================================================
 
-  // Initialization
-  updateTaxonomicLevel(true, function() {
-    updateAnalysis();
-  });
-  updateCatVar();
-  createListeners();
+var abundancesObj = {};
 
-  function createListeners() {
-    $("#project").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-      updateCatVar();
-    });
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
 
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     $("#catvar").change(function () {
       updateAnalysis();
     });
-  }
+}
 
-  function renderNMDS(data) {
+//
+// Analysis Specific Methods
+//
+function renderNMDS(data) {
     $("#analysis-container").empty();
     $("#analysis-container").append("<img src='" + data["fn"] + "' />")
-  }
+}
 
-  function updateAnalysis() {
+function updateAnalysis() {
     showLoading();
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -74,8 +48,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar
@@ -86,13 +62,20 @@ $(document).ready(function() {
       url: "nmds",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
+
         abundancesObj = JSON.parse(result);
         renderNMDS(abundancesObj);
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
-});
+}

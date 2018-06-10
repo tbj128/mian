@@ -1,42 +1,20 @@
-$(document).ready(function() {
-  // Initialization
-  createListeners();
+// ============================================================
+// GLMNet JS Component
+// ============================================================
 
-  updateAnalysis();
-  
-  function createListeners() {
-    $("#project").change(function () {
-      $.when(updateCatVar()).done(function(a1) {
-        updateAnalysis();
-      });
-    });
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
 
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateAnalysis();
-    });
-
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     $("#catvar").change(function () {
       updateAnalysis();
     });
@@ -67,9 +45,17 @@ $(document).ready(function() {
     $("#lambdaval").change(function () {
       updateAnalysis();
     });
-  }
+}
 
-  function renderGlmnetTable(abundancesObj) {
+//
+// Analysis Specific Methods
+//
+function customLoading() {
+    // This needs a categorical variable to work
+    $("#catvar option[value='none']").remove();
+}
+
+function renderGlmnetTable(abundancesObj) {
     $("#stats-container").hide();
 
     if ($.isEmptyObject(abundancesObj)) {
@@ -138,18 +124,20 @@ $(document).ready(function() {
     $("#analysis-container").append(render);
 
     $("#stats-container").fadeIn(250);
-  }
+}
 
 
-  function updateAnalysis() {
+function updateAnalysis() {
     showLoading();
-    
+
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -162,8 +150,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar,
@@ -179,13 +169,20 @@ $(document).ready(function() {
       url: "glmnet",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
+
         var abundancesObj = JSON.parse(result);
         renderGlmnetTable(abundancesObj);
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
-});
+}

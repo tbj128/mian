@@ -14,30 +14,33 @@
 #
 
 from mian.model.otu_table import OTUTable
-from mian.model.metadata import Metadata
 
 
 class EnrichedSelection(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.sample_filter,
-                                                                    user_request.sample_filter_vals,
+        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
+                                                                    user_request.taxonomy_filter_role,
                                                                     user_request.taxonomy_filter_vals,
-                                                                    user_request.taxonomy_filter)
-        metadata_table = table.get_sample_metadata().get_as_table()
+                                                                    user_request.sample_filter,
+                                                                    user_request.sample_filter_role,
+                                                                    user_request.sample_filter_vals,
+                                                                    user_request.level)
+
+        sample_metadata = table.get_sample_metadata()
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
         taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
-        return self.analyse(user_request, otu_table, metadata_table, taxonomy_map, sample_ids_to_metadata_map)
+        return self.analyse(user_request, otu_table, sample_metadata, taxonomy_map, sample_ids_to_metadata_map)
 
-    def analyse(self, user_request, otuTable, otuMetadata, taxonomyMap, metaIDs):
+    def analyse(self, user_request, base, sample_metadata, taxonomyMap, metaIDs):
         percentAbundanceThreshold = user_request.get_custom_attr("enrichedthreshold")
         catVar1 = user_request.get_custom_attr("pwVar1")
         catVar2 = user_request.get_custom_attr("pwVar2")
 
-        otuTablePercentAbundance = self.__convert_to_percent_abundance(otuTable, float(percentAbundanceThreshold))
-        otuTableCat1, otuTableCat2 = self.__separate_into_groups(otuTablePercentAbundance, otuMetadata,
+        otuTablePercentAbundance = self.__convert_to_percent_abundance(base, float(percentAbundanceThreshold))
+        otuTableCat1, otuTableCat2 = self.__separate_into_groups(otuTablePercentAbundance, sample_metadata,
                                                                  user_request.catvar, catVar1, catVar2)
 
         otuTableCat1 = self.__keep_only_otus(otuTableCat1, metaIDs)
@@ -153,33 +156,34 @@ class EnrichedSelection(object):
     def __diff(self, a, b):
         return [aa for aa in a if aa not in b]
 
-    def __separate_into_groups(self, base, baseMetadata, catvar, catCol1, catCol2):
-        catvarCol = Metadata.get_cat_col(baseMetadata, catvar)
-        catCol1Samples = {}
-        catCol2Samples = {}
+    def __separate_into_groups(self, base, sample_metadata, catvar, catCol1, catCol2):
+        catvar_col = sample_metadata.get_metadata_column_number(catvar)
+        cat_col1_samples = {}
+        cat_col2_samples = {}
 
+        base_metadata = sample_metadata.get_as_table()
         i = 1
-        while i < len(baseMetadata):
-            if baseMetadata[i][catvarCol] == catCol1:
-                catCol1Samples[baseMetadata[i][0]] = 1
-            if baseMetadata[i][catvarCol] == catCol2:
-                catCol2Samples[baseMetadata[i][0]] = 1
+        while i < len(base_metadata):
+            if base_metadata[i][catvar_col] == catCol1:
+                cat_col1_samples[base_metadata[i][0]] = 1
+            if base_metadata[i][catvar_col] == catCol2:
+                cat_col2_samples[base_metadata[i][0]] = 1
             i += 1
 
-        baseCat1 = []
-        baseCat2 = []
+        base_cat1 = []
+        base_cat2 = []
         i = 0
         for o in base:
             if i == 0:
-                baseCat1.append(o)
-                baseCat2.append(o)
+                base_cat1.append(o)
+                base_cat2.append(o)
             else:
-                if o[OTUTable.SAMPLE_ID_COL] in catCol1Samples:
-                    baseCat1.append(o)
-                elif o[OTUTable.SAMPLE_ID_COL] in catCol2Samples:
-                    baseCat2.append(o)
+                if o[OTUTable.SAMPLE_ID_COL] in cat_col1_samples:
+                    base_cat1.append(o)
+                elif o[OTUTable.SAMPLE_ID_COL] in cat_col2_samples:
+                    base_cat2.append(o)
             i = i + 1
-        return baseCat1, baseCat2
+        return base_cat1, base_cat2
 
     def __keep_only_otus(self, base, metaIDs):
         newBase = []

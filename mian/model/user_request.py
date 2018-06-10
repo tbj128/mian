@@ -1,13 +1,15 @@
 
 class UserRequest(object):
 
-    def __init__(self, user_id, pid, taxonomy_filter, taxonomy_filter_vals, sample_filter, sample_filter_vals,
-                 level, catvar):
+    def __init__(self, user_id, pid, taxonomy_filter, taxonomy_filter_role, taxonomy_filter_vals,
+                 sample_filter, sample_filter_role, sample_filter_vals, level, catvar):
         self.user_id = user_id
         self.pid = pid
         self.taxonomy_filter = taxonomy_filter
+        self.taxonomy_filter_role = taxonomy_filter_role
         self.taxonomy_filter_vals = taxonomy_filter_vals
         self.sample_filter = sample_filter
+        self.sample_filter_role = sample_filter_role
         self.sample_filter_vals = sample_filter_vals
         self.level = level
         self.catvar = catvar

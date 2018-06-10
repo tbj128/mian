@@ -1,53 +1,23 @@
-$(document).ready(function() {
-  var abundancesObj = {};
+// ============================================================
+// Boxplot JS Component
+// ============================================================
 
-  // Initialization
-  $.when(updateTaxonomicLevel(true, function() {}), updateCatVar(function(json) {updateCorrVar(json)})).done(function(a1, a2) {
-    updateAnalysis();
-  });
+var abundancesObj = {};
 
-  createListeners();
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: true,
+});
+createSpecificListeners();
 
-  function createListeners() {
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     $('#corrvar2 option:eq(1)').attr('selected', 'selected');
-
-    $("#project").change(function() {
-      $.when(updateTaxonomicLevel(true, function() {}), updateCatVar(function(json) {updateCorrVar(json)})).done(function(a1, a2) {
-        updateAnalysis();
-      });
-    });
-
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
 
     $("#corrvar1").change(function () {
       showTaxLevelIfNeeded($("#corrvar1").val());
@@ -72,21 +42,35 @@ $(document).ready(function() {
     $("#samplestoshow").change(function () {
       updateAnalysis();
     });
+}
 
-    $("#samplestoshow").change(function () {
-      updateAnalysis();
+
+//
+// Analysis Specific Methods
+//
+
+function customLoading() {
+    return $.ajax({
+        url: "metadata_numeric_headers?pid=" + $("#project").val(),
+        success: function(r) {
+            var json = JSON.parse(r);
+            updateCorrVar(json);
+        },
+        error: function(e) {
+            console.error(e);
+        }
     });
-  }
+}
 
-  function showTaxLevelIfNeeded(val) {
+function showTaxLevelIfNeeded(val) {
     if (val === "mian-max" || val === "mian-min" || val === "mian-abundance") {
       $("#taxonomic-level").show();
     } else {
       $("#taxonomic-level").hide();
     }
-  }
+}
 
-  function renderCorrelations(abundancesObj) {
+function renderCorrelations(abundancesObj) {
     if ($.isEmptyObject(abundancesObj)) {
       return;
     }
@@ -139,6 +123,12 @@ $(document).ready(function() {
     xScale.domain([d3.min(data, xValue) - xBuffer, d3.max(data, xValue) + xBuffer]);
     yScale.domain([d3.min(data, yValue) - yBuffer, d3.max(data, yValue) + yBuffer]);
 
+    // tooltip that appears when hovering over a dot
+    var tooltip = d3.select("#analysis-container").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("width", "160px");
+
     // x-axis
     svg.append("g")
         .attr("class", "x axis")
@@ -172,12 +162,26 @@ $(document).ready(function() {
             if ($("#sizevar").val() != "" && $("#sizevar").val() != "None") {
               return sScale(sValue(d)); 
             } else {
-              return 6;
+              return 3;
             }
           })
         .attr("cx", xMap)
         .attr("cy", yMap)
-        .style("fill", function(d) { return color(cValue(d));}) ;
+        .style("fill", function(d) { return color(cValue(d));})
+        .on("mouseover", function(d) {
+            console.log(d);
+            tooltip.transition()
+              .duration(100)
+              .style("opacity", 1);
+            tooltip.html("Sample ID: <strong>" + d.s + "</strong><br />" + $("#corrvar1").val() + ": <strong>" + d.c1 + "</strong><br />" + $("#corrvar2").val() + ": <strong>" + d.c2 + "</strong><br />" + ($("#colorvar :selected").text() === "None" ? "" : ($("#colorvar :selected").text() + ": <strong>" + d.color + "</strong><br />")) + ($("#sizevar :selected").text() === "None" ? "" : ($("#sizevar :selected").text() + ": <strong>" + d.size + "</strong>")))
+              .style("left", (d3.event.pageX - 160) + "px")
+              .style("top", (d3.event.pageY + 12) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(100)
+                .style("opacity", 0);
+        });
 
     if ($("#colorvar").val() != "" && $("#colorvar").val() != "None") {
       // draw legend
@@ -202,17 +206,19 @@ $(document).ready(function() {
           .style("text-anchor", "end")
           .text(function(d) { return d;})
     }
-  }
+}
 
-  function updateAnalysis() {
+function updateAnalysis() {
     showLoading();
     
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var corrvar1 = $("#corrvar1").val();
@@ -224,8 +230,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "corrvar1": corrvar1,
@@ -252,14 +260,13 @@ $(document).ready(function() {
         $("#analysis-container").hide();
         $("#stats-container").hide();
         $("#display-error").show();
-        console.log(err)
+        console.log(err);
       }
     });
-  }
+}
 
-  function updateCorrVar(result) {
-    var json = ["None"];
-    json.push.apply(json, JSON.parse(result));
+function updateCorrVar(result) {
+    var json = ["None", ...result];
     
     addCorrGroup("mian-none", "None Selected");
 
@@ -280,16 +287,16 @@ $(document).ready(function() {
     addCorrGroup("mian-max", "Max Abundance");
 
     // $('#corrvar2 option:eq(1)').attr('selected', 'selected');
-  }
+}
 
-  function addCorrGroup(val, text) {
+function addCorrGroup(val, text) {
     addCorrOption("corrvar1", val, text);
     addCorrOption("corrvar2", val, text);
     addCorrOption("sizevar", val, text);
     addCorrOption("colorvar", val, text);
-  }
+}
 
-  function addCorrOption(elemID, val, text) {
+function addCorrOption(elemID, val, text) {
     var o = document.createElement("option");
     o.setAttribute("value", val);
     var t = document.createTextNode(text);
@@ -298,5 +305,4 @@ $(document).ready(function() {
     }
     o.appendChild(t);
     document.getElementById(elemID).appendChild(o);
-  }
-});
+}

@@ -5,6 +5,9 @@ config.py
 mian/static/tmp/*
 *.out
 *.logfile
+.DS_Store
+.idea/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from mian.core.constants import SAMPLE_ID_COL,SUBSAMPLED_OTU_TABLE_FILENAME
+from mian.core.constants import SAMPLE_ID_COL, RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME
 from mian.core.data_io import DataIO
 from mian.model.metadata import Metadata
 from mian.model.taxonomy import Taxonomy
@@ -15,16 +15,16 @@ class OTUTable(object):
     SAMPLE_ID_COL = SAMPLE_ID_COL
     OTU_START_COL = 1
 
-    def __init__(self, user_id, pid):
+    def __init__(self, user_id, pid, use_raw=False):
         self.user_id = ""
         self.pid = ""
         self.sample_metadata = ""
         self.otu_metadata = ""
         self.table = ""
-        self.load_otu_table(user_id, pid)
+        self.load_otu_table(user_id, pid, use_raw)
         logger.info(DataIO.tsv_to_table.cache_info())
 
-    def load_otu_table(self, user_id, pid):
+    def load_otu_table(self, user_id, pid, use_raw):
         self.user_id = user_id
         self.pid = pid
         logger.info("Before load")
@@ -32,21 +32,29 @@ class OTUTable(object):
         logger.info("Finished metadata loading")
         self.otu_metadata = Taxonomy(user_id, pid)
         logger.info("Finished taxonomy loading")
-        self.table = DataIO.tsv_to_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
+        if use_raw:
+            logger.info("Using raw data")
+            self.table = DataIO.tsv_to_table(self.user_id, self.pid, RAW_OTU_TABLE_FILENAME)
+        else:
+            logger.info("Using subsampled data")
+            self.table = DataIO.tsv_to_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
         logger.info("Finished table loading")
 
-    def get_table_after_filtering(self, catvar, values, items_of_interest, level):
-        t = self.filter_otu_table_by_metadata(self.table, catvar, values)
-        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), items_of_interest, level)
+    def get_table(self):
+        return self.table
+
+    def get_table_after_filtering(self, taxFilter, taxFilterRole, taxFilterVals, sampleFilter, sampleFilterRole, sampleFilterVals):
+        t = self.filter_otu_table_by_metadata(self.table, sampleFilter, sampleFilterRole, sampleFilterVals)
+        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), taxFilter, taxFilterRole, taxFilterVals)
         return t
 
-    def get_table_after_filtering_and_aggregation(self, catvar, values, items_of_interest, level):
+    def get_table_after_filtering_and_aggregation(self, taxFilter, taxFilterRole, taxFilterVals, sampleFilter, sampleFilterRole, sampleFilterVals, taxAggregationLevel):
         logger.info("Starting filtering and aggregation")
-        t = self.filter_otu_table_by_metadata(self.table, catvar, values)
+        t = self.filter_otu_table_by_metadata(self.table, sampleFilter, sampleFilterRole, sampleFilterVals)
         logger.info("Finished filtering by metadata")
-        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), items_of_interest, level)
+        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), taxFilter, taxFilterRole, taxFilterVals)
         logger.info("Finished filtering by taxonomic items")
-        t = self.aggregate_otu_table_at_taxonomic_level(t, level)
+        t = self.aggregate_otu_table_at_taxonomic_level(t, taxAggregationLevel)
         logger.info("Finished aggregation")
         return t
 
@@ -56,7 +64,7 @@ class OTUTable(object):
     def get_sample_metadata(self):
         return self.sample_metadata
 
-    def filter_otu_table_by_metadata(self, base, catvar, values):
+    def filter_otu_table_by_metadata(self, base, catvar, role, values):
         """
         Filters an OTU table by a particular metadata category by identifying the samples that fall under the
         metadata category
@@ -80,8 +88,13 @@ class OTUTable(object):
         while row < len(base):
             sample_id = base[row][OTUTable.SAMPLE_ID_COL]
             if sample_id in metadata_map:
-                if metadata_map[sample_id] in values:
-                    samples[sample_id] = 1
+                if role == "Include":
+                    if metadata_map[sample_id] in values:
+                        samples[sample_id] = 1
+                else:
+                    if metadata_map[sample_id] not in values:
+                        samples[sample_id] = 1
+
             row += 1
 
         return self.__filter_otu_by_samples(samples)
@@ -110,7 +123,7 @@ class OTUTable(object):
 
         return new_otu_table
 
-    def filter_otu_table_by_taxonomic_items(self, base, taxonomic_map, items_of_interest, level):
+    def filter_otu_table_by_taxonomic_items(self, base, taxonomic_map, level, role, items_of_interest):
         """
         Returns an OTU table that has been filtered by specific taxonomic items of interest
         (eg. if the user selected that they only wanted to see Staphylococcus genus, an OTU table
@@ -130,11 +143,19 @@ class OTUTable(object):
         otus = {}
         for otu, classification in taxonomic_map.items():
             if 0 <= int(level) < len(classification):
-                if classification[int(level)] in items_of_interest:
-                    otus[otu] = 1
+                if role == "Include":
+                    if classification[int(level)] in items_of_interest:
+                        otus[otu] = 1
+                else:
+                    if classification[int(level)] not in items_of_interest:
+                        otus[otu] = 1
             elif int(level) == -1:
-                if otu in items_of_interest:
-                    otus[otu] = 1
+                if role == "Include":
+                    if otu in items_of_interest:
+                        otus[otu] = 1
+                else:
+                    if otu not in items_of_interest:
+                        otus[otu] = 1
             else:
                 otus[otu] = 1
 
@@ -210,7 +231,9 @@ class OTUTable(object):
                     s = 0
                     for col in cols_to_aggregate:
                         s += float(row[col])
+                    new_row.append(s)
             aggregated_base.append(new_row)
+            i += 1
 
         return aggregated_base
 

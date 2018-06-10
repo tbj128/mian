@@ -87,17 +87,21 @@ class BetaDiversity(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.sample_filter,
-                                                                    user_request.sample_filter_vals,
+        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
+                                                                    user_request.taxonomy_filter_role,
                                                                     user_request.taxonomy_filter_vals,
-                                                                    user_request.taxonomy_filter)
-        metadata_values = table.get_sample_metadata().get_single_metadata_column(otu_table, user_request.catvar)
+                                                                    user_request.sample_filter,
+                                                                    user_request.sample_filter_role,
+                                                                    user_request.sample_filter_vals,
+                                                                    user_request.level)
+
+        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
         # =====================================================================
         # TODO: FIX
         #
-        # table.get_sample_metadata().get_single_metadata_column(TBD)
+        # table.get_sample_metadata().get_metadata_column_table_order(TBD)
         # metaVals2 = Metadata.get_metadata_in_otu_table_order(otuTable, otuMetadata,
         #                                                      Metadata.get_cat_col(otuMetadata, "Individual"))
         #
@@ -140,7 +144,7 @@ class BetaDiversity(AnalysisBase):
         while i < len(vals):
             obj = {}
             obj["s"] = str(otu_table[i][OTUTable.SAMPLE_ID_COL])
-            obj["a"] = vals[i]
+            obj["a"] = round(vals[i], 6)
 
             if metadata_values[i] in statsAbundances:
                 statsAbundances[metadata_values[i]].append(vals[i])

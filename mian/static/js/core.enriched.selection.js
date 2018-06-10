@@ -1,55 +1,22 @@
-$(document).ready(function() {
-  // Initialization
-  createListeners();
-  updateAnalysis();
+// ============================================================
+// Boxplot JS Component
+// ============================================================
 
-  // updateTaxonomicLevel(true, function() {
-  //   updateAnalysis();
-  // });
+//
+// Initialization
+//
+initializeComponent({
+    hasCatVar: true,
+    hasCatVarNoneOption: false,
+});
+createSpecificListeners();
 
-  function createListeners() {
+//
+// Component-Specific Sidebar Listeners
+//
+function createSpecificListeners() {
     // Alter the second option so that the pairwise aren't both the same value
     $('#pwVar2 option:eq(1)').attr('selected', 'selected');
-
-    $("#project").change(function () {
-      $.when(updateTaxonomicLevel(true, function() {}), updateCatVar()).done(function(a1, a2) {
-        updatePWComparisonSidebar(function() {
-          updateAnalysis();
-        });
-      });
-    });
-
-    $("#filter-sample").change(function() {
-      var filterVal = $("#filter-sample").val();
-      if (filterVal === "none" || filterVal === "mian-sample-id") {
-        updateAnalysis();
-      }
-    });
-
-    $("#filter-otu").change(function() {
-      var filterVal = $("#filter-otu").val();
-      if (filterVal === "none") {
-        updateAnalysis();
-      }
-    });
-
-    $("#taxonomy-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#filter-sample-specific").change(function () {
-      updateAnalysis();
-    });
-
-    $("#taxonomy").change(function () {
-      updateTaxonomicLevel(false, function() {
-        updateAnalysis();
-      });
-    });
-
-    // $("#taxonomy-specific").change(function () {
-    //   updateAnalysis();
-    // });
 
     $("#catvar").change(function () {
       updatePWComparisonSidebar(function() {
@@ -68,20 +35,29 @@ $(document).ready(function() {
     $("#pwVar2").change(function () {
       updateAnalysis();
     });
-  }
+}
 
-  function updatePWComparisonSidebar(callback) {
+
+//
+// Analysis Specific Methods
+//
+
+function customLoading() {
+    return updatePWComparisonSidebar();
+}
+
+
+function updatePWComparisonSidebar(callback) {
     var data = {
       "pid": $("#project").val(),
       "catvar": $("#catvar").val(),
     };
 
-    $.ajax({
+    return $.ajax({
       type: "GET",
       url: "metadata_vals",
       data: data,
       success: function(result) {
-        hideLoading();
         $("#pwVar1").empty();
         $("#pwVar2").empty();
         var uniqueVals = JSON.parse(result);
@@ -95,15 +71,17 @@ $(document).ready(function() {
           }
         }
 
-        callback();
+        if (callback) {
+            callback();
+        }
       },
       error: function(err) {
         console.log(err);
       }
     });
-  }
+}
 
-  function renderEnrichedTable(abundancesObj) {
+function renderEnrichedTable(abundancesObj) {
     $("#analysis-container-cat1").hide();
     $("#analysis-container-cat2").hide();
 
@@ -137,18 +115,20 @@ $(document).ready(function() {
 
     $("#analysis-container-cat1").fadeIn(250);
     $("#analysis-container-cat2").fadeIn(250);
-  }
+}
 
 
-  function updateAnalysis() {
+function updateAnalysis() {
     showLoading();
     
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
+    var taxonomyFilterRole = getSelectedTaxFilterRole();
     var taxonomyFilterVals = getSelectedTaxFilterVals();
 
     var sampleFilter = getSelectedSampleFilter();
+    var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
@@ -159,8 +139,10 @@ $(document).ready(function() {
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
+      "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
       "sampleFilter": sampleFilter,
+      "sampleFilterRole": sampleFilterRole,
       "sampleFilterVals": sampleFilterVals,
       "level": level,
       "catvar": catvar,
@@ -174,13 +156,20 @@ $(document).ready(function() {
       url: "enriched_selection",
       data: data,
       success: function(result) {
+        $("#display-error").hide();
         hideLoading();
+        $("#analysis-container").show();
+        $("#stats-container").show();
+
         var abundancesObj = JSON.parse(result);
         renderEnrichedTable(abundancesObj);
       },
       error: function(err) {
-        console.log(err)
+        hideLoading();
+        $("#analysis-container").hide();
+        $("#stats-container").hide();
+        $("#display-error").show();
+        console.log(err);
       }
     });
-  }
-});
+}

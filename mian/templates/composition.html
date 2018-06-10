@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     {% include 'header.html' %}
     <title>Composition - mian</title>
-  </head>
+</head>
 
-  <style>
+<style>
     .analysis-container div.tooltip { 
         position: absolute;
         background:#FFF;
@@ -36,27 +36,28 @@
     .analysis-container text {
       font-size: 12px !important;
     }
-  </style>
 
-  <body>
-    {% include 'navigation.html' %}
-    {% include 'loading-bar.html' %}
+</style>
 
-    <div id="editor" class="editor">
-      <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Analysis</h3>
+<body>
+{% include 'navigation.html' %}
+{% include 'loading-bar.html' %}
 
-      {% include 'project_list.html' %}
+<div id="editor" class="editor">
+    <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Analysis <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Compositional Analysis" data-content="Visualizes the contents of the OTU table grouped at the indicated taxonomic level" data-trigger="hover"></i></h3>
 
-      <hr />
+    {% include 'project_list.html' %}
 
-      {% include 'filtering_options.html' %}
+    <hr/>
 
-      <hr />
+    {% include 'filtering_options.html' %}
 
-      <h4>Visualization Parameters</h4>
+    <hr/>
 
-      <label class="control-label">Taxonomic Level</label>
-      <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+    <h4>Visualization Parameters</h4>
+
+    <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
         <option value="Kingdom">Kingdom</option>
         <option value="Phylum" selected>Phylum</option>
         <option value="Class">Class</option>
@@ -65,52 +66,53 @@
         <option value="Genus">Genus</option>
         <option value="Species">Species</option>
         <option value="OTU">OTU</option>
-      </select>
+    </select>
 
-      <hr />
+    <hr/>
 
-      <label class="control-label">Category Breakdown</label>
-      <select id="catvar" name="catvar" class="form-control">
-      </select>
+    <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+    <select id="catvar" name="catvar" class="form-control">
+    </select>
 
-      <label class="control-label">Plot Type</label>
-      <select id="plotType" name="plotType" class="form-control pad-bottom">
-        <option value="bar" >Bar</option>
+    <label class="control-label">Plot Type  <i class="fa fa-info-circle" data-toggle="popover" data-title="Plot Type" data-content="The type of graph to show"></i></label>
+    <select id="plotType" name="plotType" class="form-control pad-bottom">
+        <option value="bar">Bar</option>
         <option value="donut" selected>Donut</option>
-      </select>
+    </select>
 
+</div>
+
+<div class="content-wrapper">
+    <div id="display-error" class="project-empty" style="display:none;">
+        <i class="fa fa-exclamation-circle fa-4x"></i>
+        <h3>Analysis cannot be performed with these parameters</h3>
+        <h5>Try changing the Category Breakdown parameter and try again</h5>
     </div>
 
-    <div class="content-wrapper">
-      <div class="download-container">
+    <div class="download-container">
         <button id="download-svg" class="btn btn-default" type="button">Download</button>
-      </div>
-
-      <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-      </div><!-- /.container -->
-
-      <canvas id="donwload-canvas" width="1000px" height="600px" style="display:none;"></canvas> 
-      
-      <div id="push" style="height:42px;"></div>
     </div>
 
-    {% include 'footer-viz.html' %}
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+    </div><!-- /.container -->
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/d3.js"></script>
-    <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.composition.js"></script>
-    <script type="text/javascript" src="http://gabelerner.github.io/canvg/rgbcolor.js"></script> 
-    <script type="text/javascript" src="http://gabelerner.github.io/canvg/StackBlur.js"></script>
-    <script type="text/javascript" src="http://gabelerner.github.io/canvg/canvg.js"></script> 
-    <script type="text/javascript" src="static/js/plugins/FileSaver.js"></script> 
+    <canvas id="donwload-canvas" width="1000px" height="600px" style="display:none;"></canvas>
 
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+    <div id="push" style="height:42px;"></div>
+</div>
 
-  </body>
+{% include 'footer-viz.html' %}
+
+
+<!-- Include custom JS here -->
+<script src="static/js/core.composition.js"></script>
+<script type="text/javascript" src="static/js/plugins/rgbcolor.js"></script>
+<script type="text/javascript" src="static/js/plugins/StackBlur.js"></script>
+<script type="text/javascript" src="static/js/plugins/canvg.js"></script>
+<script type="text/javascript" src="static/js/plugins/FileSaver.js"></script>
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+</body>
 </html>

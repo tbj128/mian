@@ -60,12 +60,17 @@ class PCA(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.sample_filter,
-                                                                    user_request.sample_filter_vals,
+        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
+                                                                    user_request.taxonomy_filter_role,
                                                                     user_request.taxonomy_filter_vals,
-                                                                    user_request.taxonomy_filter)
+                                                                    user_request.sample_filter,
+                                                                    user_request.sample_filter_role,
+                                                                    user_request.sample_filter_vals,
+                                                                    user_request.level)
+
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
-        return self.analyse(user_request, otu_table, sample_ids_to_metadata_map)
+        return self.analyse(user_request, otu_table, metadata_vals, sample_ids_to_metadata_map)
 
     def analyse(self, user_request, otuTable, metaVals, metaIDs):
         # Forms an OTU only table (without IDs)
@@ -101,8 +106,8 @@ class PCA(AnalysisBase):
             meta = metaVals[i - 1]
             pcaObj = {}
             pcaObj["m"] = meta
-            pcaObj["pca1"] = float(pcaVals.rx(i, int(pca1))[0])
-            pcaObj["pca2"] = float(pcaVals.rx(i, int(pca2))[0])
+            pcaObj["pca1"] = round(float(pcaVals.rx(i, int(pca1))[0]), 8)
+            pcaObj["pca2"] = round(float(pcaVals.rx(i, int(pca2))[0]), 8)
             if pcaObj["pca1"] > pca1Max:
                 pca1Max = pcaObj["pca1"]
             if pcaObj["pca1"] < pca1Min:

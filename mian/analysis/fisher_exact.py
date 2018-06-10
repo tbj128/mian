@@ -74,11 +74,15 @@ class FisherExact(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.sample_filter,
-                                                                    user_request.sample_filter_vals,
+        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
+                                                                    user_request.taxonomy_filter_role,
                                                                     user_request.taxonomy_filter_vals,
-                                                                    user_request.taxonomy_filter)
-        metadata_vals = table.get_sample_metadata().get_metadata_in_otu_table_order(user_request.catvar)
+                                                                    user_request.sample_filter,
+                                                                    user_request.sample_filter_role,
+                                                                    user_request.sample_filter_vals,
+                                                                    user_request.level)
+
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
         return self.analyse(user_request, otu_table, metadata_vals, sample_ids_to_metadata_map)
@@ -116,7 +120,7 @@ class FisherExact(object):
             j = 1
             while j <= fisherResults.ncol:
                 if j > 1:
-                    newRow.append(float(fisherResults.rx(i, j)[0]))
+                    newRow.append(round(float(fisherResults.rx(i, j)[0]), 6))
                 else:
                     newRow.append(str(fisherResults.rx(i, j)[0]))
                 j += 1

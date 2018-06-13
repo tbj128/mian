@@ -11,7 +11,7 @@ class TestBoruta(unittest.TestCase):
 
         user_request = AnalysisTestUtils.create_default_user_request()
         user_request.set_custom_attr("keepthreshold", "5")
-        user_request.set_custom_attr("pval", "0.0001")
+        user_request.set_custom_attr("pval", "0.01")
         user_request.set_custom_attr("maxruns", "100")
 
         otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
@@ -22,12 +22,17 @@ class TestBoruta(unittest.TestCase):
         actual_output = plugin.analyse(user_request, otu_table, metadata_values, sample_ids_from_metadata)
         print(json.dumps(actual_output))
 
-        expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
-                                                                "boruta_5_0.01_100.json")
-        comparison_output = AnalysisTestUtils.compare_two_objects(expected_output, actual_output)
+        expected_output_v1 = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
+                                                                "boruta_5_0.01_100_v1.json")
+        expected_output_v2 = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
+                                                                "boruta_5_0.01_100_v2.json")
+        comparison_output = AnalysisTestUtils.compare_two_objects(expected_output_v1, actual_output, order_matters=False) or \
+                            AnalysisTestUtils.compare_two_objects(expected_output_v2, actual_output, order_matters=False)
         if not comparison_output:
             print("Expected: ")
-            print(expected_output)
+            print(expected_output_v1)
+            print("or Expected: ")
+            print(expected_output_v2)
             print("Actual: ")
             print(actual_output)
         self.assertTrue(comparison_output)

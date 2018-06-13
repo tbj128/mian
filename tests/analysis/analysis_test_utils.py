@@ -8,6 +8,14 @@ from mian.core.constants import SUBSAMPLED_OTU_TABLE_FILENAME, SAMPLE_METADATA_F
 from mian.model.user_request import UserRequest
 from mian.model.taxonomy import Taxonomy
 
+from mian.rutils import r_package_install
+
+r_package_install.importr_custom("vegan")
+r_package_install.importr_custom("RColorBrewer")
+r_package_install.importr_custom("ranger")
+r_package_install.importr_custom("Boruta")
+r_package_install.importr_custom("glmnet")
+
 
 class AnalysisTestUtils(object):
     TEST_ROOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -135,10 +143,12 @@ class AnalysisTestUtils(object):
                     found = False
                     while inner_counter < len(list2):
                         if inner_counter not in visited:
-                            inner_comparison = AnalysisTestUtils.compare_two_objects(list1[counter], list2[counter], order_matters, relative_tolerance)
+                            inner_comparison = AnalysisTestUtils.compare_two_objects(list1[counter], list2[inner_counter], order_matters, relative_tolerance)
                             if inner_comparison:
                                 found = True
                                 visited[inner_counter] = True
+                                break
+                        inner_counter += 1
                     if not found:
                         return False
                     counter += 1

@@ -28,7 +28,7 @@ class TestTreeView(unittest.TestCase):
         print(json.dumps(actual_output))
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
                                                                 "tree_view_2_nonzero_yes.json")
-        comparison_output = AnalysisTestUtils.compare_two_objects(expected_output, actual_output)
+        comparison_output = AnalysisTestUtils.compare_two_objects(expected_output, actual_output, order_matters=False)
         if not comparison_output:
             print("Expected: ")
             print(expected_output)

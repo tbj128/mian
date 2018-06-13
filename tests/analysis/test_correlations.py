@@ -1,6 +1,6 @@
 import json
 
-from core.constants import SAMPLE_METADATA_FILENAME
+from mian.core.constants import SAMPLE_METADATA_FILENAME
 from mian.analysis.correlations import Correlations
 from mian.model.metadata import Metadata
 from tests.analysis.analysis_test_utils import AnalysisTestUtils

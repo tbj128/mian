@@ -409,6 +409,18 @@ def getMetadataHeaders():
     abundances = metadata.get_metadata_headers()
     return json.dumps(abundances)
 
+@app.route('/metadata_headers_with_type')
+@flask_login.login_required
+def getMetadataHeadersWithType():
+    user = current_user.id
+    pid = request.args.get('pid', '')
+    if pid == '':
+        return json.dumps({})
+
+    metadata = Metadata(user, pid)
+    abundances = metadata.get_metadata_headers_with_type()
+    return json.dumps(abundances)
+
 @app.route('/metadata_numeric_headers')
 @flask_login.login_required
 def getMetadataNumericHeaders():

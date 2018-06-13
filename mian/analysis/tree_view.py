@@ -211,19 +211,22 @@ class TreeView(AnalysisBase):
                             metaVals = child[meta]
                             avg = np.mean(metaVals["v"])
                             child[meta] = round(avg, 2)
-                            child["tc"] = len(metaVals["v"])
+                            child["c"] = len(metaVals["v"])
+                            child["tc"] = len(metaVals["v"]) if "tc" not in child else len(metaVals["v"]) + child["tc"]
                     elif displayValues == "medianabun":
                         metas = list(child.keys())
                         for meta in metas:
                             metaVals = child[meta]
                             child[meta] = np.median(metaVals["v"])
-                            child["tc"] = len(metaVals["v"])
+                            child["c"] = len(metaVals["v"])
+                            child["tc"] = len(metaVals["v"]) if "tc" not in child else len(metaVals["v"]) + child["tc"]
                     elif displayValues == "maxabun":
                         metas = list(child.keys())
                         for meta in metas:
                             metaVals = child[meta]
                             child[meta] = np.amax(metaVals["v"])
-                            child["tc"] = len(metaVals["v"])
+                            child["c"] = len(metaVals["v"])
+                            child["tc"] = len(metaVals["v"]) if "tc" not in child else len(metaVals["v"]) + child["tc"]
                     else:
                         print("Unknown display value")
                         child[meta] = 0

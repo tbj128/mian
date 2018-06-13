@@ -11,7 +11,7 @@ class TestBoruta(unittest.TestCase):
 
         user_request = AnalysisTestUtils.create_default_user_request()
         user_request.set_custom_attr("keepthreshold", "5")
-        user_request.set_custom_attr("pval", "0.01")
+        user_request.set_custom_attr("pval", "0.0001")
         user_request.set_custom_attr("maxruns", "100")
 
         otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)

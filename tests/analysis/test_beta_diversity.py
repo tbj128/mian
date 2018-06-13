@@ -1,6 +1,6 @@
 import json
 
-from analysis.beta_diversity import BetaDiversity
+from mian.analysis.beta_diversity import BetaDiversity
 from tests.analysis.analysis_test_utils import AnalysisTestUtils
 import unittest
 

@@ -45,6 +45,60 @@ class Metadata(object):
             i += 1
         return headers
 
+    def get_metadata_headers_with_type(self):
+        """
+        Gets the metadata columns with indication of whether they are numeric or categorical
+        :return: array of objects; each object contains name and type
+        """
+        headers = []
+
+        j = 1
+        while j < len(self.metadata[0]):
+            # Go through each column
+            is_numeric = True
+            i = 1
+            while i < len(self.metadata):
+                # Go through each row in each column to see if any row has an non-numeric value
+                if any(c.isalpha() for c in self.metadata[i][j]):
+                    is_numeric = False
+                    break
+                i += 1
+            if is_numeric:
+                headers.append({
+                    "name": self.metadata[0][j],
+                    "type": "numeric"
+                })
+            else:
+                headers.append({
+                    "name": self.metadata[0][j],
+                    "type": "categorical"
+                })
+            j += 1
+        return headers
+
+    def get_numeric_metadata_headers(self):
+        """
+        Gets the metadata columns that are completely numeric in value
+        :return:
+        """
+        headers = []
+
+        j = 1
+        while j < len(self.metadata[0]):
+            # Go through each column
+            is_numeric = True
+            i = 1
+            while i < len(self.metadata):
+                # Go through each row in each column
+                if any(c.isalpha() for c in self.metadata[i][j]):
+                    is_numeric = False
+                    break
+                i += 1
+            if is_numeric:
+                headers.append(self.metadata[0][j])
+            j += 1
+        return headers
+
     def get_as_filtered_table(self, metadata_name, filter_role, filter_values):
         if metadata_name == "none" or metadata_name == "":
             return self.metadata
@@ -99,29 +153,6 @@ class Metadata(object):
             row += 1
         return meta_vals
 
-    def get_numeric_metadata_headers(self):
-        """
-        Gets the metadata columns that are completely numeric in value
-        :return:
-        """
-        headers = []
-
-        j = 1
-        while j < len(self.metadata[0]):
-            # Go through each column
-            is_numeric = True
-            i = 1
-            while i < len(self.metadata):
-                # Go through each row in each column
-                if any(c.isalpha() for c in self.metadata[i][j]):
-                    is_numeric = False
-                    break
-                i += 1
-            if is_numeric:
-                headers.append(self.metadata[0][j])
-            j += 1
-        return headers
-
     def get_sample_id_to_metadata_map(self, metadata_name):
         """
         Returns a map of sample IDs to metadata values
@@ -157,7 +188,7 @@ class Metadata(object):
             if self.metadata[i][catvar_col] not in unique_vals:
                 unique_vals[self.metadata[i][catvar_col]] = 1
             i += 1
-        return unique_vals.keys()
+        return list(unique_vals.keys())
 
     # def get_metadata_in_otu_table_order(self, metadata_name):
     #     """

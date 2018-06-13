@@ -60,7 +60,7 @@ class OTUTableSubsampler(object):
                 # If so, we just need to copy the raw table to the subsampled table location
                 logger.error("Table is already subsampled to a depth of " + str(current_subsampled_depth))
                 shutil.copyfile(raw_table_path, subsampled_table_path)
-                return current_subsampled_depth
+                return current_subsampled_depth, {}
             else:
                 # Picks the sample with the lowest sequences as the subsample to value
                 lowest_sequences = sys.maxsize

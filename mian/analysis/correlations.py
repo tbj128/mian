@@ -60,11 +60,11 @@ class Correlations(AnalysisBase):
             corrcol2 = metadata.get_metadata_column_number(corrvar2)
 
         colorcol = -1
-        if colorvar != "mian-abundance" and corrvar2 != "mian-max":
+        if colorvar != "mian-abundance" and colorvar != "mian-max":
             colorcol = metadata.get_metadata_column_number(colorvar)
 
         sizecol = -1
-        if sizevar != "mian-abundance" and corrvar2 != "mian-max":
+        if sizevar != "mian-abundance" and sizevar != "mian-max":
             sizecol = metadata.get_metadata_column_number(sizecol)
 
         corrArr = []
@@ -121,6 +121,8 @@ class Correlations(AnalysisBase):
                         colorVal = totalAbundance
                     elif colorvar == "mian-max":
                         colorVal = maxAbundance
+                    elif colorvar == "None":
+                        colorVal = 1
                     corrObj["color"] = colorVal
 
                     sizeVal = otuMetadata[metadataRow][sizecol]
@@ -128,6 +130,8 @@ class Correlations(AnalysisBase):
                         sizeVal = totalAbundance
                     elif sizevar == "mian-max":
                         sizeVal = maxAbundance
+                    elif sizevar == "None":
+                        sizeVal = 1
                     corrObj["size"] = sizeVal
 
                     corrArr.append(corrObj)
@@ -138,7 +142,7 @@ class Correlations(AnalysisBase):
         if math.isnan(coef):
             coef = 0
         if math.isnan(pval):
-            coef = 1
+            pval = 1
 
         abundances_obj = {"corrArr": corrArr, "coef": coef, "pval": pval}
         return abundances_obj

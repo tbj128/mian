@@ -12,4 +12,4 @@ install:
   - pip install pipenv
   - pipenv install
 script:
-  - pytest
+  - python -m unittest discover tests

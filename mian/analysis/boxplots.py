@@ -14,9 +14,9 @@ class Boxplots(AnalysisBase):
     def run(self, user_request):
         yvals = user_request.get_custom_attr("yvals")
         if yvals.startswith("mian-"):
-            return self.__getStatsAbundanceForOTUs(user_request, yvals)
+            return self.abundance_boxplots(user_request, yvals)
         else:
-            return self.__getMetadataForCategory(user_request, yvals)
+            return self.metadata_boxplots(user_request, yvals)
 
     def abundance_boxplots(self, user_request, yvals):
         logger.info("Starting abundance_boxplots")

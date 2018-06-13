@@ -341,9 +341,10 @@ function createGlobalSidebarListeners() {
 
 function updateCatVar() {
   return $.ajax({
-    url: "metadata_headers?pid=" + $("#project").val(), 
+    url: "metadata_headers_with_type?pid=" + $("#project").val(),
     success: function(result) {
       var json = JSON.parse(result);
+      var headers = json.map(obj => obj.name);
 
       var $catvar = $("#catvar");
 
@@ -360,19 +361,24 @@ function updateCatVar() {
           $filterSample.append("<option value='mian-sample-id'>Sample ID</option>");
 
           var options = [];
-          for (var i = 0; i < json.length; i++) {
+          for (var i = 0; i < headers.length; i++) {
             var option = {
-              "label": json[i],
-              "title": json[i],
-              "value": json[i]
+              "label": headers[i],
+              "title": headers[i],
+              "value": headers[i]
             };
             options.push(option);
           }
 
-          for (var i = 0; i < json.length; i++) {
-            $catvar.append("<option value='" + json[i] + "'>" + json[i] + "</option>");
-            $filterSample.append("<option value='" + json[i] + "'>" + json[i] + "</option>");
+          for (var i = 0; i < headers.length; i++) {
+            $catvar.append("<option value='" + headers[i] + "'>" + headers[i] + "</option>");
+            $filterSample.append("<option value='" + headers[i] + "'>" + headers[i] + "</option>");
           }
+      }
+
+      if (typeof customCatVarCallback === "function") {
+        // Callback used to load any additional filtering parameters
+        customCatVarCallback(json);
       }
 
       catVars = json;

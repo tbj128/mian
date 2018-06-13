@@ -98,10 +98,12 @@ function updateAnalysis() {
     });
 }
 
-function customLoadingCallback() {
+function customCatVarCallback(result) {
+    var allHeaders = result.map(obj => obj.name);
+
     $("#yvals").empty();
     $("#yvals").append('<option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>');
-    for (var i = 0; i < catVars.length; i++) {
-      $("#yvals").append('<option value="' + catVars[i] + '">' + catVars[i] + '</option>')
+    for (var i = 0; i < allHeaders.length; i++) {
+      $("#yvals").append('<option value="' + allHeaders[i] + '">' + allHeaders[i] + '</option>')
     }
 }

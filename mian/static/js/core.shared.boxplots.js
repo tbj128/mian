@@ -184,28 +184,43 @@ function renderBoxplots(abundancesObj) {
          .attr("x1", midline - boxplotWidth/2)
          .attr("x2", midline + boxplotWidth/2);
 
-      for (var k = 0; k < dataCat.length; k++) {
-        var d = dataCat[k];
-        // Draw data as points
-        svg.append("circle")
+      // tooltip that appears when hovering over a dot
+      var tooltip = d3.select("#analysis-container").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("width", "160px");
+
+      // Draw data as points
+      svg.data(dataCat)
+        .enter().append("circle")
            .attr("r", 2.5)
-           .attr("class", function() {
+           .attr("class", function(d) {
             if (d.a < lowerWhisker || d.a > upperWhisker)
-              return "outlier";
+              return "dot outlier";
             else
-              return "point";
+              return "dot point";
            })
            .attr("cx", function() {
             return random_jitter(midline);
            })
-           .attr("cy", function() {
+           .attr("cy", function(d) {
+            console.log(d);
             return yScale(d.a);
            })
-           .append("title")
-           .text(function() {
-            return "Sample: " + d.s + ", Abundance: " + d.a;
+           .on("mouseover", function(d) {
+                console.log(d);
+                tooltip.transition()
+                  .duration(100)
+                  .style("opacity", 1);
+                tooltip.html("Sample ID: <strong>" + d.s + "</strong><br />Value: <strong>" + d.a + "</strong><br />")
+                  .style("left", (d3.event.pageX - 160) + "px")
+                  .style("top", (d3.event.pageY + 12) + "px");
+           })
+           .on("mouseout", function(d) {
+                tooltip.transition()
+                    .duration(100)
+                    .style("opacity", 0);
            });
-      }
 
 
       function random_jitter(m) {

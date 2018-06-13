@@ -143,7 +143,7 @@ class BetaDiversity(AnalysisBase):
         i = 0
         while i < len(vals):
             obj = {}
-            obj["s"] = str(otu_table[i][OTUTable.SAMPLE_ID_COL])
+            obj["s"] = str(otu_table[i + 1][OTUTable.SAMPLE_ID_COL]) # the values don't include the header, but the OTU table does
             obj["a"] = round(vals[i], 6)
 
             if metadata_values[i] in statsAbundances:

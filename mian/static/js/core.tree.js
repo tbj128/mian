@@ -211,7 +211,12 @@ function renderTree(abundancesObj) {
             if (display_values == "nonzero") {
               var c = d["val"][meta].c;
               var tc = d["val"][meta].tc;
-              var numOTUs = tc / numSamples;
+
+              var allMeta = Object.keys(d["val"]);
+              var totalOTUCountsAllMeta = 0;
+              allMeta.forEach(m => totalOTUCountsAllMeta += d["val"][m].tc);
+
+              var numOTUs = totalOTUCountsAllMeta / numSamples;
               var per = 100 * c / tc;
               tooltip.transition()
                   .duration(100)
@@ -220,9 +225,16 @@ function renderTree(abundancesObj) {
                   .style("left", (d3.event.pageX - 160) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             } else {
-              var c = d["val"][meta];
+              var metaVal = d["val"][meta];
+              var c = d["val"]["c"];
               var tc = d["val"]["tc"];
+
+              var allMeta = Object.keys(d["val"]);
+              var totalOTUCountsAllMeta = 0;
+              allMeta.forEach(m => totalOTUCountsAllMeta += d["val"][m].tc);
               var numOTUs = tc / numSamples;
+              var numSamplesForCat = c / numOTUs;
+
               tooltip.transition()
                   .duration(100)
                   .style("opacity", 1);
@@ -236,7 +248,7 @@ function renderTree(abundancesObj) {
                 header = "Max Abundance";
               }
 
-              tooltip.html("<strong>" + meta + "</strong><br />" + header + ": <strong>" + c + "</strong><br />Number of OTUs: <strong>" + numOTUs + "</strong><br />Number of Samples: <strong>" + numSamples + "</strong>")
+              tooltip.html("<strong>" + meta + "</strong><br />" + header + ": <strong>" + metaVal + "</strong><br />Number of OTUs: <strong>" + numOTUs + "</strong><br />Number of Samples: <strong>" + numSamplesForCat + "</strong>")
                   .style("left", (d3.event.pageX - 160) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             }

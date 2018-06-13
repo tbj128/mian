@@ -49,17 +49,8 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 
-function customLoading() {
-    return $.ajax({
-        url: "metadata_numeric_headers?pid=" + $("#project").val(),
-        success: function(r) {
-            var json = JSON.parse(r);
-            updateCorrVar(json);
-        },
-        error: function(e) {
-            console.error(e);
-        }
-    });
+function customCatVarCallback(json) {
+    updateCorrVar(json);
 }
 
 function showTaxLevelIfNeeded(val) {
@@ -266,7 +257,9 @@ function updateAnalysis() {
 }
 
 function updateCorrVar(result) {
-    var json = ["None", ...result];
+    var allHeaders = ["None", ...result.map(obj => obj.name)];
+    var numericHeaders = ["None", ...result.filter(obj => obj.type === "numeric").map(obj => obj.name)];
+    var categoricalHeaders = ["None", ...result.filter(obj => obj.type === "categorical").map(obj => obj.name)];
     
     addCorrGroup("mian-none", "None Selected");
 
@@ -274,19 +267,23 @@ function updateCorrVar(result) {
     $("#corrvar2").empty();
     $("#sizevar").empty();
     $("#colorvar").empty();
-    for (var i = 0; i < json.length; i++) {
+    for (var i = 0; i < numericHeaders.length; i++) {
       if (i != 0) {
-        addCorrOption("corrvar1", json[i], json[i]);
-        addCorrOption("corrvar2", json[i], json[i]);
+        addCorrOption("corrvar1", numericHeaders[i], numericHeaders[i]);
+        addCorrOption("corrvar2", numericHeaders[i], numericHeaders[i]);
       }
-      addCorrOption("sizevar", json[i], json[i]);
-      addCorrOption("colorvar", json[i], json[i]);
+      addCorrOption("sizevar", numericHeaders[i], numericHeaders[i]); // Optional field so includes the "None"
+    }
+
+    for (var i = 0; i < allHeaders.length; i++) {
+      addCorrOption("colorvar", allHeaders[i], allHeaders[i]);
     }
 
     addCorrGroup("mian-abundance", "Aggregate Abundance");
     addCorrGroup("mian-max", "Max Abundance");
 
-    // $('#corrvar2 option:eq(1)').attr('selected', 'selected');
+    // Make sure the second option is selected if possible
+    $('#corrvar2 option:eq(1)').attr('selected', 'selected');
 }
 
 function addCorrGroup(val, text) {

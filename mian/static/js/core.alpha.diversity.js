@@ -83,13 +83,20 @@ function updateAnalysis() {
       url: "alpha_diversity",
       data: data,
       success: function(result) {
-        $("#display-error").hide();
-        hideLoading();
-        $("#analysis-container").show();
-        $("#stats-container").show();
         var abundancesObj = JSON.parse(result);
-        renderBoxplots(abundancesObj);
-        renderPvaluesTable(abundancesObj);
+        if ($.isEmptyObject(abundancesObj.abundances)) {
+            hideLoading();
+            $("#analysis-container").hide();
+            $("#stats-container").hide();
+            $("#display-error").show();
+        } else {
+            $("#display-error").hide();
+            hideLoading();
+            $("#analysis-container").show();
+            $("#stats-container").show();
+            renderBoxplots(abundancesObj);
+            renderPvaluesTable(abundancesObj);
+        }
       },
       error: function(err) {
         hideLoading();

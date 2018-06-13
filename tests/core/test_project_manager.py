@@ -3,7 +3,6 @@ from mian.core.data_io import DataIO
 import unittest
 import os
 import shutil
-import numpy as np
 
 
 class TestProjectManager(unittest.TestCase):

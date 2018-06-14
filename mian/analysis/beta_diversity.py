@@ -27,7 +27,6 @@ class BetaDiversity(AnalysisBase):
     #
 
     rcode = """
-    library(vegan)
     
     betaDiversity <- function(allOTUs, groups, method) {
         if (method == "bray") {

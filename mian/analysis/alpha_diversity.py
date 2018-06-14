@@ -34,7 +34,6 @@ class AlphaDiversity(AnalysisBase):
     #
 
     rcode = """
-    library(vegan)
     
     alphaDiversity <- function(allOTUs, alphaType, alphaContext) {
         alphaDiv = diversity(allOTUs, index = alphaType)

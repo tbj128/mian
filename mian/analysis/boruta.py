@@ -20,7 +20,6 @@ class Boruta(object):
     r = robjects.r
 
     rcode = """
-    library(Boruta)
     
     boruta <- function(base, groups, keepthreshold, pval, maxruns) {
         # Remove any OTUs with presence < keepthreshold (for efficiency)

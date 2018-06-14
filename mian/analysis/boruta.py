@@ -23,9 +23,6 @@ class Boruta(object):
     library(Boruta)
 
     boruta <- function(base, groups, keepthreshold, pval, maxruns) {
-    
-        cat(.libPaths())
-        
         # Remove any OTUs with presence < keepthreshold (for efficiency)
         x = base[,colSums(base!=0)>=keepthreshold]
         y.1 = as.factor(groups)

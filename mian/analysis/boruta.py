@@ -15,17 +15,16 @@ from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
 from mian.model.otu_table import OTUTable
 
-from rpy2.robjects.packages import importr
-
 class Boruta(object):
     r = robjects.r
 
     rcode = """
+    
+    library(Boruta)
 
     boruta <- function(base, groups, keepthreshold, pval, maxruns) {
     
-        abc=installed.packages()
-        cat(paste(abc[,1]))
+        cat(.libPaths())
         
         # Remove any OTUs with presence < keepthreshold (for efficiency)
         x = base[,colSums(base!=0)>=keepthreshold]

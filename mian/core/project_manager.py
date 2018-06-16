@@ -54,12 +54,12 @@ class ProjectManager(object):
         os.rename(os.path.join(user_staging_dir, sample_metadata_filename), os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
 
         # Subsamples raw OTU table
-        subsample_value = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                 pid=pid,
-                                                                 subsample_type=subsample_type,
-                                                                 manual_subsample_to=subsample_to,
-                                                                 raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
-                                                                 output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+        subsample_value, otus_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+                                                                    pid=pid,
+                                                                    subsample_type=subsample_type,
+                                                                    manual_subsample_to=subsample_to,
+                                                                    raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
+                                                                    output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
 
         # Creates map.txt file
         map_file = Map(self.user_id, pid)
@@ -77,14 +77,6 @@ class ProjectManager(object):
         """
         Reads a .biom from a provided file location and converts it into a mian-compatible TSV file
 
-        Args:
-            user_id (str): The user ID of the associated account
-            pid (str): The project ID under the user account
-            biom_name (str): The name of the BIOM file (not path)
-
-        Returns:
-            array: Array representation of the input TSV file
-
         """
 
         # Creates a directory for this project
@@ -96,7 +88,8 @@ class ProjectManager(object):
         else:
             raise Exception("Cannot create project folder as it already exists")
 
-        return self.__process_biom_file(pid, project_dir, project_name, biom_name, subsample_type, subsample_to)
+        pid, sub = self.__process_biom_file(pid, project_dir, project_name, biom_name, subsample_type, subsample_to)
+        return pid
 
     def __process_biom_file(self, pid, project_dir, project_name, biom_name, subsample_type="auto", subsample_to=0):
         # Renames the uploaded file to a standard file schema and moves to the project directory
@@ -223,7 +216,7 @@ class ProjectManager(object):
         map_file.taxonomy_type = taxonomy_type
         map_file.save()
 
-        return pid
+        return pid, subsample_to
 
     def __save_biom_table_as_tsv(self, table, output_path):
         result = table.to_tsv(header_key="",
@@ -246,61 +239,6 @@ class ProjectManager(object):
                 output_tsv.writerow(x)
 
         logger.info("Finished transposing to final TSV file " + output_path)
-
-    def replace_existing_biom_file(self, pid, biom_filename, subsample_type, subsample_to):
-        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
-        project_dir = os.path.join(project_dir, pid)
-        if not os.path.exists(project_dir):
-            raise Exception("Project does not exist")
-        map_file = Map(self.user_id, pid)
-        return self.__process_biom_file(pid, project_dir, map_file.project_name, biom_filename, subsample_type, subsample_to)
-
-    def replace_existing_otu_table(self, pid, otu_filename, subsample_type, subsample_to):
-        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
-        project_dir = os.path.join(project_dir, pid)
-        map_file = Map(self.user_id, pid)
-
-        # Renames the uploaded files to a standard file schema and moves to the project directory
-        user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
-        os.rename(os.path.join(user_staging_dir, otu_filename), os.path.join(project_dir, RAW_OTU_TABLE_FILENAME))
-
-        # Subsamples raw OTU table
-        subsample_value = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                 pid=pid,
-                                                                 subsample_type=subsample_type,
-                                                                 manual_subsample_to=subsample_to,
-                                                                 raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
-                                                                 output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
-
-        map_file.project_name = map_file.project_name
-        map_file.orig_otu_table_name = otu_filename
-        map_file.subsampled_type = subsample_type
-        map_file.subsampled_value = subsample_value
-        map_file.save()
-        return subsample_value
-
-    def replace_existing_sample_metadata(self, pid, uploaded_filename):
-        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
-        project_dir = os.path.join(project_dir, pid)
-        map_file = Map(self.user_id, pid)
-        map_file.orig_sample_metadata_name = uploaded_filename
-        map_file.save()
-
-        # Renames the uploaded files to a standard file schema and moves to the project directory
-        user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
-        os.rename(os.path.join(user_staging_dir, uploaded_filename), os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
-
-    def replace_existing_taxonomy(self, pid, uploaded_filename):
-        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
-        project_dir = os.path.join(project_dir, pid)
-        map_file = Map(self.user_id, pid)
-        map_file.orig_taxonomy_name = uploaded_filename
-        map_file.save()
-
-        # Renames the uploaded files to a standard file schema and moves to the project directory
-        user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
-        os.rename(os.path.join(user_staging_dir, uploaded_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
-
 
     def get_taxonomy_type(self, taxonomy_line):
         if type(taxonomy_line) is list:
@@ -389,296 +327,69 @@ class ProjectManager(object):
 
         return decomposed
 
+    def modify_subsampling(self, pid, subsample_type="auto", subsample_to=0):
+        # Subsamples raw OTU table
+        subsample_value, otus_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+                                                                    pid=pid,
+                                                                    subsample_type=subsample_type,
+                                                                    manual_subsample_to=subsample_to,
+                                                                    raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
+                                                                    output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
 
+        # Updates the map.txt file
+        map_file = Map(self.user_id, pid)
+        map_file.subsampled_type = subsample_type
+        map_file.subsampled_value = subsample_value
+        map_file.save()
 
+        return subsample_value
 
+    def update_project_from_tsv(self, pid, otu_filename, taxonomy_filename, sample_metadata_filename):
 
-    #
-    # @staticmethod
-    # def filter_otu_table_by_metadata(base, metadata, catvar, values):
-    #     """
-    #     Filters an OTU table by a particular metadata category by identifying the samples that fall under the
-    #     metadata category
-    #     :param base:
-    #     :param metadata:
-    #     :param catvar:
-    #     :param values:
-    #     :return:
-    #     """
-    #     if values is None or values == "":
-    #         values = []
-    #
-    #     if catvar == "none" or catvar == "":
-    #         return base
-    #
-    #     meta_col = DataProcessor.get_cat_col(metadata, catvar)
-    #     metadata_map = DataProcessor.map_id_to_metadata(metadata, meta_col)
-    #
-    #     samples = {}
-    #
-    #     row = 1
-    #     while row < len(base):
-    #         sample_id = base[row][OTU_GROUP_ID_COL]
-    #         if sample_id in metadata_map:
-    #             if metadata_map[sample_id] in values:
-    #                 samples[sample_id] = 1
-    #         row += 1
-    #
-    #     return DataProcessor.filter_otu_by_samples(base, samples)
-    #
-    # @staticmethod
-    # def filter_otu_by_samples(base, samples):
-    #     """
-    #     Filters the OTU table by selected samples
-    #     :param base:
-    #     :param samples:
-    #     :return:
-    #     """
-    #     if samples is None or samples == "":
-    #         samples = []
-    #
-    #     new_otu_table = []
-    #
-    #     i = 0
-    #     while i < len(base):
-    #         if i == 0:
-    #             new_otu_table.append(base[i])
-    #         else:
-    #             sample_id = base[i][OTU_GROUP_ID_COL]
-    #             if sample_id in samples:
-    #                 new_otu_table.append(base[i])
-    #         i += 1
-    #
-    #     return new_otu_table
-    #
-    # @staticmethod
-    # def filter_otu_by_min_positives(base, min_positives):
-    #     """
-    #     Returns the base OTU table such that any OTUs with less than min_positives number of non-zero values are removed.
-    #     This is useful to remove OTUs with a lot of zero values.
-    #     :param base:
-    #     :param min_positives:
-    #     :return:
-    #     """
-    #     new_otu_table = np.array(base)
-    #
-    #     dimens = new_otu_table.shape
-    #
-    #     j = dimens[1] - 1
-    #     while j >= OTU_START_COL:
-    #         non_zero_count = 0
-    #         i = 1
-    #         while i < dimens[0]:
-    #             if float(new_otu_table[i, j]) != 0:
-    #                 non_zero_count += 1
-    #             i += 1
-    #         if non_zero_count < min_positives:
-    #             new_otu_table = np.delete(new_otu_table, j, 1)
-    #         j -= 1
-    #     return new_otu_table.tolist()
-    #
-    # @staticmethod
-    # def filter_otu_table_by_taxonomic_items(base, taxonomic_map, items_of_interest, level):
-    #     """
-    #     Returns an OTU table that has been filtered by specific taxonomic items of interest
-    #     (eg. if the user selected that they only wanted to see Staphylococcus genus, an OTU table
-    #     will be returned that only contains Staphylococcus OTUs)
-    #     :param base:
-    #     :param taxonomic_map:
-    #     :param items_of_interest:
-    #     :param level:
-    #     :return:
-    #     """
-    #     if items_of_interest is None or items_of_interest == "":
-    #         items_of_interest = []
-    #
-    #     if items_of_interest == "mian-select-all":
-    #         level = -2
-    #
-    #     otus = {}
-    #     for otu, classification in taxonomic_map.items():
-    #         if 0 <= int(level) < len(classification):
-    #             if classification[int(level)] in items_of_interest:
-    #                 otus[otu] = 1
-    #         elif int(level) == -1:
-    #             if otu in items_of_interest:
-    #                 otus[otu] = 1
-    #         else:
-    #             otus[otu] = 1
-    #
-    #     new_otu_table = []
-    #     relevant_cols = {}
-    #
-    #     i = 0
-    #     while i < len(base):
-    #         if i == 0:
-    #             # Header row
-    #             # Ignores the first column (sample ID)
-    #             new_row = []
-    #             j = 0
-    #             while j < OTU_START_COL:
-    #                 new_row.append(base[i][j])
-    #                 relevant_cols[j] = 1
-    #                 j += 1
-    #
-    #             j = OTU_START_COL
-    #             while j < len(base[i]):
-    #                 if base[i][j] in otus:
-    #                     new_row.append(base[i][j])
-    #                     relevant_cols[j] = 1
-    #                 j += 1
-    #             new_otu_table.append(new_row)
-    #         else:
-    #             new_row = []
-    #             j = 0
-    #             while j < len(base[i]):
-    #                 if j in relevant_cols:
-    #                     new_row.append(base[i][j])
-    #                 j += 1
-    #             new_otu_table.append(new_row)
-    #         i += 1
-    #     return new_otu_table
-    #
-    # @staticmethod
-    # def aggregate_otu_table_at_taxonomic_level(base, taxonomyMap, itemsOfInterest, level):
-    #     """
-    #     Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
-    #     table that is grouped at the Family taxonomic level)
-    #     :param base:
-    #     :param taxonomyMap:
-    #     :param itemsOfInterest:
-    #     :param level:
-    #     :return:
-    #     """
-    #     otus = {}
-    #     taxa_specific_to_otus = {}
-    #     otu_to_taxa_specific = {}
-    #     for otu, classification in taxonomyMap.items():
-    #         if 0 <= int(level) < len(classification):
-    #             if itemsOfInterest == "All" or itemsOfInterest == "mian-select-all" or classification[int(level)] in itemsOfInterest:
-    #                 otus[otu] = 1
-    #                 otu_to_taxa_specific[otu] = classification[int(level)]
-    #
-    #                 if classification[int(level)] not in taxa_specific_to_otus:
-    #                     taxa_specific_to_otus[classification[int(level)]] = [otu]
-    #                 else:
-    #                     taxa_specific_to_otus[classification[int(level)]].append(otu)
-    #         else:
-    #             # OTU level
-    #             if int(level) == -2 or itemsOfInterest == "All" or itemsOfInterest == "mian-select-all" or otu in itemsOfInterest:
-    #                 otus[otu] = 1
-    #                 otu_to_taxa_specific[otu] = otu
-    #
-    #                 if otu not in taxa_specific_to_otus:
-    #                     taxa_specific_to_otus[otu] = [otu]
-    #                 else:
-    #                     taxa_specific_to_otus[otu].append(otu)
-    #
-    #     new_otu_table = []
-    #     relevant_cols = {}
-    #
-    #     i = 0
-    #     while i < len(base):
-    #         if i == 0:
-    #             # Header row
-    #             # Ignores the first column (sample ID)
-    #
-    #             newRow = []
-    #             j = 0
-    #             while j < OTU_START_COL:
-    #                 newRow.append(base[i][j])
-    #                 relevant_cols[j] = 1
-    #                 j += 1
-    #
-    #             j = OTU_START_COL
-    #             while j < len(base[i]):
-    #                 if base[i][j] in otus:
-    #                     newRow.append(base[i][j])
-    #                     relevant_cols[j] = 1
-    #                 j += 1
-    #             new_otu_table.append(newRow)
-    #         else:
-    #             newRow = []
-    #             j = 0
-    #             while j < len(base[i]):
-    #                 if j in relevant_cols:
-    #                     newRow.append(base[i][j])
-    #                 j += 1
-    #             new_otu_table.append(newRow)
-    #         i += 1
-    #     base = new_otu_table
-    #
-    #     # Merge the OTUs at the same taxa level
-    #     otuToColNum = {}
-    #     uniqueSpecificTax = []
-    #     j = OTU_START_COL
-    #     while j < len(base[0]):
-    #         otuToColNum[base[0][j]] = j
-    #         if otu_to_taxa_specific[base[0][j]] not in uniqueSpecificTax:
-    #             uniqueSpecificTax.append(otu_to_taxa_specific[base[0][j]])
-    #         j += 1
-    #
-    #     newBase = []
-    #     i = 0
-    #     while i < len(base):
-    #         newRow = []
-    #         j = 0
-    #         while j < OTU_START_COL:
-    #             newRow.append(base[i][j])
-    #             j += 1
-    #
-    #         for specificTaxa in uniqueSpecificTax:
-    #             if i > 0:
-    #                 relevantOTUs = taxa_specific_to_otus[specificTaxa]
-    #                 tot = 0
-    #                 for relevantOTU in relevantOTUs:
-    #                     if relevantOTU in otuToColNum:
-    #                         tot += float(base[i][otuToColNum[relevantOTU]])
-    #                 newRow.append(tot)
-    #             else:
-    #                 newRow.append(specificTaxa)
-    #         i += 1
-    #         newBase.append(newRow)
-    #     base = newBase
-    #
-    #     return base
-    #
-    #
-    #
-    # @staticmethod
-    # def get_relevant_otus(taxonomy_map, level, items_of_interest):
-    #     """
-    #
-    #     :param taxonomy_map:
-    #     :param level:
-    #     :param items_of_interest:
-    #     :return:
-    #     """
-    #     otus = {}
-    #     for otu, classification in taxonomy_map.items():
-    #         if 0 <= int(level) < len(classification):
-    #             if classification[int(level)] in items_of_interest:
-    #                 otus[otu] = 1
-    #         elif int(level) == -1:
-    #             if otu in items_of_interest:
-    #                 otus[otu] = 1
-    #         else:
-    #             otus[otu] = 1
-    #
-    #     return otus
-    #
-    # @staticmethod
-    # def get_relevant_cols(otu_table, relevant_otus):
-    #     """
-    #
-    #     :param otu_table:
-    #     :param relevant_otus:
-    #     :return:
-    #     """
-    #     cols = {}
-    #     j = OTU_START_COL
-    #     while j < len(otu_table[0]):
-    #         if otu_table[0][j] in relevant_otus:
-    #             cols[j] = 1
-    #         j += 1
-    #     return cols
+        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
+        project_dir = os.path.join(project_dir, pid)
+
+        map_file = Map(self.user_id, pid)
+
+        # Renames the uploaded files to a standard file schema and moves to the project directory
+        user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
+        if otu_filename is not None:
+            os.rename(os.path.join(user_staging_dir, otu_filename), os.path.join(project_dir, RAW_OTU_TABLE_FILENAME))
+        if taxonomy_filename is not None:
+            os.rename(os.path.join(user_staging_dir, taxonomy_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
+        if sample_metadata_filename is not None:
+            os.rename(os.path.join(user_staging_dir, sample_metadata_filename), os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
+
+        # Subsamples raw OTU table
+        if otu_filename is not None:
+            subsample_value, otus_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+                                                                        pid=pid,
+                                                                        subsample_type=map_file.subsampled_type,
+                                                                        manual_subsample_to=map_file.subsampled_value,
+                                                                        raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
+                                                                        output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+
+        if otu_filename is not None:
+            map_file.orig_otu_table_name = otu_filename
+        if sample_metadata_filename is not None:
+            map_file.orig_sample_metadata_name = sample_metadata_filename
+        if taxonomy_filename is not None:
+            map_file.orig_taxonomy_name = taxonomy_filename
+        map_file.save()
+
+        return map_file.subsampled_value
+
+    def update_project_from_biom(self, pid, biom_name):
+
+        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
+        project_dir = os.path.join(project_dir, pid)
+
+        map_file = Map(self.user_id, pid)
+
+        pid, subsample_value = self.__process_biom_file(pid, project_dir, map_file.project_name, biom_name, map_file.subsampled_type, map_file.subsampled_value)
+
+        map_file.orig_biom_name = biom_name
+        map_file.subsampled_value = subsample_value
+        map_file.save()
+
+        return subsample_value

@@ -20,7 +20,7 @@ from mian.model.otu_table import OTUTable
 matplotlib.use('TkAgg')
 
 from mian.core.data_io import DataIO
-from mian.core.constants import SUBSAMPLE_TYPE_AUTO, SUBSAMPLE_TYPE_MANUAL, \
+from mian.core.constants import SUBSAMPLE_TYPE_AUTO, SUBSAMPLE_TYPE_MANUAL, SUBSAMPLE_TYPE_DISABLED, \
     SUBSAMPLED_OTU_TABLE_FILENAME, RAW_OTU_TABLE_FILENAME
 import csv
 import os
@@ -76,11 +76,16 @@ class OTUTableSubsampler(object):
                     i += 1
                 subsample_to = lowest_sequences
         elif subsample_type == SUBSAMPLE_TYPE_MANUAL:
-            if manual_subsample_to.isdigit():
+            if str(manual_subsample_to).isdigit():
                 subsample_to = int(manual_subsample_to)
             else:
                 logger.error("Provided manual_subsample_to of " + str(manual_subsample_to) + " is not valid")
                 raise ValueError("Provided subsample value is not valid")
+        elif subsample_type == SUBSAMPLE_TYPE_DISABLED:
+            # Just copy the raw data table to the subsampled table location
+            logger.error("Subsampling disabled")
+            shutil.copyfile(raw_table_path, subsampled_table_path)
+            return 0, {}
         else:
             logger.error("Invalid action selected")
             raise NotImplementedError("Invalid action selected")

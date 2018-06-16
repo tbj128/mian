@@ -44,8 +44,6 @@ from mian.analysis.random_forest import RandomForest
 from mian.analysis.rarefaction_curves import RarefactionCurves
 from mian.analysis.table_view import TableView
 from mian.analysis.tree_view import TreeView
-from mian.core.project import Project
-from mian.core.subsample import Subsample
 from mian.db import db
 from mian.model.user_request import UserRequest
 from mian.rutils import r_package_install
@@ -145,7 +143,7 @@ def login():
             flask_login.login_user(user)
             return redirect(url_for('projects'))
 
-        return 'Bad login'
+        return render_template('login.html', badlogin=1)
 
 
 @app.route("/logout")
@@ -706,65 +704,31 @@ def uploadReplace():
         fileType = request.form['fileType']
         if file:
             filename = secure_filename(file.filename)
+            user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, current_user.id)
+            if not os.path.exists(user_staging_dir):
+                logger.info("Making staging directory for user " + str(current_user.id))
+                os.makedirs(user_staging_dir)
 
-            userUploadFolder = os.path.join(UPLOAD_FOLDER, current_user.id)
-            uploadFolder = os.path.join(userUploadFolder, pid)
+            file.save(os.path.join(user_staging_dir, filename))
 
-            if fileType == "otuTable":
-                presubsampleFile = os.path.join(uploadFolder, RAW_OTU_TABLE_FILENAME)
-                otuFile = os.path.join(uploadFolder, SUBSAMPLED_OTU_TABLE_FILENAME)
-                if os.path.isfile(presubsampleFile):
-                    os.remove(presubsampleFile)
-                if os.path.isfile(otuFile):
-                    os.remove(otuFile)
+            project_manager = ProjectManager(user)
 
-                file.save(presubsampleFile)
-
-                subsampleType = request.form['subsampleType']
-                subsampleTo = request.form['subsampleTo']
-                print(subsampleTo)
-                subsampleTo = Subsample.subsample_otu_table(user, pid, subsampleType, subsampleTo)
-
-                Project.change_map_subsample_type(user, pid, subsampleType)
-                Project.change_map_subsample_val(user, pid, subsampleTo)
-                Project.change_map_filename(user, pid, "otuTable", filename)
-
-                retObj = {}
-                retObj["status"] = "OK"
-                retObj["subsampleType"] = subsampleType
-                retObj["subsampleTo"] = subsampleTo
-                retObj["fn"] = filename
-                return json.dumps(retObj)
-
+            if fileType == "biom":
+                project_manager.update_project_from_biom(pid, filename)
+            elif fileType == "otuTable":
+                project_manager.update_project_from_tsv(pid, filename, None, None)
             elif fileType == "otuTaxonomyMapping":
-                taxFile = os.path.join(uploadFolder, TAXONOMY_FILENAME)
-                if os.path.isfile(taxFile):
-                    os.remove(taxFile)
-
-                file.save(taxFile)
-                Project.change_map_filename(user, pid, "otuTaxonomyMapping", filename)
-
-                retObj = {}
-                retObj["status"] = "OK"
-                retObj["fn"] = filename
-                return json.dumps(retObj)
-
+                project_manager.update_project_from_tsv(pid, None, filename, None)
             elif fileType == "otuMetadata":
-                metadataFile = os.path.join(uploadFolder, SAMPLE_METADATA_FILENAME)
-                if os.path.isfile(metadataFile):
-                    os.remove(metadataFile)
+                project_manager.update_project_from_tsv(pid, None, None, filename)
 
-                file.save(metadataFile)
-                Project.change_map_filename(user, pid, "otuMetadata", filename)
+            return json.dumps({
+                "status": "OK"
+            })
 
-                retObj = {}
-                retObj["status"] = "OK"
-                retObj["fn"] = filename
-                return json.dumps(retObj)
-
-        retObj = {}
-        retObj["status"] = "Error"
-        return retObj
+    return json.dumps({
+        "status": "ERROR"
+    })
 
 
 @app.route('/deleteProject', methods=['POST'])
@@ -791,11 +755,10 @@ def changeSubsampling():
     subsampleType = request.form['subsampleType']
     subsampleTo = request.form['subsampleTo']
 
-    subsampleTo = Subsample.subsample_otu_table(user, pid, subsampleType, subsampleTo)
-    Project.change_map_subsample_type(user, pid, subsampleType)
-    Project.change_map_subsample_val(user, pid, subsampleTo)
+    project_manager = ProjectManager(user)
+    subsample_value = project_manager.modify_subsampling(pid, subsampleType, subsampleTo)
 
-    return json.dumps(subsampleTo)
+    return json.dumps(subsample_value)
 
 # ------------------
 # Helpers

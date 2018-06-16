@@ -24,7 +24,15 @@ createSpecificListeners();
 //
 function createSpecificListeners() {
     $("#catvar").change(function () {
-      updateAnalysis();
+        updateAnalysis();
+    });
+
+    $("#pca1").change(function () {
+        updateAnalysis();
+    });
+
+    $("#pca2").change(function () {
+        updateAnalysis();
     });
 }
 

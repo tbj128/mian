@@ -31,6 +31,7 @@
 
   <body>
     {% include 'navigation.html' %}
+    {% include 'loading-bar.html' %}
     
     {% if newSignup %}
     <div class="alert alert-success">
@@ -106,9 +107,9 @@
                         <td class="col-md-2">BIOM File</td>
                         <td class="project-item-meta col-md-1">
                           <form data-project="{{ projectNames[projectName]["pid"] }}" action="/upload" method="post" enctype="multipart/form-data">
-                            <a class="project-trig-otu" href="javascript:void(0);" title="Replace the OTU table">Replace</a>
-                            <input type="file" name="upload" class="project-replace-otu" data-project="{{ projectNames[projectName]["pid"] }}" accept=".biom" style="display:none;" />
-                            <input class="replace-fileType" name="fileType" type="hidden" value="otuTable" />
+                            <a class="project-trig-biom" href="javascript:void(0);" title="Replace the OTU table">Replace</a>
+                            <input type="file" name="upload" class="project-replace-biom" data-project="{{ projectNames[projectName]["pid"] }}" accept=".biom" style="display:none;" />
+                            <input class="replace-fileType" name="fileType" type="hidden" value="biom" />
                             <input class="replace-subsampleType" name="subsampleType" type="hidden" value="" />
                             <input class="replace-subsampleTo" name="subsampleTo" type="hidden" value="" />
                             <input type="hidden" name="project" value="{{ projectNames[projectName]["pid"] }}" />

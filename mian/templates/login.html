@@ -14,6 +14,13 @@
         <div class="container">
           <h2><strong>mian</strong> login</h2>
           <h4>Don't have an account? <a href="signup">Sign up here</a></h4><br />
+
+          {% if badlogin %}
+          <div class="alert alert-danger">
+            <strong>Invalid Username/Password</strong> Please try again
+          </div>
+          {% endif %}
+
           <form method="POST" action="/login">
             <div class="form-group">
               <label for="email">Email</label>

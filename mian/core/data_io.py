@@ -57,10 +57,11 @@ class DataIO:
         :return:
         """
         project_dir = os.path.dirname(__file__)
+        project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
         project_dir = os.path.join(project_dir, "data")
         project_dir = os.path.join(project_dir, user_id)
         project_dir = os.path.join(project_dir, pid)
-        csv_name = os.path.join(project_dir, csv_name)
-        outputCSV = csv.writer(open(csv_name, 'wb'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        csv_path = os.path.join(project_dir, csv_name)
+        outputCSV = csv.writer(open(csv_path, 'w'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row in base:
             outputCSV.writerow(row)

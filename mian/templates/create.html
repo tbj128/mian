@@ -27,11 +27,12 @@
 
         <div id="biom-upload-container" class="row upload-item">
           <div>
-            <div class="col-md-9">
+            <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;biom</h3>
-              <h5>Upload a biom file containing the OTU table, sample metadata, and OTU taxonomy information</h5>
+              <p>Upload a biom file containing the OTU table, sample metadata, and OTU taxonomy information.</p>
+              <p>Both dense and sparse <a href="http://biom-format.org/documentation/biom_format.html" target="_blank">biom file formats</a> are supported (v1.0, v2.0, v2.1)</p>
             </div>
-            <div class="col-md-3 upload-status">
+            <div class="col-md-2 upload-status">
               <form id="biomForm" action="/upload" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="category" value="otuTable" />
                 <span id="biomOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
@@ -48,7 +49,7 @@
           <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #999;">
             <div>
               <h4 style="padding-left: 15px;">Additional Subsampling</h4>
-              <h5 style="padding-left: 15px;">Subsampling is necessary for some visualizations and statistical tests. The subsampling can be adjusted at any time.</h5>
+              <p style="padding-left: 15px;">Subsampling is necessary for some visualizations and statistical tests. The subsampling can be adjusted at any time.</p>
               <div class="col-md-6">
                 <select id="biomSubsampleType" name="biomSubsampleType" class="form-control pad-bottom">
                   <option value="auto" selected>Auto Subsample</option>
@@ -68,11 +69,15 @@
         <div id="otu-upload-container" style="display:none;">
           <div id="otu-table-upload-container" class="row upload-item">
             <div>
-              <div class="col-md-9">
+              <div class="col-md-10">
                 <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;OTU Table</h3>
-                <h5>Tab-delimited shared file with OTUs across the top header and sample/group IDs as rows</h5>
+                <p>Tab-delimited file with OTUs across the top header and sample/group IDs as rows. Example OTU table:</p>
+<pre><code>Sample	Otu01	Otu02	Otu03	Otu04	Otu05	...
+1a	0	5	2	3	3	...
+1b	7	2	5	1	1	...
+</code></pre>
               </div>
-              <div class="col-md-3 upload-status">
+              <div class="col-md-2 upload-status">
                 <form id="otuTableForm" action="/upload" method="post" enctype="multipart/form-data">
                   <input type="hidden" name="category" value="otuTable" />
                   <span id="otuTableOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
@@ -89,7 +94,7 @@
             <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #999;">
               <div>
                 <h4 style="padding-left: 15px;">Additional Subsampling</h4>
-                <h5 style="padding-left: 15px;">Subsampling is necessary for some visualizations and statistical tests. The subsampling can be adjusted at any time.</h5>
+                <p style="padding-left: 15px;">Subsampling is necessary for some visualizations and statistical tests. The subsampling can be adjusted at any time.</p>
                 <div class="col-md-6">
                   <select id="subsampleType" name="subsampleType" class="form-control pad-bottom">
                     <option value="auto" selected>Auto Subsample</option>
@@ -108,11 +113,23 @@
           </div>
 
           <div id="otu-metadata-upload-container" class="row upload-item">
-            <div class="col-md-9">
+            <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-map-o"></i>&nbsp;&nbsp;OTU Taxonomy Mapping</h3>
-              <h5>Tab-delimited taxonomy file with each row representing an OTU and its corresponding taxonomy information</h5>
+              <p>Tab-delimited taxonomy file with each row representing an OTU and its corresponding taxonomy information. Two types are supported:</p>
+              <p>Example Taxonomy File (GreenGenes or Silva Taxonomy String): </p>
+<pre><code>OTU	taxonomy
+Otu01	p__Firmicutes;c__Clostridia;o__Halanaerobiales;f__Halaerobiaceae;g__Halanaerobium;s__congolense
+Otu02	p__Cyanobacteria;c__Nosphycideae;o__Nostocales;f__Nostocaceae;g__Dolichospermum
+...
+</code></pre>
+              <p>Example Taxonomy File (decomposed taxonomy): </p>
+<pre><code>OTU	phylum		class		order		family		genus		species
+Otu01	Firmicutes	Clostridia	Halanaerobiales	Halaerobiaceae	Halanaerobium	congolense
+Otu02	Cyanobacteria	Nosphycideae	Nostocales	Nostocaceae	Dolichospermum
+...
+</code></pre>
             </div>
-            <div class="col-md-3 upload-status">
+            <div class="col-md-2 upload-status">
               <form id="otuTaxonomyMappingForm" action="/upload" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="category" value="otuTaxonomyMapping" />
                 <span id="otuTaxonomyMappingOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
@@ -127,11 +144,15 @@
           </div>
 
           <div id="sample-metadata-upload-container" class="row upload-item" >
-            <div class="col-md-9">
-              <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Sample ID Mapping</h3>
-              <h5>Tab-delimited file with each row representing an sample/group ID and its corresponding metadata</h5>
+            <div class="col-md-10">
+              <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Sample Metadata</h3>
+              <p>Tab-delimited file with each row representing an sample/group ID and its corresponding metadata. Example metadata:</p>
+<pre><code>Sample	body_site	disease	...
+1a	gut		Disease	...
+1b	skin		Control	...
+</code></pre>
             </div>
-            <div class="col-md-3 upload-status">
+            <div class="col-md-2 upload-status">
               <form id="otuMetadataForm" action="/upload" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="category" value="otuMetadata" />
                 <span id="otuMetadataOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>

@@ -12,6 +12,8 @@
 import uuid
 
 from io import StringIO
+
+from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, \
     SUBSAMPLED_OTU_TABLE_FILENAME, BIOM_FILENAME, TAXONOMY_FILENAME, SAMPLE_METADATA_FILENAME
@@ -53,6 +55,9 @@ class ProjectManager(object):
         os.rename(os.path.join(user_staging_dir, taxonomy_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
         os.rename(os.path.join(user_staging_dir, sample_metadata_filename), os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
 
+        # Processes the taxonomy file by decomposing string-based taxonomies into tab separated format (if applicable)
+        self.__process_taxonomy_file(self.user_id, pid)
+
         # Subsamples raw OTU table
         subsample_value, otus_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                     pid=pid,
@@ -72,6 +77,30 @@ class ProjectManager(object):
         map_file.save()
 
         return pid
+
+    def __process_taxonomy_file(self, user_id, pid):
+        taxonomy_table = DataIO.tsv_to_table(user_id, pid, TAXONOMY_FILENAME)
+        new_taxonomy_table = []
+        num_cols = len(taxonomy_table[1])
+        if num_cols > 2:
+            # User uploaded a table that has already broken down the taxonomy in their respective taxonomies
+            # This is the right format already so we just return
+            return
+        elif num_cols == 1:
+            # Invalid columnar format
+            raise Exception("Invalid taxonomy file format")
+        else:
+            new_taxonomy_table.append(taxonomy_table[0])
+            row = 1
+            while row < len(taxonomy_table):
+                taxonomy_line = taxonomy_table[row][1]
+                taxonomy_type = self.get_taxonomy_type(taxonomy_line)
+                taxonomy_arr = self.process_taxonomy_line(taxonomy_type, taxonomy_line)
+
+                new_row = [taxonomy_table[row][0]] + taxonomy_arr
+                new_taxonomy_table.append(new_row)
+                row += 1
+            DataIO.table_to_tsv(new_taxonomy_table, user_id, pid, TAXONOMY_FILENAME)
 
     def create_project_from_biom(self, project_name, biom_name, subsample_type="auto", subsample_to=0):
         """
@@ -374,6 +403,9 @@ class ProjectManager(object):
         if sample_metadata_filename is not None:
             map_file.orig_sample_metadata_name = sample_metadata_filename
         if taxonomy_filename is not None:
+            # Processes the taxonomy file by decomposing string-based
+            # taxonomies into tab separated format (if applicable)
+            self.__process_taxonomy_file(self.user_id, pid)
             map_file.orig_taxonomy_name = taxonomy_filename
         map_file.save()
 

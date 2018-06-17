@@ -139,9 +139,13 @@ hr {
 .upload-item {
   background: #FFF;
   box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.12);
-  width: 720px;
+  width: 920px;
   margin: 0 auto 16px auto;
   padding:36px 48px;
+}
+
+.upload-item code {
+    font-size: 10px;
 }
 
 .upload-name {

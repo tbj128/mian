@@ -112,6 +112,9 @@ class BetaDiversity(AnalysisBase):
         return self.analyse(user_request, otu_table, metadata_values, sample_ids_to_metadata_map)
 
     def analyse(self, user_request, otu_table, metadata_values, sample_ids_from_metadata):
+        if len(metadata_values) == 0:
+            raise ValueError("Beta diversity can only be used when there are at least two groups to compare between")
+
         groups = robjects.FactorVector(robjects.StrVector(metadata_values))
 
         # Forms an OTU only table (without IDs)

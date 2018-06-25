@@ -73,9 +73,6 @@ class Boruta(object):
         maxruns = user_request.get_custom_attr("maxruns")
 
         print("Boruta")
-        print(dataf.ncol)
-        print(dataf.nrow)
-        print(groups.nlevels)
 
         borutaResults = self.rStats.boruta(dataf, groups, int(keepthreshold), float(pval), int(maxruns))
 

@@ -78,11 +78,11 @@ $(document).ready(function() {
   }, false);
 
   document.getElementById('subsampleTo').addEventListener('change', function() {
-    $("#projectSubsampleTo").val($('#subsampleTo'));
+    $("#projectSubsampleTo").val($('#subsampleTo').val());
   }, false);
 
   document.getElementById('biomSubsampleTo').addEventListener('change', function() {
-    $("#projectSubsampleTo").val($('#biomSubsampleTo'));
+    $("#projectSubsampleTo").val($('#biomSubsampleTo').val());
   }, false);
 
   function nameChange() {

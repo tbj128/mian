@@ -78,13 +78,13 @@ class AlphaDiversity(AnalysisBase):
             row = 1
             while row < len(otu_table):
                 sampleID = otu_table[row][OTUTable.SAMPLE_ID_COL]
-                if sampleID in sample_ids_to_metadata_map:
+                if len(metadata_values) == 0 or sampleID in sample_ids_to_metadata_map:
                     colVals.append(otu_table[row][col])
-                else:
-                    logger.warning("Filtered out sample ID " + str(sampleID))
                 row += 1
             allOTUs.append((otu_table[0][col], robjects.FloatVector(colVals)))
             col += 1
+
+        logger.info("After creating an R-compatible dictionary")
 
         od = rlc.OrdDict(allOTUs)
         dataf = robjects.DataFrame(od)
@@ -92,7 +92,11 @@ class AlphaDiversity(AnalysisBase):
         alphaType = user_request.get_custom_attr("alphaType")
         alphaContext = user_request.get_custom_attr("alphaContext")
 
+        logger.info("Before vegan alpha diversity")
+
         vals = self.veganR.alphaDiversity(dataf, alphaType, alphaContext)
+
+        logger.info("After vegan alpha diversity")
 
         # Calculate the statistical p-value
         abundances = {}
@@ -102,7 +106,7 @@ class AlphaDiversity(AnalysisBase):
             obj = {}
             obj["s"] = str(otu_table[i + 1][OTUTable.SAMPLE_ID_COL])
             obj["a"] = round(vals[i], 6)
-            meta = metadata_values[i]
+            meta = metadata_values[i] if len(metadata_values) > 0 else "All"
 
             # Group the abundance values under the corresponding metadata values
             if meta in statsAbundances:
@@ -114,6 +118,8 @@ class AlphaDiversity(AnalysisBase):
 
             i += 1
         statistics = Statistics.getTtest(statsAbundances)
+
+        logger.info("After T-test")
 
         abundancesObj = {}
         abundancesObj["abundances"] = abundances

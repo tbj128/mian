@@ -74,7 +74,6 @@ function updateAnalysis(abundancesObj) {
         $("#display-error").hide();
         hideLoading();
         $("#analysis-container").show();
-        $("#stats-container").show();
 
         var abundancesObj = JSON.parse(result);
         renderTree(abundancesObj);
@@ -82,7 +81,6 @@ function updateAnalysis(abundancesObj) {
       error: function(err) {
         hideLoading();
         $("#analysis-container").hide();
-        $("#stats-container").hide();
         $("#display-error").show();
         console.log(err);
       }
@@ -168,16 +166,18 @@ function renderTree(abundancesObj) {
       if (d.hasOwnProperty("val")) {
         var maxPer = 0;
         for (var i = 0; i < metaUnique.length; i++) {
-          if (display_values == "nonzero") {
-            var perAbun = d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
-            if (perAbun > maxPer) {
-              maxPer = perAbun;
-            }
-          } else {
-            var perAbun = d["val"][metaUnique[i]];
-            if (perAbun > maxPer) {
-              maxPer = perAbun;
-            }
+          if (d["val"][metaUnique[i]]) {
+              if (display_values == "nonzero") {
+                var perAbun = d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
+                if (perAbun > maxPer) {
+                  maxPer = perAbun;
+                }
+              } else {
+                var perAbun = d["val"][metaUnique[i]];
+                if (perAbun > maxPer) {
+                  maxPer = perAbun;
+                }
+              }
           }
         }
         return maxPer; 
@@ -198,12 +198,16 @@ function renderTree(abundancesObj) {
           .attr("meta", metaUnique[i])
           .style("fill", function(d) { return color(metaUnique[i]) })
           .attr("r", function(d) {
-            if (display_values == "nonzero") {
-              var perAbun = d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
-              return sScale(perAbun); 
+            if (d["val"][metaUnique[i]]) {
+                if (display_values == "nonzero") {
+                  var perAbun = d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
+                  return sScale(perAbun);
+                } else {
+                  var perAbun = d["val"][metaUnique[i]];
+                  return sScale(perAbun);
+                }
             } else {
-              var perAbun = d["val"][metaUnique[i]];
-              return sScale(perAbun); 
+              return sScale(0);
             }
           })
           .on("mouseover", function(d) {
@@ -216,12 +220,13 @@ function renderTree(abundancesObj) {
               var totalOTUCountsAllMeta = 0;
               allMeta.forEach(m => totalOTUCountsAllMeta += d["val"][m].tc);
 
+              // TODO: Num OTUs cannot be calculated correctly at this point
               var numOTUs = totalOTUCountsAllMeta / numSamples;
               var per = 100 * c / tc;
               tooltip.transition()
                   .duration(100)
                   .style("opacity", 1);
-              tooltip.html("<strong>" + meta + "</strong><br />Non-Zero Count: <strong>" + c + " / " + tc + " (" + per.toFixed(2) + "%)</strong><br />Number of OTUs: <strong>" + numOTUs + "</strong>")
+              tooltip.html("<strong>" + meta + "</strong><br />Samples with Non-Zero Count: <strong>" + c + " / " + tc + " (" + per.toFixed(2) + "%)</strong>")
                   .style("left", (d3.event.pageX - 160) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             } else {
@@ -248,7 +253,7 @@ function renderTree(abundancesObj) {
                 header = "Max Abundance";
               }
 
-              tooltip.html("<strong>" + meta + "</strong><br />" + header + ": <strong>" + metaVal + "</strong><br />Number of OTUs: <strong>" + numOTUs + "</strong><br />Number of Samples: <strong>" + numSamplesForCat + "</strong>")
+              tooltip.html("<strong>" + meta + "</strong><br />" + header + ": <strong>" + metaVal + "</strong><br />Number of Samples: <strong>" + numSamplesForCat + "</strong>")
                   .style("left", (d3.event.pageX - 160) + "px")
                   .style("top", (d3.event.pageY + 12) + "px");
             }

@@ -191,7 +191,7 @@ function renderBoxplots(abundancesObj) {
         .style("width", "160px");
 
       // Draw data as points
-      svg.data(dataCat)
+      svg.selectAll('circle.new').data(dataCat)
         .enter().append("circle")
            .attr("r", 2.5)
            .attr("class", function(d) {
@@ -204,7 +204,6 @@ function renderBoxplots(abundancesObj) {
             return random_jitter(midline);
            })
            .attr("cy", function(d) {
-            console.log(d);
             return yScale(d.a);
            })
            .on("mouseover", function(d) {

@@ -138,7 +138,6 @@ class GLMNet(object):
             i += 1
 
         abundancesObj = {}
-        print(accumResults)
         abundancesObj["results"] = accumResults
 
         return abundancesObj

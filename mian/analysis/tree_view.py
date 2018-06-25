@@ -129,7 +129,6 @@ class TreeView(AnalysisBase):
         fTreeObj["name"] = "root"
         fTreeObj["children"] = []
         self.__treeFormatterHelper(fTreeObj, treeObj, 0, taxonomyDisplayLevel, displayValues)
-        # print fTreeObj
         abundancesObj = {}
         abundancesObj["metaUnique"] = unique_meta_vals
         abundancesObj["numLeaves"] = numLeaves

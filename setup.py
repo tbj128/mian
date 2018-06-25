@@ -7,7 +7,7 @@ setup(
     long_description=(open('README.rst').read() + '\n\n' +
                       open('AUTHORS.rst').read()),
     url='https://github.com/tbj128/mian',
-    install_requires=['Flask', 'Werkzeug', 'flask_login', 'scipy', 'h5py', 'rpy2', 'biom-format', 'mothur-py', 'scikit-bio', 'scikit-learn'],
+    install_requires=['Flask', 'Werkzeug', 'flask_login', 'scipy', 'pandas', 'h5py', 'rpy2', 'biom-format', 'mothur-py', 'scikit-bio', 'scikit-learn'],
     license='MIT',
     author='Tom Jin',
     author_email='',

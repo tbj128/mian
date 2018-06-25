@@ -339,12 +339,13 @@ function createGlobalSidebarListeners() {
     });
 }
 
-function updateCatVar() {
+function updateCatVar(isNumeric) {
   return $.ajax({
     url: "metadata_headers_with_type?pid=" + $("#project").val(),
     success: function(result) {
       var json = JSON.parse(result);
-      var headers = json.map(obj => obj.name);
+      var headers = isNumeric === true ? json.filter(obj => obj.type === "numeric").map(obj => obj.name) :
+          json.filter(obj => obj.type === "categorical").map(obj => obj.name);
 
       var $catvar = $("#catvar");
 

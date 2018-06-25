@@ -10,6 +10,7 @@ class Map(object):
         self.project_name = ""
         self.subsampled_value = ""
         self.subsampled_type = ""
+        self.subsampled_removed_samples = []
         self.orig_biom_name = ""
         self.orig_otu_table_name = ""
         self.orig_taxonomy_name = ""
@@ -24,6 +25,7 @@ class Map(object):
                 self.project_name = map_from_json["project_name"]
                 self.subsampled_value = map_from_json["subsampled_value"]
                 self.subsampled_type = map_from_json["subsampled_type"]
+                self.subsampled_removed_samples = map_from_json["subsampled_removed_samples"]
                 self.orig_biom_name = map_from_json["orig_biom_name"]
                 self.orig_otu_table_name = map_from_json["orig_otu_table_name"]
                 self.orig_taxonomy_name = map_from_json["orig_taxonomy_name"]
@@ -35,6 +37,7 @@ class Map(object):
             "project_name": self.project_name,
             "subsampled_value": self.subsampled_value,
             "subsampled_type": self.subsampled_type,
+            "subsampled_removed_samples": self.subsampled_removed_samples,
             "orig_biom_name": self.orig_biom_name,
             "orig_otu_table_name": self.orig_otu_table_name,
             "orig_taxonomy_name": self.orig_taxonomy_name,

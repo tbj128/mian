@@ -3,6 +3,9 @@ $(document).ready(function() {
   var changeSubsamplingAnchor = null;
   hideLoading();
 
+  // Popovers on the create page
+  $('[data-toggle="popover"]').popover()
+
   $(".project-delete").click(function() {
     var project_name = $(this).data("projectname");
     var project = $(this).data("project");

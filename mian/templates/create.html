@@ -7,7 +7,7 @@
 
   <body>
     {% include 'navigation.html' %}
-    {% include 'loading-bar.html' %}
+    {% include 'loading-bar-processing.html' %}
 
     <div id="welcome" class="container">
       <div class="section-heading project-heading">
@@ -71,7 +71,13 @@
             <div>
               <div class="col-md-10">
                 <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;OTU Table</h3>
-                <p>Tab-delimited file with OTUs across the top header and sample/group IDs as rows. Example OTU table:</p>
+                <p>Tab-delimited file with OTUs across the top header and sample/group IDs as rows. Accepted formats shown below.</p>
+<p>Example <a href="https://www.mothur.org/wiki/Shared_file" target="_blank">mothur shared file</a>: </p>
+<pre><code>label	Group	numOtus	Otu01	Otu02	Otu03	Otu04	Otu05	...
+0.03	1a	35	0	5	2	3	3	...
+0.03	1b	45	7	2	5	1	1	...
+</code></pre>
+<p>Example manually created OTU format: </p>
 <pre><code>Sample	Otu01	Otu02	Otu03	Otu04	Otu05	...
 1a	0	5	2	3	3	...
 1b	7	2	5	1	1	...
@@ -115,17 +121,23 @@
           <div id="otu-metadata-upload-container" class="row upload-item">
             <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-map-o"></i>&nbsp;&nbsp;OTU Taxonomy Mapping</h3>
-              <p>Tab-delimited taxonomy file with each row representing an OTU and its corresponding taxonomy information. Two types are supported:</p>
-              <p>Example Taxonomy File (GreenGenes or Silva Taxonomy String): </p>
-<pre><code>OTU	taxonomy
-Otu01	p__Firmicutes;c__Clostridia;o__Halanaerobiales;f__Halaerobiaceae;g__Halanaerobium;s__congolense
-Otu02	p__Cyanobacteria;c__Nosphycideae;o__Nostocales;f__Nostocaceae;g__Dolichospermum
+              <p>Tab-delimited taxonomy file with each row representing an OTU and its corresponding taxonomy information. Accepted file formats shown below:</p>
+<p>Example <a href="https://www.mothur.org/wiki/Constaxonomy_file" target="_blank">mothur constaxonomy file</a>: </p>
+<pre><code>OTU	Size	Taxonomy
+Otu01	35	k__Bacteria;p__Firmicutes;c__Clostridia;o__Halbiales;f__Halbiaceae;g__Halbium;s__conlense
+Otu02	45	k__Bacteria;p__Cyanobacteria;c__Nosphycideae;o__Nostocales;f__Nostoceae;g__Dolichospermum
 ...
 </code></pre>
-              <p>Example Taxonomy File (decomposed taxonomy): </p>
-<pre><code>OTU	phylum		class		order		family		genus		species
-Otu01	Firmicutes	Clostridia	Halanaerobiales	Halaerobiaceae	Halanaerobium	congolense
-Otu02	Cyanobacteria	Nosphycideae	Nostocales	Nostocaceae	Dolichospermum
+<p>Example Taxonomy File (GreenGenes or Silva Taxonomy String): </p>
+<pre><code>OTU	taxonomy
+Otu01	k__Bacteria;p__Firmicutes;c__Clostridia;o__Halbiales;f__Halbiaceae;g__Halbium;s__conlense
+Otu02	k__Bacteria;p__Cyanobacteria;c__Nosphycideae;o__Nostocales;f__Nostoceae;g__Dolichospermum
+...
+</code></pre>
+<p>Example Taxonomy File (decomposed taxonomy): </p>
+<pre><code>OTU	kingdom		phylum		class		order		family		genus		species
+Otu01	Bacteria	Firmicutes	Clostridia	Halbiales	Halbiaceae	Halbium		conlense
+Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
 ...
 </code></pre>
             </div>

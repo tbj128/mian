@@ -12,6 +12,7 @@
 import uuid
 
 from io import StringIO
+import numpy as np
 
 from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
@@ -59,7 +60,7 @@ class ProjectManager(object):
         self.__process_taxonomy_file(self.user_id, pid)
 
         # Subsamples raw OTU table
-        subsample_value, otus_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+        subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                     pid=pid,
                                                                     subsample_type=subsample_type,
                                                                     manual_subsample_to=subsample_to,
@@ -74,13 +75,19 @@ class ProjectManager(object):
         map_file.orig_taxonomy_name = taxonomy_filename
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_value
+        map_file.subsampled_removed_samples = samples_removed
         map_file.save()
 
         return pid
 
     def __process_taxonomy_file(self, user_id, pid):
         taxonomy_table = DataIO.tsv_to_table(user_id, pid, TAXONOMY_FILENAME)
+        taxonomy_table = np.array(taxonomy_table)
         new_taxonomy_table = []
+        if taxonomy_table[0][1] == "Size":
+            # This is a mothur constaxonomy file so we should delete the Size column
+            taxonomy_table = np.delete(taxonomy_table, 1, 1)
+
         num_cols = len(taxonomy_table[1])
         if num_cols > 2:
             # User uploaded a table that has already broken down the taxonomy in their respective taxonomies
@@ -132,17 +139,21 @@ class ProjectManager(object):
         biom_path = os.path.join(project_dir, BIOM_FILENAME)
         raw_table_path = os.path.join(project_dir, RAW_OTU_TABLE_FILENAME)
 
-        logger.info("Converting biom to intermediate TSV file " + biom_path)
+        logger.info("Loading biom into table")
         table = load_table(biom_path)
+        logger.info("Converting biom to intermediate TSV file " + biom_path)
         self.__save_biom_table_as_tsv(table, raw_table_path)
+        logger.info("Saved biom as TSV file " + biom_path)
 
         # Subsamples the raw OTU file
-        subsample_to, removed_otus = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                            pid=pid,
-                                                                            subsample_type=subsample_type,
-                                                                            manual_subsample_to=subsample_to,
-                                                                            raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
-                                                                            output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+        subsample_to, removed_otus, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+                                                                    pid=pid,
+                                                                    subsample_type=subsample_type,
+                                                                    manual_subsample_to=subsample_to,
+                                                                    raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
+                                                                    output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+
+        logger.info("Subsampled TSV file")
 
         # Create Sample Metadata File
         logger.info("Creating sample metadata file")
@@ -229,7 +240,6 @@ class ProjectManager(object):
                 otu_id = otu_ids[otu_index]
                 if otu_id not in removed_otus:
                     row_data = [otu_id] + self.process_taxonomy_line(taxonomy_type, k[taxonomy_key])
-                    logger.info("Row data generated: " + str(row_data))
                     for key, value in sorted(k.items()):
                         if key != taxonomy_key:
                             row_data.append(value)
@@ -242,6 +252,7 @@ class ProjectManager(object):
         map_file.orig_biom_name = biom_name
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_to
+        map_file.subsampled_removed_samples = samples_removed
         map_file.taxonomy_type = taxonomy_type
         map_file.save()
 
@@ -252,6 +263,8 @@ class ProjectManager(object):
                               header_value="",
                               metadata_formatter="sc_separated")
 
+        logger.info("Finished table.to_tsv")
+
         # Converts the TSV string to an array
         f = StringIO(result)
         intermediate_table = []
@@ -259,6 +272,8 @@ class ProjectManager(object):
         for o in base_csv:
             if len(o) > 1:
                 intermediate_table.append(o)
+
+        logger.info("Finished loading to intermediate table")
 
         # The intermediate table is sample-columnar (ie. rows are OTUs) but the majority of the analysis in
         # mian uses samples as rows so we perform a conversion
@@ -358,7 +373,7 @@ class ProjectManager(object):
 
     def modify_subsampling(self, pid, subsample_type="auto", subsample_to=0):
         # Subsamples raw OTU table
-        subsample_value, otus_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+        subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                     pid=pid,
                                                                     subsample_type=subsample_type,
                                                                     manual_subsample_to=subsample_to,
@@ -369,6 +384,7 @@ class ProjectManager(object):
         map_file = Map(self.user_id, pid)
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_value
+        map_file.subsampled_removed_samples = samples_removed
         map_file.save()
 
         return subsample_value
@@ -391,15 +407,15 @@ class ProjectManager(object):
 
         # Subsamples raw OTU table
         if otu_filename is not None:
-            subsample_value, otus_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+            subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                         pid=pid,
                                                                         subsample_type=map_file.subsampled_type,
                                                                         manual_subsample_to=map_file.subsampled_value,
                                                                         raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
                                                                         output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
-
-        if otu_filename is not None:
             map_file.orig_otu_table_name = otu_filename
+            map_file.subsampled_value = subsample_value
+            map_file.subsampled_removed_samples = samples_removed
         if sample_metadata_filename is not None:
             map_file.orig_sample_metadata_name = sample_metadata_filename
         if taxonomy_filename is not None:

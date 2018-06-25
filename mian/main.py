@@ -35,6 +35,7 @@ from mian.analysis.boxplots import Boxplots
 from mian.analysis.composition import Composition
 from mian.analysis.correlations import Correlations
 from mian.analysis.correlation_network import CorrelationNetwork
+from mian.analysis.correlations_selection import CorrelationsSelection
 from mian.analysis.enriched_selection import EnrichedSelection
 from mian.analysis.fisher_exact import FisherExact
 from mian.analysis.glmnet import GLMNet
@@ -278,6 +279,14 @@ def correlation_network():
     catVars = metadata.get_metadata_headers()
 
     return render_template('correlation_network.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
+
+
+@app.route('/correlations_selection')
+@flask_login.login_required
+def correlations_selection():
+    projectNames = get_project_ids_to_info(current_user.id)
+    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
+    return render_template('correlations_selection.html', projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/enriched_selection')
@@ -530,6 +539,14 @@ def getCorrelationNetwork():
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+@app.route('/correlations_selection', methods=['POST'])
+@flask_login.login_required
+def getCorrelationsSelection():
+    user_request = __get_user_request(request)
+
+    plugin = CorrelationsSelection()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
 
 @app.route('/enriched_selection', methods=['POST'])
 @flask_login.login_required
@@ -887,7 +904,8 @@ def get_project_ids_to_info(user_id):
                         "project_type": project_type,
                         "orig_biom_name": project_map.orig_biom_name,
                         "subsampled_value": project_map.subsampled_value,
-                        "subsampled_type": project_map.subsampled_type
+                        "subsampled_type": project_map.subsampled_type,
+                        "subsampled_removed_samples": project_map.subsampled_removed_samples
                     }
                 else:
                     project_type = "table"
@@ -899,7 +917,8 @@ def get_project_ids_to_info(user_id):
                         "orig_sample_metadata_name": project_map.orig_sample_metadata_name,
                         "orig_taxonomy_name": project_map.orig_taxonomy_name,
                         "subsampled_value": project_map.subsampled_value,
-                        "subsampled_type": project_map.subsampled_type
+                        "subsampled_type": project_map.subsampled_type,
+                        "subsampled_removed_samples": project_map.subsampled_removed_samples
                     }
                 logger.info("Read project info " + str(project_info))
                 project_name_to_info[project_map.project_name] = project_info

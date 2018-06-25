@@ -31,7 +31,7 @@
 
   <body>
     {% include 'navigation.html' %}
-    {% include 'loading-bar.html' %}
+    {% include 'loading-bar-processing.html' %}
     
     {% if newSignup %}
     <div class="alert alert-success">
@@ -102,7 +102,17 @@
                             {% endif %}
                           </span>
                           &nbsp;
-                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-html="true" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+
+                          {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
+                          <br />
+                          <br />
+                          Removed samples:
+                          <b id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">
+                            {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
+                          </b>
+                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
+                          {% endif %}
                         </td>
                         <td class="col-md-2">BIOM File</td>
                         <td class="project-item-meta col-md-1">
@@ -143,6 +153,17 @@
                           </span>
                           &nbsp;
                           <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+
+
+                          {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
+                          <br />
+                          <br />
+                          Removed samples:
+                          <b id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">
+                            {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
+                          </b>
+                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
+                          {% endif %}
                         </td> 
                         <td class="col-md-2">OTU Table</td> 
                         <td class="project-item-meta col-md-1">

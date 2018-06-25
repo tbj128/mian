@@ -5,6 +5,10 @@ from mian.core.data_io import DataIO
 from mian.model.metadata import Metadata
 from mian.model.taxonomy import Taxonomy
 import logging
+from multiprocessing import Pool
+from functools import partial
+import datetime
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -138,7 +142,7 @@ class OTUTable(object):
             items_of_interest = []
 
         if items_of_interest == "mian-select-all":
-            level = -2
+            return base
 
         otus = {}
         for otu, classification in taxonomic_map.items():
@@ -192,7 +196,7 @@ class OTUTable(object):
             i += 1
         return new_otu_table
 
-    def aggregate_otu_table_at_taxonomic_level(self, base, level):
+    def aggregate_otu_table_at_taxonomic_level_orig(self, base, level):
         """
         Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
         table that is grouped at the Family taxonomic level)
@@ -237,3 +241,91 @@ class OTUTable(object):
 
         return aggregated_base
 
+    def aggregate_otu_table_at_taxonomic_level_np(self, base, level):
+        """
+        Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
+        table that is grouped at the Family taxonomic level)
+        :param base:
+        :param level:
+        :return:
+        """
+        if int(level) < 0:
+            # We want to aggregate at the OTU level, which is essentially not aggregating at all
+            return base
+
+        taxonomy_map = self.otu_metadata.get_taxonomy_map()
+        taxonomies = []
+        taxonomy_to_cols = {}
+        j = OTUTable.OTU_START_COL
+        while j < len(base[0]):
+            otu = base[0][j]
+            taxonomy = taxonomy_map[otu][int(level)]
+            if taxonomy in taxonomy_to_cols:
+                taxonomy_to_cols[taxonomy].append(j - 1)
+            else:
+                taxonomy_to_cols[taxonomy] = [j - 1]
+                taxonomies.append(taxonomy)
+            j += 1
+
+        rows = len(base) - 1
+        cols = len(taxonomies)
+        base = np.array(base[1:])
+        base = np.array(base[:,1:], dtype=float)
+        # base = np.delete(base, 0, 1)
+        # base = np.genfromtxt(base)
+
+        aggregated_base = np.zeros((rows, cols))
+        i = 0
+        for taxonomy in taxonomies:
+            cols_to_aggregate = taxonomy_to_cols[taxonomy]
+            aggregated_base[:, i] += np.sum(base[:, cols_to_aggregate])
+            i += 1
+
+        return aggregated_base
+
+
+    def aggregate_otu_table_at_taxonomic_level(self, base, level):
+        """
+        Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
+        table that is grouped at the Family taxonomic level)
+        :param base:
+        :param level:
+        :return:
+        """
+        if int(level) < 0:
+            # We want to aggregate at the OTU level, which is essentially not aggregating at all
+            return base
+
+        taxonomy_map = self.otu_metadata.get_taxonomy_map()
+        taxonomies = []
+        taxonomy_to_cols = {}
+        j = OTUTable.OTU_START_COL
+        while j < len(base[0]):
+            otu = base[0][j]
+            taxonomy = "; ".join(taxonomy_map[otu][:int(level) + 1])
+            if taxonomy in taxonomy_to_cols:
+                taxonomy_to_cols[taxonomy].append(j)
+            else:
+                taxonomy_to_cols[taxonomy] = [j]
+                taxonomies.append(taxonomy)
+            j += 1
+
+        with Pool() as pool:
+            func = partial(process_row_aggregate_otu_table_at_taxonomic_level, taxonomies, taxonomy_to_cols)
+            aggregated_base = pool.map(func, base[1:])
+
+            # Add back the headers
+            header_row = [base[0][0]]
+            header_row.extend(taxonomies)
+            aggregated_base.insert(0, header_row)
+            return aggregated_base
+
+def process_row_aggregate_otu_table_at_taxonomic_level(taxonomies, taxonomy_to_cols, row):
+    new_row = [row[OTUTable.SAMPLE_ID_COL]]
+    for taxonomy in taxonomies:
+        cols_to_aggregate = taxonomy_to_cols[taxonomy]
+        s = 0
+        for col in cols_to_aggregate:
+            s += float(row[col])
+        new_row.append(s)
+    return new_row

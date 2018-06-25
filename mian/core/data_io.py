@@ -1,8 +1,12 @@
 import csv
 import os
 import logging
-from biom import load_table
 from functools import lru_cache
+import numpy as np
+import pandas as pd
+
+from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, TAXONOMY_FILENAME, \
+    SAMPLE_METADATA_FILENAME
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -29,15 +33,18 @@ class DataIO:
 
         """
 
+        type = csv_name
+
         project_dir = os.path.dirname(__file__)
         project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
         project_dir = os.path.join(project_dir, "data")
         project_dir = os.path.join(project_dir, user_id)
         project_dir = os.path.join(project_dir, pid)
+        csv_name = os.path.join(project_dir, csv_name)
+
+        logger.info("Opening file with name " + csv_name)
 
         otu_map = []
-        csv_name = os.path.join(project_dir, csv_name)
-        logger.info("Opening file with name " + csv_name)
         with open(csv_name, 'r') as csvfile:
             base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
             for o in base_csv:

@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 from mian.analysis.analysis_base import AnalysisBase
 
@@ -86,7 +87,9 @@ class Composition(AnalysisBase):
                 i += 1
 
             for m, v in uniqueMetadataVals.items():
-                compositionAbun[tax][m] = round(np.mean(compositionAbun[tax][m]), 3)
+                comp_abun = round(np.mean(compositionAbun[tax][m]), 3)
+                if not math.isnan(comp_abun):
+                    compositionAbun[tax][m] = comp_abun
 
             j += 1
 

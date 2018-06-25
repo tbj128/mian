@@ -22,6 +22,21 @@ hr {
   background:rgb(31, 119, 180);
   color:#FFF;
   border-radius:0 0 6px 6px;
+  z-index:9999;
+}
+
+.loading-large {
+  position: fixed;
+  top:50px;
+  left:50%;
+  margin-left: -180px;
+  width:360px;
+  text-align: center;
+  padding:12px 24px;
+  background:rgb(31, 119, 180);
+  color:#FFF;
+  border-radius:0 0 6px 6px;
+  z-index:9999;
 }
 
 .loading .upload-loading {
@@ -139,7 +154,7 @@ hr {
 .upload-item {
   background: #FFF;
   box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.12);
-  width: 920px;
+  width: 980px;
   margin: 0 auto 16px auto;
   padding:36px 48px;
 }
@@ -165,6 +180,7 @@ hr {
   -webkit-animation:spin 0.5s linear infinite;
   -moz-animation:spin 0.5s linear infinite;
   animation:spin 0.5s linear infinite;
+  z-index: 9999;
 }
 
 @-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }

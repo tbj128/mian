@@ -17,6 +17,8 @@ def f(b, x):
 class TestOTUTable(unittest.TestCase):
 
     def test_load_tsv(self):
+        pass
+        
         # second_arg = {"a": 1}
         # with Pool(5) as pool:
         #     iterable = [0] * 20
@@ -25,7 +27,7 @@ class TestOTUTable(unittest.TestCase):
         #
         # print(second_arg)
 
-        otu_table = OTUTable("unit_tests", "large_biom")
+        # otu_table = OTUTable("unit_tests", "large_biom")
 
         # start = datetime.datetime.now()
         # otu_table.aggregate_otu_table_at_taxonomic_level_np(otu_table.get_table(), 2)
@@ -42,11 +44,11 @@ class TestOTUTable(unittest.TestCase):
         # elapsed = end - start
         # print(elapsed)
 
-        start = datetime.datetime.now()
-        otu_table.aggregate_otu_table_at_taxonomic_level(otu_table.get_table(), 2)
-        end = datetime.datetime.now()
-        elapsed = end - start
-        print(elapsed)
+        # start = datetime.datetime.now()
+        # otu_table.aggregate_otu_table_at_taxonomic_level(otu_table.get_table(), 2)
+        # end = datetime.datetime.now()
+        # elapsed = end - start
+        # print(elapsed)
 
         # =========
         # arr = [2] * 200

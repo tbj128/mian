@@ -62,6 +62,18 @@ class OTUTable(object):
         logger.info("Finished aggregation")
         return t
 
+    def get_table_after_filtering_and_aggregation_and_low_count_exclusion(self, taxFilter, taxFilterRole, taxFilterVals, sampleFilter, sampleFilterRole, sampleFilterVals, taxAggregationLevel):
+        logger.info("Starting filtering and aggregation")
+        t = self.filter_otu_table_by_metadata(self.table, sampleFilter, sampleFilterRole, sampleFilterVals)
+        logger.info("Finished filtering by metadata")
+        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), taxFilter, taxFilterRole, taxFilterVals)
+        logger.info("Finished filtering by taxonomic items")
+        t = self.aggregate_otu_table_at_taxonomic_level(t, taxAggregationLevel)
+        logger.info("Finished filtering by low counts")
+        t = self.filter_out_low_count(t)
+        logger.info("Finished aggregation")
+        return t
+
     def get_otu_metadata(self):
         return self.otu_metadata
 
@@ -319,6 +331,89 @@ class OTUTable(object):
             header_row.extend(taxonomies)
             aggregated_base.insert(0, header_row)
             return aggregated_base
+
+    def filter_out_low_count(self, base, count_threshold=3, min_prevalence=20):
+        """
+        TODO: Generate filtered dataset DURING CREATION???
+        TODO: Make faster
+        Returns an OTU table after removing OTUs who appear in less than or equal to the threshold count
+        :param base:
+        :param level:
+        :return:
+        """
+
+        filtered_base = []
+        cols_to_remove = {}
+
+        j = OTUTable.OTU_START_COL
+        while j < len(base[0]):
+            total_num_samples = len(base) - 1
+            over_threshold = 0
+            i = 1
+            while i < len(base):
+                otu_val = float(base[i][j])
+                if otu_val > count_threshold:
+                    over_threshold += 1
+                i += 1
+            if over_threshold / total_num_samples < min_prevalence / 100:
+                cols_to_remove[j] = 1
+            j += 1
+
+        i = 0
+        while i < len(base):
+            new_row = []
+            j = 0
+            while j < len(base[i]):
+                if j not in cols_to_remove:
+                    new_row.append(base[i][j])
+                j += 1
+            filtered_base.append(new_row)
+            i += 1
+
+        return filtered_base
+
+    def filter_out_low_count_np(self, base, count_threshold=3, min_prevalence=20):
+        """
+        TODO: Generate filtered dataset DURING CREATION???
+        TODO: Make faster
+        Returns an OTU table after removing OTUs who appear in less than or equal to the threshold count
+        :param base:
+        :param level:
+        :return:
+        """
+
+        base_np = np.array(base)
+        print(str(np.sum(base_np[2, 1:])))
+
+        filtered_base = []
+        cols_to_remove = {}
+
+        j = OTUTable.OTU_START_COL
+        while j < len(base[0]):
+            total_num_samples = len(base) - 1
+            over_threshold = 0
+            i = 1
+            while i < len(base):
+                otu_val = float(base[i][j])
+                if otu_val > count_threshold:
+                    over_threshold += 1
+                i += 1
+            if over_threshold / total_num_samples < min_prevalence / 100:
+                cols_to_remove[j] = 1
+            j += 1
+
+        i = 0
+        while i < len(base):
+            new_row = []
+            j = 0
+            while j < len(base[i]):
+                if j not in cols_to_remove:
+                    new_row.append(base[i][j])
+                j += 1
+            filtered_base.append(new_row)
+            i += 1
+
+        return filtered_base
 
 def process_row_aggregate_otu_table_at_taxonomic_level(taxonomies, taxonomy_to_cols, row):
     new_row = [row[OTUTable.SAMPLE_ID_COL]]

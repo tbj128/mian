@@ -78,6 +78,20 @@ class AnalysisTestUtils(object):
         return AnalysisTestUtils.get_col_from_metadata(test_dir, 0)
 
     @staticmethod
+    def get_sample_id_to_metadata(test_dir, target_col, csv_name=SAMPLE_METADATA_FILENAME, sep="\t"):
+        output = {}
+        csv_name = os.path.join(test_dir, csv_name)
+        print("Opening file with name " + csv_name)
+        with open(csv_name, 'r') as csvfile:
+            base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
+            i = 0
+            for o in base_csv:
+                if i > 0:
+                    output[o[0]] = o[target_col]
+                i += 1
+        return output
+
+    @staticmethod
     def get_col_from_metadata(test_dir, target_col, csv_name=SAMPLE_METADATA_FILENAME, sep="\t"):
         output = []
         csv_name = os.path.join(test_dir, csv_name)

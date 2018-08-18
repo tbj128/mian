@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Enriched Selection - mian</title>
+    <title>Differential Selection - mian</title>
+    <link href="static/css/plugins/datatables.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -10,7 +11,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3><i class="fa fa-th-large"></i>&nbsp;&nbsp;Enriched Selection <i class="fa fa-info-circle" data-toggle="popover" data-title="Enriched Selection" data-content="Selects for taxonomic items (features) that are enriched in at least one sample in one of the pairwise comparison groups but not in any sample of the other group.<br /><br />This is ideal for detecting outliers, such as families of bacteria which predominant the diseased individuals but not the healthy ones." data-trigger="hover"></i></h3>
+    <h3><i class="fa fa-th-large"></i>&nbsp;&nbsp;Differential Selection <i class="fa fa-info-circle" data-toggle="popover" data-title="Differential Selection" data-content="Performs differential analysis of OTU data based on pairwise quantitative metadata." data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -41,7 +42,7 @@
         {% endfor %}
     </select>
 
-    <label class="control-label">Pairwise Comparison Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variable" data-content="Indicate the two metadata parameter values that will be used to select taxonomic items that are enriched in one group over the other."></i></label>
+    <label class="control-label">Pairwise Comparison Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variable" data-content="Indicate the two metadata parameter values that will be used to select taxonomic items that are significantly different in one group over the other."></i></label>
     <select id="pwVar1" name="pwVar1" class="form-control" style="margin-bottom: 4px;">
         {% for uniqueCatVal in uniqueCatVals %}
         <option value="{{ uniqueCatVal }}">{{ uniqueCatVal }}</option>
@@ -53,9 +54,9 @@
         {% endfor %}
     </select>
 
-    <label class="control-label">Enriched Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="Enriched Threshold" data-content="Anything greater than this threshold would constitute an enrichment in a particular sample"></i></label>
-    <input class="form-control" id="enrichedthreshold" name="enrichedthreshold" type="number" value="0.25" min="0"
-           max="1" step="0.05"/>
+    <label class="control-label">P-Value Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="Only OTUs or taxas whose differential analysis t-test p-value was less than this threshold will be displayed"></i></label>
+    <input class="form-control" id="pvalthreshold" name="pvalthreshold" type="number" value="0.05" min="0"
+           max="1" step="0.01"/>
 
 </div>
 
@@ -65,32 +66,17 @@
         <h3>Analysis cannot be performed with these parameters</h3>
         <h5>Try changing the Category Breakdown parameter and try again. Make sure the comparison variable are categorical.</h5>
     </div>
-    <div id="analysis-container-cat1" class="analysis-container" style="display:none;">
-        <h4>Enriched in <span id="cat1-present"></h4>
-        <table class="table table-hover">
+    <div id="analysis-container" class="analysis-container" style="display:none;">
+        <h4>Differential Selection Results</h4>
+        <table id="differential-table" class="table table-hover">
             <thead>
-            <tr>
-                <th>Taxonomy</th>
-                <th>Info</th>
-            </tr>
+                <tr>
+                    <th>Taxonomy</th>
+                    <th>P-Value</th>
+                    <th>Q-Value (FDR-Corrected)</th>
+                </tr>
             </thead>
-            <tbody id="stats-rows-cat1">
-            </tbody>
-        </table>
-    </div><!-- /.container -->
-
-    <hr style="margin-top:0px; margin-bottom:0px;"/>
-
-    <div id="analysis-container-cat2" class="analysis-container" style="display:none;">
-        <h4>Enriched in <span id="cat2-present"></h4>
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>Taxonomy</th>
-                <th>Info</th>
-            </tr>
-            </thead>
-            <tbody id="stats-rows-cat2">
+            <tbody id="differential-table-rows">
             </tbody>
         </table>
     </div><!-- /.container -->
@@ -102,7 +88,8 @@
 
 <!-- Include custom JS here -->
 <script src="static/js/jquery.csv.js"></script>
-<script src="static/js/core.enriched.selection.js"></script>
+<script src="static/js/core.differential.selection.js"></script>
+<script src="static/js/plugins/datatables.min.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->

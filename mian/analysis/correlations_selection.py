@@ -13,25 +13,13 @@
 # ======== R specific setup =========
 #
 
-import rpy2.robjects as robjects
-from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
-
 from scipy import stats, math
 from mian.analysis.analysis_base import AnalysisBase
-
+from mian.core.statistics import Statistics
 from mian.model.otu_table import OTUTable
 
 
 class CorrelationsSelection(AnalysisBase):
-    r = robjects.r
-
-    rcode = """
-        fdr <- function(pvals) {
-            return(p.adjust(pvals, method = "fdr"))
-        }
-        """
-
-    rStats = SignatureTranslatedAnonymousPackage(rcode, "rStats")
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
@@ -74,9 +62,7 @@ class CorrelationsSelection(AnalysisBase):
 
             c += 1
 
-        pvals_r = robjects.FloatVector(pvals)
-
-        qvals = self.rStats.fdr(pvals_r)
+        qvals = Statistics.getFDRCorrection(pvals)
 
         i = 0
         while i < len(qvals):

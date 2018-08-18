@@ -36,7 +36,7 @@ from mian.analysis.composition import Composition
 from mian.analysis.correlations import Correlations
 from mian.analysis.correlation_network import CorrelationNetwork
 from mian.analysis.correlations_selection import CorrelationsSelection
-from mian.analysis.enriched_selection import EnrichedSelection
+from mian.analysis.differential_selection import DifferentialSelection
 from mian.analysis.fisher_exact import FisherExact
 from mian.analysis.glmnet import GLMNet
 from mian.analysis.nmds import NMDS
@@ -289,15 +289,15 @@ def correlations_selection():
     return render_template('correlations_selection.html', projectNames=projectNames, currProject=currProject)
 
 
-@app.route('/enriched_selection')
+@app.route('/differential_selection')
 @flask_login.login_required
-def enriched_selection():
+def differential_selection():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
     metadata = Metadata(current_user.id, currProject)
     catVars = metadata.get_metadata_headers()
     uniqueCatVals = metadata.get_metadata_unique_vals(catVars[0])
-    return render_template('enriched_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
+    return render_template('differential_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
 
 
 @app.route('/fisher_exact')
@@ -548,18 +548,17 @@ def getCorrelationsSelection():
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
-@app.route('/enriched_selection', methods=['POST'])
+@app.route('/differential_selection', methods=['POST'])
 @flask_login.login_required
-def getEnrichedSelection():
+def getDifferentialSelection():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("enrichedthreshold", request.form['enrichedthreshold'])
+    user_request.set_custom_attr("pvalthreshold", request.form['pvalthreshold'])
     user_request.set_custom_attr("pwVar1", request.form['pwVar1'])
     user_request.set_custom_attr("pwVar2", request.form['pwVar2'])
 
-    plugin = EnrichedSelection()
+    plugin = DifferentialSelection()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
-
 
 @app.route('/fisher_exact', methods=['POST'])
 @flask_login.login_required

@@ -1,7 +1,21 @@
+import rpy2.robjects as robjects
+from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 from scipy import stats, math
 
 
 class Statistics(object):
+
+    @staticmethod
+    def getFDRCorrection(pvals):
+        rcode = """
+            fdr <- function(pvals) {
+                return(p.adjust(pvals, method = "fdr"))
+            }
+            """
+        rStats = SignatureTranslatedAnonymousPackage(rcode, "rStats")
+
+        pvals_r = robjects.FloatVector(pvals)
+        return rStats.fdr(pvals_r)
 
     @staticmethod
     def getTtest(stats_abundances):

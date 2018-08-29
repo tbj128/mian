@@ -55,29 +55,26 @@ class AlphaDiversity(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
-        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
+
+        # No OTUs should be excluded for diversity analysis
+        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+
+        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
-        return self.analyse(user_request, otu_table, metadata_values, sample_ids_to_metadata_map)
+        return self.analyse(user_request, otu_table, sample_labels, metadata_values, sample_ids_to_metadata_map)
 
-    def analyse(self, user_request, otu_table, metadata_values, sample_ids_to_metadata_map):
+    def analyse(self, user_request, otu_table, sample_labels, metadata_values, sample_ids_to_metadata_map):
         logger.info("Starting Alpha Diversity analysis")
 
         # Creates an R-compatible dictionary of columns to vectors of column values WITHOUT headers
         allOTUs = []
-        col = OTUTable.OTU_START_COL
+        col = 0
         while col < len(otu_table[0]):
             colVals = []
-            row = 1
+            row = 0
             while row < len(otu_table):
-                sampleID = otu_table[row][OTUTable.SAMPLE_ID_COL]
+                sampleID = sample_labels[row]
                 if len(metadata_values) == 0 or sampleID in sample_ids_to_metadata_map:
                     colVals.append(otu_table[row][col])
                 row += 1
@@ -104,7 +101,7 @@ class AlphaDiversity(AnalysisBase):
         i = 0
         while i < len(vals):
             obj = {}
-            obj["s"] = str(otu_table[i + 1][OTUTable.SAMPLE_ID_COL])
+            obj["s"] = str(sample_labels[i])
             obj["a"] = round(vals[i], 6)
             meta = metadata_values[i] if len(metadata_values) > 0 else "All"
 

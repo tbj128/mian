@@ -44,42 +44,53 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Analysis <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Compositional Analysis" data-content="Visualizes the contents of the OTU table grouped at the indicated taxonomic level" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Analysis <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Compositional Analysis" data-content="Visualizes the contents of the OTU table grouped at the indicated taxonomic level" data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
     <hr/>
 
-    {% include 'filtering_options.html' %}
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        {% include 'filtering_options.html' %}
 
-    <hr/>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingAnalysisParameters">
+              <h4 class="panel-title">
+                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
+                  Visualization Parameters
+                </a>
+              </h4>
+            </div>
+            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+              <div class="panel-body">
 
-    <h4>Visualization Parameters</h4>
+                <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+                    <option value="Kingdom">Kingdom</option>
+                    <option value="Phylum" selected>Phylum</option>
+                    <option value="Class">Class</option>
+                    <option value="Order">Order</option>
+                    <option value="Family">Family</option>
+                    <option value="Genus">Genus</option>
+                    <option value="Species">Species</option>
+                    <option value="OTU">OTU</option>
+                </select>
 
-    <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
-    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-        <option value="Kingdom">Kingdom</option>
-        <option value="Phylum" selected>Phylum</option>
-        <option value="Class">Class</option>
-        <option value="Order">Order</option>
-        <option value="Family">Family</option>
-        <option value="Genus">Genus</option>
-        <option value="Species">Species</option>
-        <option value="OTU">OTU</option>
-    </select>
+                <hr/>
 
-    <hr/>
+                <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <select id="catvar" name="catvar" class="form-control">
+                </select>
 
-    <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
-    <select id="catvar" name="catvar" class="form-control">
-    </select>
-
-    <label class="control-label">Plot Type  <i class="fa fa-info-circle" data-toggle="popover" data-title="Plot Type" data-content="The type of graph to show"></i></label>
-    <select id="plotType" name="plotType" class="form-control pad-bottom">
-        <option value="bar">Bar</option>
-        <option value="donut" selected>Donut</option>
-    </select>
-
+                <label class="control-label">Plot Type  <i class="fa fa-info-circle" data-toggle="popover" data-title="Plot Type" data-content="The type of graph to show"></i></label>
+                <select id="plotType" name="plotType" class="form-control pad-bottom">
+                    <option value="bar">Bar</option>
+                    <option value="donut" selected>Donut</option>
+                </select>
+              </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="content-wrapper">

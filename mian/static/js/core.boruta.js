@@ -58,8 +58,18 @@ function updateAnalysis() {
     var pval = $("#pval").val();
     var maxruns = $("#maxruns").val();
 
+    if (catvar === "none") {
+        $("#analysis-container").hide();
+        hideLoading();
+        hideNotifications();
+        showNoCatvar();
+        return;
+    }
+
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilterCount": getLowCountThreshold(),
+      "taxonomyFilterPrevalence": getPrevalenceThreshold(),
       "taxonomyFilter": taxonomyFilter,
       "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
@@ -78,16 +88,23 @@ function updateAnalysis() {
       url: "boruta",
       data: data,
       success: function(result) {
-        $("#display-error").hide();
+        hideNotifications();
         hideLoading();
-        $("#analysis-container").show();
+
         var abundancesObj = JSON.parse(result);
-        renderBorutaTable(abundancesObj);
+        if (!$.isEmptyObject(abundancesObj["results"])) {
+            $("#analysis-container").show();
+            renderBorutaTable(abundancesObj);
+        } else {
+            $("#analysis-container").hide();
+            showNoResults();
+        }
       },
       error: function(err) {
-        hideLoading();
         $("#analysis-container").hide();
-        $("#display-error").show();
+        hideLoading();
+        hideNotifications();
+        showError();
         console.log(err);
       }
     });

@@ -123,8 +123,18 @@ function updateAnalysis() {
     var pwVar1 = $("#pwVar1").val();
     var pwVar2 = $("#pwVar2").val();
 
+    if (catvar === "none") {
+        $("#analysis-container").hide();
+        hideLoading();
+        hideNotifications();
+        showNoCatvar();
+        return;
+    }
+
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilterCount": getLowCountThreshold(),
+      "taxonomyFilterPrevalence": getPrevalenceThreshold(),
       "taxonomyFilter": taxonomyFilter,
       "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
@@ -143,19 +153,23 @@ function updateAnalysis() {
       url: "differential_selection",
       data: data,
       success: function(result) {
-        $("#display-error").hide();
+        hideNotifications();
         hideLoading();
-        $("#analysis-container").show();
-        $("#stats-container").show();
 
         var abundancesObj = JSON.parse(result);
-        renderDifferentialTable(abundancesObj);
+        if (abundancesObj["differentials"].length > 0) {
+            $("#analysis-container").show();
+            renderDifferentialTable(abundancesObj);
+        } else {
+            $("#analysis-container").hide();
+            showNoResults();
+        }
       },
       error: function(err) {
-        hideLoading();
         $("#analysis-container").hide();
-        $("#stats-container").hide();
-        $("#display-error").show();
+        hideLoading();
+        hideNotifications();
+        showError();
         console.log(err);
       }
     });

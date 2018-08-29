@@ -1,1 +1,1 @@
-{"biom_file_location": "small_biom_v1.biom", "raw_otu_table_location": "small_biom_v1.biom", "subsampled_otu_table_location": "", "taxonomy_file_location": "", "sample_metadata_location": "", "subsampled_value": "", "subsampled_type": ""}
+{"project_name": "Small_Biom", "subsampled_value": 30, "subsampled_type": "auto", "subsampled_removed_samples": [], "orig_biom_name": "table.biom", "orig_otu_table_name": "", "orig_taxonomy_name": "", "orig_sample_metadata_name": "", "taxonomy_type": "Greengenes"}

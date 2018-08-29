@@ -16,6 +16,8 @@
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+import rpy2.robjects.numpy2ri
+rpy2.robjects.numpy2ri.activate()
 
 from mian.model.otu_table import OTUTable
 
@@ -26,9 +28,8 @@ class GLMNet(object):
     rcode = """
     library(glmnet)
 
-    run_glmnet <- function(base, groups, keepthreshold, alphaVal, familyType, lambda_threshold_type, lambda_val) {
-        # Remove any OTUs with presence < keepthreshold (for efficiency)
-        x = base[,colSums(base!=0)>=keepthreshold]
+    run_glmnet <- function(base, groups, alphaVal, familyType, lambda_threshold_type, lambda_val) {
+        x = base
         y.1 = as.factor(groups)
     
         # x = x[,2:ncol(x)];
@@ -79,47 +80,33 @@ class GLMNet(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
-        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
 
-        return self.analyse(user_request, otu_table, metadata_vals, sample_ids_to_metadata_map)
+        return self.analyse(user_request, otu_table, headers, metadata_vals)
 
-    def analyse(self, user_request, otuTable, metaVals, metaIDs):
-        groups = robjects.FactorVector(robjects.StrVector(metaVals))
-        # Forms an OTU only table (without IDs)
+    def analyse(self, user_request, otuTable, headers, metadata_vals):
+
+        family = "binomial"
+        if len(set(metadata_vals)):
+            family = "multinomial"
+        groups = robjects.FactorVector(robjects.StrVector(metadata_vals))
+
         allOTUs = []
-        col = OTUTable.OTU_START_COL
+        col = 0
         while col < len(otuTable[0]):
-            colVals = []
-            row = 1
-            while row < len(otuTable):
-                sampleID = otuTable[row][OTUTable.SAMPLE_ID_COL]
-                if sampleID in metaIDs:
-                    colVals.append(otuTable[row][col])
-                row += 1
-            allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
+            allOTUs.append((headers[col], otuTable[:, col]))
             col += 1
 
         od = rlc.OrdDict(allOTUs)
         dataf = robjects.DataFrame(od)
 
-        keepthreshold = user_request.get_custom_attr("keepthreshold")
         alphaVal = user_request.get_custom_attr("alpha")
-        family = user_request.get_custom_attr("family")
         lambda_threshold_type = user_request.get_custom_attr("lambdathreshold")
         lambda_val = user_request.get_custom_attr("lambdaval")
 
-        print("Analyse GLMNET")
-
-        glmnetResult = self.rStats.run_glmnet(dataf, groups, int(keepthreshold), float(alphaVal), family,
+        glmnetResult = self.rStats.run_glmnet(dataf, groups, float(alphaVal), family,
                                               lambda_threshold_type, float(lambda_val))
 
         accumResults = {}

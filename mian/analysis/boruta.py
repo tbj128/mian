@@ -12,6 +12,8 @@
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+import rpy2.robjects.numpy2ri
+rpy2.robjects.numpy2ri.activate()
 
 from mian.model.otu_table import OTUTable
 
@@ -22,11 +24,9 @@ class Boruta(object):
     
     library(Boruta)
 
-    boruta <- function(base, groups, keepthreshold, pval, maxruns) {
-        # Remove any OTUs with presence < keepthreshold (for efficiency)
-        x = base[,colSums(base!=0)>=keepthreshold]
+    boruta <- function(base, groups, pval, maxruns) {
         y.1 = as.factor(groups)
-        b <- Boruta(x, y.1, doTrace=0, holdHistory=FALSE, pValue=pval, maxRuns=maxruns)
+        b <- Boruta(base, y.1, doTrace=0, holdHistory=FALSE, pValue=pval, maxRuns=maxruns)
         return (b$finalDecision)
     }
     """
@@ -35,46 +35,28 @@ class Boruta(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
-        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
+        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
 
-        return self.analyse(user_request, otu_table, metadata_values, sample_ids_to_metadata_map)
+        return self.analyse(user_request, otu_table, headers, metadata_values)
 
-    def analyse(self, user_request, otuTable, metaVals, metaIDs):
+    def analyse(self, user_request, otuTable, headers, metaVals):
         groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
-        # Forms an OTU only table (without IDs)
         allOTUs = []
-        col = OTUTable.OTU_START_COL
+        col = 0
         while col < len(otuTable[0]):
-            colVals = []
-            row = 1
-            while row < len(otuTable):
-                sampleID = otuTable[row][OTUTable.SAMPLE_ID_COL]
-                if sampleID in metaIDs:
-                    colVals.append(otuTable[row][col])
-                row += 1
-            allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
+            allOTUs.append((headers[col], otuTable[:, col]))
             col += 1
 
         od = rlc.OrdDict(allOTUs)
         dataf = robjects.DataFrame(od)
 
-        keepthreshold = user_request.get_custom_attr("keepthreshold")
         pval = user_request.get_custom_attr("pval")
         maxruns = user_request.get_custom_attr("maxruns")
 
-        print("Boruta")
-
-        borutaResults = self.rStats.boruta(dataf, groups, int(keepthreshold), float(pval), int(maxruns))
+        borutaResults = self.rStats.boruta(dataf, groups, float(pval), int(maxruns))
 
         assignments = {}
 

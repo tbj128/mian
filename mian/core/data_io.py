@@ -16,6 +16,11 @@ class DataIO:
 
     @staticmethod
     @lru_cache(maxsize=128)
+    def tsv_to_np_table(user_id, pid, csv_name, sep="\t"):
+        return np.array(DataIO.tsv_to_table(user_id, pid, csv_name, sep), dtype=int)
+
+    @staticmethod
+    @lru_cache(maxsize=128)
     def tsv_to_table(user_id, pid, csv_name, sep="\t"):
         """
         Reads a CSV/TSV table from a provided file location and returns the table
@@ -33,8 +38,6 @@ class DataIO:
 
         """
 
-        type = csv_name
-
         project_dir = os.path.dirname(__file__)
         project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
         project_dir = os.path.join(project_dir, "data")
@@ -44,14 +47,19 @@ class DataIO:
 
         logger.info("Opening file with name " + csv_name)
 
+        return DataIO.tsv_to_table_from_path(csv_name)
+
+    @staticmethod
+    def tsv_to_table_from_path(csv_path, sep="\t"):
         otu_map = []
-        with open(csv_name, 'r') as csvfile:
+        with open(csv_path, 'r') as csvfile:
             base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
             for o in base_csv:
                 if len(o) > 1:
                     otu_map.append(o)
 
         return otu_map
+
 
     @staticmethod
     def table_to_tsv(base, user_id, pid, csv_name):

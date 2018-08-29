@@ -20,15 +20,22 @@ class TableView(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
 
-        return self.analyse(otu_table)
+        return self.analyse(base, headers, sample_labels)
 
-    def analyse(self, otu_table):
+    def analyse(self, base, headers, sample_labels):
+        new_headers = ["Sample"]
+        new_headers.extend(headers)
+        otu_table = [new_headers]
+
+        i = 0
+        while i < len(base):
+            new_row = [sample_labels[i]]
+            j = 0
+            while j < len(base[i]):
+                new_row.append(float(base[i][j]))
+                j += 1
+            otu_table.append(new_row)
+            i += 1
         return otu_table

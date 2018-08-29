@@ -1,10 +1,11 @@
 import csv
 import json
 import os
-import numpy
+import numpy as np
 import math
 
-from mian.core.constants import SUBSAMPLED_OTU_TABLE_FILENAME, SAMPLE_METADATA_FILENAME, TAXONOMY_FILENAME
+from mian.core.constants import SUBSAMPLED_OTU_TABLE_FILENAME, SAMPLE_METADATA_FILENAME, TAXONOMY_FILENAME, \
+    SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
 from mian.model.user_request import UserRequest
 from mian.model.taxonomy import Taxonomy
 
@@ -28,7 +29,7 @@ class AnalysisTestUtils(object):
     @staticmethod
     def create_default_user_request():
         # -2 represents no taxonomy filtering
-        user_request = UserRequest("testuid", "testpid", -2, "Include", [], "", "Include", [], -2, "")
+        user_request = UserRequest("testuid", "testpid", 0, 0, -2, "Include", [], "", "Include", [], -2, "")
         return user_request
 
     @staticmethod
@@ -39,7 +40,7 @@ class AnalysisTestUtils(object):
             return json.loads(data)
 
     @staticmethod
-    def get_test_input_as_table(test_dir, csv_name=SUBSAMPLED_OTU_TABLE_FILENAME, sep="\t"):
+    def get_test_input_as_table(test_dir, csv_name=SUBSAMPLED_OTU_TABLE_FILENAME, sep="\t", use_np=False):
         output = []
         csv_name = os.path.join(test_dir, csv_name)
         print("Opening file with name " + csv_name)
@@ -48,7 +49,21 @@ class AnalysisTestUtils(object):
             for o in base_csv:
                 if len(o) > 1:
                     output.append(o)
+        if use_np:
+            return np.array(output, dtype=int)
         return output
+
+    @staticmethod
+    def get_test_input_as_metadata(test_dir, csv_name=SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, sep="\t"):
+        output = []
+        csv_name = os.path.join(test_dir, csv_name)
+        print("Opening file with name " + csv_name)
+        with open(csv_name, 'r') as csvfile:
+            base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
+            for o in base_csv:
+                if len(o) > 1:
+                    output.append(o)
+        return output[0], output[1]
 
     @staticmethod
     def get_test_taxonomy(test_dir):
@@ -113,9 +128,9 @@ class AnalysisTestUtils(object):
         if obj1 is None or obj2 is None:
             return False
 
-        if isinstance(obj1, numpy.float64):
+        if isinstance(obj1, np.float64):
             obj1 = float(obj1)
-        if isinstance(obj2, numpy.float64):
+        if isinstance(obj2, np.float64):
             obj2 = float(obj2)
 
         if type(obj1) is not type(obj2):

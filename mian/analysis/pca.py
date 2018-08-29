@@ -18,7 +18,12 @@ from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 from mian.analysis.analysis_base import AnalysisBase
 
 from mian.model.otu_table import OTUTable
+import logging
+import rpy2.robjects.numpy2ri
+rpy2.robjects.numpy2ri.activate()
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+logger = logging.getLogger(__name__)
 
 class PCA(AnalysisBase):
     r = robjects.r
@@ -34,15 +39,8 @@ class PCA(AnalysisBase):
         # Removes any columns that only contain 0s
         allOTUs <- allOTUs[, colSums(allOTUs) > 0]
         pca <- prcomp(allOTUs, center = TRUE, scale. = TRUE)
-        return(pca$x)
-    }
-
-    pca_variance <- function(allOTUs) {
-        # Removes any columns that only contain 0s
-        allOTUs <- allOTUs[, colSums(allOTUs) > 0]
-        pca <- prcomp(allOTUs, center = TRUE, scale. = TRUE)
         proportions = 100*(pca[["sdev"]]^2)/sum(pca[["sdev"]]^2)
-        return(proportions[1:min(length(proportions), 10)])
+        return(list(pca$x, proportions[1:min(length(proportions), 10)]))
     }
 
     get_colors <- function(groups) {
@@ -60,37 +58,32 @@ class PCA(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
 
-        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
-        return self.analyse(user_request, otu_table, metadata_vals, sample_ids_to_metadata_map)
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+        return self.analyse(user_request, base, headers, sample_labels, metadata_vals)
 
-    def analyse(self, user_request, otuTable, metaVals, metaIDs):
-        # Forms an OTU only table (without IDs)
-        allOTUs = [];
-        col = OTUTable.OTU_START_COL
-        while col < len(otuTable[0]):
-            colVals = []
-            row = 1
-            while row < len(otuTable):
-                sampleID = otuTable[row][OTUTable.SAMPLE_ID_COL]
-                if sampleID in metaIDs:
-                    colVals.append(otuTable[row][col])
-                row += 1
-            allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
+    def analyse(self, user_request, base, headers, sample_labels, metaVals):
+        logger.info("Starting PCA analysis")
+
+        allOTUs = []
+        col = 0
+        while col < len(base[0]):
+            allOTUs.append((headers[col], base[:, col]))
             col += 1
+
+        logger.info("After creating the R float vector table")
 
         od = rlc.OrdDict(allOTUs)
         dataf = robjects.DataFrame(od)
-        pcaVals = self.rViz.pca(dataf)
-        pcaVariances = self.rViz.pca_variance(dataf)
+
+        logger.info("After creating the R dataframe")
+
+        pca = self.rViz.pca(dataf)
+        pcaVals = pca[0]
+        pcaVariances = pca[1]
+
+        logger.info("After running the R PCA")
 
         pca1Min = 100
         pca2Min = 100
@@ -103,11 +96,14 @@ class PCA(AnalysisBase):
         pcaRow = []
         i = 1  # RObjects use 1 based indexing
         while i <= pcaVals.nrow:
-            meta = metaVals[i - 1]
-            pcaObj = {}
-            pcaObj["m"] = meta
-            pcaObj["pca1"] = round(float(pcaVals.rx(i, int(pca1))[0]), 8)
-            pcaObj["pca2"] = round(float(pcaVals.rx(i, int(pca2))[0]), 8)
+            meta = ""
+            if metaVals and len(metaVals) == pcaVals.nrow:
+                meta = metaVals[i - 1]
+
+            pcaObj = {"s": sample_labels[i - 1],
+                      "m": meta,
+                      "pca1": round(float(pcaVals.rx(i, int(pca1))[0]), 8),
+                      "pca2": round(float(pcaVals.rx(i, int(pca2))[0]), 8)}
             if pcaObj["pca1"] > pca1Max:
                 pca1Max = pcaObj["pca1"]
             if pcaObj["pca1"] < pca1Min:

@@ -56,8 +56,6 @@ function customLoading() {
 }
 
 function renderGlmnetTable(abundancesObj) {
-    $("#stats-container").hide();
-
     if ($.isEmptyObject(abundancesObj)) {
       return;
     }
@@ -122,8 +120,6 @@ function renderGlmnetTable(abundancesObj) {
 
     render += "</div><br /><hr /><br />";
     $("#analysis-container").append(render);
-
-    $("#stats-container").fadeIn(250);
 }
 
 
@@ -147,8 +143,18 @@ function updateAnalysis() {
     var lambdathreshold = $("#lambdathreshold").val();
     var lambdaval = $("#lambdaval").val();
 
+    if (catvar === "none") {
+        $("#analysis-container").hide();
+        hideLoading();
+        hideNotifications();
+        showNoCatvar();
+        return;
+    }
+
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilterCount": getLowCountThreshold(),
+      "taxonomyFilterPrevalence": getPrevalenceThreshold(),
       "taxonomyFilter": taxonomyFilter,
       "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
@@ -169,19 +175,23 @@ function updateAnalysis() {
       url: "glmnet",
       data: data,
       success: function(result) {
-        $("#display-error").hide();
+        hideNotifications();
         hideLoading();
-        $("#analysis-container").show();
-        $("#stats-container").show();
 
         var abundancesObj = JSON.parse(result);
-        renderGlmnetTable(abundancesObj);
+        if (!$.isEmptyObject(abundancesObj)) {
+            $("#analysis-container").show();
+            renderGlmnetTable(abundancesObj);
+        } else {
+            $("#analysis-container").hide();
+            showNoResults();
+        }
       },
       error: function(err) {
-        hideLoading();
         $("#analysis-container").hide();
-        $("#stats-container").hide();
-        $("#display-error").show();
+        hideLoading();
+        hideNotifications();
+        showError();
         console.log(err);
       }
     });

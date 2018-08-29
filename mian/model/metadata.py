@@ -1,4 +1,4 @@
-from mian.core.constants import SAMPLE_METADATA_FILENAME, SAMPLE_ID_COL
+from mian.core.constants import SAMPLE_METADATA_FILENAME
 from mian.core.data_io import DataIO
 
 
@@ -137,7 +137,7 @@ class Metadata(object):
             j += 1
         return cat_col
 
-    def get_metadata_column_table_order(self, otu_table, metadata_name):
+    def get_metadata_column_table_order(self, sample_labels, metadata_name):
         """
         Returns an array of the metadata values. The values will correspond directly to the input OTU table order.
         The header of the metadata is ignored.
@@ -146,10 +146,10 @@ class Metadata(object):
         """
         metadata_map = self.get_sample_id_to_metadata_map(metadata_name)
         meta_vals = []
-        row = 1
-        while row < len(otu_table):
-            if otu_table[row][SAMPLE_ID_COL] in metadata_map:
-                meta_vals.append(metadata_map[otu_table[row][SAMPLE_ID_COL]])
+        row = 0
+        while row < len(sample_labels):
+            if sample_labels[row] in metadata_map:
+                meta_vals.append(metadata_map[sample_labels[row]])
             row += 1
         return meta_vals
 
@@ -164,7 +164,7 @@ class Metadata(object):
             return meta_vals
 
         meta_col = self.get_metadata_column_number(metadata_name)
-        i = 1
+        i = 0
         while i < len(self.metadata):
             # Maps the ID column to metadata column
             meta_vals[self.metadata[i][0]] = self.metadata[i][meta_col]
@@ -189,25 +189,6 @@ class Metadata(object):
                 unique_vals[self.metadata[i][catvar_col]] = 1
             i += 1
         return list(unique_vals.keys())
-
-    # def get_metadata_in_otu_table_order(self, metadata_name):
-    #     """
-    #     Returns an array of the metadata values. The values will correspond directly to the input OTU table order.
-    #     The header of the metadata is ignored.
-    #     :param otu_table:
-    #     :param meta_col:
-    #     :return:
-    #     """
-    #     meta_col = self.get_metadata_column_number(metadata_name)
-    #     metadata_map = self.map_id_to_metadata(meta_col)
-    #     meta_vals = []
-    #     row = 1
-    #     while row < len(self.otu_table):
-    #         if self.otu_table[row][OTU_GROUP_ID_COL] in metadata_map:
-    #             meta_vals.append(metadata_map[self.otu_table[row][OTU_GROUP_ID_COL]])
-    #         row += 1
-    #     return meta_vals
-
 
 
     #########

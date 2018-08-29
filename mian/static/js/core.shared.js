@@ -14,7 +14,7 @@ var taxonomyLevels = {
   "Species": 6,
   "OTU": -1
 };
-var taxonomiesMap = [];
+var taxonomiesMap = {};
 
 // Global cache of the "Category Breakdown" values
 var catVars = [];
@@ -73,6 +73,22 @@ function hideLoading() {
   $("#loading").hide();
 }
 
+function hideNotifications() {
+  $(".display-notification").hide();
+}
+
+function showNoCatvar() {
+  $("#display-no-catvar").show();
+}
+
+function showError() {
+  $("#display-error").show();
+}
+
+function showNoResults() {
+  $("#display-no-results").show();
+}
+
 function setExtraNavLinks(attr) {
   $(".nav-link").each(function() {
     var currHref = $(this).attr("href");
@@ -108,28 +124,37 @@ function getSelectedTaxFilterRole() {
 }
 
 function getSelectedTaxFilterVals() {
+    var taxLevel = $("#filter-otu").val();
+    if (taxLevel === "none") {
+      // Filtering is not enabled
+      return JSON.stringify([]);
+    }
+
     var taxTypeaheadFilterVisible = $("#taxonomy-specific-typeahead-wrapper").is(":visible");
     if (taxTypeaheadFilterVisible) {
       var taxTypeaheadFilter = $("#taxonomy-typeahead-filter").val();
-      return taxTypeaheadFilter;
+      return JSON.stringify(taxTypeaheadFilter);
     } else {
       var taxonomy = $("#taxonomy-specific").val();
       if (taxonomy == null) {
         taxonomy = [];
       }
 
-      var taxLevel = $("#filter-otu").val();
-      if (taxLevel === "none") {
-        taxonomy = [];
-      }
-
       if ($("#taxonomy-specific option").size() === taxonomy.length) {
         // Select all is enabled
-        return "mian-select-all";
+        return JSON.stringify(["mian-select-all"]);
       }
 
-      return taxonomy.join(",");
+      return JSON.stringify(taxonomy);
     }
+}
+
+function getLowCountThreshold() {
+    return $("#countthreshold").val();
+}
+
+function getPrevalenceThreshold() {
+    return $("#prevalence").val();
 }
 
 function getSelectedSampleFilter() {
@@ -149,16 +174,22 @@ function getSelectedSampleFilterRole() {
 }
 
 function getSelectedSampleFilterVals() {
+    if ($("filter-sample").val() === "none") {
+        // Filtering not enabled
+        return JSON.stringify([]);
+    }
+
     var sampleTypeaheadFilterVisible = $("#sample-specific-typeahead-wrapper").is(":visible");
     if (sampleTypeaheadFilterVisible) {
         var sampleTypeaheadFilter = $("#sample-typeahead-filter").val();
-        return sampleTypeaheadFilter;
+        return JSON.stringify(sampleTypeaheadFilter);
     } else {
         var samples = $("#filter-sample-specific").val();
         if (samples == null) {
-            samples = []
+            samples = [];
         }
-        return samples.join(",");
+
+        return JSON.stringify(samples);
     }
 }
 
@@ -192,8 +223,6 @@ function getSampleFilteringOptions() {
         var $filterSampleSpecific = $("#filter-sample-specific");
 
         var options = [];
-
-        console.log(json);
 
         if (json.length < MINIMUM_FOR_TYPEAHEAD_MODE) {
             $('#sample-specific-typeahead-wrapper').hide();
@@ -240,6 +269,8 @@ function getSampleFilteringOptions() {
 }
 
 function resetProject() {
+    taxonomiesMap = {};
+
     // We must wait for all the sidebar components to finish updating before we can render the analysis component
     if (hasCatVar && typeof customLoading === "function") {
         $.when(updateTaxonomicLevel(true, function() {}), updateCatVar(function() {}), customLoading()).done(function(a1, a2, a3) {
@@ -314,6 +345,14 @@ function createGlobalSidebarListeners() {
       updateAnalysis();
     });
 
+    $("#countthreshold").change(function () {
+      updateAnalysis();
+    });
+
+    $("#prevalence").change(function () {
+      updateAnalysis();
+    });
+
     $("#taxonomy-typeahead-btn a").on("click", function() {
         var intent = $(this).data("intent");
         $("#taxonomy-typeahead-btn .typeahead-role").text(intent);
@@ -340,7 +379,7 @@ function createGlobalSidebarListeners() {
 }
 
 function updateCatVar(isNumeric) {
-  return $.ajax({
+  var catVarPromise = $.ajax({
     url: "metadata_headers_with_type?pid=" + $("#project").val(),
     success: function(result) {
       var json = JSON.parse(result);
@@ -385,11 +424,18 @@ function updateCatVar(isNumeric) {
       catVars = json;
     }
   });
+
+  if (typeof customCatVarValueLoading === "function") {
+    // Loads any additional catvar values
+    return catVarPromise.then(customCatVarValueLoading);
+  } else {
+    return catVarPromise;
+  }
 }
 
 function updateTaxonomicLevel(firstLoad, callback) {
   console.log("Updating taxonomic level")
-  if (taxonomiesMap.length == 0) {
+  if ($.isEmptyObject(taxonomiesMap)) {
     // Load taxonomy map
     return $.ajax({
       url: "taxonomies?pid=" + $("#project").val(), 
@@ -435,7 +481,7 @@ function renderTaxonomicLevel(firstLoad) {
 
   console.log("Number of taxonomies is " + taxasArr.length);
 
-  if (taxasArr.length < MINIMUM_FOR_TYPEAHEAD_MODE) {
+  if (taxasArr.length > MINIMUM_FOR_TYPEAHEAD_MODE) {
       console.log("Loading regular taxonomy multiselect filter");
 
       $('#taxonomy-specific-typeahead-wrapper').hide();

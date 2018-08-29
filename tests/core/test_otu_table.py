@@ -27,31 +27,41 @@ class TestOTUTable(unittest.TestCase):
         #
         # print(second_arg)
 
-        otu_table = OTUTable("unit_tests", "large_biom")
 
-        # start = datetime.datetime.now()
-        # otu_table.aggregate_otu_table_at_taxonomic_level_np(otu_table.get_table(), 2)
-        #
-        # end = datetime.datetime.now()
-        # elapsed = end - start
-        # print(elapsed)
-        #
-        #
-        # start = datetime.datetime.now()
-        # otu_table.aggregate_otu_table_at_taxonomic_level(otu_table.get_table(), 2)
-        #
-        # end = datetime.datetime.now()
-        # elapsed = end - start
-        # print(elapsed)
-
-        print("Num OTUs = " + str(len(otu_table.get_table()[0])))
         start = datetime.datetime.now()
-        filtered_base = otu_table.filter_out_low_count_np(otu_table.get_table(), 2, 20)
-        print("Num OTUs After = " + str(len(filtered_base[0])))
+        otu_table = OTUTable("unit_tests", "large_biom")
+        end = datetime.datetime.now()
+        elapsed = end - start
+        print(elapsed)
+
+        start = datetime.datetime.now()
+        filtered_table, headers, sample_metadata = otu_table.aggregate_otu_table_at_taxonomic_level(otu_table.get_table(), otu_table.headers,
+                                                                          otu_table.sample_labels, 2)
+        filtered_table, headers, sample_metadata = otu_table.filter_out_low_count_np(filtered_table, headers, sample_metadata)
+        print(filtered_table.shape[0])
+        print(filtered_table.shape[1])
+        end = datetime.datetime.now()
+        elapsed = end - start
+        print(elapsed)
+        print("")
+        start = datetime.datetime.now()
+        filtered_table, headers, sample_metadata = otu_table.aggregate_otu_table_at_taxonomic_level_np(otu_table.get_table(), otu_table.headers, otu_table.sample_labels, 2)
+        filtered_table, headers, sample_metadata = otu_table.filter_out_low_count_np(filtered_table, headers, sample_metadata)
+        print(filtered_table.shape[0])
+        print(filtered_table.shape[1])
 
         end = datetime.datetime.now()
         elapsed = end - start
         print(elapsed)
+
+        # print("Num OTUs = " + str(len(otu_table.get_table()[0])))
+        # start = datetime.datetime.now()
+        # filtered_base = otu_table.filter_out_low_count_np(otu_table.get_table(), 2, 20)
+        # print("Num OTUs After = " + str(len(filtered_base[0])))
+        #
+        # end = datetime.datetime.now()
+        # elapsed = end - start
+        # print(elapsed)
 
 
         # start = datetime.datetime.now()

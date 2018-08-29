@@ -205,7 +205,16 @@ function updateAnalysis() {
             $("#analysis-container").show();
             $("#stats-container").show();
             var abundancesObj = JSON.parse(result);
-            renderNetwork(abundancesObj);
+            if (abundancesObj["links"].length == 0) {
+                $("#analysis-container").hide();
+                $("#stats-container").hide();
+                $("#display-error").show();
+            } else {
+                $("#analysis-container").show();
+                $("#stats-container").show();
+                $("#display-error").hide();
+                renderNetwork(abundancesObj);
+            }
         },
         error: function(err) {
             hideLoading();

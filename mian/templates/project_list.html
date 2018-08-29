@@ -1,10 +1,12 @@
-<label class="control-label">Project  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="Project" data-content="Select the specific project you want to apply the analysis on. All other analysis parameters will remain the same." data-trigger="hover"></i></label>
-<select id="project" name="project" class="form-control">
-  {% for projectName in projectNames %}
-    {% if projectNames[projectName]['pid'] == currProject %}
-      <option value="{{ projectNames[projectName]['pid'] }}" selected>{{ projectName }}</option>
-    {% else %}
-      <option value="{{ projectNames[projectName]['pid'] }}">{{ projectName }}</option>
-    {% endif %}
-  {% endfor %}
-</select>
+<div class="pad-sides">
+  <label class="control-label">Project  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="Project" data-content="Select the specific project you want to apply the analysis on. All other analysis parameters will remain the same." data-trigger="hover"></i></label>
+  <select id="project" name="project" class="form-control">
+    {% for projectName in projectNames %}
+      {% if projectNames[projectName]['pid'] == currProject %}
+        <option value="{{ projectNames[projectName]['pid'] }}" selected>{{ projectName }}</option>
+      {% else %}
+        <option value="{{ projectNames[projectName]['pid'] }}">{{ projectName }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+</div>

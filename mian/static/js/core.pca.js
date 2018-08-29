@@ -6,8 +6,7 @@
 var abundancesObj = {};
 var boundX = [];
 var boundY = [];
-var boundXLastFire = 0;
-var boundYLastFire = 0;
+var boundRenderFire = 0;
 var slider1 = null, slider2 = null;
 
 //
@@ -33,6 +32,28 @@ function createSpecificListeners() {
 
     $("#pca2").change(function () {
         updateAnalysis();
+    });
+    
+    $("#pca1-range").change(function(e) {
+        boundX = $("#pca1-range").val().split(",");
+        var diff = e.timeStamp - boundRenderFire;
+        // Prevents the event from firing too often
+        if (diff >= 300) {
+            boundRenderFire = e.timeStamp;
+            renderPCA(abundancesObj["pca"]);
+            renderPCAVar(abundancesObj["pcaVar"])
+        }
+    });
+
+    $("#pca2-range").change(function(e) {
+        boundY = $("#pca2-range").val().split(",");
+        var diff = e.timeStamp - boundRenderFire;
+        // Prevents the event from firing too often
+        if (diff >= 300) {
+            boundRenderFire = e.timeStamp;
+            renderPCA(abundancesObj["pca"]);
+            renderPCAVar(abundancesObj["pcaVar"]);
+        }
     });
 }
 
@@ -95,6 +116,12 @@ function renderPCA(data) {
     xScale.domain(xDomain);
     yScale.domain(yDomain);
 
+    // tooltip that appears when hovering over a dot
+    var tooltip = d3.select("#analysis-container").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("width", "160px");
+
     // x-axis
     svg.append("g")
         .attr("class", "x axis")
@@ -125,16 +152,25 @@ function renderPCA(data) {
         .data(data)
       .enter().append("circle")
         .attr("class", "dot")
-        .attr("r", function(d) { 
-            // if ($("#sizevar").val() != "" && $("#sizevar").val() != "None") {
-            //   return sScale(sValue(d)); 
-            // } else {
-              return 3;
-            // }
-          })
+        .attr("r", function(d) {
+            return 3;
+        })
         .attr("cx", xMap)
         .attr("cy", yMap)
-        .style("fill", function(d) { return color(cValue(d));}) ;
+        .style("fill", function(d) { return color(cValue(d));})
+        .on("mouseover", function(d) {
+            tooltip.transition()
+              .duration(100)
+              .style("opacity", 1);
+            tooltip.html("<strong>" + d.s + "</strong><br /><strong>" + d.m + "</strong><br />" + $("#pca1").val() + ": <strong>" + d.pca1 + "</strong><br />" + $("#pca2").val() + ": <strong>" + d.pca2 + "</strong>")
+              .style("left", (d3.event.pageX - 160) + "px")
+              .style("top", (d3.event.pageY + 12) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(100)
+                .style("opacity", 0);
+        });
 
     if ($("#colorvar").val() != "" && $("#colorvar").val() != "None") {
       // draw legend
@@ -273,67 +309,38 @@ function updateAnalysis() {
 
         // Update sliders
 
-        document.getElementById("pca1-range").setAttribute("data-slider-min", abundancesObj["pca1Min"]);
-        document.getElementById("pca1-range").setAttribute("data-slider-max", abundancesObj["pca1Max"]);
-        document.getElementById("pca1-range").setAttribute("data-slider-value", "[" + abundancesObj["pca1Min"] + "," + abundancesObj["pca1Max"] + "]");
-        
         if (slider1 === null) {
           $("#pca1-range").show();
-          slider1 = $("#pca1-range").slider({
-            formatter: function(value) {
-              if ($.isArray(value)) {
-                boundX = value;
-                value[0] = Math.round(value[0] * 100) / 100;
-                value[1] = Math.round(value[1] * 100) / 100;
-              } else {
-                value = Math.round(value * 100) / 100;
-              }
-
-              var diff = event.timeStamp - boundXLastFire;
-              // Prevents the event from firing too often
-              if (diff >= 300) {
-                boundXLastFire = event.timeStamp;
-                renderPCA(abundancesObj["pca"]);
-              }
-
-              return value;
-            }
+          slider1 = new Slider("#pca1-range", {
+            min: abundancesObj["pca1Min"],
+            max: abundancesObj["pca1Max"],
+            step: 0.1,
+            value: [abundancesObj["pca1Min"], abundancesObj["pca1Max"]],
           });
         } else {
-          slider1.slider('refresh');
+          slider1.setAttribute("min", abundancesObj["pca1Min"]);
+          slider1.setAttribute("max", abundancesObj["pca1Max"]);
+          slider1.setAttribute("value", [abundancesObj["pca1Min"], abundancesObj["pca1Max"]]);
+          slider1.refresh();
         }
 
-        document.getElementById("pca2-range").setAttribute("data-slider-min", abundancesObj["pca2Min"]);
-        document.getElementById("pca2-range").setAttribute("data-slider-max", abundancesObj["pca2Max"]);
-        document.getElementById("pca2-range").setAttribute("data-slider-value", "[" + abundancesObj["pca2Min"] + "," + abundancesObj["pca2Max"] + "]");
-        
         if (slider2 === null) {
           $("#pca2-range").show();
-          slider2 = $("#pca2-range").slider({
-            formatter: function(value) {
-              if ($.isArray(value)) {
-                boundY = value;
-                value[0] = Math.round(value[0] * 100) / 100;
-                value[1] = Math.round(value[1] * 100) / 100;
-              } else {
-                value = Math.round(value * 100) / 100;
-              }
-
-              var diff = event.timeStamp - boundYLastFire;
-              // Prevents the event from firing too often
-              if (diff >= 300) {
-                boundYLastFire = event.timeStamp;
-                renderPCA(abundancesObj["pca"]);
-              }
-              return value;
-            }
+          slider2 = new Slider("#pca2-range", {
+            min: abundancesObj["pca2Min"],
+            max: abundancesObj["pca2Max"],
+            step: 0.1,
+            value: [abundancesObj["pca2Min"], abundancesObj["pca2Max"]],
           });
         } else {
-          slider2.slider('refresh');
+          slider2.setAttribute("min", abundancesObj["pca2Min"]);
+          slider2.setAttribute("max", abundancesObj["pca2Max"]);
+          slider2.setAttribute("value", [abundancesObj["pca2Min"], abundancesObj["pca2Max"]]);
+          slider2.refresh();
         }
 
         renderPCA(abundancesObj["pca"]);
-        renderPCAVar(abundancesObj["pcaVar"])
+        renderPCAVar(abundancesObj["pcaVar"]);
       },
       error: function(err) {
         hideLoading();

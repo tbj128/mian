@@ -46,6 +46,14 @@ function updateAnalysis() {
     var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
+    if (catvar === "none") {
+        $("#analysis-container").hide();
+        hideLoading();
+        hideNotifications();
+        showNoCatvar();
+        return;
+    }
+
     var data = {
       "pid": $("#project").val(),
       "taxonomyFilter": taxonomyFilter,
@@ -63,16 +71,25 @@ function updateAnalysis() {
       url: "correlations_selection",
       data: data,
       success: function(result) {
-        $("#display-error").hide();
+        hideNotifications();
         hideLoading();
-        $("#analysis-container").show();
-        abundancesObj = JSON.parse(result);
-        renderCorrelationsSelection(abundancesObj);
+
+        var abundancesObj = JSON.parse(result);
+        if (!$.isEmptyObject(abundancesObj["correlations"])) {
+            $("#analysis-container").show();
+
+            abundancesObj = JSON.parse(result);
+            renderCorrelationsSelection(abundancesObj);
+        } else {
+            $("#analysis-container").hide();
+            showNoResults();
+        }
       },
       error: function(err) {
-        hideLoading();
         $("#analysis-container").hide();
-        $("#display-error").show();
+        hideLoading();
+        hideNotifications();
+        showError();
         console.log(err);
       }
     });

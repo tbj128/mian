@@ -3,6 +3,7 @@ from mian.core.data_io import DataIO
 import unittest
 import os
 import shutil
+import numpy as np
 
 
 class TestProjectManager(unittest.TestCase):
@@ -30,19 +31,18 @@ class TestProjectManager(unittest.TestCase):
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))
 
-        subsampled_table = DataIO.tsv_to_table("unit_tests", pid, "table.subsampled.tsv")
-        self.assertEqual(7, len(subsampled_table))
+        subsampled_table = DataIO.tsv_to_np_table("unit_tests", pid, "table.subsampled.tsv")
+        self.assertEqual(6, len(subsampled_table))
 
         r = 0
         while r < len(subsampled_table):
-            if r > 0:
-                rowSum = 0
-                c = 1
-                while c < len(subsampled_table[r]):
-                    rowSum += float(subsampled_table[r][c])
-                    c += 1
-                self.assertEqual(3, rowSum)
+            self.assertEqual(30, np.sum(subsampled_table[r]))
             r += 1
+
+        subsampled_table_labels = DataIO.tsv_to_table("unit_tests", pid, "table.subsampled.labels.tsv")
+        self.assertEqual(2, len(subsampled_table_labels))
+        self.assertEqual(5, len(subsampled_table_labels[0]))
+        self.assertEqual(6, len(subsampled_table_labels[1]))
 
         shutil.rmtree(test_project_dir)
 
@@ -62,19 +62,18 @@ class TestProjectManager(unittest.TestCase):
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))
 
-        subsampled_table = DataIO.tsv_to_table("unit_tests", pid, "table.subsampled.tsv")
-        self.assertEqual(7, len(subsampled_table))
+        subsampled_table = DataIO.tsv_to_np_table("unit_tests", pid, "table.subsampled.tsv")
+        self.assertEqual(6, len(subsampled_table))
 
         r = 0
         while r < len(subsampled_table):
-            if r > 0:
-                rowSum = 0
-                c = 1
-                while c < len(subsampled_table[r]):
-                    rowSum += float(subsampled_table[r][c])
-                    c += 1
-                self.assertEqual(3, rowSum)
+            self.assertEqual(30, np.sum(subsampled_table[r]))
             r += 1
+
+        subsampled_table_labels = DataIO.tsv_to_table("unit_tests", pid, "table.subsampled.labels.tsv")
+        self.assertEqual(2, len(subsampled_table_labels))
+        self.assertEqual(5, len(subsampled_table_labels[0]))
+        self.assertEqual(6, len(subsampled_table_labels[1]))
 
         shutil.rmtree(test_project_dir)
 

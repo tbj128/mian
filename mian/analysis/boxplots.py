@@ -21,17 +21,11 @@ class Boxplots(AnalysisBase):
     def abundance_boxplots(self, user_request, yvals):
         logger.info("Starting abundance_boxplots")
         table = OTUTable(user_request.user_id, user_request.pid)
-        base = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                               user_request.taxonomy_filter_role,
-                                                               user_request.taxonomy_filter_vals,
-                                                               user_request.sample_filter,
-                                                               user_request.sample_filter_role,
-                                                               user_request.sample_filter_vals,
-                                                               user_request.level)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
         metadata = table.get_sample_metadata().get_as_table()
-        return self.process_abundance_boxplots(user_request, yvals, base, metadata)
+        return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata)
 
-    def process_abundance_boxplots(self, user_request, yvals, base, metadata):
+    def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata):
 
         statsAbundances = {}
         abundances = {}
@@ -60,15 +54,30 @@ class Boxplots(AnalysisBase):
 
         logger.info("Initialized metadata maps")
 
+        taxonomiesOfInterest = user_request.get_custom_attr("yvalsSpecificTaxonomy")
+        colsOfInterest = []
+        if yvals == "mian-taxonomy-abundance":
+            i = 0
+            while i < len(headers):
+                specificTaxonomies = headers[i].split(";")
+
+                if specificTaxonomies[-1] in taxonomiesOfInterest:
+                    colsOfInterest.append(i)
+                i += 1
+            if len(colsOfInterest) == 0:
+                return {"abundances": {}, "stats": []}
+
         i = 0
         while i < len(base):
-            if i > 0:
-                row = {}
-                row["s"] = str(base[i][OTUTable.SAMPLE_ID_COL])
+            row = {}
+            row["s"] = str(sample_labels[i])
 
-                abunArr = []
+            abunArr = []
 
-                j = OTUTable.OTU_START_COL
+            if yvals == "mian-taxonomy-abundance":
+                row["a"] = float(np.sum(base[i][colsOfInterest]))
+            else:
+                j = 0
                 while j < len(base[i]):
                     abunArr.append(float(base[i][j]))
                     j += 1
@@ -86,9 +95,9 @@ class Boxplots(AnalysisBase):
                 else:
                     row["a"] = 0
 
-                if base[i][OTUTable.SAMPLE_ID_COL] in metadataMap:
-                    abundances[metadataMap[base[i][OTUTable.SAMPLE_ID_COL]]].append(row)
-                    statsAbundances[metadataMap[base[i][OTUTable.SAMPLE_ID_COL]]].append(row["a"])
+            if sample_labels[i] in metadataMap:
+                abundances[metadataMap[sample_labels[i]]].append(row)
+                statsAbundances[metadataMap[sample_labels[i]]].append(row["a"])
             i += 1
 
         # Calculate the statistical p-value
@@ -133,7 +142,7 @@ class Boxplots(AnalysisBase):
                 row = {}
                 try:
                     row["a"] = float(metadata[i][metaCol])
-                    row["s"] = str(metadata[i][OTUTable.SAMPLE_ID_COL])
+                    row["s"] = str(metadata[i][0])
                     if metadata[i][catCol] in abundances:
                         abundances[metadata[i][catCol]].append(row)
                     else:

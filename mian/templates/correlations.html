@@ -14,69 +14,89 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlations" data-content="Draws a correlation graph between two metadata values and/or taxonomic abundances" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlations" data-content="Draws a correlation graph between two metadata values and/or taxonomic abundances" data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
     <hr/>
 
-    {% include 'filtering_options.html' %}
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        {% include 'filtering_options.html' %}
 
-    <hr/>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingAnalysisParameters">
+              <h4 class="panel-title">
+                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
+                  Visualization Parameters
+                </a>
+              </h4>
+            </div>
+            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+              <div class="panel-body">
 
-    <h4>Visualization Parameters</h4>
+                <div id="taxonomic-level">
+                    <label id="taxonomic-level-label" class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                    <select id="taxonomy-level" name="taxonomy" class="form-control pad-bottom">
+                        <option value="Kingdom">Kingdom</option>
+                        <option value="Phylum">Phylum</option>
+                        <option value="Class">Class</option>
+                        <option value="Order">Order</option>
+                        <option value="Family">Family</option>
+                        <option value="Genus">Genus</option>
+                        <option value="Species">Species</option>
+                        <option value="OTU" selected>OTU</option>
+                    </select>
+                </div>
 
-    <label class="control-label">Correlation Variable 1 <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which correlation variable should be used on the X-axis<br /><br /><strong>Aggregated Abundances</strong> the sum of all OTU counts for a sample <br /><strong>Max Abundances</strong> the count of the most frequently occurring OTU for a sample"></i></label>
-    <select id="corrvar1" name="corrvar1" class="form-control">
-        <option value="mian-abundance">Aggregate Abundances</option>
-        {% for catVar in numericCatVars %}
-        <option value="{{ catVar }}">{{ catVar }}</option>
-        {% endfor %}
-    </select>
+                <label class="control-label">Correlation Variable 1 <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which correlation variable should be used on the X-axis<br /><br /><strong>Aggregated Abundances</strong> the sum of all OTU counts for a sample <br /><strong>Max Abundances</strong> the count of the most frequently occurring OTU for a sample"></i></label>
+                <select id="corrvar1" name="corrvar1" class="form-control">
+                </select>
 
-    <label class="control-label">Correlation Variable 2  <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which correlation variable should be used on the Y-axis<br /><br /><strong>Aggregated Abundances</strong> the sum of all OTU counts for a sample <br /><strong>Max Abundances</strong> the count of the most frequently occurring OTU for a sample"></i></label>
-    <select id="corrvar2" name="corrvar2" class="form-control">
-        <option value="mian-abundance">Aggregate Abundances</option>
-        {% for catVar in numericCatVars %}
-        <option value="{{ catVar }}">{{ catVar }}</option>
-        {% endfor %}
-    </select>
+                <div id="specific-taxonomy-container-1">
+                    <label id="specific-taxonomy-label-1" class="control-label">Taxonomies to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select Taxonomies" data-content="Choose the taxonomies whose abundance should be used in the correlation." data-trigger="hover"></i></label>
 
-    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the correlation"></i></label>
-    <select id="colorvar" name="colorvar" class="form-control">
-        <option value="">None</option>
-        {% for catVar in catVars %}
-        <option value="{{ catVar }}">{{ catVar }}</option>
-        {% endfor %}
-    </select>
+                    <div id="taxonomy-specific-typeahead-wrapper-1">
+                        <input id="specific-taxonomy-typeahead-1" type="text" data-background="" value="" />
+                    </div>
+                </div>
 
-    <label class="control-label">Size Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Size Variable" data-content="Determines which metadata parameter should control the size of the dots in the correlation"></i></label>
-    <select id="sizevar" name="sizevar" class="form-control">
-        <option value="">None</option>
-        {% for catVar in catVars %}
-        <option value="{{ catVar }}">{{ catVar }}</option>
-        {% endfor %}
-    </select>
+                <label class="control-label">Correlation Variable 2  <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which correlation variable should be used on the Y-axis<br /><br /><strong>Aggregated Abundances</strong> the sum of all OTU counts for a sample <br /><strong>Max Abundances</strong> the count of the most frequently occurring OTU for a sample"></i></label>
+                <select id="corrvar2" name="corrvar2" class="form-control">
+                </select>
 
-    <label class="control-label">Samples to Show  <i class="fa fa-info-circle" data-toggle="popover" data-title="Samples to Show" data-content="Determines which sample types should be displayed in the correlation graph"></i></label>
-    <select id="samplestoshow" name="samplestoshow" class="form-control">
-        <option value="both">All Samples</option>
-        <option value="nonzero">Non-Zero Value Samples</option>
-        <option value="zero">Zero Value Samples</option>
-    </select>
+                <div id="specific-taxonomy-container-2">
+                    <label id="specific-taxonomy-label-2" class="control-label">Taxonomies to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select Taxonomies" data-content="Choose the taxonomies whose abundance should be used in the correlation." data-trigger="hover"></i></label>
 
-    <div id="taxonomic-level" style="display:none;">
-        <label id="taxonomic-level-label" class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
-        <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-            <option value="Kingdom">Kingdom</option>
-            <option value="Phylum">Phylum</option>
-            <option value="Class">Class</option>
-            <option value="Order">Order</option>
-            <option value="Family">Family</option>
-            <option value="Genus">Genus</option>
-            <option value="Species">Species</option>
-            <option value="OTU" selected>OTU</option>
-        </select>
+                    <div id="taxonomy-specific-typeahead-wrapper-2">
+                        <input id="specific-taxonomy-typeahead-2" type="text" data-background="" value="" />
+                    </div>
+                </div>
+
+                <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the correlation"></i></label>
+                <select id="colorvar" name="colorvar" class="form-control">
+                    <option value="">None</option>
+                    {% for catVar in catVars %}
+                    <option value="{{ catVar }}">{{ catVar }}</option>
+                    {% endfor %}
+                </select>
+
+                <label class="control-label">Size Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Size Variable" data-content="Determines which metadata parameter should control the size of the dots in the correlation"></i></label>
+                <select id="sizevar" name="sizevar" class="form-control">
+                    <option value="">None</option>
+                    {% for catVar in catVars %}
+                    <option value="{{ catVar }}">{{ catVar }}</option>
+                    {% endfor %}
+                </select>
+
+                <label class="control-label">Samples to Show  <i class="fa fa-info-circle" data-toggle="popover" data-title="Samples to Show" data-content="Determines which sample types should be displayed in the correlation graph"></i></label>
+                <select id="samplestoshow" name="samplestoshow" class="form-control">
+                    <option value="both">All Samples</option>
+                    <option value="nonzero">Non-Zero Value Samples</option>
+                    <option value="zero">Zero Value Samples</option>
+                </select>
+              </div>
+            </div>
+        </div>
     </div>
 </div>
 

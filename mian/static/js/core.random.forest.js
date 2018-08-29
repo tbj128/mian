@@ -71,8 +71,18 @@ function updateAnalysis() {
     var numTrees = $("#numTrees").val();
     var maxDepth = $("#maxDepth").val();
 
+    if (catvar === "none") {
+        $("#analysis-container").hide();
+        hideLoading();
+        hideNotifications();
+        showNoCatvar();
+        return;
+    }
+
     var data = {
         "pid": $("#project").val(),
+        "taxonomyFilterCount": getLowCountThreshold(),
+        "taxonomyFilterPrevalence": getPrevalenceThreshold(),
         "taxonomyFilter": taxonomyFilter,
         "taxonomyFilterRole": taxonomyFilterRole,
         "taxonomyFilterVals": taxonomyFilterVals,
@@ -90,18 +100,23 @@ function updateAnalysis() {
         url: "random_forest",
         data: data,
         success: function(result) {
-            $("#display-error").hide();
+            hideNotifications();
             hideLoading();
-            $("#analysis-container").show();
-            $("#stats-container").show();
+
             var abundancesObj = JSON.parse(result);
-            renderTable(abundancesObj);
+            if (!$.isEmptyObject(abundancesObj["results"])) {
+                $("#analysis-container").show();
+                renderTable(abundancesObj);
+            } else {
+                $("#analysis-container").hide();
+                showNoResults();
+            }
         },
         error: function(err) {
-            hideLoading();
             $("#analysis-container").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
+            hideLoading();
+            hideNotifications();
+            showError();
             console.log(err);
         }
     });

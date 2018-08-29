@@ -19,7 +19,7 @@ function createSpecificListeners() {
     $('#pwVar2 option:eq(1)').attr('selected', 'selected');
 
     $("#catvar").change(function () {
-      updatePWComparisonSidebar(function() {
+      updatePWComparisonSidebar().then(function() {
         updateAnalysis();
       });
     });
@@ -45,17 +45,17 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 
-function customLoading() {
+function customCatVarValueLoading() {
     return updatePWComparisonSidebar();
 }
 
-function updatePWComparisonSidebar(callback) {
+function updatePWComparisonSidebar() {
     var data = {
       "pid": $("#project").val(),
       "catvar": $("#catvar").val(),
     };
 
-    $.ajax({
+    return $.ajax({
       type: "GET",
       url: "metadata_vals",
       data: data,
@@ -73,8 +73,6 @@ function updatePWComparisonSidebar(callback) {
             $("#pwVar2").append("<option value='" + uniqueVals[i] + "'>" + uniqueVals[i] + "</option>");
           }
         }
-
-        callback();
       },
       error: function(err) {
         console.log(err);
@@ -130,8 +128,18 @@ function updateAnalysis() {
     var pwVar1 = $("#pwVar1").val();
     var pwVar2 = $("#pwVar2").val();
 
+    if (catvar === "none") {
+        $("#analysis-container").hide();
+        hideLoading();
+        hideNotifications();
+        showNoCatvar();
+        return;
+    }
+
     var data = {
       "pid": $("#project").val(),
+      "taxonomyFilterCount": getLowCountThreshold(),
+      "taxonomyFilterPrevalence": getPrevalenceThreshold(),
       "taxonomyFilter": taxonomyFilter,
       "taxonomyFilterRole": taxonomyFilterRole,
       "taxonomyFilterVals": taxonomyFilterVals,
@@ -151,19 +159,23 @@ function updateAnalysis() {
       url: "fisher_exact",
       data: data,
       success: function(result) {
-        $("#display-error").hide();
+        hideNotifications();
         hideLoading();
-        $("#analysis-container").show();
-        $("#stats-container").show();
 
         var abundancesObj = JSON.parse(result);
-        renderFisherTable(abundancesObj);
+        if (!$.isEmptyObject(abundancesObj["results"])) {
+            $("#analysis-container").show();
+            renderFisherTable(abundancesObj);
+        } else {
+            $("#analysis-container").hide();
+            showNoResults();
+        }
       },
       error: function(err) {
-        hideLoading();
         $("#analysis-container").hide();
-        $("#stats-container").hide();
-        $("#display-error").show();
+        hideLoading();
+        hideNotifications();
+        showError();
         console.log(err);
       }
     });

@@ -16,6 +16,8 @@
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+import rpy2.robjects.numpy2ri
+rpy2.robjects.numpy2ri.activate()
 
 from mian.model.otu_table import OTUTable
 
@@ -24,9 +26,7 @@ class FisherExact(object):
     r = robjects.r
 
     rcode = """
-    fisher_exact <- function(base, groups, cat2, cat1, minthreshold, keepthreshold) {
-    
-        base = base[,colSums(base!=0)>keepthreshold, drop=FALSE]
+    fisher_exact <- function(base, groups, cat2, cat1, minthreshold) {
     
         if (ncol(base) <= 0) {
             return(matrix(,0,7))
@@ -74,33 +74,18 @@ class FisherExact(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
-        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(otu_table, user_request.catvar)
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+        return self.analyse(user_request, otu_table, headers, metadata_vals)
 
-        return self.analyse(user_request, otu_table, metadata_vals, sample_ids_to_metadata_map)
-
-    def analyse(self, user_request, otuTable, metaVals, metaIDs):
+    def analyse(self, user_request, otuTable, headers, metaVals):
         groups = robjects.FactorVector(robjects.StrVector(metaVals))
         # Forms an OTU only table (without IDs)
         allOTUs = []
-        col = OTUTable.OTU_START_COL
+        col = 0
         while col < len(otuTable[0]):
-            colVals = []
-            row = 1
-            while row < len(otuTable):
-                sampleID = otuTable[row][OTUTable.SAMPLE_ID_COL]
-                if sampleID in metaIDs:
-                    colVals.append(otuTable[row][col])
-                row += 1
-            allOTUs.append((otuTable[0][col], robjects.FloatVector(colVals)))
+            allOTUs.append((headers[col], otuTable[:, col]))
             col += 1
 
         od = rlc.OrdDict(allOTUs)
@@ -109,9 +94,8 @@ class FisherExact(object):
         catVar1 = user_request.get_custom_attr("pwVar1")
         catVar2 = user_request.get_custom_attr("pwVar2")
         minthreshold = user_request.get_custom_attr("minthreshold")
-        keepthreshold = user_request.get_custom_attr("keepthreshold")
 
-        fisherResults = self.rStats.fisher_exact(dataf, groups, catVar1, catVar2, int(minthreshold), int(keepthreshold))
+        fisherResults = self.rStats.fisher_exact(dataf, groups, catVar1, catVar2, int(minthreshold))
 
         results = []
         i = 1
@@ -135,5 +119,3 @@ class FisherExact(object):
         abundancesObj["cat2"] = cat2
 
         return abundancesObj
-
-    # fisherExact("1", "BatchsubOTULevel", 1, ["Firmicutes","Fusobacteria"], "Disease", 0, 5)

@@ -17,7 +17,8 @@ import numpy as np
 from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, \
-    SUBSAMPLED_OTU_TABLE_FILENAME, BIOM_FILENAME, TAXONOMY_FILENAME, SAMPLE_METADATA_FILENAME
+    SUBSAMPLED_OTU_TABLE_FILENAME, BIOM_FILENAME, TAXONOMY_FILENAME, SAMPLE_METADATA_FILENAME, \
+    RAW_OTU_TABLE_LABELS_FILENAME
 import csv
 import os
 import re
@@ -31,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 
 class ProjectManager(object):
-
     BASE_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))  # Gets the parent folder
     DATA_DIRECTORY = os.path.join(BASE_DIRECTORY, "data")
     STAGING_DIRECTORY = os.path.join(DATA_DIRECTORY, "staging")
@@ -39,7 +39,8 @@ class ProjectManager(object):
     def __init__(self, user_id):
         self.user_id = user_id
 
-    def create_project_from_tsv(self, project_name, otu_filename, taxonomy_filename, sample_metadata_filename, subsample_type="auto", subsample_to=0):
+    def create_project_from_tsv(self, project_name, otu_filename, taxonomy_filename, sample_metadata_filename,
+                                subsample_type="auto", subsample_to=0):
 
         # Creates a directory for this project
         pid = str(uuid.uuid4())
@@ -52,20 +53,26 @@ class ProjectManager(object):
 
         # Renames the uploaded files to a standard file schema and moves to the project directory
         user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
-        os.rename(os.path.join(user_staging_dir, otu_filename), os.path.join(project_dir, RAW_OTU_TABLE_FILENAME))
         os.rename(os.path.join(user_staging_dir, taxonomy_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
-        os.rename(os.path.join(user_staging_dir, sample_metadata_filename), os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
+        os.rename(os.path.join(user_staging_dir, sample_metadata_filename),
+                  os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
+
+        base_arr = DataIO.tsv_to_table_from_path(os.path.join(user_staging_dir, otu_filename))
+
+        # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
+        base, headers, sample_labels = self.__process_base(self.user_id, pid, base_arr)
 
         # Processes the taxonomy file by decomposing string-based taxonomies into tab separated format (if applicable)
         self.__process_taxonomy_file(self.user_id, pid)
 
         # Subsamples raw OTU table
         subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                    pid=pid,
-                                                                    subsample_type=subsample_type,
-                                                                    manual_subsample_to=subsample_to,
-                                                                    raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
-                                                                    output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+                                                                                                pid=pid,
+                                                                                                base=base,
+                                                                                                headers=headers,
+                                                                                                sample_labels=sample_labels,
+                                                                                                subsample_type=subsample_type,
+                                                                                                manual_subsample_to=subsample_to)
 
         # Creates map.txt file
         map_file = Map(self.user_id, pid)
@@ -79,6 +86,63 @@ class ProjectManager(object):
         map_file.save()
 
         return pid
+
+    def __process_base(self, user_id, pid, base_arr, output_raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
+                       output_raw_otu_labels_file_name=RAW_OTU_TABLE_LABELS_FILENAME):
+        '''
+        Takes a TSV-separated base OTU file and extracts the header and the sample labels from the OTU file.
+        Removes unnecessary columns if input is mothur derived file.
+        Returns an OTU file (with only numeric values) and corresponding table header and sample labels
+        :param user_id:
+        :param pid:
+        :return:
+        '''
+
+        project_dir = os.path.join(OTUTableSubsampler.DATA_DIRECTORY, user_id)
+        project_dir = os.path.join(project_dir, pid)
+        raw_table_path = os.path.join(project_dir, output_raw_otu_file_name)
+
+        is_mothur = False
+        if base_arr[0][0] == "label" and base_arr[0][2] == "numOtus":
+            # Input file is mothur - we need to delete unnecessary "label" and "numOtus" columns
+            is_mothur = True
+
+        num_samples = len(base_arr) - 1  # Accounts for the header row
+        num_otus = len(base_arr[0]) - 1  # Accounts for the sample labels
+        if is_mothur:
+            num_otus = len(base_arr[0]) - 3  # Accounts for the additional columns mothur adds
+        base = np.zeros(shape=(num_samples, num_otus), dtype=int)
+
+        # Adds the numeric values into the base np array
+        col_offset = 3 if is_mothur else 1
+        row_offset = 1
+        row = row_offset
+        while row < len(base_arr):
+            col = col_offset
+            while col < len(base_arr[row]):
+                try:
+                    base[row - row_offset][col - col_offset] = int(float(base_arr[row][col]))
+                except ValueError:
+                    # TODO: Handle case where bad input file format
+                    pass
+                col += 1
+            row += 1
+
+        headers = base_arr[0][1:]
+        sample_labels = []
+
+        sample_col = 1 if is_mothur else 0
+        row = 1
+        while row < len(base_arr):
+            sample_labels.append(base_arr[row][sample_col])
+            row += 1
+
+        labels = [headers, sample_labels]
+
+        DataIO.table_to_tsv(base, user_id, pid, raw_table_path)
+        DataIO.table_to_tsv(labels, user_id, pid, output_raw_otu_labels_file_name)
+
+        return base, headers, sample_labels
 
     def __process_taxonomy_file(self, user_id, pid):
         taxonomy_table = DataIO.tsv_to_table(user_id, pid, TAXONOMY_FILENAME)
@@ -137,29 +201,32 @@ class ProjectManager(object):
 
         # Extracts the OTU table from the biom file and saves the raw OTU file
         biom_path = os.path.join(project_dir, BIOM_FILENAME)
-        raw_table_path = os.path.join(project_dir, RAW_OTU_TABLE_FILENAME)
 
         logger.info("Loading biom into table")
-        table = load_table(biom_path)
+        biom_table = load_table(biom_path)
         logger.info("Converting biom to intermediate TSV file " + biom_path)
-        self.__save_biom_table_as_tsv(table, raw_table_path)
-        logger.info("Saved biom as TSV file " + biom_path)
+
+        # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
+        base, headers, sample_labels = self.__save_biom_table_as_tsv(self.user_id, pid, biom_table)
+
+        logger.info("Processed biom TSV file " + biom_path)
 
         # Subsamples the raw OTU file
         subsample_to, removed_otus, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                    pid=pid,
-                                                                    subsample_type=subsample_type,
-                                                                    manual_subsample_to=subsample_to,
-                                                                    raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
-                                                                    output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+                                                                                             pid=pid,
+                                                                                             base=base,
+                                                                                             headers=headers,
+                                                                                             sample_labels=sample_labels,
+                                                                                             subsample_type=subsample_type,
+                                                                                             manual_subsample_to=subsample_to)
 
         logger.info("Subsampled TSV file")
 
         # Create Sample Metadata File
         logger.info("Creating sample metadata file")
         sample_metadata_path = os.path.join(project_dir, SAMPLE_METADATA_FILENAME)
-        sample_metadata = table.metadata(None, 'sample')
-        sample_ids = table.ids('sample')
+        sample_metadata = biom_table.metadata(None, 'sample')
+        sample_ids = biom_table.ids('sample')
         with open(sample_metadata_path, 'w') as f:
             output_tsv = csv.writer(f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             sample_index = 0
@@ -181,8 +248,8 @@ class ProjectManager(object):
 
         # Generates Taxonomy File
         logger.info("Creating taxonomy file")
-        otu_metadata = table.metadata(None, 'observation')
-        otu_ids = table.ids('observation')
+        otu_metadata = biom_table.metadata(None, 'observation')
+        otu_ids = biom_table.ids('observation')
         otu_metadata_path = os.path.join(project_dir, TAXONOMY_FILENAME)
         taxonomy_type = ""
         with open(otu_metadata_path, 'w') as f:
@@ -258,8 +325,8 @@ class ProjectManager(object):
 
         return pid, subsample_to
 
-    def __save_biom_table_as_tsv(self, table, output_path):
-        result = table.to_tsv(header_key="",
+    def __save_biom_table_as_tsv(self, user_id, pid, biom_table, raw_table_path=RAW_OTU_TABLE_FILENAME, output_raw_otu_labels_file_name=RAW_OTU_TABLE_LABELS_FILENAME):
+        result = biom_table.to_tsv(header_key="",
                               header_value="",
                               metadata_formatter="sc_separated")
 
@@ -267,22 +334,37 @@ class ProjectManager(object):
 
         # Converts the TSV string to an array
         f = StringIO(result)
-        intermediate_table = []
-        base_csv = csv.reader(f, delimiter='\t', quotechar='|')
-        for o in base_csv:
-            if len(o) > 1:
-                intermediate_table.append(o)
+        base_csv = []
+        base_csv_reader = csv.reader(f, delimiter='\t', quotechar='|')
+        i = 0
+        for o in base_csv_reader:
+            if i > 0:
+                # Ignores the first "Created from biom file" line
+                base_csv.append(o)
+            i += 1
+
+        num_samples = len(base_csv[0]) - 1  # Accounts for the header row (samples are headers in this case)
+        num_otus = len(base_csv) - 1  # Accounts for the sample labels
+        intermediate_table = np.zeros(shape=(num_samples, num_otus), dtype=int)
+        sample_labels = base_csv[0][1:]
+        headers = []
+
+        row = 1
+        while row < len(base_csv):
+            headers.append(base_csv[row][0])
+            col = 1
+            while col < len(base_csv[row]):
+                intermediate_table[col - 1][row - 1] = int(float(base_csv[row][col]))
+                col += 1
+            row += 1
 
         logger.info("Finished loading to intermediate table")
 
-        # The intermediate table is sample-columnar (ie. rows are OTUs) but the majority of the analysis in
-        # mian uses samples as rows so we perform a conversion
-        with open(output_path, 'w') as out_f:
-            output_tsv = csv.writer(out_f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            for x in zip(*intermediate_table):
-                output_tsv.writerow(x)
+        labels = [headers, sample_labels]
+        DataIO.table_to_tsv(intermediate_table, user_id, pid, raw_table_path)
+        DataIO.table_to_tsv(labels, user_id, pid, output_raw_otu_labels_file_name)
 
-        logger.info("Finished transposing to final TSV file " + output_path)
+        return intermediate_table, headers, sample_labels
 
     def get_taxonomy_type(self, taxonomy_line):
         if type(taxonomy_line) is list:
@@ -373,12 +455,15 @@ class ProjectManager(object):
 
     def modify_subsampling(self, pid, subsample_type="auto", subsample_to=0):
         # Subsamples raw OTU table
+        base = DataIO.tsv_to_np_table(self.user_id, pid, RAW_OTU_TABLE_FILENAME)
+        labels = DataIO.tsv_to_table(self.user_id, pid, RAW_OTU_TABLE_LABELS_FILENAME)
         subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                    pid=pid,
-                                                                    subsample_type=subsample_type,
-                                                                    manual_subsample_to=subsample_to,
-                                                                    raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
-                                                                    output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+                                                                                                pid=pid,
+                                                                                                subsample_type=subsample_type,
+                                                                                                manual_subsample_to=subsample_to,
+                                                                                                base=base,
+                                                                                                headers=labels[0],
+                                                                                                sample_labels=labels[1])
 
         # Updates the map.txt file
         map_file = Map(self.user_id, pid)
@@ -398,21 +483,29 @@ class ProjectManager(object):
 
         # Renames the uploaded files to a standard file schema and moves to the project directory
         user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
-        if otu_filename is not None:
-            os.rename(os.path.join(user_staging_dir, otu_filename), os.path.join(project_dir, RAW_OTU_TABLE_FILENAME))
         if taxonomy_filename is not None:
             os.rename(os.path.join(user_staging_dir, taxonomy_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
         if sample_metadata_filename is not None:
-            os.rename(os.path.join(user_staging_dir, sample_metadata_filename), os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
+            os.rename(os.path.join(user_staging_dir, sample_metadata_filename),
+                      os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
 
         # Subsamples raw OTU table
         if otu_filename is not None:
-            subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                        pid=pid,
-                                                                        subsample_type=map_file.subsampled_type,
-                                                                        manual_subsample_to=map_file.subsampled_value,
-                                                                        raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
-                                                                        output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME)
+            base_arr = DataIO.tsv_to_table_from_path(os.path.join(user_staging_dir, otu_filename))
+
+            # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
+            base, headers, sample_labels = self.__process_base(self.user_id, pid, base_arr)
+
+            # Subsamples raw OTU table
+            subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(
+                user_id=self.user_id,
+                pid=pid,
+                base=base,
+                headers=headers,
+                sample_labels=sample_labels,
+                subsample_type=map_file.subsampled_type,
+                manual_subsample_to=map_file.subsampled_value,)
+
             map_file.orig_otu_table_name = otu_filename
             map_file.subsampled_value = subsample_value
             map_file.subsampled_removed_samples = samples_removed
@@ -434,7 +527,8 @@ class ProjectManager(object):
 
         map_file = Map(self.user_id, pid)
 
-        pid, subsample_value = self.__process_biom_file(pid, project_dir, map_file.project_name, biom_name, map_file.subsampled_type, map_file.subsampled_value)
+        pid, subsample_value = self.__process_biom_file(pid, project_dir, map_file.project_name, biom_name,
+                                                        map_file.subsampled_type, map_file.subsampled_value)
 
         map_file.orig_biom_name = biom_name
         map_file.subsampled_value = subsample_value

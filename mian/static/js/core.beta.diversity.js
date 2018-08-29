@@ -7,7 +7,7 @@
 //
 initializeComponent({
     hasCatVar: true,
-    hasCatVarNoneOption: true,
+    hasCatVarNoneOption: false,
 });
 createSpecificListeners();
 

@@ -17,6 +17,7 @@ class TestTreeView(unittest.TestCase):
         user_request.set_custom_attr("exclude_unclassified", "yes")
 
         otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
+        headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         taxonomy_map = AnalysisTestUtils.get_test_taxonomy(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         sample_ids_from_metadata = AnalysisTestUtils.get_sample_ids_from_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         metadata_vals = AnalysisTestUtils.get_disease_metadata_values(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
@@ -24,7 +25,7 @@ class TestTreeView(unittest.TestCase):
         sample_id_to_metadata = dict(zip(sample_ids_from_metadata, metadata_vals))
 
         plugin = TreeView()
-        actual_output = plugin.analyse(user_request, otu_table, taxonomy_map, unique_metadata_vals, sample_id_to_metadata)
+        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, taxonomy_map, unique_metadata_vals, sample_id_to_metadata)
         print(json.dumps(actual_output))
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
                                                                 "tree_view_2_nonzero_yes.json")

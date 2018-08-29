@@ -10,29 +10,41 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3><i class="fa fa-th-large"></i>&nbsp;&nbsp;Table <i class="fa fa-info-circle" data-toggle="popover" data-title="Table" data-content="Renders the OTU table in a raw tabular format, after applying the specified filters and grouping parameters below" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Table <i class="fa fa-info-circle" data-toggle="popover" data-title="Table" data-content="Renders the OTU table in a raw tabular format, after applying the specified filters and grouping parameters below" data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
     <hr/>
 
-    {% include 'filtering_options.html' %}
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        {% include 'filtering_options.html' %}
 
-    <hr/>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingAnalysisParameters">
+              <h4 class="panel-title">
+                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
+                  Visualization Parameters
+                </a>
+              </h4>
+            </div>
+            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+              <div class="panel-body">
 
-    <h4>Analysis Parameters</h4>
-
-    <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
-    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-        <option value="Kingdom">Kingdom</option>
-        <option value="Phylum">Phylum</option>
-        <option value="Class">Class</option>
-        <option value="Order">Order</option>
-        <option value="Family">Family</option>
-        <option value="Genus">Genus</option>
-        <option value="Species">Species</option>
-        <option value="OTU" selected>OTU</option>
-    </select>
+                <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+                    <option value="Kingdom">Kingdom</option>
+                    <option value="Phylum">Phylum</option>
+                    <option value="Class">Class</option>
+                    <option value="Order">Order</option>
+                    <option value="Family">Family</option>
+                    <option value="Genus">Genus</option>
+                    <option value="Species">Species</option>
+                    <option value="OTU" selected>OTU</option>
+                </select>
+              </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="content-wrapper">

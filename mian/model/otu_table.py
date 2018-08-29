@@ -1,6 +1,7 @@
 from functools import lru_cache
 
-from mian.core.constants import SAMPLE_ID_COL, RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME
+from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, \
+    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
 from mian.core.data_io import DataIO
 from mian.model.metadata import Metadata
 from mian.model.taxonomy import Taxonomy
@@ -16,15 +17,14 @@ logger = logging.getLogger(__name__)
 
 class OTUTable(object):
 
-    SAMPLE_ID_COL = SAMPLE_ID_COL
-    OTU_START_COL = 1
-
     def __init__(self, user_id, pid, use_raw=False):
         self.user_id = ""
         self.pid = ""
         self.sample_metadata = ""
         self.otu_metadata = ""
-        self.table = ""
+        self.table = []
+        self.headers = []
+        self.sample_labels = []
         self.load_otu_table(user_id, pid, use_raw)
         logger.info(DataIO.tsv_to_table.cache_info())
 
@@ -38,41 +38,65 @@ class OTUTable(object):
         logger.info("Finished taxonomy loading")
         if use_raw:
             logger.info("Using raw data")
-            self.table = DataIO.tsv_to_table(self.user_id, self.pid, RAW_OTU_TABLE_FILENAME)
+            self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, RAW_OTU_TABLE_FILENAME)
+            labels = DataIO.tsv_to_table(self.user_id, self.pid, RAW_OTU_TABLE_LABELS_FILENAME)
+            self.headers = labels[0]
+            self.sample_labels = labels[1]
         else:
             logger.info("Using subsampled data")
-            self.table = DataIO.tsv_to_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
+            self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
+            labels = DataIO.tsv_to_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
+            self.headers = labels[0]
+            self.sample_labels = labels[1]
         logger.info("Finished table loading")
 
     def get_table(self):
         return self.table
 
-    def get_table_after_filtering(self, taxFilter, taxFilterRole, taxFilterVals, sampleFilter, sampleFilterRole, sampleFilterVals):
-        t = self.filter_otu_table_by_metadata(self.table, sampleFilter, sampleFilterRole, sampleFilterVals)
-        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), taxFilter, taxFilterRole, taxFilterVals)
-        return t
+    def get_headers(self):
+        return self.headers
 
-    def get_table_after_filtering_and_aggregation(self, taxFilter, taxFilterRole, taxFilterVals, sampleFilter, sampleFilterRole, sampleFilterVals, taxAggregationLevel):
+    def get_sample_labels(self):
+        return self.sample_labels
+
+    def get_table_after_filtering(self, user_request):
+        t, h, s = self.filter_otu_table_by_metadata(self.table, self.headers, self.sample_labels, user_request)
+        t, h, s = self.filter_otu_table_by_taxonomic_items(t, h, s, self.otu_metadata.get_taxonomy_map(), user_request)
+        return t, h, s
+
+    def get_table_after_filtering_and_aggregation(self, user_request):
         logger.info("Starting filtering and aggregation")
-        t = self.filter_otu_table_by_metadata(self.table, sampleFilter, sampleFilterRole, sampleFilterVals)
+        t, h, s = self.filter_otu_table_by_metadata(self.table, self.headers, self.sample_labels, user_request)
         logger.info("Finished filtering by metadata")
-        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), taxFilter, taxFilterRole, taxFilterVals)
+        t, h, s = self.filter_otu_table_by_taxonomic_items(t, h, s, self.otu_metadata.get_taxonomy_map(), user_request)
         logger.info("Finished filtering by taxonomic items")
-        t = self.aggregate_otu_table_at_taxonomic_level(t, taxAggregationLevel)
+        t, h, s = self.aggregate_otu_table_at_taxonomic_level(t, h, s, user_request)
         logger.info("Finished aggregation")
-        return t
+        return t, h, s
 
-    def get_table_after_filtering_and_aggregation_and_low_count_exclusion(self, taxFilter, taxFilterRole, taxFilterVals, sampleFilter, sampleFilterRole, sampleFilterVals, taxAggregationLevel):
+    def get_table_after_filtering_and_aggregation_and_low_count_exclusion(self, user_request):
         logger.info("Starting filtering and aggregation")
-        t = self.filter_otu_table_by_metadata(self.table, sampleFilter, sampleFilterRole, sampleFilterVals)
+        t, h, s = self.filter_otu_table_by_metadata(self.table, self.headers, self.sample_labels, user_request)
         logger.info("Finished filtering by metadata")
-        t = self.filter_otu_table_by_taxonomic_items(t, self.otu_metadata.get_taxonomy_map(), taxFilter, taxFilterRole, taxFilterVals)
+        t, h, s = self.filter_otu_table_by_taxonomic_items(t, h, s, self.otu_metadata.get_taxonomy_map(), user_request)
         logger.info("Finished filtering by taxonomic items")
-        t = self.aggregate_otu_table_at_taxonomic_level(t, taxAggregationLevel)
+        t, h, s = self.aggregate_otu_table_at_taxonomic_level(t, h, s, user_request)
         logger.info("Finished filtering by low counts")
-        t = self.filter_out_low_count(t)
+        t, h, s = self.filter_out_low_count_np(t, h, s, user_request)
         logger.info("Finished aggregation")
-        return t
+        return t, h, s
+
+    def get_table_after_filtering_and_aggregation_and_low_count_aggregation(self, user_request):
+        logger.info("Starting filtering and aggregation")
+        t, h, s = self.filter_otu_table_by_metadata(self.table, self.headers, self.sample_labels, user_request)
+        logger.info("Finished filtering by metadata")
+        t, h, s = self.filter_otu_table_by_taxonomic_items(t, h, s, self.otu_metadata.get_taxonomy_map(), user_request)
+        logger.info("Finished filtering by taxonomic items")
+        t, h, s = self.aggregate_otu_table_at_taxonomic_level(t, h, s, user_request)
+        logger.info("Finished filtering by low counts")
+        t, h, s = self.aggregate_low_count_np(t, h, s, user_request)
+        logger.info("Finished aggregation")
+        return t, h, s
 
     def get_otu_metadata(self):
         return self.otu_metadata
@@ -80,7 +104,7 @@ class OTUTable(object):
     def get_sample_metadata(self):
         return self.sample_metadata
 
-    def filter_otu_table_by_metadata(self, base, catvar, role, values):
+    def filter_otu_table_by_metadata(self, base, headers, sample_labels, user_request):
         """
         Filters an OTU table by a particular metadata category by identifying the samples that fall under the
         metadata category
@@ -90,19 +114,21 @@ class OTUTable(object):
         :param values:
         :return:
         """
-        if values is None or values == "":
-            values = []
-
-        if catvar == "none" or catvar == "":
-            return base
+        catvar = user_request.sample_filter
+        role = user_request.sample_filter_role
+        values = user_request.sample_filter_vals
+        if catvar == "none" or catvar == "" or (len(values) == 1 and values[0] == "mian-select-all"):
+            # Filtering is not enabled or everything is selected
+            logger.info("Sample filtering not enabled or all samples are selected")
+            return base, headers, sample_labels
 
         metadata_map = self.sample_metadata.get_sample_id_to_metadata_map(catvar)
 
         samples = {}
 
-        row = 1
+        row = 0
         while row < len(base):
-            sample_id = base[row][OTUTable.SAMPLE_ID_COL]
+            sample_id = sample_labels[row]
             if sample_id in metadata_map:
                 if role == "Include":
                     if metadata_map[sample_id] in values:
@@ -113,33 +139,27 @@ class OTUTable(object):
 
             row += 1
 
-        return self.__filter_otu_by_samples(samples)
-
-    def __filter_otu_by_samples(self, samples):
-        """
-        Filters the OTU table by selected samples
-        :param base:
-        :param samples:
-        :return:
-        """
         if samples is None or samples == "":
             samples = []
 
         new_otu_table = []
+        new_sample_labels = []
 
+        num_filtered_samples = 0
         i = 0
-        while i < len(self.table):
-            if i == 0:
-                new_otu_table.append(self.table[i])
+        while i < len(base):
+            sample_id = sample_labels[i]
+            if sample_id in samples:
+                new_otu_table.append(base[i])
+                new_sample_labels.append(sample_id)
             else:
-                sample_id = self.table[i][OTUTable.SAMPLE_ID_COL]
-                if sample_id in samples:
-                    new_otu_table.append(self.table[i])
+                num_filtered_samples += 1
             i += 1
 
-        return new_otu_table
+        logger.info("Filtered out " + str(num_filtered_samples) + "/" + str(len(base)) + " samples")
+        return new_otu_table, headers, new_sample_labels
 
-    def filter_otu_table_by_taxonomic_items(self, base, taxonomic_map, level, role, items_of_interest):
+    def filter_otu_table_by_taxonomic_items(self, base, headers, sample_labels, taxonomic_map, user_request):
         """
         Returns an OTU table that has been filtered by specific taxonomic items of interest
         (eg. if the user selected that they only wanted to see Staphylococcus genus, an OTU table
@@ -150,11 +170,14 @@ class OTUTable(object):
         :param level:
         :return:
         """
-        if items_of_interest is None or items_of_interest == "":
-            items_of_interest = []
+        level = user_request.taxonomy_filter
+        role = user_request.taxonomy_filter_role
+        items_of_interest = user_request.taxonomy_filter_vals
 
-        if items_of_interest == "mian-select-all":
-            return base
+        if int(level) == -2 or (len(items_of_interest) == 1 and items_of_interest[0] == "mian-select-all"):
+            # -2 indicates that we should not filter by taxonomic items or everything is selected
+            logger.info("OTU filtering not enabled or all OTUs are selected")
+            return base, headers, sample_labels
 
         otus = {}
         for otu, classification in taxonomic_map.items():
@@ -176,84 +199,29 @@ class OTUTable(object):
                 otus[otu] = 1
 
         new_otu_table = []
-        relevant_cols = {}
+        new_headers = []
 
+        num_filtered_otus = 0
         i = 0
         while i < len(base):
-            if i == 0:
-                # Header row
-                # Ignores the first column (sample ID)
-                new_row = []
-                j = 0
-                while j < OTUTable.OTU_START_COL:
+            new_row = []
+            j = 0
+            while j < len(base[i]):
+                if headers[j] in otus:
                     new_row.append(base[i][j])
-                    relevant_cols[j] = 1
-                    j += 1
-
-                j = OTUTable.OTU_START_COL
-                while j < len(base[i]):
-                    if base[i][j] in otus:
-                        new_row.append(base[i][j])
-                        relevant_cols[j] = 1
-                    j += 1
-                new_otu_table.append(new_row)
-            else:
-                new_row = []
-                j = 0
-                while j < len(base[i]):
-                    if j in relevant_cols:
-                        new_row.append(base[i][j])
-                    j += 1
-                new_otu_table.append(new_row)
-            i += 1
-        return new_otu_table
-
-    def aggregate_otu_table_at_taxonomic_level_orig(self, base, level):
-        """
-        Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
-        table that is grouped at the Family taxonomic level)
-        :param base:
-        :param level:
-        :return:
-        """
-        if int(level) < 0:
-            # We want to aggregate at the OTU level, which is essentially not aggregating at all
-            return base
-
-        taxonomy_map = self.otu_metadata.get_taxonomy_map()
-        taxonomies = []
-        taxonomy_to_cols = {}
-        j = OTUTable.OTU_START_COL
-        while j < len(base[0]):
-            otu = base[0][j]
-            taxonomy = taxonomy_map[otu][int(level)]
-            if taxonomy in taxonomy_to_cols:
-                taxonomy_to_cols[taxonomy].append(j)
-            else:
-                taxonomy_to_cols[taxonomy] = [j]
-                taxonomies.append(taxonomy)
-            j += 1
-
-        aggregated_base = []
-        i = 0
-        for row in base:
-            new_row = [row[OTUTable.SAMPLE_ID_COL]]
-            for taxonomy in taxonomies:
-                cols_to_aggregate = taxonomy_to_cols[taxonomy]
-                if i == 0:
-                    # Just print out the headers
-                    new_row.append(taxonomy)
+                    if i == 0:
+                        new_headers.append(headers[j])
                 else:
-                    s = 0
-                    for col in cols_to_aggregate:
-                        s += float(row[col])
-                    new_row.append(s)
-            aggregated_base.append(new_row)
+                    if i == 0:
+                        num_filtered_otus += 1
+                j += 1
+            new_otu_table.append(new_row)
             i += 1
+        logger.info("Table cols = " + str(len(new_otu_table[0])) + " header cols = " + str(len(new_headers)))
+        logger.info("Filtered out " + str(num_filtered_otus) + "/" + str(len(base[0])) + " OTUs/taxas")
+        return new_otu_table, new_headers, sample_labels
 
-        return aggregated_base
-
-    def aggregate_otu_table_at_taxonomic_level_np(self, base, level):
+    def aggregate_otu_table_at_taxonomic_level(self, base, headers, sample_labels, user_request):
         """
         Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
         table that is grouped at the Family taxonomic level)
@@ -261,59 +229,23 @@ class OTUTable(object):
         :param level:
         :return:
         """
+        level = user_request.level
         if int(level) < 0:
             # We want to aggregate at the OTU level, which is essentially not aggregating at all
-            return base
+            return base, headers, sample_labels
 
         taxonomy_map = self.otu_metadata.get_taxonomy_map()
         taxonomies = []
         taxonomy_to_cols = {}
-        j = OTUTable.OTU_START_COL
-        while j < len(base[0]):
-            otu = base[0][j]
-            taxonomy = taxonomy_map[otu][int(level)]
-            if taxonomy in taxonomy_to_cols:
-                taxonomy_to_cols[taxonomy].append(j - 1)
-            else:
-                taxonomy_to_cols[taxonomy] = [j - 1]
-                taxonomies.append(taxonomy)
-            j += 1
+        j = 0
+        while j < len(headers):
+            otu = headers[j]
 
-        rows = len(base) - 1
-        cols = len(taxonomies)
-        base = np.array(base[1:])
-        base = np.array(base[:,1:], dtype=float)
-        # base = np.delete(base, 0, 1)
-        # base = np.genfromtxt(base)
+            if otu not in taxonomy_map:
+                # TODO: This actually indicates bad input data
+                j += 1
+                continue
 
-        aggregated_base = np.zeros((rows, cols))
-        i = 0
-        for taxonomy in taxonomies:
-            cols_to_aggregate = taxonomy_to_cols[taxonomy]
-            aggregated_base[:, i] += np.sum(base[:, cols_to_aggregate])
-            i += 1
-
-        return aggregated_base
-
-
-    def aggregate_otu_table_at_taxonomic_level(self, base, level):
-        """
-        Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
-        table that is grouped at the Family taxonomic level)
-        :param base:
-        :param level:
-        :return:
-        """
-        if int(level) < 0:
-            # We want to aggregate at the OTU level, which is essentially not aggregating at all
-            return base
-
-        taxonomy_map = self.otu_metadata.get_taxonomy_map()
-        taxonomies = []
-        taxonomy_to_cols = {}
-        j = OTUTable.OTU_START_COL
-        while j < len(base[0]):
-            otu = base[0][j]
             taxonomy = "; ".join(taxonomy_map[otu][:int(level) + 1])
             if taxonomy in taxonomy_to_cols:
                 taxonomy_to_cols[taxonomy].append(j)
@@ -324,99 +256,131 @@ class OTUTable(object):
 
         with Pool() as pool:
             func = partial(process_row_aggregate_otu_table_at_taxonomic_level, taxonomies, taxonomy_to_cols)
-            aggregated_base = pool.map(func, base[1:])
+            aggregated_base = pool.map(func, base)
+            aggregated_headers = taxonomies
+            logger.info("Agg Table cols = " + str(len(aggregated_base[0])) + " header cols = " + str(len(aggregated_headers)))
+            return aggregated_base, aggregated_headers, sample_labels
 
-            # Add back the headers
-            header_row = [base[0][0]]
-            header_row.extend(taxonomies)
-            aggregated_base.insert(0, header_row)
-            return aggregated_base
-
-    def filter_out_low_count(self, base, count_threshold=3, min_prevalence=20):
+    def aggregate_otu_table_at_taxonomic_level_np(self, base, headers, sample_labels, level):
         """
-        TODO: Generate filtered dataset DURING CREATION???
-        TODO: Make faster
-        Returns an OTU table after removing OTUs who appear in less than or equal to the threshold count
+        Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
+        table that is grouped at the Family taxonomic level). Approx 5x slower than non-np version
         :param base:
         :param level:
         :return:
         """
+        if int(level) < 0:
+            # We want to aggregate at the OTU level, which is essentially not aggregating at all
+            return base, headers, sample_labels
 
-        filtered_base = []
-        cols_to_remove = {}
-
-        j = OTUTable.OTU_START_COL
-        while j < len(base[0]):
-            total_num_samples = len(base) - 1
-            over_threshold = 0
-            i = 1
-            while i < len(base):
-                otu_val = float(base[i][j])
-                if otu_val > count_threshold:
-                    over_threshold += 1
-                i += 1
-            if over_threshold / total_num_samples < min_prevalence / 100:
-                cols_to_remove[j] = 1
-            j += 1
-
+        taxonomy_map = self.otu_metadata.get_taxonomy_map()
+        taxonomies = []
+        taxonomy_to_cols = {}
         i = 0
-        while i < len(base):
-            new_row = []
-            j = 0
-            while j < len(base[i]):
-                if j not in cols_to_remove:
-                    new_row.append(base[i][j])
-                j += 1
-            filtered_base.append(new_row)
+        while i < len(headers):
+            otu = headers[i]
+            if otu not in taxonomy_map:
+                # TODO: This actually indicates bad input data
+                i += 1
+                continue
+
+            taxonomy = "; ".join(taxonomy_map[otu][:int(level) + 1])
+            if taxonomy in taxonomy_to_cols:
+                taxonomy_to_cols[taxonomy].append(i)
+            else:
+                taxonomy_to_cols[taxonomy] = [i]
+                taxonomies.append(taxonomy)
             i += 1
 
-        return filtered_base
+        rows = len(base)
+        cols = len(taxonomies)
 
-    def filter_out_low_count_np(self, base, count_threshold=3, min_prevalence=20):
-        """
-        TODO: Generate filtered dataset DURING CREATION???
-        TODO: Make faster
-        Returns an OTU table after removing OTUs who appear in less than or equal to the threshold count
-        :param base:
-        :param level:
-        :return:
-        """
-
-        base_np = np.array(base)
-        print(str(np.sum(base_np[2, 1:])))
-
-        filtered_base = []
-        cols_to_remove = {}
-
-        j = OTUTable.OTU_START_COL
-        while j < len(base[0]):
-            total_num_samples = len(base) - 1
-            over_threshold = 0
-            i = 1
-            while i < len(base):
-                otu_val = float(base[i][j])
-                if otu_val > count_threshold:
-                    over_threshold += 1
-                i += 1
-            if over_threshold / total_num_samples < min_prevalence / 100:
-                cols_to_remove[j] = 1
-            j += 1
-
+        aggregated_base = np.zeros((rows, cols))
         i = 0
-        while i < len(base):
-            new_row = []
-            j = 0
-            while j < len(base[i]):
-                if j not in cols_to_remove:
-                    new_row.append(base[i][j])
-                j += 1
-            filtered_base.append(new_row)
+        for taxonomy in taxonomies:
+            cols_to_aggregate = taxonomy_to_cols[taxonomy]
+            aggregated_base[:, i] += np.sum(base[:, cols_to_aggregate], axis=1)
             i += 1
 
-        return filtered_base
+        aggregated_headers = taxonomies
 
+        return aggregated_base, aggregated_headers, sample_labels
+
+    def filter_out_low_count_np(self, base, headers, sample_labels, user_request):
+
+        logger.info("Starting filtering by low count")
+        count_threshold = user_request.taxonomy_filter_count
+        min_prevalence = user_request.taxonomy_filter_prevalence
+
+        base = np.array(base)
+        headers = np.array(headers)
+        num_samples = base.shape[0]
+        min_prevalence_percentage = min_prevalence / float(100)
+        otus_over_threshold = (base > count_threshold).astype(int)
+        otus_to_keep = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) >= min_prevalence_percentage
+
+        logger.info(
+            "Done filtering by low count. Kept " + str(sum(otus_to_keep)) + " cols out of " + str(len(headers)))
+        return base[:, otus_to_keep], headers[otus_to_keep], sample_labels
+
+    def aggregate_low_count_np(self, base, headers, sample_labels, user_request):
+        count_threshold = user_request.taxonomy_filter_count
+        min_prevalence = user_request.taxonomy_filter_prevalence
+
+        base = np.array(base)
+        headers = np.array(headers)
+        num_samples = base.shape[0]
+        min_prevalence_percentage = min_prevalence / float(100)
+        otus_over_threshold = (base > count_threshold).astype(int)
+        otus_to_keep = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) >= min_prevalence_percentage
+        otus_to_aggregate = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) < min_prevalence_percentage
+        aggregated_col = np.sum(base[:, otus_to_aggregate], axis=1)
+        aggregated_base = np.c_[base[:, otus_to_keep], aggregated_col]
+        aggregated_headers = headers[otus_to_keep].append("Other")
+
+        logger.info(
+            "Aggregate low count cols = " + str(len(otus_to_aggregate)) + " header cols = " + str(len(aggregated_headers)))
+        return aggregated_base, aggregated_headers, sample_labels
+
+
+    @staticmethod
+    def get_otu_table_headers_at_taxonomic_level(user_id, pid, level, use_raw=False):
+        if use_raw:
+            logger.info("Using raw data")
+            labels = DataIO.tsv_to_table(user_id, pid, RAW_OTU_TABLE_LABELS_FILENAME)
+            headers = labels[0]
+        else:
+            logger.info("Using subsampled data")
+            labels = DataIO.tsv_to_table(user_id, pid, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
+            headers = labels[0]
+
+        if int(level) == -1:
+            # OTUs requested
+            return headers
+
+        taxonomy = Taxonomy(user_id, pid)
+        taxonomy_map = taxonomy.get_taxonomy_map()
+        taxonomies = []
+        taxonomy_to_cols = {}
+        j = 0
+        while j < len(headers):
+            otu = headers[j]
+            if otu in taxonomy_map:
+                # Uncomment below if we want to use the fully quantified taxonomy string
+                # taxonomy = "; ".join(taxonomy_map[otu][:int(level) + 1])
+                taxonomy = taxonomy_map[otu][int(level)]
+                if taxonomy != "":
+                    if taxonomy in taxonomy_to_cols:
+                        taxonomy_to_cols[taxonomy].append(j)
+                    else:
+                        taxonomy_to_cols[taxonomy] = [j]
+                        taxonomies.append(taxonomy)
+            j += 1
+        return taxonomies
+
+# Global method
 def process_row_aggregate_otu_table_at_taxonomic_level(taxonomies, taxonomy_to_cols, row):
-    new_row = [row[OTUTable.SAMPLE_ID_COL]]
+    new_row = []
     for taxonomy in taxonomies:
         cols_to_aggregate = taxonomy_to_cols[taxonomy]
         s = 0

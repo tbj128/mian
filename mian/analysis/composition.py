@@ -10,19 +10,13 @@ class Composition(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
 
         metadata = table.get_sample_metadata().get_as_table()
 
-        return self.analyse(user_request, otu_table, metadata)
+        return self.analyse(user_request, base, headers, sample_labels, metadata)
 
-    def analyse(self, user_request, base, metadata):
+    def analyse(self, user_request, base, headers, sample_labels, metadata):
 
         # Stores the tax classification to the relative abun (averaged)
         # {
@@ -58,11 +52,11 @@ class Composition(AnalysisBase):
 
         # Maps id to total
         totalAbun = {}
-        i = 1
+        i = 0
         while i < len(base):
-            sampleID = base[i][OTUTable.SAMPLE_ID_COL]
+            sampleID = sample_labels[i]
             total = 0
-            j = OTUTable.OTU_START_COL
+            j = 0
             while j < len(base[i]):
                 total += float(base[i][j])
                 j += 1
@@ -71,16 +65,16 @@ class Composition(AnalysisBase):
 
         # Iterates through each tax classification and calculates the relative abundance for each category
         colToTax = {}
-        j = OTUTable.OTU_START_COL
+        j = 0
         while j < len(base[0]):
-            tax = base[0][j]
+            tax = headers[j]
             compositionAbun[tax] = {}
             for m, v in uniqueMetadataVals.items():
                 compositionAbun[tax][m] = []
 
-            i = 1
+            i = 0
             while i < len(base):
-                sampleID = base[i][OTUTable.SAMPLE_ID_COL]
+                sampleID = sample_labels[i]
                 if sampleID in metadataMap:
                     m = metadataMap[sampleID]
                     compositionAbun[tax][m].append(float(base[i][j]) / float(totalAbun[sampleID]))

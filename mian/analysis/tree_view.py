@@ -24,13 +24,7 @@ class TreeView(AnalysisBase):
     def run(self, user_request):
         logger.info("Starting TreeView analysis")
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
 
         taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
@@ -42,19 +36,17 @@ class TreeView(AnalysisBase):
         if len(sample_ids_to_metadata_map.keys()) == 0:
             logger.info("No category breakdown selected - will generate a default column")
             unique_meta_vals = ["Default"]
-            np_otu_table = np.array(otu_table)
-            sample_ids = np_otu_table[1:, OTUTable.SAMPLE_ID_COL]
-            for sample_id in sample_ids:
+            for sample_id in sample_labels:
                 sample_ids_to_metadata_map[sample_id] = "Default"
 
-        return self.analyse(user_request, otu_table, taxonomy_map, unique_meta_vals, sample_ids_to_metadata_map)
+        return self.analyse(user_request, base, headers, sample_labels, taxonomy_map, unique_meta_vals, sample_ids_to_metadata_map)
 
-    def analyse(self, user_request, base, taxonomy_map, unique_meta_vals, sample_ids_to_metadata_map):
+    def analyse(self, user_request, base, headers, sample_labels, taxonomy_map, unique_meta_vals, sample_ids_to_metadata_map):
 
         otuToColNum = {}
-        j = OTUTable.OTU_START_COL
+        j = 0
         while j < len(base[0]):
-            otuToColNum[base[0][j]] = j
+            otuToColNum[headers[j]] = j
             j += 1
 
         lenOfClassification = 0
@@ -83,10 +75,10 @@ class TreeView(AnalysisBase):
 
                 col = otuToColNum[otu]
 
-                i = 1
+                i = 0
                 while i < len(base):
                     # Create a new OTU object, based on either the total counts or the sum of the OTU values
-                    sampleID = base[i][OTUTable.SAMPLE_ID_COL]
+                    sampleID = sample_labels[i]
                     if sampleID in sample_ids_to_metadata_map:
                         metaVal = sample_ids_to_metadata_map[sampleID]
                         otuVal = float(base[i][col])

@@ -10,40 +10,51 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Beta Diversity <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Beta Diversity" data-content="Measures the dissimilarity between different groups of samples<br /><br />This analysis uses the vegdist measure from the R 'vegan' package <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/vegdist.html' target='_blank'>here</a>" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Beta Diversity <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Beta Diversity" data-content="Measures the dissimilarity between different groups of samples<br /><br />This analysis uses the vegdist measure from the R 'vegan' package <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/vegdist.html' target='_blank'>here</a>" data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
     <hr/>
 
-    {% include 'filtering_options.html' %}
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        {% include 'filtering_options.html' %}
 
-    <hr/>
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingAnalysisParameters">
+              <h4 class="panel-title">
+                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
+                  Visualization Parameters
+                </a>
+              </h4>
+            </div>
+            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+              <div class="panel-body">
+                <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="Calculate the beta diversity measure at the taxonomic level selected. The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+                    <option value="Kingdom">Kingdom</option>
+                    <option value="Phylum">Phylum</option>
+                    <option value="Class">Class</option>
+                    <option value="Order">Order</option>
+                    <option value="Family">Family</option>
+                    <option value="Genus">Genus</option>
+                    <option value="Species">Species</option>
+                    <option value="OTU" selected>OTU</option>
+                </select>
 
-    <h4>Visualization Parameters</h4>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable. A different beta diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
+                <select id="catvar" name="catvar" class="form-control">
+                </select>
 
-    <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="Calculate the beta diversity measure at the taxonomic level selected. The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
-    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-        <option value="Kingdom">Kingdom</option>
-        <option value="Phylum">Phylum</option>
-        <option value="Class">Class</option>
-        <option value="Order">Order</option>
-        <option value="Family">Family</option>
-        <option value="Genus">Genus</option>
-        <option value="Species">Species</option>
-        <option value="OTU" selected>OTU</option>
-    </select>
-
-    <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable. A different beta diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
-    <select id="catvar" name="catvar" class="form-control">
-    </select>
-
-    <label class="control-label">Diversity Type   <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Type" data-content="The beta diversity index measure to use as described in the R 'Vegan' package <a href='https://cran.r-project.org/web/packages/vegan/vignettes/diversity-vegan.pdf' target='_blank'>here</a>" data-trigger="hover"></i></label>
-    <select id="betaType" name="betaType" class="form-control">
-        <option value="bray">Bray-Curtis</option>
-        <option value="sor">Sorenson</option>
-        <option value="w">Whittaker</option>
-    </select>
+                <label class="control-label">Diversity Type   <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Type" data-content="The beta diversity index measure to use as described in the R 'Vegan' package <a href='https://cran.r-project.org/web/packages/vegan/vignettes/diversity-vegan.pdf' target='_blank'>here</a>" data-trigger="hover"></i></label>
+                <select id="betaType" name="betaType" class="form-control">
+                    <option value="bray">Bray-Curtis</option>
+                    <option value="sor">Sorenson</option>
+                    <option value="w">Whittaker</option>
+                </select>
+              </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="content-wrapper">

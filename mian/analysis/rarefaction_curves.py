@@ -43,25 +43,27 @@ class RarefactionCurves(object):
     def run(self, user_request):
         # Rarefaction curves are only useful on the original raw data set
         table = OTUTable(user_request.user_id, user_request.pid, True)
-        otu_table = table.get_table()
+        base = table.get_table()
+        headers = table.get_headers()
+        sample_labels = table.get_sample_labels()
 
-        return self.analyse(otu_table)
+        return self.analyse(base, headers, sample_labels)
 
-    def analyse(self, otuTable):
+    def analyse(self, base, headers, sample_labels):
         # Forms an OTU only table (without IDs)
         sample_ids = []
         all_otus = []
-        col = OTUTable.OTU_START_COL
-        while col < len(otuTable[0]):
+        col = 0
+        while col < len(base[0]):
             colVals = []
-            row = 1
-            while row < len(otuTable):
-                if col == OTUTable.OTU_START_COL:
-                    sample_id = otuTable[row][OTUTable.SAMPLE_ID_COL]
+            row = 0
+            while row < len(base):
+                if col == 0:
+                    sample_id = sample_labels[row]
                     sample_ids.append(sample_id)
-                colVals.append(otuTable[row][col])
+                colVals.append(base[row][col])
                 row += 1
-            all_otus.append((otuTable[0][col], robjects.FloatVector(colVals)))
+            all_otus.append((headers[col], robjects.FloatVector(colVals)))
             col += 1
 
         od = rlc.OrdDict(all_otus)

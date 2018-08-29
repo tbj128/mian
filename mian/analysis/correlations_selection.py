@@ -23,30 +23,24 @@ class CorrelationsSelection(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table = table.get_table_after_filtering_and_aggregation(user_request.taxonomy_filter,
-                                                                    user_request.taxonomy_filter_role,
-                                                                    user_request.taxonomy_filter_vals,
-                                                                    user_request.sample_filter,
-                                                                    user_request.sample_filter_role,
-                                                                    user_request.sample_filter_vals,
-                                                                    user_request.level)
+        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata = table.get_sample_metadata()
 
-        return self.analyse(user_request, otu_table, metadata)
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata)
 
-    def analyse(self, user_request, base, metadata):
-        metadata_values = metadata.get_metadata_column_table_order(base, user_request.catvar)
+    def analyse(self, user_request, base, headers, sample_labels, metadata):
+        metadata_values = metadata.get_metadata_column_table_order(sample_labels, user_request.catvar)
         metadata_values = list(map(float, metadata_values))
 
         correlations = []
         pvals = []
 
-        c = OTUTable.OTU_START_COL
+        c = 0
         while c < len(base[0]):
-            otu_name = base[0][c]
+            otu_name = headers[c]
             otu_vals = []
-            r = 1
+            r = 0
             while r < len(base):
                 otu_vals.append(float(base[r][c]))
                 r += 1

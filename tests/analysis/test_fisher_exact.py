@@ -16,12 +16,12 @@ class TestFisherExact(unittest.TestCase):
         user_request.set_custom_attr("pwVar1", "Control")
         user_request.set_custom_attr("pwVar2", "Disease")
 
-        otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
+        otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT, use_np=True)
+        headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         metadata_values = AnalysisTestUtils.get_disease_metadata_values(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
-        sample_ids_from_metadata = AnalysisTestUtils.get_sample_ids_from_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
 
         plugin = FisherExact()
-        actual_output = plugin.analyse(user_request, otu_table, metadata_values, sample_ids_from_metadata)
+        actual_output = plugin.analyse(user_request, otu_table, headers, metadata_values)
         print(json.dumps(actual_output))
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
                                                                 "fisher_exact_0_5_control_disease.json")

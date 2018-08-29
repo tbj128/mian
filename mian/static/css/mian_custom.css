@@ -120,8 +120,16 @@ hr {
 	width:360px;
 	border-right:1px solid #E8E8E8;
     background:#FAFAFA;
-	padding:20px;
     overflow-y: auto;
+}
+
+.editor .pad-top {
+    margin-top: 20px;
+}
+
+.editor .pad-sides {
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 .editor label {
@@ -140,6 +148,47 @@ hr {
 
 .editor .pad-bottom {
 	margin-bottom:4px;
+}
+
+.editor .inner-control-label {
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+}
+
+.editor .bootstrap-tagsinput {
+    position: relative;
+}
+
+.editor .panel-heading {
+    padding-left: 20px;
+}
+
+.editor .panel-body {
+    padding-top: 0px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+.editor .panel-heading .accordion-toggle {
+    display:inline-block;
+    width: 100%;
+}
+
+.editor .panel-heading .accordion-toggle:hover, .panel-heading .accordion-toggle:focus {
+    text-decoration: none;
+}
+
+.editor .panel-heading .accordion-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+    float: right;        /* adjust as needed */
+    color: grey;         /* adjust as needed */
+}
+.editor .panel-heading .accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
 
 .welcome-container {
@@ -261,6 +310,7 @@ hr {
   margin:64px 64px 64px 360px;
   color:#999;
   text-align:center;
+  padding: 20px;
 }
 
 /**

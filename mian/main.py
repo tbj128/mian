@@ -25,8 +25,6 @@ import logging
 #
 # Imports and installs R packages as needed
 #
-from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, TAXONOMY_FILENAME, \
-    SAMPLE_METADATA_FILENAME
 from mian.core.project_manager import ProjectManager
 from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.analysis.beta_diversity import BetaDiversity
@@ -51,6 +49,7 @@ from mian.rutils import r_package_install
 from mian.model.map import Map
 from mian.model.taxonomy import Taxonomy
 from mian.model.metadata import Metadata
+from mian.model.otu_table import OTUTable
 
 r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
@@ -247,7 +246,7 @@ def boruta():
     metadata = Metadata(current_user.id, currProject)
     catVars = metadata.get_metadata_headers()
 
-    return render_template('boruta.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
+    return render_template('boruta.html', projectNames=projectNames, currProject=currProject, catVars=catVars, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/composition')
@@ -286,7 +285,7 @@ def correlation_network():
 def correlations_selection():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('correlations_selection.html', projectNames=projectNames, currProject=currProject)
+    return render_template('correlations_selection.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/differential_selection')
@@ -297,7 +296,7 @@ def differential_selection():
     metadata = Metadata(current_user.id, currProject)
     catVars = metadata.get_metadata_headers()
     uniqueCatVals = metadata.get_metadata_unique_vals(catVars[0])
-    return render_template('differential_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
+    return render_template('differential_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/fisher_exact')
@@ -309,7 +308,7 @@ def fisher_exact():
     catVars = metadata.get_metadata_headers()
     uniqueCatVals = metadata.get_metadata_unique_vals(catVars[0])
 
-    return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals)
+    return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/glmnet')
@@ -320,7 +319,7 @@ def glmnet():
     metadata = Metadata(current_user.id, currProject)
     catVars = metadata.get_metadata_headers()
 
-    return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
+    return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, catVars=catVars, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/nmds')
@@ -344,7 +343,7 @@ def pca():
 def random_forest():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('random_forest.html', projectNames=projectNames, currProject=currProject)
+    return render_template('random_forest.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/rarefaction')
@@ -404,6 +403,19 @@ def getTaxonomies():
     return json.dumps(abundances)
 
 
+@app.route('/otu_table_headers')
+@flask_login.login_required
+def getOTUTableHeaders():
+    user = current_user.id
+    pid = request.args.get('pid', '')
+    if pid == '':
+        return json.dumps({})
+
+    metadata = Metadata(user, pid)
+    abundances = metadata.get_metadata_headers()
+    return json.dumps(abundances)
+
+
 @app.route('/metadata_headers')
 @flask_login.login_required
 def getMetadataHeaders():
@@ -427,6 +439,18 @@ def getMetadataHeadersWithType():
     metadata = Metadata(user, pid)
     abundances = metadata.get_metadata_headers_with_type()
     return json.dumps(abundances)
+
+@app.route('/otu_table_headers_at_level')
+@flask_login.login_required
+def getOTUTableHeadersAtLevel():
+    user = current_user.id
+    pid = request.args.get('pid', '')
+    level = request.args.get('level', '')
+    if pid == '' or level == '':
+        return json.dumps({})
+
+    headers = OTUTable.get_otu_table_headers_at_taxonomic_level(user, pid, level)
+    return json.dumps(headers)
 
 @app.route('/metadata_numeric_headers')
 @flask_login.login_required
@@ -484,7 +508,6 @@ def getBetaDiversity():
 @flask_login.login_required
 def getBoruta():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("keepthreshold", request.form['keepthreshold'])
     user_request.set_custom_attr("pval", request.form['pval'])
     user_request.set_custom_attr("maxruns", request.form['maxruns'])
 
@@ -498,6 +521,7 @@ def getBoruta():
 def getBoxplots():
     user_request = __get_user_request(request)
     user_request.set_custom_attr("yvals", request.form['yvals'])
+    user_request.set_custom_attr("yvalsSpecificTaxonomy", request.form['yvalsSpecificTaxonomy'])
 
     plugin = Boxplots()
     abundances = plugin.run(user_request)
@@ -522,6 +546,8 @@ def getCorrelations():
     user_request.set_custom_attr("colorvar", request.form['colorvar'])
     user_request.set_custom_attr("sizevar", request.form['sizevar'])
     user_request.set_custom_attr("samplestoshow", request.form['samplestoshow'])
+    user_request.set_custom_attr("corrvar1SpecificTaxonomies", request.form['corrvar1SpecificTaxonomies'])
+    user_request.set_custom_attr("corrvar2SpecificTaxonomies", request.form['corrvar2SpecificTaxonomies'])
 
     plugin = Correlations()
     abundances = plugin.run(user_request)
@@ -565,7 +591,6 @@ def getDifferentialSelection():
 def getFisherExact():
     user_request = __get_user_request(request)
     user_request.set_custom_attr("minthreshold", request.form['minthreshold'])
-    user_request.set_custom_attr("keepthreshold", request.form['keepthreshold'])
     user_request.set_custom_attr("pwVar1", request.form['pwVar1'])
     user_request.set_custom_attr("pwVar2", request.form['pwVar2'])
 
@@ -578,9 +603,7 @@ def getFisherExact():
 @flask_login.login_required
 def getGlmnet():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("keepthreshold", request.form['keepthreshold'])
     user_request.set_custom_attr("alpha", request.form['alpha'])
-    user_request.set_custom_attr("family", request.form['family'])
     user_request.set_custom_attr("lambdathreshold", request.form['lambdathreshold'])
     user_request.set_custom_attr("lambdaval", request.form['lambdaval'])
 
@@ -677,16 +700,19 @@ def getIsSubsampled():
 def __get_user_request(request):
     user = current_user.id
     pid = request.form['pid']
+    taxonomyFilterCount = request.form['taxonomyFilterCount'] if 'taxonomyFilterCount' in request.form else ""
+    taxonomyFilterPrevalnce = request.form['taxonomyFilterPrevalence'] if 'taxonomyFilterPrevalence' in request.form else ""
     taxonomyFilter = request.form['taxonomyFilter'] if 'taxonomyFilter' in request.form else ""
     taxonomyFilterRole = request.form['taxonomyFilterRole'] if 'taxonomyFilterRole' in request.form else ""
-    taxonomyFilterVals = request.form['taxonomyFilterVals'] if 'taxonomyFilterVals' in request.form else ""
+    taxonomyFilterVals = json.loads(request.form['taxonomyFilterVals']) if 'taxonomyFilterVals' in request.form else []
     sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
     sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
-    sampleFilterVals = request.form['sampleFilterVals'] if 'sampleFilterVals' in request.form else ""
+    sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
     catvar = request.form['catvar'] if 'catvar' in request.form else ""
     level = request.form['level'] if 'level' in request.form else -2
-    user_request = UserRequest(user, pid, taxonomyFilter, taxonomyFilterRole, taxonomyFilterVals,
-                               sampleFilter, sampleFilterRole, sampleFilterVals, level, catvar)
+    user_request = UserRequest(user, pid, taxonomyFilterCount, taxonomyFilterPrevalnce, taxonomyFilter,
+                               taxonomyFilterRole, taxonomyFilterVals, sampleFilter, sampleFilterRole,
+                               sampleFilterVals, level, catvar)
     return user_request
 
 @app.route('/upload', methods=['POST'])

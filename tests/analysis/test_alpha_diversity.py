@@ -4,6 +4,9 @@ from mian.analysis.alpha_diversity import AlphaDiversity
 from tests.analysis.analysis_test_utils import AnalysisTestUtils
 import unittest
 
+from mian.rutils import r_package_install
+r_package_install.importr_custom("vegan")
+
 
 class TestAlphaDiversity(unittest.TestCase):
 

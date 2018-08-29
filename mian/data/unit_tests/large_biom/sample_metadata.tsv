@@ -1,0 +1,96 @@
+SampleID	Hardness	alkalinity	ammonium	collection_date	diss_oxygen	material	nitrate	nitrite	ph	phinchID	phosphate	salinity	sulfide	temp
+0.IntakeWater.1	6110 mg/L	150 mg/L	no_data	2012-11-30T11:00:00+08:00	no_data	Water	2.2 ppm	23 ppb	7.52 pH	0	73 ppb	32.80 ppt	1 mg/L	10 C
+0.IntakeWater.3	6110 mg/L	150 mg/L	no_data	2012-11-30T11:00:00+08:00	no_data	Water	2.2 ppm	23 ppb	7.52 pH	1	73 ppb	32.80 ppt	1 mg/L	10 C
+0.IntakeWater.2	6110 mg/L	150 mg/L	no_data	2012-11-30T11:00:00+08:00	no_data	Water	2.2 ppm	23 ppb	7.52 pH	2	73 ppb	32.80 ppt	1 mg/L	10 C
+27.WaterCoralpond.2	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Water	8.8 ppm	3 ppb	8.09 pH	3	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+0.SedimentCoralpond.1	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Sediment	7.8 ppm	20 ppb	8.02 pH	4	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.WaterCoralpond.3	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Water	7.8 ppm	20 ppb	8.02 pH	5	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.WaterCoralpond.2	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Water	7.8 ppm	20 ppb	8.02 pH	6	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.WaterCoralpond.1	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Water	7.8 ppm	20 ppb	8.02 pH	7	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.WipesColdreef.1	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Wipes	100 ppm	45 ppb	7.5 pH	8	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+0.SandCoralpond.3	6110 mg/L	150 mg/L	no_data	2012-11-30T11:00:00+08:00	no_data	Sand	2.2 ppm	23 ppb	7.52 pH	9	73 ppb	32.80 ppt	1 mg/L	10 C
+0.SedimentCoralpond.3	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Sediment	7.8 ppm	20 ppb	8.02 pH	10	63 ppb	30.60 ppt	0.8 mg/L	11 C
+27.SedimentCoralpond.1	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Sediment	8.8 ppm	3 ppb	8.09 pH	11	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+53.SedimentCoralpond.2	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Sediment	4.8 ppm	65 ppb	8.02 pH	12	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+42.WaterCoralpond.1	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Water	6.4 ppm	30 ppb	8.05 pH	13	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+0.SedimentTropical.1	8040 mg/L	258 mg/L	0.09 ppm	2012-12-10T11:30:00+08:00	7 ppm	Sediment	53.2 ppm	13 ppb	7.95 pH	14	1670 ppb	34.30 ppt	6.4 mg/L	22.3 C
+0.SedimentTropical.2	8040 mg/L	258 mg/L	0.09 ppm	2012-12-10T11:30:00+08:00	7 ppm	Sediment	53.2 ppm	13 ppb	7.95 pH	15	1670 ppb	34.30 ppt	6.4 mg/L	22.3 C
+0.SedimentTropical.3	8040 mg/L	258 mg/L	0.09 ppm	2012-12-10T11:30:00+08:00	7 ppm	Sediment	53.2 ppm	13 ppb	7.95 pH	16	1670 ppb	34.30 ppt	6.4 mg/L	22.3 C
+0.WaterTropical.2	8040 mg/L	258 mg/L	0.09 ppm	2012-12-10T11:30:00+08:00	7 ppm	Water	53.2 ppm	13 ppb	7.95 pH	17	1670 ppb	34.30 ppt	6.4 mg/L	22.3 C
+0.WaterColdreef.3	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Water	100 ppm	45 ppb	7.5 pH	18	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+0.WaterFreshwater.3	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Water	2.8 ppm	0 ppb	7.44 pH	19	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+0.SedimentCoralpond.2	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Sediment	7.8 ppm	20 ppb	8.02 pH	20	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.SedimentColdreef.1	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Sediment	100 ppm	45 ppb	7.5 pH	21	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+12.5.SedimentCoralpond.1	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Sediment	12.2 ppm	198 ppb	8.16 pH	22	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+12.5.SedimentCoralpond.2	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Sediment	12.2 ppm	198 ppb	8.16 pH	23	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+12.5.SedimentCoralpond.3	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Sediment	12.2 ppm	198 ppb	8.16 pH	24	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+12.5.WaterCoralpond.1	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Water	12.2 ppm	198 ppb	8.16 pH	25	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+12.5.WaterCoralpond.2	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Water	12.2 ppm	198 ppb	8.16 pH	26	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+12.5.WaterCoralpond.3	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Water	12.2 ppm	198 ppb	8.16 pH	27	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+12.5.WipesCoralpond.2	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Wipes	12.2 ppm	198 ppb	8.16 pH	28	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+13.5.WaterCoralpond.1	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Water	19.5 ppm	62 ppb	8.15 pH	29	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+13.5.WipesCoralpond.2	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Wipes	19.5 ppm	62 ppb	8.15 pH	30	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+27.SedimentCoralpond.2	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Sediment	8.8 ppm	3 ppb	8.09 pH	31	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+27.SedimentCoralpond.3	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Sediment	8.8 ppm	3 ppb	8.09 pH	32	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+27.WaterCoralpond.1	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Water	8.8 ppm	3 ppb	8.09 pH	33	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+27.WaterCoralpond.3	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Water	8.8 ppm	3 ppb	8.09 pH	34	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+42.SedimentCoralpond.1	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Sediment	6.4 ppm	30 ppb	8.05 pH	35	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+42.SedimentCoralpond.3	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Sediment	6.4 ppm	30 ppb	8.05 pH	36	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+53.WaterCoralpond.1	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Water	4.8 ppm	65 ppb	8.02 pH	37	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+12.SedimentCoralpond.3	5880 mg/L	165 mg/L	0.67 ppm	2012-12-12T10:30:00+08:00	6.6 ppm	Sediment	20.7 ppm	226 ppb	8.12 pH	38	79 ppb	29.20 ppt	0.8 mg/L	24.7 C
+53.WipesCoralpond.1	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Wipes	4.8 ppm	65 ppb	8.02 pH	39	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+42.WipesCoralpond.1	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Wipes	6.4 ppm	30 ppb	8.05 pH	40	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+53.SedimentCoralpond.1	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Sediment	4.8 ppm	65 ppb	8.02 pH	41	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+27.WipesCoralpond.2	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Wipes	8.8 ppm	3 ppb	8.09 pH	42	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+42.WipesCoralpond.2	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Wipes	6.4 ppm	30 ppb	8.05 pH	43	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+12.5.WipesCoralpond.1	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Wipes	12.2 ppm	198 ppb	8.16 pH	44	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+12.SedimentCoralpond.2	5880 mg/L	165 mg/L	0.67 ppm	2012-12-12T10:30:00+08:00	6.6 ppm	Sediment	20.7 ppm	226 ppb	8.12 pH	45	79 ppb	29.20 ppt	0.8 mg/L	24.7 C
+27.WipesCoralpond.1	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Wipes	8.8 ppm	3 ppb	8.09 pH	46	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+27.WipesCoralpond.3	7200 mg/L	144 mg/L	0.24 ppm	2012-12-27T10:30:00+08:00	6.8 ppm	Wipes	8.8 ppm	3 ppb	8.09 pH	47	1040 ppb	30.60 ppt	0.8 mg/L	24.3 C
+53.WaterCoralpond.2	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Water	4.8 ppm	65 ppb	8.02 pH	48	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+12.SedimentCoralpond.1	5880 mg/L	165 mg/L	0.67 ppm	2012-12-12T10:30:00+08:00	6.6 ppm	Sediment	20.7 ppm	226 ppb	8.12 pH	49	79 ppb	29.20 ppt	0.8 mg/L	24.7 C
+53.WaterCoralpond.3	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Water	4.8 ppm	65 ppb	8.02 pH	50	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+0.SedimentColdreef.2	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Sediment	100 ppm	45 ppb	7.5 pH	51	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+0.WipesColdreef.3	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Wipes	100 ppm	45 ppb	7.5 pH	52	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+0.SandCoralpond.1	6110 mg/L	150 mg/L	no_data	2012-11-30T11:00:00+08:00	no_data	Sand	2.2 ppm	23 ppb	7.52 pH	53	73 ppb	32.80 ppt	1 mg/L	10 C
+0.WaterKoipondCannalilies.3	42 mg/L	69 mg/L	0.23 ppm	2013-03-25T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	54	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.WipesColdreef.2	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Wipes	100 ppm	45 ppb	7.5 pH	55	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+0.WipesCoralpond.1	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Wipes	7.8 ppm	20 ppb	8.02 pH	56	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.WipesTropical.1	8040 mg/L	258 mg/L	0.09 ppm	2012-12-10T11:30:00+08:00	7 ppm	Wipes	53.2 ppm	13 ppb	7.95 pH	57	1670 ppb	34.30 ppt	6.4 mg/L	22.3 C
+12.WaterCoralpond.2	5880 mg/L	165 mg/L	0.67 ppm	2012-12-12T10:30:00+08:00	6.6 ppm	Water	20.7 ppm	226 ppb	8.12 pH	58	79 ppb	29.20 ppt	0.8 mg/L	24.7 C
+0.WaterKoipondLdeck.1	42 mg/L	69 mg/L	0.23 ppm	2013-03-25T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	59	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.WaterKoipondLilyroots.2	42 mg/L	69 mg/L	0.23 ppm	2013-03-25T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	60	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.WipesFreshwater.3	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Wipes	2.8 ppm	0 ppb	7.44 pH	61	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+0.WipesKoipondLLWaterfall.1	42 mg/L	69 mg/L	0.23 ppm	2013-01-30T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	62	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.WipesKoipondPumprocks.1	42 mg/L	69 mg/L	0.23 ppm	2013-03-13T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	63	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.SandCoralpond.2	6110 mg/L	150 mg/L	no_data	2012-11-30T11:00:00+08:00	no_data	Sand	2.2 ppm	23 ppb	7.52 pH	64	73 ppb	32.80 ppt	1 mg/L	10 C
+0.WipesKoipondPlantroots.1	42 mg/L	69 mg/L	0.23 ppm	2013-02-06T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	65	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.WipesKoipondDeckarea.1	42 mg/L	69 mg/L	0.23 ppm	2013-01-23T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	66	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.SedimentFreshwater.2	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Sediment	2.8 ppm	0 ppb	7.44 pH	67	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+0.WaterFreshwater.1	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Water	2.8 ppm	0 ppb	7.44 pH	68	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+0.WaterTropical.1	8040 mg/L	258 mg/L	0.09 ppm	2012-12-10T11:30:00+08:00	7 ppm	Water	53.2 ppm	13 ppb	7.95 pH	69	1670 ppb	34.30 ppt	6.4 mg/L	22.3 C
+42.WaterCoralpond.3	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Water	6.4 ppm	30 ppb	8.05 pH	70	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+0.WaterColdreef.1	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Water	100 ppm	45 ppb	7.5 pH	71	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+0.WaterColdreef.2	7200 mg/L	120 mg/L	0.43 ppm	2013-01-07T12:30:00+08:00	8.1 ppm	Water	100 ppm	45 ppb	7.5 pH	72	3060 ppb	30.60 ppt	0.8 mg/L	12.7 C
+13.5.WaterCoralpond.3	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Water	19.5 ppm	62 ppb	8.15 pH	73	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+13.5.SedimentCoralpond.1	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Sediment	19.5 ppm	62 ppb	8.15 pH	74	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+0.WipesCoralpond.3	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Wipes	7.8 ppm	20 ppb	8.02 pH	75	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.SedimentFreshwater.1	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Sediment	2.8 ppm	0 ppb	7.44 pH	76	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+0.SedimentFreshwater.3	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Sediment	2.8 ppm	0 ppb	7.44 pH	77	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+0.WipesFreshwater.2	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Wipes	2.8 ppm	0 ppb	7.44 pH	78	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+12.WaterCoralpond.1	5880 mg/L	165 mg/L	0.67 ppm	2012-12-12T10:30:00+08:00	6.6 ppm	Water	20.7 ppm	226 ppb	8.12 pH	79	79 ppb	29.20 ppt	0.8 mg/L	24.7 C
+42.WipesCoralpond.3	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Wipes	6.4 ppm	30 ppb	8.05 pH	80	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+42.WaterCoralpond.2	7800 mg/L	165 mg/L	no_data	2013-01-11T13:20:00+08:00	6.8 ppm	Water	6.4 ppm	30 ppb	8.05 pH	81	780 ppb	30.60 ppt	1.4 mg/L	25.4 C
+0.WipesFreshwater.1	66 mg/L	75 mg/L	0.03 ppm	2013-01-09T11:15:00+08:00	8.2 ppm	Wipes	2.8 ppm	0 ppb	7.44 pH	82	1610 ppb	0.49 ppt	1.4 mg/L	19.3 C
+12.5.WipesCoralpond.3	6600 mg/L	168 mg/L	0.75 ppm	2012-12-12T17:00:00+08:00	6.3 ppm	Wipes	12.2 ppm	198 ppb	8.16 pH	83	208 ppb	29.5 ppt	0.8 mg/L	20.8 C
+53.WipesCoralpond.3	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Wipes	4.8 ppm	65 ppb	8.02 pH	84	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+53.WipesCoralpond.2	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Wipes	4.8 ppm	65 ppb	8.02 pH	85	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+13.5.WipesCoralpond.1	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Wipes	19.5 ppm	62 ppb	8.15 pH	86	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+13.5.WaterCoralpond.2	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Water	19.5 ppm	62 ppb	8.15 pH	87	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+12.WaterCoralpond.3	5880 mg/L	165 mg/L	0.67 ppm	2012-12-12T10:30:00+08:00	6.6 ppm	Water	20.7 ppm	226 ppb	8.12 pH	88	79 ppb	29.20 ppt	0.8 mg/L	24.7 C
+53.SedimentCoralpond.3	6900 mg/L	165 mg/L	0.15 ppm	2013-01-22T11:00:00+08:00	6.2 ppm	Sediment	4.8 ppm	65 ppb	8.02 pH	89	335 ppb	31.70 ppt	1.6 mg/L	25.6 C
+13.5.SedimentCoralpond.2	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Sediment	19.5 ppm	62 ppb	8.15 pH	90	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+13.5.SedimentCoralpond.3	8280 mg/L	213 mg/L	0.84 ppm	2012-12-13T17:00:00+08:00	6.8 ppm	Sediment	19.5 ppm	62 ppb	8.15 pH	91	230 ppb	29.9 ppt	0.8 mg/L	24.4 C
+0.WipesCoralpond.2	7560 mg/L	156 mg/L	no_data	2012-11-30T12:15:00+08:00	no_data	Wipes	7.8 ppm	20 ppb	8.02 pH	92	63 ppb	30.60 ppt	0.8 mg/L	11 C
+0.WipesKoipondLgWaterfall.1	42 mg/L	69 mg/L	0.23 ppm	2013-01-23T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	93	19 ppb	0.49 ppt	2.4 mg/L	no_data
+0.WipesKoipondLFilter.1	42 mg/L	69 mg/L	0.23 ppm	2013-01-30T00:00:00+08:00	4.7 ppm	Wipes	6.6 ppm	15 ppb	7.3 pH	94	19 ppb	0.49 ppt	2.4 mg/L	no_data

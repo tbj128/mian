@@ -1,0 +1,1 @@
+{"project_name": "Large_Biom", "subsampled_value": 0, "subsampled_type": "no", "subsampled_removed_samples": [], "orig_biom_name": "table.biom", "orig_otu_table_name": "", "orig_taxonomy_name": "", "orig_sample_metadata_name": "", "taxonomy_type": "Greengenes"}

@@ -21,12 +21,12 @@ class TestProjectManager(unittest.TestCase):
             os.makedirs(test_staging_dir)
 
         shutil.copyfile(os.path.join(unit_tests_dir, "table.raw.tsv"), os.path.join(test_staging_dir, "table.raw.tsv"))
-        shutil.copyfile(os.path.join(unit_tests_dir, "otu_taxonomy.txt"), os.path.join(test_staging_dir, "otu_taxonomy.txt"))
-        shutil.copyfile(os.path.join(unit_tests_dir, "sample_metadata.txt"),
-                        os.path.join(test_staging_dir, "sample_metadata.txt"))
+        shutil.copyfile(os.path.join(unit_tests_dir, "taxonomy.tsv"), os.path.join(test_staging_dir, "taxonomy.tsv"))
+        shutil.copyfile(os.path.join(unit_tests_dir, "sample_metadata.tsv"),
+                        os.path.join(test_staging_dir, "sample_metadata.tsv"))
 
         pid = project_manager.create_project_from_tsv("tmp_project", "table.raw.tsv",
-                                                      "otu_taxonomy.txt", "sample_metadata.txt")
+                                                      "taxonomy.tsv", "sample_metadata.tsv")
 
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))

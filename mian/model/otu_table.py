@@ -261,7 +261,7 @@ class OTUTable(object):
             logger.info("Agg Table cols = " + str(len(aggregated_base[0])) + " header cols = " + str(len(aggregated_headers)))
             return aggregated_base, aggregated_headers, sample_labels
 
-    def aggregate_otu_table_at_taxonomic_level_np(self, base, headers, sample_labels, level):
+    def aggregate_otu_table_at_taxonomic_level_np(self, base, headers, sample_labels, user_request):
         """
         Returns an OTU table that has been aggregated at a specific taxonomic level (eg. this could return a
         table that is grouped at the Family taxonomic level). Approx 5x slower than non-np version
@@ -269,6 +269,7 @@ class OTUTable(object):
         :param level:
         :return:
         """
+        level = user_request.level
         if int(level) < 0:
             # We want to aggregate at the OTU level, which is essentially not aggregating at all
             return base, headers, sample_labels

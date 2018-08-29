@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import datetime
 
 from mian.model.otu_table import OTUTable
+from tests.analysis.analysis_test_utils import AnalysisTestUtils
 
 
 def f(b, x):
@@ -28,6 +29,9 @@ class TestOTUTable(unittest.TestCase):
         # print(second_arg)
 
 
+        user_request = AnalysisTestUtils.create_default_user_request()
+        user_request.level = 2
+
         start = datetime.datetime.now()
         otu_table = OTUTable("unit_tests", "large_biom")
         end = datetime.datetime.now()
@@ -35,9 +39,9 @@ class TestOTUTable(unittest.TestCase):
         print(elapsed)
 
         start = datetime.datetime.now()
-        filtered_table, headers, sample_metadata = otu_table.aggregate_otu_table_at_taxonomic_level(otu_table.get_table(), otu_table.headers,
-                                                                          otu_table.sample_labels, 2)
-        filtered_table, headers, sample_metadata = otu_table.filter_out_low_count_np(filtered_table, headers, sample_metadata)
+        filtered_table, headers, sample_labels = otu_table.aggregate_otu_table_at_taxonomic_level(otu_table.get_table(), otu_table.headers,
+                                                                          otu_table.sample_labels, user_request)
+        filtered_table, headers, sample_labels = otu_table.filter_out_low_count_np(filtered_table, headers, sample_labels, user_request)
         print(filtered_table.shape[0])
         print(filtered_table.shape[1])
         end = datetime.datetime.now()
@@ -45,8 +49,8 @@ class TestOTUTable(unittest.TestCase):
         print(elapsed)
         print("")
         start = datetime.datetime.now()
-        filtered_table, headers, sample_metadata = otu_table.aggregate_otu_table_at_taxonomic_level_np(otu_table.get_table(), otu_table.headers, otu_table.sample_labels, 2)
-        filtered_table, headers, sample_metadata = otu_table.filter_out_low_count_np(filtered_table, headers, sample_metadata)
+        filtered_table, headers, sample_labels = otu_table.aggregate_otu_table_at_taxonomic_level_np(otu_table.get_table(), otu_table.headers, otu_table.sample_labels, user_request)
+        filtered_table, headers, sample_labels = otu_table.filter_out_low_count_np(filtered_table, headers, sample_labels, user_request)
         print(filtered_table.shape[0])
         print(filtered_table.shape[1])
 

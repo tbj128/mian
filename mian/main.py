@@ -21,10 +21,19 @@ import json
 import hashlib
 import shutil
 import logging
-
 #
 # Imports and installs R packages as needed
 #
+import os
+import pwd
+
+from mian.rutils import r_package_install
+r_package_install.importr_custom("vegan")
+r_package_install.importr_custom("RColorBrewer")
+r_package_install.importr_custom("ranger")
+r_package_install.importr_custom("Boruta")
+r_package_install.importr_custom("glmnet")
+
 from mian.core.project_manager import ProjectManager
 from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.analysis.beta_diversity import BetaDiversity
@@ -51,13 +60,6 @@ from mian.model.taxonomy import Taxonomy
 from mian.model.metadata import Metadata
 from mian.model.otu_table import OTUTable
 
-r_package_install.importr_custom("vegan")
-r_package_install.importr_custom("RColorBrewer")
-r_package_install.importr_custom("ranger")
-r_package_install.importr_custom("Boruta")
-r_package_install.importr_custom("glmnet")
-
-
 #
 # Global Fields
 #
@@ -69,7 +71,6 @@ RELATIVE_PATH = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = os.path.join(RELATIVE_PATH, "data")
 DB_PATH = os.path.join(RELATIVE_PATH, DB_NAME)
 SCHEMA_PATH = os.path.join(RELATIVE_PATH, SCHEMA_NAME)
-
 
 #
 # Main App

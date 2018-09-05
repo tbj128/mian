@@ -45,21 +45,12 @@
 
                 <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
-                    {% for catVar in catVars %}
-                    <option value="{{ catVar }}">{{ catVar }}</option>
-                    {% endfor %}
                 </select>
 
                 <label class="control-label">Pairwise Comparison Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variable" data-content="Indicate the two metadata parameter values that will be used to select taxonomic items that are significantly different in one group over the other."></i></label>
                 <select id="pwVar1" name="pwVar1" class="form-control" style="margin-bottom: 4px;">
-                    {% for uniqueCatVal in uniqueCatVals %}
-                    <option value="{{ uniqueCatVal }}">{{ uniqueCatVal }}</option>
-                    {% endfor %}
                 </select>
                 <select id="pwVar2" name="pwVar2" class="form-control">
-                    {% for uniqueCatVal in uniqueCatVals %}
-                    <option value="{{ uniqueCatVal }}">{{ uniqueCatVal }}</option>
-                    {% endfor %}
                 </select>
 
                 <label class="control-label">P-Value Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="Only OTUs or taxas whose differential analysis t-test p-value was less than this threshold will be displayed"></i></label>

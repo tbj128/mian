@@ -38,7 +38,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;NMDS <i class="fa fa-info-circle" data-toggle="popover" data-title="NMDS" data-content="Creates an ordination plot at the selected taxonomic level<br /><br />This test relies on the ordiplot function in the R 'vegan' package <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/ordiplot.html' target='_blank'>here</a>"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;NMDS <i class="fa fa-info-circle" data-toggle="popover" data-title="NMDS" data-content="Performs non-metric multidimensional scaling at the selected taxonomic level<br /><br />NMDS tries to represent the original data in a 2D reduced dimensional space. This analysis utilizes the <a href='http://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html' target='_blank'>scikit-learn package</a>"></i></h3>
 
     {% include 'project_list.html' %}
     <hr/>

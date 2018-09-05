@@ -43,9 +43,6 @@
 
                 <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
-                    {% for catVar in catVars %}
-                    <option value="{{ catVar }}">{{ catVar }}</option>
-                    {% endfor %}
                 </select>
 
                 <label class="control-label">Max Runs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>

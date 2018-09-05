@@ -55,15 +55,24 @@ class Metadata(object):
         j = 1
         while j < len(self.metadata[0]):
             # Go through each column
+            numeric_entries = {}
             is_numeric = True
             i = 1
             while i < len(self.metadata):
-                # Go through each row in each column to see if any row has an non-numeric value
-                if any(c.isalpha() for c in self.metadata[i][j]):
+                if not any(c.isalpha() for c in self.metadata[i][j]):
+                    numeric_entries[self.metadata[i][j]] = 1
+                else:
                     is_numeric = False
-                    break
                 i += 1
-            if is_numeric:
+            # A column is "both" if all the entries are numeric, but there is not many unique values
+            is_both = is_numeric and len(numeric_entries) < 4
+
+            if is_both:
+                headers.append({
+                    "name": self.metadata[0][j],
+                    "type": "both"
+                })
+            elif is_numeric:
                 headers.append({
                     "name": self.metadata[0][j],
                     "type": "numeric"

@@ -34,7 +34,7 @@ r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")
 r_package_install.importr_custom("glmnet")
 
-from mian.core.project_manager import ProjectManager
+from mian.core.project_manager import ProjectManager, GENERAL_ERROR
 from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.analysis.beta_diversity import BetaDiversity
 from mian.analysis.boruta import Boruta
@@ -160,9 +160,10 @@ def projects():
     new_signup = False
     if request.args.get('signup', '') == '1':
         new_signup = True
+    status = request.args.get('status', '')
+    message = request.args.get('message', '')
     project_names_to_info = get_project_ids_to_info(current_user.id)
-    logger.info(str(project_names_to_info))
-    return render_template('projects.html', newSignup=new_signup, projectNames=project_names_to_info)
+    return render_template('projects.html', newSignup=new_signup, projectNames=project_names_to_info, status=status, message=message)
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -180,23 +181,29 @@ def create():
         if project_type == "biom":
             # Biom files are self-contained - they must be split up and subsampled to be compatible with mian
             project_biom_name = secure_filename(request.form['projectBiomName'])
-            project_manager.create_project_from_biom(project_name=project_name,
-                                                     biom_name=project_biom_name,
-                                                     subsample_type=project_subsample_type,
-                                                     subsample_to=project_subsample_to)
+            try:
+                status, message = project_manager.create_project_from_biom(project_name=project_name,
+                                                                 biom_name=project_biom_name,
+                                                                 subsample_type=project_subsample_type,
+                                                                 subsample_to=project_subsample_to)
+            except:
+                return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
         else:
             # Users can also choose to manually upload files
             project_otu_table_name = secure_filename(request.form['projectOTUTableName'])
             project_taxa_map_name = secure_filename(request.form['projectTaxaMapName'])
             project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
-            project_manager.create_project_from_tsv(project_name=project_name,
-                                                    otu_filename=project_otu_table_name,
-                                                    taxonomy_filename=project_taxa_map_name,
-                                                    sample_metadata_filename=project_sample_id_name,
-                                                    subsample_type=project_subsample_type,
-                                                    subsample_to=project_subsample_to)
+            try:
+                status, message = project_manager.create_project_from_tsv(project_name=project_name,
+                                                                otu_filename=project_otu_table_name,
+                                                                taxonomy_filename=project_taxa_map_name,
+                                                                sample_metadata_filename=project_sample_id_name,
+                                                                subsample_type=project_subsample_type,
+                                                                subsample_to=project_subsample_to)
+            except:
+                return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
 
-        return redirect(url_for('projects'))
+        return redirect(url_for('projects', status=status, message=message))
 
 
 @app.route('/')
@@ -244,10 +251,7 @@ def beta_diversity():
 def boruta():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    metadata = Metadata(current_user.id, currProject)
-    catVars = metadata.get_metadata_headers()
-
-    return render_template('boruta.html', projectNames=projectNames, currProject=currProject, catVars=catVars, lowExpressionFilteringEnabled=True)
+    return render_template('boruta.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/composition')
@@ -264,10 +268,7 @@ def correlations():
     # TODO: Consider using only factors in the future for catVars
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    metadata = Metadata(current_user.id, currProject)
-    catVars = metadata.get_metadata_headers()
-    numericCatVars = metadata.get_numeric_metadata_headers()
-    return render_template('correlations.html', projectNames=projectNames, currProject=currProject, catVars=catVars, numericCatVars=numericCatVars)
+    return render_template('correlations.html', projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/correlation_network')
@@ -275,10 +276,7 @@ def correlations():
 def correlation_network():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    metadata = Metadata(current_user.id, currProject)
-    catVars = metadata.get_metadata_headers()
-
-    return render_template('correlation_network.html', projectNames=projectNames, currProject=currProject, catVars=catVars)
+    return render_template('correlation_network.html', projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/correlations_selection')
@@ -294,10 +292,7 @@ def correlations_selection():
 def differential_selection():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    metadata = Metadata(current_user.id, currProject)
-    catVars = metadata.get_metadata_headers()
-    uniqueCatVals = metadata.get_metadata_unique_vals(catVars[0])
-    return render_template('differential_selection.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals, lowExpressionFilteringEnabled=True)
+    return render_template('differential_selection.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/fisher_exact')
@@ -305,11 +300,7 @@ def differential_selection():
 def fisher_exact():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    metadata = Metadata(current_user.id, currProject)
-    catVars = metadata.get_metadata_headers()
-    uniqueCatVals = metadata.get_metadata_unique_vals(catVars[0])
-
-    return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, catVars=catVars, uniqueCatVals=uniqueCatVals, lowExpressionFilteringEnabled=True)
+    return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/glmnet')
@@ -317,10 +308,8 @@ def fisher_exact():
 def glmnet():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    metadata = Metadata(current_user.id, currProject)
-    catVars = metadata.get_metadata_headers()
 
-    return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, catVars=catVars, lowExpressionFilteringEnabled=True)
+    return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/nmds')
@@ -452,18 +441,6 @@ def getOTUTableHeadersAtLevel():
 
     headers = OTUTable.get_otu_table_headers_at_taxonomic_level(user, pid, level)
     return json.dumps(headers)
-
-@app.route('/metadata_numeric_headers')
-@flask_login.login_required
-def getMetadataNumericHeaders():
-    user = current_user.id
-    pid = request.args.get('pid', '')
-    if pid == '':
-        return json.dumps({})
-
-    metadata = Metadata(user, pid)
-    abundances = metadata.get_numeric_metadata_headers()
-    return json.dumps(abundances)
 
 @app.route('/metadata_vals')
 @flask_login.login_required
@@ -735,44 +712,6 @@ def upload():
             file.save(os.path.join(user_staging_dir, filename))
             return "Saved"
         return "Error"
-
-
-@app.route('/uploadReplace', methods=['POST'])
-@flask_login.login_required
-def uploadReplace():
-    if request.method == 'POST':
-        user = current_user.id
-        file = request.files['upload']
-        pid = request.form['project']
-        fileType = request.form['fileType']
-        if file:
-            filename = secure_filename(file.filename)
-            user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, current_user.id)
-            if not os.path.exists(user_staging_dir):
-                logger.info("Making staging directory for user " + str(current_user.id))
-                os.makedirs(user_staging_dir)
-
-            file.save(os.path.join(user_staging_dir, filename))
-
-            project_manager = ProjectManager(user)
-
-            if fileType == "biom":
-                project_manager.update_project_from_biom(pid, filename)
-            elif fileType == "otuTable":
-                project_manager.update_project_from_tsv(pid, filename, None, None)
-            elif fileType == "otuTaxonomyMapping":
-                project_manager.update_project_from_tsv(pid, None, filename, None)
-            elif fileType == "otuMetadata":
-                project_manager.update_project_from_tsv(pid, None, None, filename)
-
-            return json.dumps({
-                "status": "OK"
-            })
-
-    return json.dumps({
-        "status": "ERROR"
-    })
-
 
 @app.route('/deleteProject', methods=['POST'])
 @flask_login.login_required

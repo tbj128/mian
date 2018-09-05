@@ -383,8 +383,8 @@ function updateCatVar(isNumeric) {
     url: "metadata_headers_with_type?pid=" + $("#project").val(),
     success: function(result) {
       var json = JSON.parse(result);
-      var headers = isNumeric === true ? json.filter(obj => obj.type === "numeric").map(obj => obj.name) :
-          json.filter(obj => obj.type === "categorical").map(obj => obj.name);
+      var headers = isNumeric === true ? json.filter(obj => obj.type === "numeric" || obj.type === "both").map(obj => obj.name) :
+          json.filter(obj => obj.type === "categorical" || obj.type === "both").map(obj => obj.name);
 
       var $catvar = $("#catvar");
 

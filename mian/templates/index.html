@@ -8,6 +8,11 @@
   <body>
     {% include 'navigation.html' %}
 
+    <form id="demo-login" method="POST" action="/login">
+        <input type="hidden" class="form-control" id="email" name="email" value="tbj128@gmail.com">
+        <input type="hidden" class="form-control" id="password" name="password" value="Password1">
+    </form>
+
     <div class="highlight">
       <div class="container">
         <div class="row">
@@ -16,7 +21,8 @@
             <h4 style="color:#D4F5FF;line-height:26px;">A new way to visualize and analyse the microbiome in your browser. Built by the research community for the research community.</h4>
             <br /><br />
             <p>
-              <a href="signup" class="btn btn-default btn-lg">&nbsp;&nbsp;SIGNUP&nbsp;&nbsp;</a>
+              <a href="signup" class="btn btn-default btn-lg">&nbsp;&nbsp;Signup&nbsp;&nbsp;</a>
+              <a href="javascript:{}" onclick="document.getElementById('demo-login').submit(); return false;" class="btn btn-default btn-lg" style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;">&nbsp;&nbsp;Try Demo&nbsp;&nbsp;</a>
             </p>
           </div>
           <div class="col-md-6"><img src="static/img/laptop-preview.png" /></div>

@@ -55,7 +55,7 @@ class DataIO:
         with open(csv_path, 'r') as csvfile:
             base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
             for o in base_csv:
-                if len(o) > 1:
+                if o != "":
                     otu_map.append(o)
 
         return otu_map

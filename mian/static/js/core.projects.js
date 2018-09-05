@@ -145,48 +145,4 @@ $(document).ready(function() {
       }
     });
   }
-
-  function upload($selected) {
-    var fileType = $selected.siblings(".replace-fileType").val();
-    if (fileType === "otuTable") {
-      var changeSubsampleButton = $selected.parent().parent().parent().find(".project-change-subsampling");
-      var subsampleType = changeSubsampleButton.data("subsampletype");
-      var subsampleTo = changeSubsampleButton.data("subsampleval");
-      $selected.siblings(".replace-subsampleType").val(subsampleType);
-      $selected.siblings(".replace-subsampleTo").val(subsampleTo);
-    }
-
-    var $formQ = $selected.parent();
-
-    var form = $formQ[0];
-    var formData = new FormData(form);
-
-    showLoading();
-
-    $.ajax({
-        url: 'uploadReplace',
-        type: 'POST',
-        data: formData,
-        cache: false,
-        dataType: "json",
-        processData: false, // Don't process the files
-        contentType: false, // Set content type to false as jQuery will tell the server its a query string request
-        success: function(data, textStatus, jqXHR) {
-          hideLoading();
-          var status = data["status"];
-          if (status === "OK") {
-            window.location.reload(true);
-          } else {
-            $("#otu-table-modified-error").show();
-            setTimeout(function() {
-              $("#otu-table-modified-error").hide();
-            }, 2000);
-          }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.log('Error: ' + textStatus);
-          alert("An error occurred")
-        }
-    });
-  }
 });

@@ -74,18 +74,10 @@
 
                 <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the correlation"></i></label>
                 <select id="colorvar" name="colorvar" class="form-control">
-                    <option value="">None</option>
-                    {% for catVar in catVars %}
-                    <option value="{{ catVar }}">{{ catVar }}</option>
-                    {% endfor %}
                 </select>
 
                 <label class="control-label">Size Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Size Variable" data-content="Determines which metadata parameter should control the size of the dots in the correlation"></i></label>
                 <select id="sizevar" name="sizevar" class="form-control">
-                    <option value="">None</option>
-                    {% for catVar in catVars %}
-                    <option value="{{ catVar }}">{{ catVar }}</option>
-                    {% endfor %}
                 </select>
 
                 <label class="control-label">Samples to Show  <i class="fa fa-info-circle" data-toggle="popover" data-title="Samples to Show" data-content="Determines which sample types should be displayed in the correlation graph"></i></label>

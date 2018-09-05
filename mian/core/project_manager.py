@@ -23,6 +23,7 @@ import csv
 import os
 import re
 import logging
+import shutil
 from biom import load_table
 
 from mian.model.map import Map
@@ -30,6 +31,14 @@ from mian.model.map import Map
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+OK = 0
+GENERAL_ERROR = -1
+BIOM_ERROR = -2
+OTU_ERROR = -3
+TAXONOMY_ERROR = -4
+SAMPLE_METADATA_ERROR = -5
+OTU_HEADER_NOT_IN_TAXONOMY_ERROR = -6
+OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR = -7
 
 class ProjectManager(object):
     BASE_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))  # Gets the parent folder
@@ -49,6 +58,7 @@ class ProjectManager(object):
         if not os.path.exists(project_dir):
             os.makedirs(project_dir)
         else:
+            logger.exception("Cannot create project folder")
             raise Exception("Cannot create project folder as it already exists")
 
         # Renames the uploaded files to a standard file schema and moves to the project directory
@@ -57,22 +67,57 @@ class ProjectManager(object):
         os.rename(os.path.join(user_staging_dir, sample_metadata_filename),
                   os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
 
+        sample_ids_from_sample_metadata = {}
+        sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME)
+        i = 0
+        while i < len(sample_metadata):
+            if i > 0:
+                sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
+            i += 1
+
+
         base_arr = DataIO.tsv_to_table_from_path(os.path.join(user_staging_dir, otu_filename))
 
         # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
-        base, headers, sample_labels = self.__process_base(self.user_id, pid, base_arr)
+        try:
+            base, headers, sample_labels = self.__process_base(self.user_id, pid, base_arr)
+        except:
+            logger.exception("Invalid OTU file format")
+            # Removes the project directory since the files in it are invalid
+            shutil.rmtree(project_dir, ignore_errors=True)
+            return OTU_ERROR, ""
 
         # Processes the taxonomy file by decomposing string-based taxonomies into tab separated format (if applicable)
-        self.__process_taxonomy_file(self.user_id, pid)
+        try:
+            otus_from_taxonomy = self.__process_taxonomy_file(self.user_id, pid)
+        except:
+            logger.exception("Invalid taxonomy file format")
+            # Removes the project directory since the files in it are invalid
+            shutil.rmtree(project_dir, ignore_errors=True)
+            return TAXONOMY_ERROR, ""
+
+        # Validates that the uploaded files are valid
+        missing_headers = self.__validate_otu_table_headers(headers, otus_from_taxonomy)
+        if len(missing_headers) > 0:
+            return OTU_HEADER_NOT_IN_TAXONOMY_ERROR, ", ".join(missing_headers)
+        missing_labels = self.__validate_otu_table_sample_labels(sample_labels, sample_ids_from_sample_metadata)
+        if len(missing_labels) > 0:
+            return OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR, ", ".join(missing_labels)
 
         # Subsamples raw OTU table
-        subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                                                pid=pid,
-                                                                                                base=base,
-                                                                                                headers=headers,
-                                                                                                sample_labels=sample_labels,
-                                                                                                subsample_type=subsample_type,
-                                                                                                manual_subsample_to=subsample_to)
+        try:
+            subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+                                                                                                    pid=pid,
+                                                                                                    base=base,
+                                                                                                    headers=headers,
+                                                                                                    sample_labels=sample_labels,
+                                                                                                    subsample_type=subsample_type,
+                                                                                                    manual_subsample_to=subsample_to)
+        except:
+            logger.exception("Error when subsampling the OTU file")
+            # Removes the project directory since the files in it are invalid
+            shutil.rmtree(project_dir, ignore_errors=True)
+            return OTU_ERROR, ""
 
         # Creates map.txt file
         map_file = Map(self.user_id, pid)
@@ -85,7 +130,7 @@ class ProjectManager(object):
         map_file.subsampled_removed_samples = samples_removed
         map_file.save()
 
-        return pid
+        return pid, ""
 
     def __process_base(self, user_id, pid, base_arr, output_raw_otu_file_name=RAW_OTU_TABLE_FILENAME,
                        output_raw_otu_labels_file_name=RAW_OTU_TABLE_LABELS_FILENAME):
@@ -121,14 +166,17 @@ class ProjectManager(object):
             col = col_offset
             while col < len(base_arr[row]):
                 try:
+                    # TODO: Validate input format
+                    # base[row - row_offset][col - col_offset] = float(base_arr[row][col])
                     base[row - row_offset][col - col_offset] = int(float(base_arr[row][col]))
                 except ValueError:
                     # TODO: Handle case where bad input file format
+                    logger.exception("Bad OTU table")
                     pass
                 col += 1
             row += 1
 
-        headers = base_arr[0][1:]
+        headers = base_arr[0][col_offset:]
         sample_labels = []
 
         sample_col = 1 if is_mothur else 0
@@ -148,6 +196,8 @@ class ProjectManager(object):
         taxonomy_table = DataIO.tsv_to_table(user_id, pid, TAXONOMY_FILENAME)
         taxonomy_table = np.array(taxonomy_table)
         new_taxonomy_table = []
+        otus_from_taxonomy_file = dict(zip(taxonomy_table[:, 0], taxonomy_table[:, 0]))
+
         if taxonomy_table[0][1] == "Size":
             # This is a mothur constaxonomy file so we should delete the Size column
             taxonomy_table = np.delete(taxonomy_table, 1, 1)
@@ -159,6 +209,7 @@ class ProjectManager(object):
             return
         elif num_cols == 1:
             # Invalid columnar format
+            logger.exception("Invalid taxonomy format")
             raise Exception("Invalid taxonomy file format")
         else:
             new_taxonomy_table.append(taxonomy_table[0])
@@ -172,6 +223,7 @@ class ProjectManager(object):
                 new_taxonomy_table.append(new_row)
                 row += 1
             DataIO.table_to_tsv(new_taxonomy_table, user_id, pid, TAXONOMY_FILENAME)
+        return otus_from_taxonomy_file
 
     def create_project_from_biom(self, project_name, biom_name, subsample_type="auto", subsample_to=0):
         """
@@ -186,10 +238,21 @@ class ProjectManager(object):
         if not os.path.exists(project_dir):
             os.makedirs(project_dir)
         else:
+            logger.exception("Cannot create project folder")
             raise Exception("Cannot create project folder as it already exists")
 
-        pid, sub = self.__process_biom_file(pid, project_dir, project_name, biom_name, subsample_type, subsample_to)
-        return pid
+        try:
+            status, message = self.__process_biom_file(pid, project_dir, project_name, biom_name, subsample_type, subsample_to)
+            if status != OK:
+                # Removes the project directory since the files in it are invalid
+                shutil.rmtree(project_dir, ignore_errors=True)
+                return status, message
+            return pid, ""
+        except:
+            logger.exception("Invalid BIOM file format")
+            # Removes the project directory since the files in it are invalid
+            shutil.rmtree(project_dir, ignore_errors=True)
+            return BIOM_ERROR, ""
 
     def __process_biom_file(self, pid, project_dir, project_name, biom_name, subsample_type="auto", subsample_to=0):
         # Renames the uploaded file to a standard file schema and moves to the project directory
@@ -227,28 +290,51 @@ class ProjectManager(object):
         sample_metadata_path = os.path.join(project_dir, SAMPLE_METADATA_FILENAME)
         sample_metadata = biom_table.metadata(None, 'sample')
         sample_ids = biom_table.ids('sample')
+        sample_ids_from_sample_metadata = {}
         with open(sample_metadata_path, 'w') as f:
             output_tsv = csv.writer(f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             sample_index = 0
-            for k in sample_metadata:
-                if sample_index == 0:
-                    # We will write out the metadata headers at the top of this file
-                    headers = ["SampleID"]
-                    for key, value in sorted(k.items()):
-                        headers.append(key)
-                    output_tsv.writerow(headers)
+            if sample_metadata is not None:
+                for k in sample_metadata:
+                    if sample_index == 0:
+                        # We will write out the metadata headers at the top of this file
+                        headers = ["SampleID"]
+                        for key, value in sorted(k.items()):
+                            headers.append(key)
+                        output_tsv.writerow(headers)
 
-                sample_id = sample_ids[sample_index]
-                row_data = [sample_id]
-                for key, value in sorted(k.items()):
-                    # Write out the contents of each metadata
-                    row_data.append(value)
-                output_tsv.writerow(row_data)
-                sample_index += 1
+                    sample_id = sample_ids[sample_index]
+                    sample_ids_from_sample_metadata[sample_id] = 1
+                    row_data = [sample_id]
+                    for key, value in sorted(k.items()):
+                        # Write out the contents of each metadata
+                        row_data.append(value)
+                    output_tsv.writerow(row_data)
+                    sample_index += 1
+            else:
+                # There is no sample metadata associated with this biom
+                while sample_index < len(sample_ids):
+                    if sample_index == 0:
+                        headers = ["SampleID"]
+                        output_tsv.writerow(headers)
+                    sample_id = sample_ids[sample_index]
+                    sample_ids_from_sample_metadata[sample_id] = 1
+                    row_data = [sample_id]
+                    output_tsv.writerow(row_data)
+                    sample_index += 1
+
+        missing_labels = self.__validate_otu_table_sample_labels(sample_labels, sample_ids_from_sample_metadata)
+        if len(missing_labels) > 0:
+            return OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR, ", ".join(missing_labels)
+
 
         # Generates Taxonomy File
         logger.info("Creating taxonomy file")
         otu_metadata = biom_table.metadata(None, 'observation')
+        if otu_metadata == None:
+            # Mian requires the metadata file to function correctly
+            raise ValueError("Taxonomy data file is required")
+
         otu_ids = biom_table.ids('observation')
         otu_metadata_path = os.path.join(project_dir, TAXONOMY_FILENAME)
         taxonomy_type = ""
@@ -323,7 +409,7 @@ class ProjectManager(object):
         map_file.taxonomy_type = taxonomy_type
         map_file.save()
 
-        return pid, subsample_to
+        return OK, ""
 
     def __save_biom_table_as_tsv(self, user_id, pid, biom_table, raw_table_path=RAW_OTU_TABLE_FILENAME, output_raw_otu_labels_file_name=RAW_OTU_TABLE_LABELS_FILENAME):
         result = biom_table.to_tsv(header_key="",
@@ -354,6 +440,8 @@ class ProjectManager(object):
             headers.append(base_csv[row][0])
             col = 1
             while col < len(base_csv[row]):
+                # TODO: Validate input format
+                # intermediate_table[col - 1][row - 1] = float(base_csv[row][col])
                 intermediate_table[col - 1][row - 1] = int(float(base_csv[row][col]))
                 col += 1
             row += 1
@@ -453,6 +541,20 @@ class ProjectManager(object):
 
         return decomposed
 
+    def __validate_otu_table_headers(self, headers, otus_from_taxonomy):
+        missing = []
+        for header in headers:
+            if header not in otus_from_taxonomy:
+                missing.append(header)
+        return missing
+
+    def __validate_otu_table_sample_labels(self, sample_labels, sample_ids_from_metadata):
+        missing = []
+        for sample_label in sample_labels:
+            if sample_label not in sample_ids_from_metadata:
+                missing.append(sample_label)
+        return missing
+
     def modify_subsampling(self, pid, subsample_type="auto", subsample_to=0):
         # Subsamples raw OTU table
         base = DataIO.tsv_to_np_table(self.user_id, pid, RAW_OTU_TABLE_FILENAME)
@@ -470,68 +572,6 @@ class ProjectManager(object):
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_value
         map_file.subsampled_removed_samples = samples_removed
-        map_file.save()
-
-        return subsample_value
-
-    def update_project_from_tsv(self, pid, otu_filename, taxonomy_filename, sample_metadata_filename):
-
-        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
-        project_dir = os.path.join(project_dir, pid)
-
-        map_file = Map(self.user_id, pid)
-
-        # Renames the uploaded files to a standard file schema and moves to the project directory
-        user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
-        if taxonomy_filename is not None:
-            os.rename(os.path.join(user_staging_dir, taxonomy_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
-        if sample_metadata_filename is not None:
-            os.rename(os.path.join(user_staging_dir, sample_metadata_filename),
-                      os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
-
-        # Subsamples raw OTU table
-        if otu_filename is not None:
-            base_arr = DataIO.tsv_to_table_from_path(os.path.join(user_staging_dir, otu_filename))
-
-            # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
-            base, headers, sample_labels = self.__process_base(self.user_id, pid, base_arr)
-
-            # Subsamples raw OTU table
-            subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(
-                user_id=self.user_id,
-                pid=pid,
-                base=base,
-                headers=headers,
-                sample_labels=sample_labels,
-                subsample_type=map_file.subsampled_type,
-                manual_subsample_to=map_file.subsampled_value,)
-
-            map_file.orig_otu_table_name = otu_filename
-            map_file.subsampled_value = subsample_value
-            map_file.subsampled_removed_samples = samples_removed
-        if sample_metadata_filename is not None:
-            map_file.orig_sample_metadata_name = sample_metadata_filename
-        if taxonomy_filename is not None:
-            # Processes the taxonomy file by decomposing string-based
-            # taxonomies into tab separated format (if applicable)
-            self.__process_taxonomy_file(self.user_id, pid)
-            map_file.orig_taxonomy_name = taxonomy_filename
-        map_file.save()
-
-        return map_file.subsampled_value
-
-    def update_project_from_biom(self, pid, biom_name):
-
-        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
-        project_dir = os.path.join(project_dir, pid)
-
-        map_file = Map(self.user_id, pid)
-
-        pid, subsample_value = self.__process_biom_file(pid, project_dir, map_file.project_name, biom_name,
-                                                        map_file.subsampled_type, map_file.subsampled_value)
-
-        map_file.orig_biom_name = biom_name
-        map_file.subsampled_value = subsample_value
         map_file.save()
 
         return subsample_value

@@ -9,12 +9,17 @@
   <body>
     {% include 'navigation.html' %}
 
+    <form id="demo-login" method="POST" action="/login">
+        <input type="hidden" class="form-control" name="email" value="tbj128@gmail.com">
+        <input type="hidden" class="form-control" name="password" value="Password1">
+    </form>
+
     <div class="content-wrapper" style="padding-top:24px">
       <div class="jumbotron" style="margin: 0 auto;width:540px;padding:36px;">
         <div class="container">
           <h2><strong>mian</strong> login</h2>
-          <h4>Don't have an account? <a href="signup">Sign up here</a></h4><br />
-
+          <h4>Don't have an account? <a href="signup">Sign up here</a></h4>
+          <h5 style="color: #999;">Try the <a href="javascript:{}" onclick="document.getElementById('demo-login').submit(); return false;">demo account</a></h5><hr />
           {% if badlogin %}
           <div class="alert alert-danger">
             <strong>Invalid Username/Password</strong> Please try again
@@ -45,6 +50,9 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="static/js/jquery.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
+    <script>
+
+    </script>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->

@@ -48,14 +48,8 @@
 
                 <label class="control-label">Pairwise Comparison Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variables" data-content="The two unique values for the selected 'category breakdown' field that will be used to build a contingency table."></i></label>
                 <select id="pwVar1" name="pwVar1" class="form-control" style="margin-bottom: 4px;">
-                    {% for uniqueCatVal in uniqueCatVals %}
-                    <option value="{{ uniqueCatVal }}">{{ uniqueCatVal }}</option>
-                    {% endfor %}
                 </select>
                 <select id="pwVar2" name="pwVar2" class="form-control">
-                    {% for uniqueCatVal in uniqueCatVals %}
-                    <option value="{{ uniqueCatVal }}">{{ uniqueCatVal }}</option>
-                    {% endfor %}
                 </select>
 
                 <label class="control-label">Min Presence Threshold  <i class="fa fa-info-circle" data-toggle="popover" data-title="Min Presence Threshold" data-content="In the Fisher Exact test, this parameter controls what constitutes whether a taxonomic item 'exists' in a given sample. By default, this is zero which means that a taxonomic item exists for a sample if it has a non-zero value for the sample."></i></label>

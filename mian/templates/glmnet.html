@@ -44,9 +44,6 @@
 
                 <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
-                    {% for catVar in catVars %}
-                    <option value="{{ catVar }}">{{ catVar }}</option>
-                    {% endfor %}
                 </select>
 
                 <label class="control-label">Alpha <i class="fa fa-info-circle" data-toggle="popover" data-title="Alpha" data-content="The elasticnet mixing parameter (as described in the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a>)"></i></label>

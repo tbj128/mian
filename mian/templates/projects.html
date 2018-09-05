@@ -39,6 +39,48 @@
     </div>
     {% endif %}
 
+    {% if status == "-1" %}
+    <div class="alert alert-danger">
+      <strong>Oh no!</strong> Something went wrong - please double check your input formats and try again</a>
+    </div>
+    {% endif %}
+
+    {% if status == "-2" %}
+    <div class="alert alert-danger">
+      <strong>Invalid BIOM File</strong> Make sure your BIOM file includes both the <a href="http://biom-format.org/documentation/adding_metadata.html" target="_blank">sample and observation metadata</a>
+    </div>
+    {% endif %}
+
+    {% if status == "-3" %}
+    <div class="alert alert-danger">
+      <strong>Invalid OTU Table</strong> Make sure your OTU table format is correct and try again</a>
+    </div>
+    {% endif %}
+
+    {% if status == "-4" %}
+    <div class="alert alert-danger">
+      <strong>Invalid Taxonomy File</strong> Make sure your taxonomy file format is correct and try again</a>
+    </div>
+    {% endif %}
+
+    {% if status == "-5" %}
+    <div class="alert alert-danger">
+      <strong>Invalid Sample Metadata File</strong> Make sure your sample metadata format is correct and try again</a>
+    </div>
+    {% endif %}
+
+    {% if status == "-6" %}
+    <div class="alert alert-danger">
+      <strong>Missing OTU(s) in Taxonomy</strong> The following OTUs in the OTU table do not have a corresponding entry in the taxonomy file: {{message}}</a>
+    </div>
+    {% endif %}
+
+    {% if status == "-7" %}
+    <div class="alert alert-danger">
+      <strong>Missing Sample ID(s)</strong> The following sample IDs in the OTU table do not have a corresponding entry in the sample metadata file: {{message}}</a>
+    </div>
+    {% endif %}
+
     <div id="otu-table-modified" class="message message-success" style="display:none;">
       <strong>Success</strong> Your changes have been successfully applied.
     </div>
@@ -114,17 +156,7 @@
                           <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
                           {% endif %}
                         </td>
-                        <td class="col-md-2">BIOM File</td>
-                        <td class="project-item-meta col-md-1">
-                          <form data-project="{{ projectNames[projectName]["pid"] }}" action="/upload" method="post" enctype="multipart/form-data">
-                            <a class="project-trig-biom" href="javascript:void(0);" title="Replace the OTU table">Replace</a>
-                            <input type="file" name="upload" class="project-replace-biom" data-project="{{ projectNames[projectName]["pid"] }}" accept=".biom" style="display:none;" />
-                            <input class="replace-fileType" name="fileType" type="hidden" value="biom" />
-                            <input class="replace-subsampleType" name="subsampleType" type="hidden" value="" />
-                            <input class="replace-subsampleTo" name="subsampleTo" type="hidden" value="" />
-                            <input type="hidden" name="project" value="{{ projectNames[projectName]["pid"] }}" />
-                          </form>
-                        </td>
+                        <td class="col-md-3">BIOM File</td>
                       </tr>
                     </tbody>
                   </table>
@@ -165,43 +197,17 @@
                           <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
                           {% endif %}
                         </td> 
-                        <td class="col-md-2">OTU Table</td> 
-                        <td class="project-item-meta col-md-1">
-                          <form data-project="{{ projectNames[projectName]["pid"] }}" action="/upload" method="post" enctype="multipart/form-data">
-                            <a class="project-trig-otu" href="javascript:void(0);" title="Replace the OTU table">Replace</a>
-                            <input type="file" name="upload" class="project-replace-otu" data-project="{{ projectNames[projectName]["pid"] }}" accept=".tsv,.txt,.shared" style="display:none;" />
-                            <input class="replace-fileType" name="fileType" type="hidden" value="otuTable" />
-                            <input class="replace-subsampleType" name="subsampleType" type="hidden" value="" />
-                            <input class="replace-subsampleTo" name="subsampleTo" type="hidden" value="" />
-                            <input type="hidden" name="project" value="{{ projectNames[projectName]["pid"] }}" />
-                          </form>
-                        </td>
+                        <td class="col-md-3">OTU Table</td>
                       </tr>
                       <tr> 
                         <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_taxonomy_name"] }}</th>
                         <td class="subsampleDisplayContainer"></td> 
-                        <td>Taxonomy Map</td> 
-                        <td class="project-item-meta">
-                          <form data-project="{{ projectNames[projectName]["pid"] }}" action="/upload" method="post" enctype="multipart/form-data">
-                            <a class="project-trig-tax" href="javascript:void(0);" title="Replace the taxonomy mapping">Replace</a>
-                            <input type="file" name="upload" class="project-replace-taxonomy" data-project="{{ projectNames[projectName]["pid"] }}" accept=".tsv,.txt,.taxonomy" style="display:none;" />
-                            <input class="replace-fileType" name="fileType" type="hidden" value="otuTaxonomyMapping" />
-                            <input type="hidden" name="project" value="{{ projectNames[projectName]["pid"] }}" />
-                          </form>
-                        </td>
+                        <td>Taxonomy Map</td>
                       </tr>
                       <tr> 
                         <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}</th>
                         <td class="subsampleDisplayContainer"></td> 
-                        <td>Metadata</td> 
-                        <td class="project-item-meta">
-                          <form data-project="{{ projectNames[projectName]["pid"] }}" action="/upload" method="post" enctype="multipart/form-data">
-                            <a class="project-trig-metadata" href="javascript:void(0);" title="Replace the metadata">Replace</a>
-                            <input type="file" name="upload" class="project-replace-metadata" data-project="{{ projectNames[projectName]["pid"] }}" accept=".tsv,.txt" style="display:none;" />
-                            <input class="replace-fileType" name="fileType" type="hidden" value="otuMetadata" />
-                            <input type="hidden" name="project" value="{{ projectNames[projectName]["pid"] }}" />
-                          </form>
-                        </td>
+                        <td>Metadata</td>
                       </tr>
                     </tbody> 
                   </table>

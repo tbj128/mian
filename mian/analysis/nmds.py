@@ -43,9 +43,13 @@ class NMDS(object):
     def analyse(self, user_request, base, sample_labels, metadata_vals):
         logger.info("Starting NMDS analysis")
 
-        # similarities = euclidean_distances(base)
-        nmds = manifold.MDS(n_components=2, metric=False)
-        npos = nmds.fit_transform(base)
+        similarities = euclidean_distances(base)
+        # Use traditional MDS to determine the initial position
+        mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, dissimilarity="precomputed", n_jobs=1)
+        pos = mds.fit(similarities).embedding_
+        # Use NMDS to adjust the original positions to optimize for stress
+        nmds = manifold.MDS(n_components=2, metric=False, dissimilarity="precomputed", max_iter=3000, eps=1e-12)
+        npos = nmds.fit_transform(similarities, init=pos)
 
         ret_table = []
         i = 0

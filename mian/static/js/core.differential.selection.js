@@ -44,10 +44,9 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 
-function customLoading() {
+function customCatVarValueLoading() {
     return updatePWComparisonSidebar();
 }
-
 
 function updatePWComparisonSidebar(callback) {
     var data = {

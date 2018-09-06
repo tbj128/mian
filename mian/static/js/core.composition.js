@@ -106,6 +106,10 @@ function renderBarplot(abundancesObj) {
     var data = abundancesObj["abundances"];
     uniqueCatvarVals = abundancesObj["metaVals"];
     var uniqueTaxas = data.map(function(d) { return d.t; });
+    var uniqueTaxasForLabels = data.map(function(d) {
+        var dArr = d.t.split(";");
+        return dArr[dArr.length - 1];
+    });
 
     var margin = {top: 20, right: 20, bottom: 30, left: 56},
         width = Math.max(120, 24 * uniqueCatvarVals.length + 16) * uniqueTaxas.length - margin.left - margin.right,
@@ -117,6 +121,12 @@ function renderBarplot(abundancesObj) {
                     .rangeRoundBands([0, width]),
         xScaleCatvar = d3.scale.ordinal(),
         xAxis = d3.svg.axis().scale(xScaleTax).orient("bottom");
+
+    // We don't want the labels to display the fully quantified version of the taxonomic group
+    var xScaleTaxForLabels = d3.scale.ordinal()
+                    .domain(uniqueTaxasForLabels)
+                    .rangeRoundBands([0, width]),
+        xAxisForLabels = d3.svg.axis().scale(xScaleTaxForLabels).orient("bottom");
     xScaleCatvar.domain(uniqueCatvarVals).rangeRoundBands([0, xScaleTax.rangeBand()]);
     var rangeOffset = (xScaleCatvar.rangeBand()*uniqueCatvarVals.length - (barWidth*uniqueCatvarVals.length)) / 2;
 
@@ -148,7 +158,7 @@ function renderBarplot(abundancesObj) {
       svg.append("g")
           .attr("class", "x axis")
           .attr("transform", "translate(0," + height + ")")
-          .call(xAxis);
+          .call(xAxisForLabels);
 
       svg.append("g")
           .attr("class", "y axis")
@@ -209,7 +219,7 @@ function renderBarplot(abundancesObj) {
           .attr("y", 9)
           .attr("dy", ".35em")
           .style("text-anchor", "end")
-          .text(function(d) { return d; });
+          .text(function(d) { return d; } );
 }
 
 function renderDonut(abundancesObj) {
@@ -300,7 +310,8 @@ function renderDonut(abundancesObj) {
           .attr("fill", "#333")
           .text(function(d) {
             if (d.data.o[cat] >= 0.05) {
-              return d.data.t; 
+                var dArr = d.data.t.split(";");
+                return dArr[dArr.length - 1];
             }
           });
     });

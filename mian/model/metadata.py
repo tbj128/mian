@@ -65,7 +65,7 @@ class Metadata(object):
                     is_numeric = False
                 i += 1
             # A column is "both" if all the entries are numeric, but there is not many unique values
-            is_both = is_numeric and len(numeric_entries) < 4
+            is_both = is_numeric and len(numeric_entries) < 10
 
             if is_both:
                 headers.append({

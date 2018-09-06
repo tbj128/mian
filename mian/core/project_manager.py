@@ -194,19 +194,21 @@ class ProjectManager(object):
 
     def __process_taxonomy_file(self, user_id, pid):
         taxonomy_table = DataIO.tsv_to_table(user_id, pid, TAXONOMY_FILENAME)
-        taxonomy_table = np.array(taxonomy_table)
+
         new_taxonomy_table = []
-        otus_from_taxonomy_file = dict(zip(taxonomy_table[:, 0], taxonomy_table[:, 0]))
+        core_taxonomy_table = np.array(taxonomy_table[1:])
+        otus_from_taxonomy_file = dict(zip(core_taxonomy_table[:, 0], core_taxonomy_table[:, 0]))
 
         if taxonomy_table[0][1] == "Size":
             # This is a mothur constaxonomy file so we should delete the Size column
+            taxonomy_table = np.array(taxonomy_table)
             taxonomy_table = np.delete(taxonomy_table, 1, 1)
 
         num_cols = len(taxonomy_table[1])
         if num_cols > 2:
             # User uploaded a table that has already broken down the taxonomy in their respective taxonomies
             # This is the right format already so we just return
-            return
+            return otus_from_taxonomy_file
         elif num_cols == 1:
             # Invalid columnar format
             logger.exception("Invalid taxonomy format")

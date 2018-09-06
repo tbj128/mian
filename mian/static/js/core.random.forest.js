@@ -6,8 +6,8 @@
 // Initialization
 //
 initializeComponent({
-    hasCatVar: true,
-    hasCatVarNoneOption: true,
+  hasCatVar: true,
+  hasCatVarNoneOption: true
 });
 createSpecificListeners();
 
@@ -15,109 +15,107 @@ createSpecificListeners();
 // Component-Specific Sidebar Listeners
 //
 function createSpecificListeners() {
-    $("#catvar").change(function () {
-        updateAnalysis();
-    });
-    $("#numTrees").change(function () {
-        updateAnalysis();
-    });
-    $("#maxDepth").change(function () {
-        updateAnalysis();
-    });
+  $("#catvar").change(function() {
+    updateAnalysis();
+  });
+  $("#numTrees").change(function() {
+    updateAnalysis();
+  });
+  $("#maxDepth").change(function() {
+    updateAnalysis();
+  });
 }
 
 //
 // Analysis Specific Methods
 //
-function customLoading() {
-
-}
+function customLoading() {}
 
 function renderTable(abundancesObj) {
-    $("#stats-container").hide();
+  $("#stats-container").hide();
 
-    if ($.isEmptyObject(abundancesObj)) {
-      return;
-    }
+  if ($.isEmptyObject(abundancesObj)) {
+    return;
+  }
 
-    $('#stats-rows').empty();
-    var statsArr = abundancesObj["results"];
+  $("#stats-rows").empty();
+  var statsArr = abundancesObj["results"];
 
-    for (var i = 0; i < statsArr.length; i++) {
-        var r = '<tr><td>' + statsArr[i][0] + '</td><td>' + statsArr[i][1] + '</td></tr>';
-        $('#stats-rows').append(r);
-    }
+  for (var i = 0; i < statsArr.length; i++) {
+    var r =
+      "<tr><td>" + statsArr[i][0] + "</td><td>" + statsArr[i][1] + "</td></tr>";
+    $("#stats-rows").append(r);
+  }
 
-    $("#cmd-run").text(abundancesObj["cmd"]);
-    
-    $("#stats-container").fadeIn(250);
+  $("#cmd-run").text(abundancesObj["cmd"]);
+
+  $("#stats-container").fadeIn(250);
 }
 
-
 function updateAnalysis() {
-    showLoading();
-    
-    var level = taxonomyLevels[getTaxonomicLevel()];
+  showLoading();
 
-    var taxonomyFilter = getSelectedTaxFilter();
-    var taxonomyFilterRole = getSelectedTaxFilterRole();
-    var taxonomyFilterVals = getSelectedTaxFilterVals();
+  var level = taxonomyLevels[getTaxonomicLevel()];
 
-    var sampleFilter = getSelectedSampleFilter();
-    var sampleFilterRole = getSelectedSampleFilterRole();
-    var sampleFilterVals = getSelectedSampleFilterVals();
+  var taxonomyFilter = getSelectedTaxFilter();
+  var taxonomyFilterRole = getSelectedTaxFilterRole();
+  var taxonomyFilterVals = getSelectedTaxFilterVals();
 
-    var catvar = $("#catvar").val();
-    var numTrees = $("#numTrees").val();
-    var maxDepth = $("#maxDepth").val();
+  var sampleFilter = getSelectedSampleFilter();
+  var sampleFilterRole = getSelectedSampleFilterRole();
+  var sampleFilterVals = getSelectedSampleFilterVals();
 
-    if (catvar === "none") {
+  var catvar = $("#catvar").val();
+  var numTrees = $("#numTrees").val();
+  var maxDepth = $("#maxDepth").val();
+
+  if (catvar === "none") {
+    $("#analysis-container").hide();
+    hideLoading();
+    hideNotifications();
+    showNoCatvar();
+    return;
+  }
+
+  var data = {
+    pid: $("#project").val(),
+    taxonomyFilterCount: getLowCountThreshold(),
+    taxonomyFilterPrevalence: getPrevalenceThreshold(),
+    taxonomyFilter: taxonomyFilter,
+    taxonomyFilterRole: taxonomyFilterRole,
+    taxonomyFilterVals: taxonomyFilterVals,
+    sampleFilter: sampleFilter,
+    sampleFilterRole: sampleFilterRole,
+    sampleFilterVals: sampleFilterVals,
+    level: level,
+    catvar: catvar,
+    numTrees: numTrees,
+    maxDepth: maxDepth
+  };
+
+  $.ajax({
+    type: "POST",
+    url: "random_forest",
+    data: data,
+    success: function(result) {
+      hideNotifications();
+      hideLoading();
+
+      var abundancesObj = JSON.parse(result);
+      if (!$.isEmptyObject(abundancesObj["results"])) {
+        $("#analysis-container").show();
+        renderTable(abundancesObj);
+      } else {
         $("#analysis-container").hide();
-        hideLoading();
-        hideNotifications();
-        showNoCatvar();
-        return;
+        showNoResults();
+      }
+    },
+    error: function(err) {
+      $("#analysis-container").hide();
+      hideLoading();
+      hideNotifications();
+      showError();
+      console.log(err);
     }
-
-    var data = {
-        "pid": $("#project").val(),
-        "taxonomyFilterCount": getLowCountThreshold(),
-        "taxonomyFilterPrevalence": getPrevalenceThreshold(),
-        "taxonomyFilter": taxonomyFilter,
-        "taxonomyFilterRole": taxonomyFilterRole,
-        "taxonomyFilterVals": taxonomyFilterVals,
-        "sampleFilter": sampleFilter,
-        "sampleFilterRole": sampleFilterRole,
-        "sampleFilterVals": sampleFilterVals,
-        "level": level,
-        "catvar": catvar,
-        "numTrees": numTrees,
-        "maxDepth": maxDepth,
-    };
-
-    $.ajax({
-        type: "POST",
-        url: "random_forest",
-        data: data,
-        success: function(result) {
-            hideNotifications();
-            hideLoading();
-
-            var abundancesObj = JSON.parse(result);
-            if (!$.isEmptyObject(abundancesObj["results"])) {
-                $("#analysis-container").show();
-                renderTable(abundancesObj);
-            } else {
-                $("#analysis-container").hide();
-                showNoResults();
-            }
-        },
-        error: function(err) {
-            $("#analysis-container").hide();
-            hideLoading();
-            hideNotifications();
-            showError();
-            console.log(err);
-        }
-    });
+  });
 }

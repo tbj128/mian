@@ -4,6 +4,7 @@ from mian.analysis.analysis_base import AnalysisBase
 from mian.core.statistics import Statistics
 from mian.model.otu_table import OTUTable
 import logging
+import json
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -26,6 +27,8 @@ class Boxplots(AnalysisBase):
         return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata)
 
     def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata):
+
+        base = np.array(base)
 
         statsAbundances = {}
         abundances = {}
@@ -54,14 +57,16 @@ class Boxplots(AnalysisBase):
 
         logger.info("Initialized metadata maps")
 
+        level = int(user_request.level)
         taxonomiesOfInterest = user_request.get_custom_attr("yvalsSpecificTaxonomy")
+        taxonomiesOfInterest = json.loads(taxonomiesOfInterest) if taxonomiesOfInterest != "" else []
         colsOfInterest = []
         if yvals == "mian-taxonomy-abundance":
             i = 0
             while i < len(headers):
                 specificTaxonomies = headers[i].split(";")
 
-                if specificTaxonomies[-1] in taxonomiesOfInterest:
+                if len(specificTaxonomies) > level and specificTaxonomies[level].strip() in taxonomiesOfInterest:
                     colsOfInterest.append(i)
                 i += 1
             if len(colsOfInterest) == 0:

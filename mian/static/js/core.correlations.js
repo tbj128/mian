@@ -20,7 +20,6 @@ function createSpecificListeners() {
   $("#corrvar2 option:eq(1)").attr("selected", "selected");
 
   $("#corrvar1").change(function() {
-    showTaxLevelIfNeeded($("#corrvar1").val());
     if ($("#corrvar1").val() === "mian-taxonomy-abundance") {
       $("#specific-taxonomy-container-1").show();
       $("#taxonomic-level-container").show();
@@ -34,7 +33,6 @@ function createSpecificListeners() {
   });
 
   $("#corrvar2").change(function() {
-    showTaxLevelIfNeeded($("#corrvar2").val());
     if ($("#corrvar2").val() === "mian-taxonomy-abundance") {
       $("#specific-taxonomy-container-2").show();
       $("#taxonomic-level-container").show();
@@ -42,18 +40,16 @@ function createSpecificListeners() {
         updateAnalysis();
       });
     } else {
-      $("#specific-taxonomy-container-1").hide();
+      $("#specific-taxonomy-container-2").hide();
       updateAnalysis();
     }
   });
 
   $("#colorvar").change(function() {
-    showTaxLevelIfNeeded($("#colorvar").val());
     updateAnalysis();
   });
 
   $("#sizevar").change(function() {
-    showTaxLevelIfNeeded($("#sizevar").val());
     updateAnalysis();
   });
 
@@ -160,19 +156,6 @@ function loadOTUTableHeaders(corrvarType) {
     return headersPromise;
   }
   return null;
-}
-
-function showTaxLevelIfNeeded(val) {
-  if (
-    val === "mian-taxonomy-abundance" ||
-    val === "mian-max" ||
-    val === "mian-min" ||
-    val === "mian-abundance"
-  ) {
-    $("#taxonomic-level").show();
-  } else {
-    $("#taxonomic-level").hide();
-  }
 }
 
 function renderCorrelations(abundancesObj) {

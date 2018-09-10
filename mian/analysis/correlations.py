@@ -37,6 +37,7 @@ class Correlations(AnalysisBase):
 
         otuMetadata = metadata.get_as_table()
 
+        level = int(user_request.level)
         corrvar1 = user_request.get_custom_attr("corrvar1")
         corrvar2 = user_request.get_custom_attr("corrvar2")
         colorvar = user_request.get_custom_attr("colorvar")
@@ -52,7 +53,7 @@ class Correlations(AnalysisBase):
             while i < len(headers):
                 specificTaxonomies = headers[i].split(";")
 
-                if specificTaxonomies[-1].strip() in taxonomiesOfInterest1:
+                if len(specificTaxonomies) > level and specificTaxonomies[level].strip() in taxonomiesOfInterest1:
                     colsOfInterest1.append(i)
                 i += 1
             if len(colsOfInterest1) == 0:
@@ -64,7 +65,7 @@ class Correlations(AnalysisBase):
             while i < len(headers):
                 specificTaxonomies = headers[i].split(";")
 
-                if specificTaxonomies[-1].strip() in taxonomiesOfInterest2:
+                if len(specificTaxonomies) > level and specificTaxonomies[level].strip() in taxonomiesOfInterest2:
                     colsOfInterest2.append(i)
                 i += 1
             if len(colsOfInterest2) == 0:
@@ -95,7 +96,7 @@ class Correlations(AnalysisBase):
 
         sizecol = -1
         if sizevar != "mian-abundance" and sizevar != "mian-max":
-            sizecol = metadata.get_metadata_column_number(sizecol)
+            sizecol = metadata.get_metadata_column_number(sizevar)
 
         corrArr = []
         corrValArr1 = []

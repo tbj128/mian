@@ -60,7 +60,6 @@ class DataIO:
 
         return otu_map
 
-
     @staticmethod
     def table_to_tsv(base, user_id, pid, csv_name):
         """
@@ -77,6 +76,8 @@ class DataIO:
         project_dir = os.path.join(project_dir, user_id)
         project_dir = os.path.join(project_dir, pid)
         csv_path = os.path.join(project_dir, csv_name)
+        logger.info("Before write")
         outputCSV = csv.writer(open(csv_path, 'w'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row in base:
             outputCSV.writerow(row)
+        logger.info("After write")

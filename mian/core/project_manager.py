@@ -75,11 +75,12 @@ class ProjectManager(object):
                 sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
             i += 1
 
-
+        logger.info("Beginning to load the OTU table")
         base_arr = DataIO.tsv_to_table_from_path(os.path.join(user_staging_dir, otu_filename))
 
         # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
         try:
+            logger.info("Beginning to process the OTU table")
             base, headers, sample_labels = self.__process_base(self.user_id, pid, base_arr)
         except:
             logger.exception("Invalid OTU file format")
@@ -89,6 +90,7 @@ class ProjectManager(object):
 
         # Processes the taxonomy file by decomposing string-based taxonomies into tab separated format (if applicable)
         try:
+            logger.info("Beginning to process the taxonomy file")
             otus_from_taxonomy = self.__process_taxonomy_file(self.user_id, pid)
         except:
             logger.exception("Invalid taxonomy file format")
@@ -97,6 +99,7 @@ class ProjectManager(object):
             return TAXONOMY_ERROR, ""
 
         # Validates that the uploaded files are valid
+        logger.info("Validating the OTU table")
         missing_headers = self.__validate_otu_table_headers(headers, otus_from_taxonomy)
         if len(missing_headers) > 0:
             return OTU_HEADER_NOT_IN_TAXONOMY_ERROR, ", ".join(missing_headers)
@@ -109,6 +112,7 @@ class ProjectManager(object):
 
         # Subsamples raw OTU table
         try:
+            logger.info("Beginning to subsample the OTU table")
             subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                                                     pid=pid,
                                                                                                     base=base,
@@ -123,6 +127,7 @@ class ProjectManager(object):
             return OTU_ERROR, ""
 
         # Creates map.txt file
+        logger.info("Creating the map.txt file")
         map_file = Map(self.user_id, pid)
         map_file.project_name = project_name
         map_file.orig_otu_table_name = otu_filename
@@ -155,28 +160,24 @@ class ProjectManager(object):
             # Input file is mothur - we need to delete unnecessary "label" and "numOtus" columns
             is_mothur = True
 
-        num_samples = len(base_arr) - 1  # Accounts for the header row
-        num_otus = len(base_arr[0]) - 1  # Accounts for the sample labels
-        if is_mothur:
-            num_otus = len(base_arr[0]) - 3  # Accounts for the additional columns mothur adds
-        base = np.zeros(shape=(num_samples, num_otus), dtype=int)
+        base = []
 
         # Adds the numeric values into the base np array
         col_offset = 3 if is_mothur else 1
         row_offset = 1
         row = row_offset
         while row < len(base_arr):
+            new_row = []
             col = col_offset
             while col < len(base_arr[row]):
                 try:
-                    # TODO: Validate input format
-                    # base[row - row_offset][col - col_offset] = float(base_arr[row][col])
-                    base[row - row_offset][col - col_offset] = int(float(base_arr[row][col]))
+                    new_row.append(int(float(base_arr[row][col])))
                 except ValueError:
-                    # TODO: Handle case where bad input file format
                     logger.exception("Bad OTU table")
+                    new_row.append(0)
                     pass
                 col += 1
+            base.append(new_row)
             row += 1
 
         headers = base_arr[0][col_offset:]
@@ -424,8 +425,8 @@ class ProjectManager(object):
 
     def __save_biom_table_as_tsv(self, user_id, pid, biom_table, raw_table_path=RAW_OTU_TABLE_FILENAME, output_raw_otu_labels_file_name=RAW_OTU_TABLE_LABELS_FILENAME):
         result = biom_table.to_tsv(header_key="",
-                              header_value="",
-                              metadata_formatter="sc_separated")
+                                   header_value="",
+                                   metadata_formatter="sc_separated")
 
         logger.info("Finished table.to_tsv")
 
@@ -440,22 +441,26 @@ class ProjectManager(object):
                 base_csv.append(o)
             i += 1
 
-        num_samples = len(base_csv[0]) - 1  # Accounts for the header row (samples are headers in this case)
-        num_otus = len(base_csv) - 1  # Accounts for the sample labels
-        intermediate_table = np.zeros(shape=(num_samples, num_otus), dtype=int)
+        intermediate_table = []
         sample_labels = base_csv[0][1:]
         headers = []
 
+        # Create the headers
         row = 1
         while row < len(base_csv):
             headers.append(base_csv[row][0])
-            col = 1
-            while col < len(base_csv[row]):
-                # TODO: Validate input format
-                # intermediate_table[col - 1][row - 1] = float(base_csv[row][col])
-                intermediate_table[col - 1][row - 1] = int(float(base_csv[row][col]))
-                col += 1
             row += 1
+
+        # Create the intermediate table by transposing the table
+        col = 1
+        while col < len(base_csv[0]):
+            new_row = []
+            row = 1
+            while row < len(base_csv):
+                new_row.append(int(float(base_csv[row][col])))
+                row += 1
+            intermediate_table.append(new_row)
+            col += 1
 
         logger.info("Finished loading to intermediate table")
 

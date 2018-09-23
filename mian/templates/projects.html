@@ -157,7 +157,7 @@
                           <b id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">
                             {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
                           </b>
-                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
+                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. Try subsampling to a lower depth to capture more samples"></i>
                           {% endif %}
                         </td>
                         <td class="col-md-3">BIOM File</td>

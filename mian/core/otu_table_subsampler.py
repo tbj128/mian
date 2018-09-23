@@ -51,6 +51,7 @@ class OTUTableSubsampler(object):
         subsampled_table_path = os.path.join(project_dir, output_otu_file_name)
 
         if subsample_type == SUBSAMPLE_TYPE_AUTO:
+            logger.info("Subsample type is auto")
             current_subsampled_depth = OTUTableSubsampler.__get_subsampled_depth(base)
             if current_subsampled_depth > -1:
                 # Check if the table is already subsampled.
@@ -63,9 +64,10 @@ class OTUTableSubsampler(object):
             else:
                 # Sums each sample row to find the row with the smallest sum
                 # TODO: Bad input data may have very small row sum
-                subsample_to = np.sum(base, axis=1).min().item()
+                subsample_to = OTUTableSubsampler.__get_min_depth(base)
 
         elif subsample_type == SUBSAMPLE_TYPE_MANUAL:
+            logger.info("Subsample type is manual")
             if str(manual_subsample_to).isdigit():
                 subsample_to = int(manual_subsample_to)
             else:
@@ -74,7 +76,7 @@ class OTUTableSubsampler(object):
 
         elif subsample_type == SUBSAMPLE_TYPE_DISABLED:
             # Just copy the raw data table to the subsampled table location
-            logger.error("Subsampling disabled")
+            logger.info("Subsample type is disabled")
             labels = [headers, sample_labels]
             DataIO.table_to_tsv(base, user_id, pid, output_otu_file_name)
             DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
@@ -85,13 +87,12 @@ class OTUTableSubsampler(object):
 
         logger.info("Subsampling OTU table to " + str(subsample_to) + " using type " + str(subsample_type))
 
-
         samples_removed = []
         subsampled_base = []
         subsampled_sample_labels = []
         i = 0
         for row in base:
-            if np.sum(row) < subsample_to:
+            if subsample_type == SUBSAMPLE_TYPE_MANUAL and sum(row) < subsample_to:
                 # Any row with fewer sequences than the requested depth will be omitted
                 samples_removed.append(sample_labels[i])
             else:
@@ -100,10 +101,10 @@ class OTUTableSubsampler(object):
                 subsampled_sample_labels.append(sample_labels[i])
             i += 1
 
-        subsampled_base = np.array(subsampled_base)
+        logger.info("Finished basic subsampling")
 
         # Find any columns which now only have 0 values
-        non_zero_column_mask = ~np.all(subsampled_base == 0, axis=0)
+        zero_column_mask = OTUTableSubsampler.__get_zero_columns(subsampled_base)
 
         # To conserve space, remove all OTUs that no longer have any associated values while writing new
         # subsampled OTU table
@@ -113,7 +114,7 @@ class OTUTableSubsampler(object):
                 processed_row = []
                 j = 0
                 while j < len(row):
-                    if non_zero_column_mask[j]:
+                    if j not in zero_column_mask:
                         processed_row.append(row[j])
                     j += 1
                 output_tsv.writerow(processed_row)
@@ -122,11 +123,13 @@ class OTUTableSubsampler(object):
         otus_removed = {}
         j = 0
         while j < len(headers):
-            if not non_zero_column_mask[j]:
+            if j in zero_column_mask:
                 otus_removed[headers[j]] = 1
             else:
                 subsampled_headers.append(headers[j])
             j += 1
+
+        logger.info("Finished writing CSV")
 
         labels = [subsampled_headers, subsampled_sample_labels]
         DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
@@ -144,13 +147,49 @@ class OTUTableSubsampler(object):
         last_total = -1
         i = 0
         while i < len(base):
-            total = 0
-            j = 0
-            while j < len(base[i]):
-                total += float(base[i][j])
-                j += 1
+            total = sum(base[i])
             if last_total > -1 and last_total != total:
                 return -1
             last_total = total
             i += 1
         return last_total
+
+    @staticmethod
+    def __get_min_depth(base):
+        """
+        Returns the sum of the row with the min sum
+        :param self:
+        :param base:
+        :return:
+        """
+        min = -1
+        i = 0
+        while i < len(base):
+            total = sum(base[i])
+            if min == -1 or total < min:
+                min = total
+            i += 1
+        return min
+
+    @staticmethod
+    def __get_zero_columns(base):
+        """
+        Returns column indices which have sum of zero
+        :param self:
+        :param base:
+        :return:
+        """
+        zero_columns = {}
+        j = 0
+        while j < len(base[0]):
+            is_zero = True
+            i = 0
+            while i < len(base):
+                if base[i][j] != 0:
+                    is_zero = False
+                    break
+                i += 1
+            if is_zero:
+                zero_columns[j] = True
+            j += 1
+        return zero_columns

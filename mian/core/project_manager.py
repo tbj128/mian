@@ -102,7 +102,10 @@ class ProjectManager(object):
             return OTU_HEADER_NOT_IN_TAXONOMY_ERROR, ", ".join(missing_headers)
         missing_labels = self.__validate_otu_table_sample_labels(sample_labels, sample_ids_from_sample_metadata)
         if len(missing_labels) > 0:
-            return OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR, ", ".join(missing_labels)
+            if missing_labels[0].lower().startswith("otu"):
+                return OTU_ERROR, ""
+            else:
+                return OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR, ", ".join(missing_labels)
 
         # Subsamples raw OTU table
         try:

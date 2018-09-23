@@ -133,15 +133,6 @@ class OTUTableSubsampler(object):
 
         return subsample_to, otus_removed, samples_removed
 
-
-    @staticmethod
-    def get_is_subsampled(userID, projectID):
-        base = DataIO.tsv_to_table(userID, projectID, RAW_OTU_TABLE_FILENAME)
-        if OTUTableSubsampler.__get_subsampled_depth(base) == -1:
-            return False
-        else:
-            return True
-
     @staticmethod
     def __get_subsampled_depth(base):
         """

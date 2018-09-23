@@ -57,31 +57,31 @@
 
     {% if status == "-3" %}
     <div class="alert alert-danger">
-      <strong>Invalid OTU Table</strong> Make sure your OTU table format is correct and try again</a>
+      <strong>Invalid OTU Table</strong> Make sure your OTU table format is correct (ie. each column is an OTU and each row is a sample) and try again
     </div>
     {% endif %}
 
     {% if status == "-4" %}
     <div class="alert alert-danger">
-      <strong>Invalid Taxonomy File</strong> Make sure your taxonomy file format is correct and try again</a>
+      <strong>Invalid Taxonomy File</strong> Make sure your taxonomy file format is correct and try again
     </div>
     {% endif %}
 
     {% if status == "-5" %}
     <div class="alert alert-danger">
-      <strong>Invalid Sample Metadata File</strong> Make sure your sample metadata format is correct and try again</a>
+      <strong>Invalid Sample Metadata File</strong> Make sure your sample metadata format is correct and try again
     </div>
     {% endif %}
 
     {% if status == "-6" %}
     <div class="alert alert-danger">
-      <strong>Missing OTU(s) in Taxonomy</strong> The following OTUs in the OTU table do not have a corresponding entry in the taxonomy file: {{message}}</a>
+      <strong>Missing OTU(s) in Taxonomy</strong> The following OTUs in the OTU table do not have a corresponding entry in the taxonomy file: {{message}}
     </div>
     {% endif %}
 
     {% if status == "-7" %}
     <div class="alert alert-danger">
-      <strong>Missing Sample ID(s)</strong> The following sample IDs in the OTU table do not have a corresponding entry in the sample metadata file: {{message}}</a>
+      <strong>Missing Sample ID(s)</strong> The following sample IDs in the OTU table do not have a corresponding entry in the sample metadata file: {{message}}
     </div>
     {% endif %}
 

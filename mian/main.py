@@ -886,5 +886,6 @@ def get_project_ids_to_info(user_id):
                         "subsampled_removed_samples": project_map.subsampled_removed_samples
                     }
                 logger.info("Read project info " + str(project_info))
-                project_name_to_info[project_map.project_name] = project_info
+                if project_map.project_name != "":
+                    project_name_to_info[project_map.project_name] = project_info
     return project_name_to_info

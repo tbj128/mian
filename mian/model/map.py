@@ -13,9 +13,7 @@ class Map(object):
         self.subsampled_removed_samples = []
         self.orig_biom_name = ""
         self.orig_otu_table_name = ""
-        self.orig_taxonomy_name = ""
         self.orig_sample_metadata_name = ""
-        self.taxonomy_type = ""
         self.load()
 
     def load(self):
@@ -28,9 +26,7 @@ class Map(object):
                 self.subsampled_removed_samples = map_from_json["subsampled_removed_samples"]
                 self.orig_biom_name = map_from_json["orig_biom_name"]
                 self.orig_otu_table_name = map_from_json["orig_otu_table_name"]
-                self.orig_taxonomy_name = map_from_json["orig_taxonomy_name"]
                 self.orig_sample_metadata_name = map_from_json["orig_sample_metadata_name"]
-                self.taxonomy_type = map_from_json["taxonomy_type"]
 
     def save(self):
         map_from_json = {
@@ -40,9 +36,7 @@ class Map(object):
             "subsampled_removed_samples": self.subsampled_removed_samples,
             "orig_biom_name": self.orig_biom_name,
             "orig_otu_table_name": self.orig_otu_table_name,
-            "orig_taxonomy_name": self.orig_taxonomy_name,
             "orig_sample_metadata_name": self.orig_sample_metadata_name,
-            "taxonomy_type": self.taxonomy_type
         }
 
         with open(self.__get_map_path(), 'w') as outfile:

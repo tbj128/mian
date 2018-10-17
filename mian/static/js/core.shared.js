@@ -268,7 +268,7 @@ function getSampleFilteringOptions() {
         $("#filter-sample-specific").hide();
 
         $("#sample-typeahead-filter").tagsinput({
-          freeInput: false,
+          freeInput: true,
           placeholderText: "Enter",
           typeahead: {
             source: json,
@@ -480,26 +480,26 @@ function updateCatVar(isNumeric) {
 
 function updateTaxonomicLevel(firstLoad, callback) {
   console.log("Updating taxonomic level");
-  if ($.isEmptyObject(taxonomiesMap)) {
-    // Load taxonomy map
-    return $.ajax({
-      url: "taxonomies?pid=" + $("#project").val(),
-      success: function(result) {
-        var json = JSON.parse(result);
-        taxonomiesMap = json;
-        renderTaxonomicLevel(firstLoad);
-        if (callback != null && callback != undefined) {
-          callback();
-        }
-      }
-    });
-  } else {
+//  if ($.isEmptyObject(taxonomiesMap)) {
+//    // Load taxonomy map
+//    return $.ajax({
+//      url: "taxonomies?pid=" + $("#project").val(),
+//      success: function(result) {
+//        var json = JSON.parse(result);
+//        taxonomiesMap = json;
+//        renderTaxonomicLevel(firstLoad);
+//        if (callback != null && callback != undefined) {
+//          callback();
+//        }
+//      }
+//    });
+//  } else {
     renderTaxonomicLevel(firstLoad);
     if (callback != null && callback != undefined) {
       callback();
     }
     return null;
-  }
+//  }
 }
 
 function renderTaxonomicLevel(firstLoad) {
@@ -560,7 +560,7 @@ function renderTaxonomicLevel(firstLoad) {
     $("#taxonomy-specific").hide();
 
     $("#taxonomy-typeahead-filter").tagsinput({
-      freeInput: false,
+      freeInput: true,
       typeahead: {
         source: taxasArr,
         afterSelect: () => {

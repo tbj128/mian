@@ -141,7 +141,7 @@ function customCatVarCallback(result) {
 
   $("#yvals").empty();
   $("#yvals").append(
-    '<option value="mian-taxonomy-abundance">Taxonomy Abundance</option><option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>'
+    '<option value="mian-taxonomy-abundance">Gene Expression</option><option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>'
   );
   for (var i = 0; i < allHeaders.length; i++) {
     $("#yvals").append(
@@ -180,7 +180,7 @@ function loadOTUTableHeaders() {
                 .val("");
             }
           },
-          freeInput: false
+          freeInput: true
         });
         $("#taxonomy-specific-typeahead-wrapper .bootstrap-tagsinput").css(
           "width",

@@ -7,7 +7,6 @@ import math
 from mian.core.constants import SUBSAMPLED_OTU_TABLE_FILENAME, SAMPLE_METADATA_FILENAME, TAXONOMY_FILENAME, \
     SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
 from mian.model.user_request import UserRequest
-from mian.model.taxonomy import Taxonomy
 
 from mian.rutils import r_package_install
 
@@ -64,17 +63,6 @@ class AnalysisTestUtils(object):
                 if len(o) > 1:
                     output.append(o)
         return output[0], output[1]
-
-    @staticmethod
-    def get_test_taxonomy(test_dir):
-        taxonomy_table = AnalysisTestUtils.get_test_input_as_table(test_dir, TAXONOMY_FILENAME)
-        taxonomy_map = {}
-        i = 0
-        for row in taxonomy_table:
-            if i > 0:
-                taxonomy_map[row[Taxonomy.OTU_COL]] = row[Taxonomy.TAXONOMY_COL:]
-            i += 1
-        return taxonomy_map
 
     @staticmethod
     def get_disease_metadata_values(test_dir):

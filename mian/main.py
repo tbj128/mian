@@ -35,8 +35,6 @@ r_package_install.importr_custom("Boruta")
 r_package_install.importr_custom("glmnet")
 
 from mian.core.project_manager import ProjectManager, GENERAL_ERROR
-from mian.analysis.alpha_diversity import AlphaDiversity
-from mian.analysis.beta_diversity import BetaDiversity
 from mian.analysis.boruta import Boruta
 from mian.analysis.boxplots import Boxplots
 from mian.analysis.composition import Composition
@@ -56,7 +54,6 @@ from mian.db import db
 from mian.model.user_request import UserRequest
 from mian.rutils import r_package_install
 from mian.model.map import Map
-from mian.model.taxonomy import Taxonomy
 from mian.model.metadata import Metadata
 from mian.model.otu_table import OTUTable
 
@@ -191,12 +188,10 @@ def create():
         else:
             # Users can also choose to manually upload files
             project_otu_table_name = secure_filename(request.form['projectOTUTableName'])
-            project_taxa_map_name = secure_filename(request.form['projectTaxaMapName'])
             project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
             try:
                 status, message = project_manager.create_project_from_tsv(project_name=project_name,
                                                                 otu_filename=project_otu_table_name,
-                                                                taxonomy_filename=project_taxa_map_name,
                                                                 sample_metadata_filename=project_sample_id_name,
                                                                 subsample_type=project_subsample_type,
                                                                 subsample_to=project_subsample_to)
@@ -228,22 +223,6 @@ def boxplots():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
     return render_template('boxplots.html', projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/alpha_diversity')
-@flask_login.login_required
-def alpha_diversity():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('alpha_diversity.html', projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/beta_diversity')
-@flask_login.login_required
-def beta_diversity():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('beta_diversity.html', projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/boruta')
@@ -378,21 +357,6 @@ def getSamples():
     return json.dumps(abundances)
 
 
-@app.route('/taxonomies')
-@flask_login.login_required
-def getTaxonomies():
-    logger.info("Getting taxonomies")
-    user = current_user.id
-    pid = request.args.get('pid', '')
-    if pid == '':
-        return json.dumps({})
-
-    taxonomy = Taxonomy(user, pid)
-    abundances = taxonomy.get_taxonomy_map()
-    logger.info("Returning taxonomies")
-    return json.dumps(abundances)
-
-
 @app.route('/otu_table_headers')
 @flask_login.login_required
 def getOTUTableHeaders():
@@ -458,29 +422,6 @@ def getMetadataVals():
 
 
 # Visualization endpoints
-
-@app.route('/alpha_diversity', methods=['POST'])
-@flask_login.login_required
-def getAlphaDiversity():
-    user_request = __get_user_request(request)
-    user_request.set_custom_attr("alphaType", request.form['alphaType'])
-    user_request.set_custom_attr("alphaContext", request.form['alphaContext'])
-
-    plugin = AlphaDiversity()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
-
-
-@app.route('/beta_diversity', methods=['POST'])
-@flask_login.login_required
-def getBetaDiversity():
-    user_request = __get_user_request(request)
-    user_request.set_custom_attr("betaType", request.form['betaType'])
-
-    plugin = BetaDiversity()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
-
 
 @app.route('/boruta', methods=['POST'])
 @flask_login.login_required
@@ -678,18 +619,12 @@ def getIsSubsampled():
 def __get_user_request(request):
     user = current_user.id
     pid = request.form['pid']
-    taxonomyFilterCount = request.form['taxonomyFilterCount'] if 'taxonomyFilterCount' in request.form else ""
-    taxonomyFilterPrevalnce = request.form['taxonomyFilterPrevalence'] if 'taxonomyFilterPrevalence' in request.form else ""
-    taxonomyFilter = request.form['taxonomyFilter'] if 'taxonomyFilter' in request.form else ""
-    taxonomyFilterRole = request.form['taxonomyFilterRole'] if 'taxonomyFilterRole' in request.form else ""
-    taxonomyFilterVals = json.loads(request.form['taxonomyFilterVals']) if 'taxonomyFilterVals' in request.form else []
     sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
     sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
     sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
     catvar = request.form['catvar'] if 'catvar' in request.form else ""
     level = request.form['level'] if 'level' in request.form else -2
-    user_request = UserRequest(user, pid, taxonomyFilterCount, taxonomyFilterPrevalnce, taxonomyFilter,
-                               taxonomyFilterRole, taxonomyFilterVals, sampleFilter, sampleFilterRole,
+    user_request = UserRequest(user, pid, sampleFilter, sampleFilterRole,
                                sampleFilterVals, level, catvar)
     return user_request
 
@@ -880,7 +815,6 @@ def get_project_ids_to_info(user_id):
                         "project_type": project_type,
                         "orig_otu_table_name": project_map.orig_otu_table_name,
                         "orig_sample_metadata_name": project_map.orig_sample_metadata_name,
-                        "orig_taxonomy_name": project_map.orig_taxonomy_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
                         "subsampled_removed_samples": project_map.subsampled_removed_samples

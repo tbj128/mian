@@ -23,7 +23,7 @@ class CorrelationsSelection(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
+        otu_table, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         metadata = table.get_sample_metadata()
 

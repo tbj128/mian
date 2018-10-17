@@ -22,7 +22,7 @@ class Boxplots(AnalysisBase):
     def abundance_boxplots(self, user_request, yvals):
         logger.info("Starting abundance_boxplots")
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering(user_request)
         metadata = table.get_sample_metadata().get_as_table()
         return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata)
 

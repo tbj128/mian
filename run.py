@@ -28,5 +28,5 @@ app.config['SESSION_TYPE'] = 'filesystem'
 print("App Startup")
 # app.run(debug=True, port=8080)
 # app.run(host='0.0.0.0', debug=True, port=8080)
-app.run()
+app.run(port=5001)
 

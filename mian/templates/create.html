@@ -6,6 +6,10 @@
   </head>
 
   <body>
+
+    <div class="alert alert-warning">
+        <strong>Thanks for stopping by!</strong> Mian is still undergoing alpha testing so you may run into some bugs. You can help make Mian better by filing issues in <a href="https://github.com/tbj128/mian/issues" target="_blank">our Github repo</a> or by <a href="mailto:tom.jin@outlook.com" target="_blank">emailing us here</a>.
+    </div>
     {% include 'navigation.html' %}
     {% include 'loading-bar-processing.html' %}
 
@@ -18,66 +22,13 @@
         <input type="text" class="form-control upload-name" id="inputName" name="inputName" placeholder="Project Name" required>
         <div class="help-block with-errors"></div>
 
-        <div class="row" style="text-align:center">
-          <div class="btn-group" role="group" aria-label="Choose Upload Type">
-            <button id="upload-biom-tab" type="button" class="btn btn-primary" style="width:160px;">Biom</button>
-            <button id="upload-otu-tab" type="button" class="btn btn-default" style="width:160px;">OTU Table (TSV)</button>
-          </div>
-        </div>
-
-        <div id="biom-upload-container" class="row upload-item">
-          <div>
-            <div class="col-md-10">
-              <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;biom</h3>
-              <p>Upload a biom file containing the OTU table, sample metadata, and OTU taxonomy information.</p>
-              <p>Both dense and sparse <a href="http://biom-format.org/documentation/biom_format.html" target="_blank">biom file formats</a> are supported (v1.0, v2.0, v2.1)</p>
-            </div>
-            <div class="col-md-2 upload-status">
-              <form id="biomForm" action="/upload" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="category" value="otuTable" />
-                <span id="biomOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
-                <span id="biomLoading" style="display:none;">
-                  <i class="fa fa-spinner upload-loading"></i>
-                </span>
-                <span id="biomWrapper" class="btn btn-default btn-file">
-                    <span id="biomText">Upload</span> <input type="file" name="upload" id="biomInput" accept=".biom" />
-                </span>
-              </form>
-            </div>
-            <div style="clear:both"></div>
-          </div>
-          <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #999;">
-            <div>
-              <h4 style="padding-left: 15px;">Additional Subsampling</h4>
-              <p style="padding-left: 15px;">Subsampling is necessary for some visualizations and statistical tests. The subsampling can be adjusted at any time.</p>
-              <div class="col-md-6">
-                <select id="biomSubsampleType" name="biomSubsampleType" class="form-control pad-bottom">
-                  <option value="auto" selected>Auto Subsample</option>
-                  <option value="manual">Manual Subsample</option>
-                  <option value="no">Don't Subsample</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <input type="number" class="form-control" id="biomSubsampleTo" name="subsampleTo" placeholder="Subsample To..." style="display:none;">
-                <p id="biom-auto-prompt" style="font-size:11px;color:#999;">Subsamples each sample in the OTU table to the smallest number of sequences of any sample.</p>
-                <p id="biom-manual-prompt" style="font-size:11px;color:#999;margin-top:6px;display:none;">Subsamples each sample in the OTU table to a specific value.</p>
-                <p id="biom-no-prompt" style="font-size:11px;color:#999;display:none;">Assumes that the uploaded OTU table is subsampled already. (Does not perform subsampling)</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div id="otu-upload-container" style="display:none;">
+        <div id="otu-upload-container">
           <div id="otu-table-upload-container" class="row upload-item">
             <div>
               <div class="col-md-10">
                 <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;OTU Table</h3>
                 <p>Tab-delimited file with OTUs across the top header and sample/group IDs as rows. Accepted formats shown below.</p>
-<p>Example <a href="https://www.mothur.org/wiki/Shared_file" target="_blank">mothur shared file</a>: </p>
-<pre><code>label	Group	numOtus	Otu01	Otu02	Otu03	Otu04	Otu05	...
-0.03	1a	35	0	5	2	3	3	...
-0.03	1b	45	7	2	5	1	1	...
-</code></pre>
-<p>Example manually created OTU format: </p>
+                  <p>Example manually created OTU format: </p>
 <pre><code>Sample	Otu01	Otu02	Otu03	Otu04	Otu05	...
 1a	0	5	2	3	3	...
 1b	7	2	5	1	1	...
@@ -103,9 +54,9 @@
                 <p style="padding-left: 15px;">Subsampling is necessary for some visualizations and statistical tests. The subsampling can be adjusted at any time.</p>
                 <div class="col-md-6">
                   <select id="subsampleType" name="subsampleType" class="form-control pad-bottom">
-                    <option value="auto" selected>Auto Subsample</option>
+                    <option value="no" selected>Don't Subsample</option>
+                    <option value="auto" >Auto Subsample</option>
                     <option value="manual">Manual Subsample</option>
-                    <option value="no">Don't Subsample</option>
                   </select>
                 </div>
                 <div class="col-md-6">
@@ -115,43 +66,6 @@
                   <p id="no-prompt" style="font-size:11px;color:#999;display:none;">Assumes that the uploaded OTU table is subsampled already. (Does not perform subsampling)</p>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div id="otu-metadata-upload-container" class="row upload-item">
-            <div class="col-md-10">
-              <h3 style="margin-top:0px"><i class="fa fa-map-o"></i>&nbsp;&nbsp;OTU Taxonomy Mapping</h3>
-              <p>Tab-delimited taxonomy file with each row representing an OTU and its corresponding taxonomy information. Accepted file formats shown below:</p>
-<p>Example <a href="https://www.mothur.org/wiki/Constaxonomy_file" target="_blank">mothur constaxonomy file</a>: </p>
-<pre><code>OTU	Size	Taxonomy
-Otu01	35	k__Bacteria;p__Firmicutes;c__Clostridia;o__Halbiales;f__Halbiaceae;g__Halbium;s__conlense
-Otu02	45	k__Bacteria;p__Cyanobacteria;c__Nosphycideae;o__Nostocales;f__Nostoceae;g__Dolichospermum
-...
-</code></pre>
-<p>Example Taxonomy File (GreenGenes or Silva Taxonomy String): </p>
-<pre><code>OTU	taxonomy
-Otu01	k__Bacteria;p__Firmicutes;c__Clostridia;o__Halbiales;f__Halbiaceae;g__Halbium;s__conlense
-Otu02	k__Bacteria;p__Cyanobacteria;c__Nosphycideae;o__Nostocales;f__Nostoceae;g__Dolichospermum
-...
-</code></pre>
-<p>Example Taxonomy File (decomposed taxonomy): </p>
-<pre><code>OTU	kingdom		phylum		class		order		family		genus		species
-Otu01	Bacteria	Firmicutes	Clostridia	Halbiales	Halbiaceae	Halbium		conlense
-Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
-...
-</code></pre>
-            </div>
-            <div class="col-md-2 upload-status">
-              <form id="otuTaxonomyMappingForm" action="/upload" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="category" value="otuTaxonomyMapping" />
-                <span id="otuTaxonomyMappingOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
-                <span id="otuTaxonomyMappingLoading" style="display:none;">
-                  <i class="fa fa-spinner upload-loading"></i>
-                </span>
-                <span id="otuTaxonomyMappingWrapper" class="btn btn-default btn-file">
-                    <span id="otuTaxonomyMappingText">Upload</span> <input type="file" name="upload" id="otuTaxonomyMapping" accept=".txt.,.tsv,.taxonomy" />
-                </span>
-              </form>
             </div>
           </div>
 
@@ -181,10 +95,8 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
         <div class="row upload-item" style="background:none !important;box-shadow:none !important;text-align:center;padding-top:0px;padding-right:0px;">
           <form data-toggle="validator" method="POST" action="/create">
             <input type="hidden" id="projectName" name="projectName" value="" />
-            <input type="hidden" id="projectUploadType" name="projectUploadType" value="biom" />
-            <input type="hidden" id="projectBiomName" name="projectBiomName" value="" />
+            <input type="hidden" id="projectUploadType" name="projectUploadType" value="otu" />
             <input type="hidden" id="projectOTUTableName" name="projectOTUTableName" value="" />
-            <input type="hidden" id="projectTaxaMapName" name="projectTaxaMapName" value="" />
             <input type="hidden" id="projectSampleIDName" name="projectSampleIDName" value="" />
             <input type="hidden" id="projectSubsampleType" name="projectSubsampleType" value="auto" />
             <input type="hidden" id="projectSubsampleTo" name="projectSubsampleTo" value="" />

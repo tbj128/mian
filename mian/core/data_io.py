@@ -17,7 +17,7 @@ class DataIO:
     @staticmethod
     @lru_cache(maxsize=128)
     def tsv_to_np_table(user_id, pid, csv_name, sep="\t"):
-        return np.array(DataIO.tsv_to_table(user_id, pid, csv_name, sep), dtype=int)
+        return np.array(DataIO.tsv_to_table(user_id, pid, csv_name, sep), dtype=float)
 
     @staticmethod
     @lru_cache(maxsize=128)

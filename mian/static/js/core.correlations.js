@@ -122,7 +122,7 @@ function loadOTUTableHeaders(corrvarType) {
                   .val("");
               }
             },
-            freeInput: false
+            freeInput: true
           });
           $("#taxonomy-specific-typeahead-wrapper-1 .bootstrap-tagsinput").css(
             "width",
@@ -144,7 +144,7 @@ function loadOTUTableHeaders(corrvarType) {
                   .val("");
               }
             },
-            freeInput: false
+            freeInput: true
           });
           $("#taxonomy-specific-typeahead-wrapper-2 .bootstrap-tagsinput").css(
             "width",
@@ -468,8 +468,8 @@ function updateCorrVar(result) {
   $("#sizevar").empty();
   $("#colorvar").empty();
 
-  addCorrOption("corrvar1", "mian-taxonomy-abundance", "Taxonomy Abundance");
-  addCorrOption("corrvar2", "mian-taxonomy-abundance", "Taxonomy Abundance");
+  addCorrOption("corrvar1", "mian-taxonomy-abundance", "Gene Expression");
+  addCorrOption("corrvar2", "mian-taxonomy-abundance", "Gene Expression");
 
   for (var i = 0; i < numericHeaders.length; i++) {
     if (i != 0) {

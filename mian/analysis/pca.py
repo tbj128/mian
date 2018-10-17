@@ -58,7 +58,7 @@ class PCA(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
         return self.analyse(user_request, base, headers, sample_labels, metadata_vals)

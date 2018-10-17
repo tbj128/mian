@@ -101,7 +101,7 @@ function loadOTUTableHeaders(corrvarType) {
     var level = taxonomyLevels[$("#taxonomy-level").val()];
     var headersPromise = $.ajax({
       url:
-        "otu_table_headers_at_level?pid=" +
+        "gene_names?pid=" +
         $("#project").val() +
         "&level=" +
         level,

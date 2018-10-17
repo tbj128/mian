@@ -3,10 +3,7 @@ import os
 import logging
 from functools import lru_cache
 import numpy as np
-import pandas as pd
-
-from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, TAXONOMY_FILENAME, \
-    SAMPLE_METADATA_FILENAME
+import csv
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -50,10 +47,18 @@ class DataIO:
         return DataIO.tsv_to_table_from_path(csv_name)
 
     @staticmethod
-    def tsv_to_table_from_path(csv_path, sep="\t"):
+    def tsv_to_table_from_path(csv_path):
+
+        sniffer = csv.Sniffer()
+
+        with open(csv_path, 'r') as csvfile:
+            line = csvfile.readline()
+            dialect = sniffer.sniff(line)
+            delimiter = dialect.delimiter
+
         otu_map = []
         with open(csv_path, 'r') as csvfile:
-            base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
+            base_csv = csv.reader(csvfile, delimiter=delimiter, quotechar='|')
             for o in base_csv:
                 if o != "":
                     otu_map.append(o)

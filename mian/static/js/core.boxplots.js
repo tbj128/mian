@@ -157,13 +157,10 @@ function customCatVarValueLoading() {
 function loadOTUTableHeaders() {
   if ($("#yvals").val() === "mian-taxonomy-abundance") {
     $("#specific-taxonomy-typeahead").empty();
-    var level = taxonomyLevels[$("#taxonomy-level").val()];
     var headersPromise = $.ajax({
       url:
-        "otu_table_headers_at_level?pid=" +
-        $("#project").val() +
-        "&level=" +
-        level,
+        "gene_names?pid=" +
+        $("#project").val(),
       success: function(result) {
         var typeAheadSource = JSON.parse(result);
         if (tagsInput) {

@@ -19,7 +19,7 @@ from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 import rpy2.robjects.numpy2ri
 rpy2.robjects.numpy2ri.activate()
 
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 
 
 class GLMNet(object):
@@ -79,7 +79,7 @@ class GLMNet(object):
     rStats = SignatureTranslatedAnonymousPackage(rcode, "rStats")
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         otu_table, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)

@@ -16,13 +16,13 @@
 from scipy import stats, math
 from mian.analysis.analysis_base import AnalysisBase
 from mian.core.statistics import Statistics
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 
 
 class CorrelationsSelection(AnalysisBase):
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         otu_table, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         metadata = table.get_sample_metadata()

@@ -211,7 +211,6 @@ function updateFilterOTUOptions() {
     $("#filter-otu-wrapper").hide();
   } else {
     $("#filter-otu-wrapper").show();
-    updateTaxonomicLevel(false);
   }
 }
 
@@ -268,7 +267,7 @@ function getSampleFilteringOptions() {
         $("#filter-sample-specific").hide();
 
         $("#sample-typeahead-filter").tagsinput({
-          freeInput: true,
+          freeInput: false,
           placeholderText: "Enter",
           typeahead: {
             source: json,
@@ -291,7 +290,6 @@ function resetProject() {
   // We must wait for all the sidebar components to finish updating before we can render the analysis component
   if (hasCatVar && typeof customLoading === "function") {
     $.when(
-      updateTaxonomicLevel(true, function() {}),
       updateCatVar(function() {}),
       customLoading()
     ).done(function(a1, a2, a3) {
@@ -299,21 +297,18 @@ function resetProject() {
     });
   } else if (hasCatVar) {
     $.when(
-      updateTaxonomicLevel(true, function() {}),
       updateCatVar(function() {})
     ).done(function(a1, a2, a3) {
       updateProject();
     });
   } else if (typeof customLoading === "function") {
-    $.when(updateTaxonomicLevel(true, function() {}), customLoading()).done(
+    $.when(customLoading()).done(
       function(a1, a2, a3) {
         updateProject();
       }
     );
   } else {
-    updateTaxonomicLevel(true, function() {
       updateProject();
-    });
   }
 }
 
@@ -480,26 +475,26 @@ function updateCatVar(isNumeric) {
 
 function updateTaxonomicLevel(firstLoad, callback) {
   console.log("Updating taxonomic level");
-//  if ($.isEmptyObject(taxonomiesMap)) {
-//    // Load taxonomy map
-//    return $.ajax({
-//      url: "taxonomies?pid=" + $("#project").val(),
-//      success: function(result) {
-//        var json = JSON.parse(result);
-//        taxonomiesMap = json;
-//        renderTaxonomicLevel(firstLoad);
-//        if (callback != null && callback != undefined) {
-//          callback();
-//        }
-//      }
-//    });
-//  } else {
+  if ($.isEmptyObject(taxonomiesMap)) {
+    // Load taxonomy map
+    return $.ajax({
+      url: "taxonomies?pid=" + $("#project").val(),
+      success: function(result) {
+        var json = JSON.parse(result);
+        taxonomiesMap = json;
+        renderTaxonomicLevel(firstLoad);
+        if (callback != null && callback != undefined) {
+          callback();
+        }
+      }
+    });
+  } else {
     renderTaxonomicLevel(firstLoad);
     if (callback != null && callback != undefined) {
       callback();
     }
     return null;
-//  }
+  }
 }
 
 function renderTaxonomicLevel(firstLoad) {
@@ -560,7 +555,7 @@ function renderTaxonomicLevel(firstLoad) {
     $("#taxonomy-specific").hide();
 
     $("#taxonomy-typeahead-filter").tagsinput({
-      freeInput: true,
+      freeInput: false,
       typeahead: {
         source: taxasArr,
         afterSelect: () => {

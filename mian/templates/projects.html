@@ -56,13 +56,7 @@
 
     {% if status == "-3" %}
     <div class="alert alert-danger">
-      <strong>Invalid OTU Table</strong> Make sure your OTU table format is correct and try again</a>
-    </div>
-    {% endif %}
-
-    {% if status == "-4" %}
-    <div class="alert alert-danger">
-      <strong>Invalid Taxonomy File</strong> Make sure your taxonomy file format is correct and try again</a>
+      <strong>Invalid Gene Table</strong> Make sure your gene table format is correct and try again</a>
     </div>
     {% endif %}
 
@@ -72,15 +66,9 @@
     </div>
     {% endif %}
 
-    {% if status == "-6" %}
-    <div class="alert alert-danger">
-      <strong>Missing OTU(s) in Taxonomy</strong> The following OTUs in the OTU table do not have a corresponding entry in the taxonomy file: {{message}}</a>
-    </div>
-    {% endif %}
-
     {% if status == "-7" %}
-    <div class="alert alert-danger">
-      <strong>Missing Sample ID(s)</strong> The following sample IDs in the OTU table do not have a corresponding entry in the sample metadata file: {{message}}</a>
+    <div class="alert alert-warning">
+      <strong>Missing Sample ID(s)</strong> The following samples were removed from the gene table because they do not have a corresponding entry in the sample metadata file: {{message}}</a>
     </div>
     {% endif %}
 
@@ -92,19 +80,6 @@
       <strong>Error</strong> Your changes were unable to be applied.
     </div>
 
-    <div id="change-box" class="change-box" style="display:none;">
-      <h3>Modify Subsampling</h3>
-      <input style="width:50%;" class="form-control" id="change-subsampling" name="change-subsampling" type="number" value="1020" />
-      <div class="btn-group" role="group" style="margin-top:8px;">
-        <button type="button" class="btn btn-default change-cancel" data-project="{{ projectName }}">Cancel</button>
-        <button type="button" class="btn btn-primary change-confirm" data-project="{{ projectName }}" >Change</button>
-      </div>
-      <hr />
-      <h4>Other Options</h4>
-      <button type="button" class="btn btn-default change-auto" data-project="{{ projectName }}">Auto Subsampling</button>
-      <button type="button" class="btn btn-default change-reset" data-project="{{ projectName }}" >Reset</button>
-      <a id="change-close" href="javascript:void(0);" style="position:absolute; top:18px; right:20px;cursor:pointer;font-size:24px;text-decoration:none;">&times;</a>
-    </div>
     <div id="blackout" class="blackout" style="display:none;"></div>
 
     <div class="content-wrapper">
@@ -124,98 +99,25 @@
               </div>
             {% else %}
               {% for projectName in projectNames %}
-                {% if projectNames[projectName]["project_type"] == "biom" %}
-                  <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
-                  <h4>{{ projectName }}</h4>
-                  <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
-                  <table class="table table-hover" style="table-layout:fixed;">
-                    <tbody>
-                      <tr>
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}</th>
-                        <td class="col-md-3 subsampleDisplayContainer">
-                          <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
-                            {% if projectNames[projectName]["subsampled_value"] == 0 %}
-                            Not Subsampled
-                            {% else %}
-                            Subsampled to
-                            <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">
-                              {{ projectNames[projectName]["subsampled_value"] }}
-                              {% if projectNames[projectName]["subsampled_type"] == "auto" %}
-                                (auto)
-                              {% endif %}
-                            </b>
-                            {% endif %}
-                          </span>
-                          &nbsp;
-                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-html="true" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
-
-                          {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
-                          <br />
-                          <br />
-                          Removed samples:
-                          <b id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">
-                            {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
-                          </b>
-                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
-                          {% endif %}
-                        </td>
-                        <td class="col-md-3">BIOM File</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                {% else %}
                   <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
                   <h4>{{ projectName }}</h4>
                   <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody> 
                       <tr> 
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_otu_table_name"] }}</th>
-                        <td class="col-md-3 subsampleDisplayContainer">
-                          <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
-                            {% if projectNames[projectName]["subsampled_value"] == 0 %}
-                            Not Subsampled
-                            {% else %}
-                            Subsampled to 
-                            <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">
-                              {{ projectNames[projectName]["subsampled_value"] }}
-                              {% if projectNames[projectName]["subsampled_type"] == "auto" %}
-                                (auto)
-                              {% endif %}
-                            </b>
-                            {% endif %} 
-                          </span>
-                          &nbsp;
-                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
-
-
-                          {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
-                          <br />
-                          <br />
-                          Removed samples:
-                          <b id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">
-                            {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
-                          </b>
-                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
-                          {% endif %}
+                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["table_name"] }}</th>
+                        <td class="col-md-3">
                         </td> 
-                        <td class="col-md-3">OTU Table</td>
+                        <td class="col-md-3">Gene Table</td>
                       </tr>
                       <tr> 
-                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_taxonomy_name"] }}</th>
-                        <td class="subsampleDisplayContainer"></td> 
-                        <td>Taxonomy Map</td>
-                      </tr>
-                      <tr> 
-                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}</th>
+                        <th scope="row" class="project-fn">{{ projectNames[projectName]["sample_metadata_name"] }}</th>
                         <td class="subsampleDisplayContainer"></td> 
                         <td>Metadata</td>
                       </tr>
                     </tbody> 
                   </table>
                 </div>
-                {% endif %}
               {% endfor %}
             {% endif %}
           </div>

@@ -1,49 +1,43 @@
 from functools import lru_cache
 
-from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, \
-    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
+from mian.core.constants import RAW_TABLE_FILENAME, RAW_TABLE_LABELS_FILENAME
 from mian.core.data_io import DataIO
 from mian.model.metadata import Metadata
 import logging
-from multiprocessing import Pool
-from functools import partial
-import datetime
-import numpy as np
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
 
 
-class OTUTable(object):
+class GeneTable(object):
 
-    def __init__(self, user_id, pid, use_raw=False):
+    def __init__(self, user_id, pid):
         self.user_id = ""
         self.pid = ""
         self.sample_metadata = ""
         self.table = []
         self.headers = []
         self.sample_labels = []
-        self.load_otu_table(user_id, pid, use_raw)
+        self.load_table(user_id, pid)
         logger.info(DataIO.tsv_to_table.cache_info())
 
-    def load_otu_table(self, user_id, pid, use_raw):
+    @staticmethod
+    def load_table_headers(user_id, pid):
+        labels = DataIO.tsv_to_table(user_id, pid, RAW_TABLE_LABELS_FILENAME)
+        return labels[0]
+
+    def load_table(self, user_id, pid):
         self.user_id = user_id
         self.pid = pid
         logger.info("Before load")
         self.sample_metadata = Metadata(user_id, pid)
         logger.info("Finished metadata loading")
-        if use_raw:
-            logger.info("Using raw data")
-            self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, RAW_OTU_TABLE_FILENAME)
-            labels = DataIO.tsv_to_table(self.user_id, self.pid, RAW_OTU_TABLE_LABELS_FILENAME)
-            self.headers = labels[0]
-            self.sample_labels = labels[1]
-        else:
-            logger.info("Using subsampled data")
-            self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
-            labels = DataIO.tsv_to_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
-            self.headers = labels[0]
-            self.sample_labels = labels[1]
+
+        self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, RAW_TABLE_FILENAME)
+        labels = DataIO.tsv_to_table(self.user_id, self.pid, RAW_TABLE_LABELS_FILENAME)
+        self.headers = labels[0]
+        self.sample_labels = labels[1]
+
         logger.info("Finished table loading")
 
     def get_table(self):
@@ -56,16 +50,13 @@ class OTUTable(object):
         return self.sample_labels
 
     def get_table_after_filtering(self, user_request):
-        t, h, s = self.filter_otu_table_by_metadata(self.table, self.headers, self.sample_labels, user_request)
+        t, h, s = self.filter_table_by_metadata(self.table, self.headers, self.sample_labels, user_request)
         return t, h, s
-
-    def get_otu_metadata(self):
-        return self.otu_metadata
 
     def get_sample_metadata(self):
         return self.sample_metadata
 
-    def filter_otu_table_by_metadata(self, base, headers, sample_labels, user_request):
+    def filter_table_by_metadata(self, base, headers, sample_labels, user_request):
         """
         Filters an OTU table by a particular metadata category by identifying the samples that fall under the
         metadata category
@@ -119,16 +110,3 @@ class OTUTable(object):
 
         logger.info("Filtered out " + str(num_filtered_samples) + "/" + str(len(base)) + " samples")
         return new_otu_table, headers, new_sample_labels
-
-    @staticmethod
-    def get_otu_table_headers_at_taxonomic_level(user_id, pid, level, use_raw=False):
-        if use_raw:
-            logger.info("Using raw data")
-            labels = DataIO.tsv_to_table(user_id, pid, RAW_OTU_TABLE_LABELS_FILENAME)
-            headers = labels[0]
-        else:
-            logger.info("Using subsampled data")
-            labels = DataIO.tsv_to_table(user_id, pid, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
-            headers = labels[0]
-
-        return headers

@@ -13,7 +13,7 @@ import logging
 
 from mian.analysis.analysis_base import AnalysisBase
 
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 
 
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +23,7 @@ class TreeView(AnalysisBase):
 
     def run(self, user_request):
         logger.info("Starting TreeView analysis")
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         taxonomy_map = table.get_otu_metadata().get_taxonomy_map()

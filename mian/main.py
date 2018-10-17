@@ -47,7 +47,6 @@ from mian.analysis.glmnet import GLMNet
 from mian.analysis.nmds import NMDS
 from mian.analysis.pca import PCA
 from mian.analysis.random_forest import RandomForest
-from mian.analysis.rarefaction_curves import RarefactionCurves
 from mian.analysis.table_view import TableView
 from mian.analysis.tree_view import TreeView
 from mian.db import db
@@ -55,7 +54,7 @@ from mian.model.user_request import UserRequest
 from mian.rutils import r_package_install
 from mian.model.map import Map
 from mian.model.metadata import Metadata
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 
 #
 # Global Fields
@@ -176,32 +175,14 @@ def create():
     else:
         project_manager = ProjectManager(current_user.id)
         project_name = secure_filename(request.form['projectName'])
-        project_type = request.form['projectUploadType']
-        project_subsample_type = request.form['projectSubsampleType']
-        project_subsample_to = request.form['projectSubsampleTo']
-
-        if project_type == "biom":
-            # Biom files are self-contained - they must be split up and subsampled to be compatible with mian
-            project_biom_name = secure_filename(request.form['projectBiomName'])
-            try:
-                status, message = project_manager.create_project_from_biom(project_name=project_name,
-                                                                 biom_name=project_biom_name,
-                                                                 subsample_type=project_subsample_type,
-                                                                 subsample_to=project_subsample_to)
-            except:
-                return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
-        else:
-            # Users can also choose to manually upload files
-            project_otu_table_name = secure_filename(request.form['projectOTUTableName'])
-            project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
-            try:
-                status, message = project_manager.create_project_from_tsv(project_name=project_name,
-                                                                otu_filename=project_otu_table_name,
-                                                                sample_metadata_filename=project_sample_id_name,
-                                                                subsample_type=project_subsample_type,
-                                                                subsample_to=project_subsample_to)
-            except:
-                return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
+        project_otu_table_name = secure_filename(request.form['projectOTUTableName'])
+        project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
+        try:
+            status, message = project_manager.create_project_from_tsv(project_name=project_name,
+                                                            filename=project_otu_table_name,
+                                                            sample_metadata_filename=project_sample_id_name)
+        except:
+            return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
 
         return redirect(url_for('projects', status=status, message=message))
 
@@ -320,14 +301,6 @@ def random_forest():
     return render_template('random_forest.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
-@app.route('/rarefaction')
-@flask_login.login_required
-def rarefaction():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('rarefaction.html', projectNames=projectNames, currProject=currProject)
-
-
 @app.route('/table')
 @flask_login.login_required
 def table():
@@ -399,16 +372,15 @@ def getMetadataHeadersWithType():
     abundances = metadata.get_metadata_headers_with_type()
     return json.dumps(abundances)
 
-@app.route('/otu_table_headers_at_level')
+@app.route('/gene_names')
 @flask_login.login_required
-def getOTUTableHeadersAtLevel():
+def getGeneNames():
     user = current_user.id
     pid = request.args.get('pid', '')
-    level = request.args.get('level', '')
-    if pid == '' or level == '':
+    if pid == '':
         return json.dumps({})
 
-    headers = OTUTable.get_otu_table_headers_at_taxonomic_level(user, pid, level)
+    headers = GeneTable.load_table_headers(user, pid)
     return json.dumps(headers)
 
 @app.route('/metadata_vals')
@@ -544,18 +516,6 @@ def getRandomForest():
     user_request.set_custom_attr("maxDepth", request.form['maxDepth'])
 
     plugin = RandomForest()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
-
-
-@app.route('/rarefaction', methods=['POST'])
-@flask_login.login_required
-def getRarefaction():
-    print("getRarefaction")
-    user_request = __get_user_request(request)
-    # subsamplestep = int(request.form['subsamplestep'])
-
-    plugin = RarefactionCurves()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
@@ -815,30 +775,14 @@ def get_project_ids_to_info(user_id):
             if dir != ProjectManager.STAGING_DIRECTORY:
                 pid = dir
                 project_map = Map(user_id, pid)
-                project_info = {}
-                if project_map.orig_biom_name != "":
-                    project_type = "biom"
-                    project_info = {
-                        "project_name": project_map.project_name,
-                        "pid": pid,
-                        "project_type": project_type,
-                        "orig_biom_name": project_map.orig_biom_name,
-                        "subsampled_value": project_map.subsampled_value,
-                        "subsampled_type": project_map.subsampled_type,
-                        "subsampled_removed_samples": project_map.subsampled_removed_samples
-                    }
-                else:
-                    project_type = "table"
-                    project_info = {
-                        "project_name": project_map.project_name,
-                        "pid": pid,
-                        "project_type": project_type,
-                        "orig_otu_table_name": project_map.orig_otu_table_name,
-                        "orig_sample_metadata_name": project_map.orig_sample_metadata_name,
-                        "subsampled_value": project_map.subsampled_value,
-                        "subsampled_type": project_map.subsampled_type,
-                        "subsampled_removed_samples": project_map.subsampled_removed_samples
-                    }
+                project_type = "table"
+                project_info = {
+                    "project_name": project_map.project_name,
+                    "pid": pid,
+                    "project_type": project_type,
+                    "table_name": project_map.table_name,
+                    "sample_metadata_name": project_map.sample_metadata_name
+                }
                 logger.info("Read project info " + str(project_info))
                 project_name_to_info[project_map.project_name] = project_info
     return project_name_to_info

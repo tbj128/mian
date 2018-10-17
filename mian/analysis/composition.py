@@ -3,13 +3,13 @@ import math
 
 from mian.analysis.analysis_base import AnalysisBase
 
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 
 
 class Composition(AnalysisBase):
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         metadata = table.get_sample_metadata().get_as_table()

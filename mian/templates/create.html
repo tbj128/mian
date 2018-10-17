@@ -26,12 +26,13 @@
           <div id="otu-table-upload-container" class="row upload-item">
             <div>
               <div class="col-md-10">
-                <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;OTU Table</h3>
-                <p>Tab-delimited file with OTUs across the top header and sample/group IDs as rows. Accepted formats shown below.</p>
+                <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;Gene Table</h3>
+                <p>CSV file with sample/group IDs across the top header and individual genes as rows (RPKM, FPKM, TPM). Accepted format shown below.</p>
                   <p>Example manually created OTU format: </p>
-<pre><code>Sample	Otu01	Otu02	Otu03	Otu04	Otu05	...
-1a	0	5	2	3	3	...
-1b	7	2	5	1	1	...
+<pre><code>Gene,1a,1b,1c,1d, ...
+Aaas,8.53,9.05,8.88,9.76, ...
+Aacs,18.39,19.75,17.74,18.84, ...
+...
 </code></pre>
               </div>
               <div class="col-md-2 upload-status">
@@ -42,30 +43,11 @@
                     <i class="fa fa-spinner upload-loading"></i>
                   </span>
                   <span id="otuTableWrapper" class="btn btn-default btn-file">
-                      <span id="otuTableText">Upload</span> <input type="file" name="upload" id="otuTable" accept=".tsv,.txt,.shared" />
+                      <span id="otuTableText">Upload</span> <input type="file" name="upload" id="otuTable" accept=".csv" />
                   </span>
                 </form>
               </div>
               <div style="clear:both"></div>
-            </div>
-            <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #999;">
-              <div>
-                <h4 style="padding-left: 15px;">Additional Subsampling</h4>
-                <p style="padding-left: 15px;">Subsampling is necessary for some visualizations and statistical tests. The subsampling can be adjusted at any time.</p>
-                <div class="col-md-6">
-                  <select id="subsampleType" name="subsampleType" class="form-control pad-bottom">
-                    <option value="no" selected>Don't Subsample</option>
-                    <option value="auto" >Auto Subsample</option>
-                    <option value="manual">Manual Subsample</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <input type="number" class="form-control" id="subsampleTo" name="subsampleTo" placeholder="Subsample To..." style="display:none;">
-                  <p id="auto-prompt" style="font-size:11px;color:#999;">Subsamples each sample in the OTU table to the smallest number of sequences of any sample.</p>
-                  <p id="manual-prompt" style="font-size:11px;color:#999;margin-top:6px;display:none;">Subsamples each sample in the OTU table to a specific value.</p>
-                  <p id="no-prompt" style="font-size:11px;color:#999;display:none;">Assumes that the uploaded OTU table is subsampled already. (Does not perform subsampling)</p>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -76,6 +58,7 @@
 <pre><code>Sample	body_site	disease	...
 1a	gut		Disease	...
 1b	skin		Control	...
+...
 </code></pre>
             </div>
             <div class="col-md-2 upload-status">
@@ -98,8 +81,6 @@
             <input type="hidden" id="projectUploadType" name="projectUploadType" value="otu" />
             <input type="hidden" id="projectOTUTableName" name="projectOTUTableName" value="" />
             <input type="hidden" id="projectSampleIDName" name="projectSampleIDName" value="" />
-            <input type="hidden" id="projectSubsampleType" name="projectSubsampleType" value="auto" />
-            <input type="hidden" id="projectSubsampleTo" name="projectSubsampleTo" value="" />
             <button id="upload-submit" type="submit" class="btn btn-primary" style="width:180px;" disabled>Create</button>
           </form>
         </div>

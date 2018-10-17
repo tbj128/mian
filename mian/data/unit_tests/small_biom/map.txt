@@ -1,1 +1,1 @@
-{"project_name": "Small_Biom", "subsampled_value": 30, "subsampled_type": "auto", "subsampled_removed_samples": [], "orig_biom_name": "table.biom", "orig_otu_table_name": "", "orig_taxonomy_name": "", "orig_sample_metadata_name": "", "taxonomy_type": "Greengenes"}
+{"project_name": "Small_Biom", "subsampled_value": 30, "subsampled_type": "auto", "subsampled_removed_samples": [], "orig_biom_name": "table.biom", "table_name": "", "orig_taxonomy_name": "", "sample_metadata_name": "", "taxonomy_type": "Greengenes"}

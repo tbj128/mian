@@ -5,7 +5,7 @@ from functools import partialmethod
 from multiprocessing import Pool
 import datetime
 
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 from tests.analysis.analysis_test_utils import AnalysisTestUtils
 
 
@@ -33,7 +33,7 @@ class TestOTUTable(unittest.TestCase):
         user_request.level = 2
 
         start = datetime.datetime.now()
-        otu_table = OTUTable("unit_tests", "large_biom")
+        otu_table = GeneTable("unit_tests", "large_biom")
         end = datetime.datetime.now()
         elapsed = end - start
         print(elapsed)

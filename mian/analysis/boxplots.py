@@ -2,7 +2,7 @@ import numpy as np
 
 from mian.analysis.analysis_base import AnalysisBase
 from mian.core.statistics import Statistics
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 import logging
 import json
 
@@ -21,7 +21,7 @@ class Boxplots(AnalysisBase):
 
     def abundance_boxplots(self, user_request, yvals):
         logger.info("Starting abundance_boxplots")
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering(user_request)
         metadata = table.get_sample_metadata().get_as_table()
         return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata)
@@ -118,7 +118,7 @@ class Boxplots(AnalysisBase):
 
         # This code path is used only when the user wants to draw boxplots from only the metadata data
 
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         metadata = table.get_sample_metadata().get_as_filtered_table(user_request.sample_filter,
                                                                      user_request.sample_filter_role,
                                                                      user_request.sample_filter_vals)

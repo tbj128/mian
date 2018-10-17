@@ -9,7 +9,7 @@
 # Imports
 #
 
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
 from sklearn import cluster, covariance
@@ -18,7 +18,7 @@ from sklearn import cluster, covariance
 class CorrelationNetwork(object):
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         return self.analyse(user_request, base, headers)

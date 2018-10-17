@@ -9,7 +9,7 @@
 # Imports
 #
 
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
@@ -17,7 +17,7 @@ import numpy as np
 class RandomForest(object):
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         otu_table, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)

@@ -9,7 +9,7 @@
 # Imports
 #
 
-from mian.model.otu_table import OTUTable
+from mian.model.gene_table import GeneTable
 from mian.core.statistics import Statistics
 import logging
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class DifferentialSelection(object):
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = GeneTable(user_request.user_id, user_request.pid)
         otu_table, headers, sample_labels = table.get_table_after_filtering(user_request)
 
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)

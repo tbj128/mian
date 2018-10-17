@@ -4,8 +4,8 @@ import os
 import numpy as np
 import math
 
-from mian.core.constants import SUBSAMPLED_OTU_TABLE_FILENAME, SAMPLE_METADATA_FILENAME, TAXONOMY_FILENAME, \
-    SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
+from mian.core.constants import TRANSPOSED_TABLE_FILENAME, SAMPLE_METADATA_FILENAME, TAXONOMY_FILENAME, \
+    TRANSPOSED_TABLE_LABELS_FILENAME
 from mian.model.user_request import UserRequest
 
 from mian.rutils import r_package_install
@@ -39,7 +39,7 @@ class AnalysisTestUtils(object):
             return json.loads(data)
 
     @staticmethod
-    def get_test_input_as_table(test_dir, csv_name=SUBSAMPLED_OTU_TABLE_FILENAME, sep="\t", use_np=False):
+    def get_test_input_as_table(test_dir, csv_name=TRANSPOSED_TABLE_FILENAME, sep="\t", use_np=False):
         output = []
         csv_name = os.path.join(test_dir, csv_name)
         print("Opening file with name " + csv_name)
@@ -53,7 +53,7 @@ class AnalysisTestUtils(object):
         return output
 
     @staticmethod
-    def get_test_input_as_metadata(test_dir, csv_name=SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, sep="\t"):
+    def get_test_input_as_metadata(test_dir, csv_name=TRANSPOSED_TABLE_LABELS_FILENAME, sep="\t"):
         output = []
         csv_name = os.path.join(test_dir, csv_name)
         print("Opening file with name " + csv_name)

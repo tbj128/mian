@@ -10,21 +10,11 @@ SUBSAMPLE_TYPE_DISABLED = "no"
 BIOM_FILENAME = "table.biom"
 
 # The raw table reads (numerical values only)
-RAW_OTU_TABLE_FILENAME = "table.raw.tsv"
+RAW_TABLE_FILENAME = "table.raw.tsv"
 
-# The table header and the row labels (by separating the OTU table
+# The table header and the row labels (by separating the gene table
 # and the labels, we get to take advantage of matrix transformations)
-RAW_OTU_TABLE_LABELS_FILENAME = "table.raw.labels.tsv"
-
-# The raw table after having been subsampled (numerical values only)
-SUBSAMPLED_OTU_TABLE_FILENAME = "table.subsampled.tsv"
-
-# The table header and the row labels (by separating the OTU table
-# and the labels, we get to take advantage of matrix transformations)
-SUBSAMPLED_OTU_TABLE_LABELS_FILENAME = "table.subsampled.labels.tsv"
-
-# The taxonomy file to explain the OTU table columns
-TAXONOMY_FILENAME = "taxonomy.tsv"
+RAW_TABLE_LABELS_FILENAME = "table.raw.labels.tsv"
 
 # The sample metadata file
 SAMPLE_METADATA_FILENAME = "sample_metadata.tsv"

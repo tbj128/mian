@@ -19,7 +19,7 @@ class TestBetaDiversity(unittest.TestCase):
         sample_ids_from_metadata = AnalysisTestUtils.get_sample_ids_from_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
 
         plugin = BetaDiversity()
-        actual_output = plugin.analyse(user_request, otu_table, sample_labels, metadata_values, sample_ids_from_metadata)
+        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_from_metadata)
         print(json.dumps(actual_output))
 
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,

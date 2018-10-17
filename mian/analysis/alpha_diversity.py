@@ -62,9 +62,9 @@ class AlphaDiversity(AnalysisBase):
         metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
-        return self.analyse(user_request, otu_table, sample_labels, metadata_values, sample_ids_to_metadata_map)
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_to_metadata_map)
 
-    def analyse(self, user_request, otu_table, sample_labels, metadata_values, sample_ids_to_metadata_map):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_to_metadata_map):
         logger.info("Starting Alpha Diversity analysis")
 
         # Creates an R-compatible dictionary of columns to vectors of column values WITHOUT headers
@@ -78,7 +78,7 @@ class AlphaDiversity(AnalysisBase):
                 if len(metadata_values) == 0 or sampleID in sample_ids_to_metadata_map:
                     colVals.append(otu_table[row][col])
                 row += 1
-            allOTUs.append((otu_table[0][col], robjects.FloatVector(colVals)))
+            allOTUs.append((headers[col], robjects.FloatVector(colVals)))
             col += 1
 
         logger.info("After creating an R-compatible dictionary")

@@ -105,9 +105,9 @@ class BetaDiversity(AnalysisBase):
         # TODO: FIX
         # =====================================================================
 
-        return self.analyse(user_request, otu_table, sample_labels, metadata_values, sample_ids_to_metadata_map)
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_to_metadata_map)
 
-    def analyse(self, user_request, otu_table, sample_labels, metadata_values, sample_ids_from_metadata):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_from_metadata):
         if len(metadata_values) == 0:
             raise ValueError("Beta diversity can only be used when there are at least two groups to compare between")
 
@@ -124,7 +124,7 @@ class BetaDiversity(AnalysisBase):
                 if sampleID in sample_ids_from_metadata:
                     colVals.append(otu_table[row][col])
                 row += 1
-            allOTUs.append((otu_table[0][col], robjects.FloatVector(colVals)))
+            allOTUs.append((headers[col], robjects.FloatVector(colVals)))
             col += 1
 
         od = rlc.OrdDict(allOTUs)

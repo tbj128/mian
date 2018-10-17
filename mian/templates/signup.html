@@ -8,6 +8,18 @@
   <body>
     {% include 'navigation.html' %}
 
+    {% if error %}
+    <div class="alert alert-danger">
+      <strong>Oh no!</strong> Something went wrong, please try again
+    </div>
+    {% endif %}
+
+    {% if exists %}
+    <div class="alert alert-warning">
+      <strong>Duplicate Email</strong> If you already have an account, please try signing in instead
+    </div>
+    {% endif %}
+
     <div class="content-wrapper" style="padding-top:24px">
       <div class="jumbotron" style="margin: 0 auto;width:540px;padding-left:36px;padding-right:36px;">
         <div class="container">

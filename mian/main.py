@@ -107,6 +107,11 @@ def signup():
     else:
         email = request.form['inputName']
         password = request.form['inputPassword']
+
+        # Checks that the user doesn't already exist
+        if checkUserExists(email):
+            return render_template('signup.html', exists=1)
+
         addUser(email, password)
 
         # Checks that the user account was created properly and obtains the user ID
@@ -124,7 +129,7 @@ def signup():
             flask_login.login_user(user)
             return redirect(url_for('projects', signup=1))
 
-        return 'Internal Signup Error. :( Please try again later.'
+        return render_template('signup.html', error=1)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -720,6 +725,21 @@ def addUser(username, password):
     c.execute('INSERT INTO accounts (user_email, password_hash, salt) VALUES (?,?,?)', (username, calculatedPassword, salt))
     db.commit()
     db.close()
+
+
+def checkUserExists(email):
+    """
+    Checks if the user exists
+    """
+    db = sqlite3.connect(DB_PATH)
+    c = db.cursor()
+    t = (email,)
+    c.execute('SELECT id, user_email FROM accounts WHERE user_email=?', t)
+    row = c.fetchone()
+    if row is None:
+        return False
+    db.close()
+    return True
 
 
 def getUserEmail(userID):

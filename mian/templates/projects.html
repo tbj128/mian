@@ -132,7 +132,7 @@
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody>
                       <tr>
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}&nbsp;<a class="" data-downloadtype="biom" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the biom file"><i class="fa fa-download"></i></a></th>
+                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}&nbsp;<a class="download" data-downloadtype="biom" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the biom file"><i class="fa fa-download"></i></a></th>
                         <td class="col-md-3 subsampleDisplayContainer">
                           <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}
@@ -172,7 +172,7 @@
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody> 
                       <tr> 
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_otu_table_name"] }}&nbsp;<a class="" data-downloadtype="otu" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the OTU table"><i class="fa fa-download"></i></a></th>
+                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_otu_table_name"] }}&nbsp;<a class="download" data-downloadtype="otu" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the OTU table"><i class="fa fa-download"></i></a></th>
                         <td class="col-md-3 subsampleDisplayContainer">
                           <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}

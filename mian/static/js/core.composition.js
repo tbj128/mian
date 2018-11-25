@@ -13,7 +13,6 @@ initializeComponent({
   hasCatVarNoneOption: true
 });
 createSpecificListeners();
-$("#catvar").prepend("<option value='All'>None</option>");
 
 //
 // Component-Specific Sidebar Listeners

@@ -31,7 +31,7 @@ class Composition(AnalysisBase):
         metadataMap = {}
         uniqueMetadataVals = {}
 
-        # TODO: Refactor
+        # Extracts the unique metadata values
         catCol = -1
         i = 0
         while i < len(metadata):
@@ -50,48 +50,42 @@ class Composition(AnalysisBase):
                     uniqueMetadataVals[metadata[i][catCol]] = 1
             i += 1
 
-        # Maps id to total
-        totalAbun = {}
-        i = 0
-        while i < len(base):
-            sampleID = sample_labels[i]
-            total = 0
-            j = 0
-            while j < len(base[i]):
-                total += float(base[i][j])
-                j += 1
-            totalAbun[sampleID] = total
-            i += 1
+        # Get a map of OTUs to their sum by group
+        sumByOTU = {}
 
-        # Iterates through each tax classification and calculates the relative abundance for each category
-        colToTax = {}
         j = 0
         while j < len(base[0]):
-            tax = headers[j]
-            compositionAbun[tax] = {}
-            for m, v in uniqueMetadataVals.items():
-                compositionAbun[tax][m] = []
-
             i = 0
+            otuSumsByGroup = {}
+            for k,v in uniqueMetadataVals.items():
+                otuSumsByGroup[k] = 0
+
             while i < len(base):
                 sampleID = sample_labels[i]
-                if sampleID in metadataMap:
-                    m = metadataMap[sampleID]
-                    compositionAbun[tax][m].append(float(base[i][j]) / float(totalAbun[sampleID]))
+                otuSumsByGroup[metadataMap[sampleID]] += float(base[i][j])
                 i += 1
-
-            for m, v in uniqueMetadataVals.items():
-                comp_abun = round(np.mean(compositionAbun[tax][m]), 3)
-                if not math.isnan(comp_abun):
-                    compositionAbun[tax][m] = comp_abun
-
+            otu = headers[j]
+            sumByOTU[otu] = otuSumsByGroup
             j += 1
 
+        totalByGroup = {}
+        for k,v in uniqueMetadataVals.items():
+            totalByGroup[k] = 0
+            for otu,otuSumsByGroup in sumByOTU.items():
+                # Adds up all the OTUs (by group)
+                totalByGroup[k] += otuSumsByGroup[k]
+
+
         formattedCompositionAbun = []
-        for t, obj in compositionAbun.items():
-            newObj = {}
-            newObj["t"] = t
-            newObj["o"] = obj
+        for otu,otuSumsByGroup in sumByOTU.items():
+            relativeAbunObj = {}
+            for k,v in uniqueMetadataVals.items():
+                if totalByGroup[k] != 0:
+                    relativeAbun = round(otuSumsByGroup[k] / float(totalByGroup[k]), 3)
+                else:
+                    relativeAbun = 0
+                relativeAbunObj[k] = relativeAbun
+            newObj = {"t": otu, "o": relativeAbunObj}
             formattedCompositionAbun.append(newObj)
 
         abundancesObj = {}

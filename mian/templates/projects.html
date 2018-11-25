@@ -132,7 +132,7 @@
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody>
                       <tr>
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}</th>
+                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}&nbsp;<a class="" data-downloadtype="biom" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the biom file"><i class="fa fa-download"></i></a></th>
                         <td class="col-md-3 subsampleDisplayContainer">
                           <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}
@@ -172,7 +172,7 @@
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody> 
                       <tr> 
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_otu_table_name"] }}</th>
+                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_otu_table_name"] }}&nbsp;<a class="" data-downloadtype="otu" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the OTU table"><i class="fa fa-download"></i></a></th>
                         <td class="col-md-3 subsampleDisplayContainer">
                           <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}
@@ -188,7 +188,8 @@
                             {% endif %} 
                           </span>
                           &nbsp;
-                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>&nbsp;
+                          <a class="download" data-downloadtype="otu_subsampled" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the subsampled OTU table"><i class="fa fa-download"></i></a>
 
 
                           {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
@@ -204,12 +205,12 @@
                         <td class="col-md-3">OTU Table</td>
                       </tr>
                       <tr> 
-                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_taxonomy_name"] }}</th>
+                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_taxonomy_name"] }}&nbsp;<a class="download" data-downloadtype="taxonomy" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the taxonomy file"><i class="fa fa-download"></i></a></th>
                         <td class="subsampleDisplayContainer"></td> 
                         <td>Taxonomy Map</td>
                       </tr>
                       <tr> 
-                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}</th>
+                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
                         <td class="subsampleDisplayContainer"></td> 
                         <td>Metadata</td>
                       </tr>

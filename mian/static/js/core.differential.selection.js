@@ -37,6 +37,10 @@ function createSpecificListeners() {
   $("#pwVar2").change(function() {
     updateAnalysis();
   });
+
+  $("#type").change(function() {
+    updateAnalysis();
+  });
 }
 
 //
@@ -127,6 +131,7 @@ function updateAnalysis() {
   var pvalthreshold = $("#pvalthreshold").val();
   var pwVar1 = $("#pwVar1").val();
   var pwVar2 = $("#pwVar2").val();
+  var type = $("#type").val();
 
   if (catvar === "none") {
     $("#analysis-container").hide();
@@ -150,7 +155,8 @@ function updateAnalysis() {
     catvar: catvar,
     pvalthreshold: pvalthreshold,
     pwVar1: pwVar1,
-    pwVar2: pwVar2
+    pwVar2: pwVar2,
+    type: type
   };
 
   $.ajax({

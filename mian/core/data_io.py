@@ -47,10 +47,15 @@ class DataIO:
 
         logger.info("Opening file with name " + csv_name)
 
-        return DataIO.tsv_to_table_from_path(csv_name)
+        return DataIO.tsv_to_table_from_path(csv_name, sep)
 
     @staticmethod
     def tsv_to_table_from_path(csv_path, sep="\t"):
+        sniffer = csv.Sniffer()
+        dialect = sniffer.sniff('quarter, dime, nickel, penny')
+        print
+        dialect.delimiter
+
         otu_map = []
         with open(csv_path, 'r') as csvfile:
             base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')

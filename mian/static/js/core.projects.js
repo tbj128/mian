@@ -6,6 +6,13 @@ $(document).ready(function() {
   // Popovers on the create page
   $('[data-toggle="popover"]').popover();
 
+  $(".download").click(function() {
+    var type = $(this).data("downloadtype");
+    var project = $(this).data("project");
+    console.log("Download file " + type + " in project " + project);
+    window.open("download?pid=" + project + "&type=" + type, '_blank');
+  });
+
   $(".project-delete").click(function() {
     var project_name = $(this).data("projectname");
     var project = $(this).data("project");

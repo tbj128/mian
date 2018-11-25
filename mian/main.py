@@ -10,7 +10,7 @@
 #
 from functools import lru_cache
 
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, Response
 import flask_login
 from flask_login import current_user
 from werkzeug import secure_filename
@@ -27,6 +27,7 @@ import logging
 import os
 import pwd
 
+from mian.core.data_io import DataIO
 from mian.rutils import r_package_install
 r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
@@ -561,6 +562,7 @@ def getCorrelationsSelection():
 @flask_login.login_required
 def getDifferentialSelection():
     user_request = __get_user_request(request)
+    user_request.set_custom_attr("type", request.form['type'])
     user_request.set_custom_attr("pvalthreshold", request.form['pvalthreshold'])
     user_request.set_custom_attr("pwVar1", request.form['pwVar1'])
     user_request.set_custom_attr("pwVar2", request.form['pwVar2'])
@@ -746,6 +748,23 @@ def changeSubsampling():
     subsample_value = project_manager.modify_subsampling(pid, subsampleType, subsampleTo)
 
     return json.dumps(subsample_value)
+
+@app.route("/download")
+@flask_login.login_required
+def downloadFile():
+    user = current_user.id
+    currProject = request.args.get('pid', '')
+    type = request.args.get('type', '')
+    project_manager = ProjectManager(user)
+
+    def generate():
+        for row in project_manager.get_file_for_download(currProject, type):
+            yield '\t'.join(row) + '\n'
+    return Response(generate(),
+                       mimetype="text/tab-separated-values",
+                       headers={"Content-Disposition":
+                                    "attachment;filename=" + type + ".txt"})
+
 
 # ------------------
 # Helpers

@@ -18,7 +18,7 @@ from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, \
     SUBSAMPLED_OTU_TABLE_FILENAME, BIOM_FILENAME, TAXONOMY_FILENAME, SAMPLE_METADATA_FILENAME, \
-    RAW_OTU_TABLE_LABELS_FILENAME
+    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
 import csv
 import os
 import re
@@ -47,6 +47,43 @@ class ProjectManager(object):
 
     def __init__(self, user_id):
         self.user_id = user_id
+
+    def get_file_for_download(self, project_name, type):
+        if type == "sample_metadata":
+            return DataIO.tsv_to_table(self.user_id, project_name, SAMPLE_METADATA_FILENAME)
+        elif type == "taxonomy":
+            return DataIO.tsv_to_table(self.user_id, project_name, TAXONOMY_FILENAME)
+        elif type == "biom":
+            return DataIO.tsv_to_table(self.user_id, project_name, BIOM_FILENAME)
+        elif type == "otu":
+            table = DataIO.tsv_to_table(self.user_id, project_name, RAW_OTU_TABLE_FILENAME)
+            labels = DataIO.tsv_to_table(self.user_id, project_name, RAW_OTU_TABLE_LABELS_FILENAME)
+            new_headers = ["Sample Labels"]
+            new_headers.extend(labels[0])
+            full_table = [new_headers]
+            i = 0
+            while i < len(table):
+                new_row = [labels[1][i] if i < len(labels[1]) else ""]
+                new_row.extend(table[i])
+                full_table.append(new_row)
+                i += 1
+            return full_table
+        elif type == "otu_subsampled":
+            table = DataIO.tsv_to_table(self.user_id, project_name, SUBSAMPLED_OTU_TABLE_FILENAME)
+            labels = DataIO.tsv_to_table(self.user_id, project_name, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
+            new_headers = ["Sample Labels"]
+            new_headers.extend(labels[0])
+            full_table = [new_headers]
+            i = 0
+            while i < len(table):
+                new_row = [labels[1][i] if i < len(labels[1]) else ""]
+                new_row.extend(table[i])
+                full_table.append(new_row)
+                i += 1
+            return full_table
+        else:
+            return []
+
 
     def create_project_from_tsv(self, project_name, otu_filename, taxonomy_filename, sample_metadata_filename,
                                 subsample_type="auto", subsample_to=0):

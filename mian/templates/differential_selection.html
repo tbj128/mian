@@ -53,6 +53,12 @@
                 <select id="pwVar2" name="pwVar2" class="form-control">
                 </select>
 
+                <label class="control-label">Differential Test Type <i class="fa fa-info-circle" data-toggle="popover" data-title="Differential Test Type" data-content="Choose the type of test that will be applied. ANCOM is recommended when using an unsampled dataset." data-trigger="hover"></i></label>
+                <select id="type" name="type" class="form-control">
+                    <option>Welch's t-test</option>
+                    <option>ANCOM</option>
+                </select>
+
                 <label class="control-label">P-Value Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="Only OTUs or taxas whose differential analysis t-test p-value was less than this threshold will be displayed"></i></label>
                 <input class="form-control" id="pvalthreshold" name="pvalthreshold" type="number" value="0.05" min="0"
                        max="1" step="0.01"/>
@@ -67,7 +73,7 @@
         <i class="fa fa-exclamation-circle fa-4x"></i>
         <h3>Choose a Category Breakdown Attribute</h3>
         <h5>
-            The differential selection analysis apply a Welch's t-test on every taxonomy/OTU between the sample groupings defined by the category breakdown value. <br />The most significant taxonomies/OTUs will be displayed.
+            The differential selection analysis apply ANCOM (analysis of composition) on an unsampled dataset or Welch's t-test on every taxonomy/OTU between the sample groupings defined by the category breakdown value. <br />The most significant taxonomies/OTUs will be displayed.
         </h5>
     </div>
     {% include 'notifications.html' %}

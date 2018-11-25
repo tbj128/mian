@@ -51,7 +51,6 @@ function renderRarefactionCurves(abundancesObj) {
 
   // setup x
   var xValue = function(d) {
-      console.log(d);
       return d.h;
     },
     xScale = d3.scale.linear().range([0, width]),

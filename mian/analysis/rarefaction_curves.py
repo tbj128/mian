@@ -27,7 +27,7 @@ class RarefactionCurves(object):
     generate_rarefaction_curve <- function(base) {
         raremax <- max(rowSums(base))
         #raremax <- min(rowSums(base))
-        step <- round(raremax / 10)
+        step <- round(raremax / 100)
         
         # Writes to a NULL file because we want to suppress the graphics output
         pdf(file = NULL)

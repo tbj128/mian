@@ -1,7 +1,8 @@
 # Custom
 mian/data/*
-!mian/data/example/*
-!mian/data/unit_tests/*
+!mian/data/example
+!mian/data/unit_tests
+
 *.db
 config.py
 mian/static/tmp/*

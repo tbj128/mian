@@ -1,0 +1,1 @@
+{"project_name": "COPD Example Project", "subsampled_value": 676, "subsampled_type": "auto", "subsampled_removed_samples": [], "orig_biom_name": "", "orig_otu_table_name": "otu_table.shared", "orig_taxonomy_name": "taxonomy.tsv", "orig_sample_metadata_name": "sample_metadata.txt", "taxonomy_type": ""}

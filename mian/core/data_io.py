@@ -49,16 +49,24 @@ class DataIO:
 
         return DataIO.tsv_to_table_from_path(csv_name, sep)
 
+    # @staticmethod
+    # def get_sep_type(csv_path):
+    #     sniffer = csv.Sniffer()
+    #     with open(csv_path) as f:
+    #         reader = csv.reader(f)
+    #         sample_row = next(reader)
+    #         dialect = sniffer.sniff(sample_row)
+    #         dialect.delimiter
+
+
     @staticmethod
     def tsv_to_table_from_path(csv_path, sep="\t"):
-        sniffer = csv.Sniffer()
-        dialect = sniffer.sniff('quarter, dime, nickel, penny')
-        print
-        dialect.delimiter
-
         otu_map = []
         with open(csv_path, 'r') as csvfile:
-            base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
+            dialect = csv.Sniffer().sniff(csvfile.readline())
+            csvfile.seek(0)
+            # base_csv = csv.reader(csvfile, delimiter=dialect, quotechar='|')
+            base_csv = csv.reader(csvfile, dialect)
             for o in base_csv:
                 if o != "":
                     otu_map.append(o)

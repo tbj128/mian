@@ -35,7 +35,7 @@ r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")
 r_package_install.importr_custom("glmnet")
 
-from mian.core.project_manager import ProjectManager, GENERAL_ERROR
+from mian.core.project_manager import ProjectManager, GENERAL_ERROR, OK
 from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.analysis.beta_diversity import BetaDiversity
 from mian.analysis.boruta import Boruta
@@ -157,7 +157,10 @@ def login():
 @flask_login.login_required
 def logout():
     flask_login.logout_user()
-    return redirect(url_for('login'))
+    if request.args.get('signup', '') == '1':
+        return redirect(url_for('signup'))
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/projects')
@@ -169,7 +172,8 @@ def projects():
     status = request.args.get('status', '')
     message = request.args.get('message', '')
     project_names_to_info = get_project_ids_to_info(current_user.id)
-    return render_template('projects.html', newSignup=new_signup, projectNames=project_names_to_info, status=status, message=message)
+    is_demo = current_user.name == "demo@miandata.org"
+    return render_template('projects.html', demo=is_demo, newSignup=new_signup, projectNames=project_names_to_info, status=status, message=message)
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -735,6 +739,28 @@ def deleteProject():
                 return "OK"
         return "Error"
 
+@app.route('/loadExampleProject', methods=['POST'])
+@flask_login.login_required
+def loadExampleProject():
+    if request.method == 'POST':
+        project_dir = os.path.dirname(__file__)
+        project_dir = os.path.join(project_dir, "data")
+        user_dir = os.path.join(project_dir, current_user.id)
+        user_dir = os.path.join(user_dir, "example")
+
+        # Create the user dir if necessary
+        if not os.path.exists(user_dir):
+            os.makedirs(user_dir)
+
+        # Copy all files from the example directory to the user dir
+        example_dir = os.path.join(project_dir, "example")
+
+        for item in os.listdir(example_dir):
+            s = os.path.join(example_dir, item)
+            d = os.path.join(user_dir, item)
+            shutil.copy2(s, d)
+
+        return redirect(url_for('projects', status=OK, message="Example COPD Project Loaded"))
 
 @app.route('/changeSubsampling', methods=['POST'])
 @flask_login.login_required

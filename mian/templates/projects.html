@@ -36,11 +36,23 @@
     </div>
     {% include 'navigation.html' %}
     {% include 'loading-bar-processing.html' %}
-    
+
+    {% if demo %}
+    <div class="alert alert-info">
+      <strong>Demo Mode</strong> Try analysing the sample COPD dataset by using the different tools in the dropdown menu above. Datasets created in the demo account may be deleted at any time. <br />Want a permanent space? <a href="logout?signup=1">Create an account today</a>
+    </div>
+    {% endif %}
+
     {% if newSignup %}
     <div class="alert alert-success">
       <strong>Welcome!</strong> Start by creating a new project below. 
     </div>
+    {% endif %}
+
+    {% if not demo and projectNames|length > 0 and status == "" %}
+      <div class="alert alert-info">
+        Access the different data analysis tools using the dropdown menu above
+      </div>
     {% endif %}
 
     {% if status == "-1" %}
@@ -122,13 +134,16 @@
               <div class="project-empty">
                 <i class="fa fa-folder-o fa-4x"></i>
                 <h3>No projects yet</h3>
+                <p><small><a href="#" class="add-example-project"><i class="fa fa-plus"></i> Add an example project</a></small></p>
               </div>
             {% else %}
               {% for projectName in projectNames %}
                 {% if projectNames[projectName]["project_type"] == "biom" %}
                   <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
                   <h4>{{ projectName }}</h4>
+                  {% if not demo and projectName == "COPD Example Project" %}
                   <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
+                  {% endif %}
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody>
                       <tr>
@@ -168,11 +183,19 @@
                 {% else %}
                   <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
                   <h4>{{ projectName }}</h4>
+                  {% if not demo and projectName == "COPD Example Project" %}
                   <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
+                  {% endif %}
+
+                  {% if projectName == "COPD Example Project" %}
+                  <p><small class="text-muted">This example uses data from the Sze et al. study <a href="https://www.atsjournals.org/doi/full/10.1164/rccm.201502-0223OC" target="_blank">Host Response to the Lung Microbiome in Chronic Obstructive Pulmonary Disease</a></small></p>
+                  {% endif %}
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody> 
                       <tr> 
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_otu_table_name"] }}&nbsp;<a class="download" data-downloadtype="otu" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the OTU table"><i class="fa fa-download"></i></a></th>
+                        <th scope="row" class="project-fn col-md-5">
+                          {{ projectNames[projectName]["orig_otu_table_name"] }}&nbsp;<a class="download" data-downloadtype="otu" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the OTU table"><i class="fa fa-download"></i></a>
+                        </th>
                         <td class="col-md-3 subsampleDisplayContainer">
                           <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}

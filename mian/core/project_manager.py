@@ -106,6 +106,7 @@ class ProjectManager(object):
 
         sample_ids_from_sample_metadata = {}
         sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME)
+
         i = 0
         while i < len(sample_metadata):
             if i > 0:

@@ -72,7 +72,7 @@ class TestDifferentialSelection(unittest.TestCase):
         abundances = plugin.analyse_with_ancom(user_request, otu_table, headers, sample_labels, sample_id_to_metadata)
         print(json.dumps(abundances))
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
-                                                                "differential_selection_control_disease.json")
+                                                                "differential_selection_with_ancom_control_disease.json")
         comparison_output = AnalysisTestUtils.compare_two_objects(expected_output, abundances)
         if not comparison_output:
             print("Expected: ")

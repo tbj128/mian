@@ -20,7 +20,6 @@ h5py = "*"
 scikit-learn = "*"
 scipy = "*"
 werkzeug = "==0.9.4"
-mothur-py = "*"
 scikit-bio = "*"
 pandas = "*"
 

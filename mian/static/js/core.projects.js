@@ -13,6 +13,20 @@ $(document).ready(function() {
     window.open("download?pid=" + project + "&type=" + type, '_blank');
   });
 
+  $(".add-example-project").click(function() {
+      $.ajax({
+        type: "POST",
+        url: "loadExampleProject",
+        success: function(result) {
+            var baseURL = '//' + location.host + location.pathname;
+            window.location.href = baseURL;
+        },
+        error: function(err) {
+          console.log(err);
+        }
+      });
+  });
+
   $(".project-delete").click(function() {
     var project_name = $(this).data("projectname");
     var project = $(this).data("project");

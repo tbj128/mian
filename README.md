@@ -1,11 +1,11 @@
 # Mian
-####Mian is a platform for 16S rRNA OTU table visualization, data analysis, and feature selection
+#### Mian is a platform for 16S rRNA OTU table visualization, data analysis, and feature selection
 
 [miandata.org](miandata.org)
 
 [![Build Status](https://travis-ci.org/tbj128/mian.svg?branch=master)](https://travis-ci.org/tbj128/mian)
 
-###Libraries Used
+### Libraries Used
 
 Mian is built using HTML/CSS/JavaScript for the front-end and Python and R for the back-end.
 
@@ -27,7 +27,7 @@ Mian is built using HTML/CSS/JavaScript for the front-end and Python and R for t
 - [Boruta](https://cran.r-project.org/web/packages/Boruta/Boruta.pdf): All-relevant feature selection algorithm
 - [glmnet](https://cran.r-project.org/web/packages/glmnet/glmnet.pdf): Lasso and elastic-net regularized linear models
 
-###Publications
+### Publications
 Mian is currently described in a pre-print paper in bioRxiv: https://www.biorxiv.org/content/early/2018/09/14/416073
 
 ---

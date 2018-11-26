@@ -141,7 +141,7 @@
                 {% if projectNames[projectName]["project_type"] == "biom" %}
                   <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
                   <h4>{{ projectName }}</h4>
-                  {% if not demo and projectName == "COPD Example Project" %}
+                  {% if not (demo and projectName == "COPD Example Project") %}
                   <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
                   {% endif %}
                   <table class="table table-hover" style="table-layout:fixed;">
@@ -183,7 +183,7 @@
                 {% else %}
                   <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
                   <h4>{{ projectName }}</h4>
-                  {% if not demo and projectName == "COPD Example Project" %}
+                  {% if not (demo and projectName == "COPD Example Project") %}
                   <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
                   {% endif %}
 

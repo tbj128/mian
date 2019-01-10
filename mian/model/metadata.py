@@ -65,7 +65,7 @@ class Metadata(object):
                     is_numeric = False
                 i += 1
             # A column is "both" if all the entries are numeric, but there is not many unique values
-            is_both = is_numeric and len(numeric_entries) < 10
+            is_both = is_numeric and len(numeric_entries) < len(self.metadata) - 1
 
             if is_both:
                 headers.append({
@@ -169,7 +169,7 @@ class Metadata(object):
         :return:
         """
         meta_vals = {}
-        if metadata_name == "none":
+        if metadata_name.lower() == "none":
             return meta_vals
 
         meta_col = self.get_metadata_column_number(metadata_name)

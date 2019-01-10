@@ -52,11 +52,18 @@
                 </div>
 
                 <div id="specific-taxonomy-container" style="margin-bottom: 200px;">
-                    <label id="specific-taxonomy-label" class="control-label">Taxonomies to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select Taxonomies" data-content="Choose the taxonomies whose abundance should be displayed on the boxplots." data-trigger="hover"></i></label>
+                    <label id="specific-taxonomy-label" class="control-label">OTUs or Taxonomies to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select Taxonomies" data-content="Choose the taxonomies whose abundance should be displayed on the boxplots." data-trigger="hover"></i></label>
 
                     <div id="taxonomy-specific-typeahead-wrapper">
                         <input id="specific-taxonomy-typeahead" type="text" data-background="" value="" />
                     </div>
+
+
+                    <label class="control-label">Statistical Test  <i class="fa fa-info-circle" data-toggle="popover" data-title="Statistical Test" data-content="<ul><li><strong>Wilcoxon Rank-Sum</strong> A non-parametric test to test whether a randomly selected sample from one group will be different from a randomly selected sample from another group</li><li><strong>Welch's T-Test</strong> A parametric test to test whether two populations have equal means</li></ul>"></i></label>
+                    <select id="statisticalTest" name="statisticalTest" class="form-control">
+                        <option value="wilcoxon">Wilcoxon Rank-Sum (Non-Parametric)</option>
+                        <option value="ttest">Welch's T-Test (Parametric)</option>
+                    </select>
                 </div>
               </div>
             </div>
@@ -76,7 +83,7 @@
 
     <hr style="margin-top:0px; margin-bottom:0px;"/>
     <div id="stats-container" class="analysis-container" style="display:none;">
-        <h4>Welch's T-Test Summary</h4>
+        <h4><span id="stats-type"></span> Summary</h4>
         <table class="table table-hover">
             <thead>
             <tr>

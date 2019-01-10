@@ -88,6 +88,7 @@ class AlphaDiversity(AnalysisBase):
 
         alphaType = user_request.get_custom_attr("alphaType")
         alphaContext = user_request.get_custom_attr("alphaContext")
+        statisticalTest = user_request.get_custom_attr("statisticalTest")
 
         logger.info("Before vegan alpha diversity")
 
@@ -114,7 +115,7 @@ class AlphaDiversity(AnalysisBase):
                 abundances[meta] = [obj]
 
             i += 1
-        statistics = Statistics.getTtest(statsAbundances)
+        statistics = Statistics.getTtest(statsAbundances, statisticalTest)
 
         logger.info("After T-test")
 

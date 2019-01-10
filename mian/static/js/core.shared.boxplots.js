@@ -8,12 +8,16 @@ function renderBoxplots(abundancesObj) {
   var dataObj = abundancesObj["abundances"];
 
   var categories = [];
+  var minVal = null;
   var maxVal = 0;
   $.each(dataObj, function(k, v) {
     categories.push(k);
     for (var i = 0; i < dataObj[k].length; i++) {
       if (dataObj[k][i]["a"] > maxVal) {
         maxVal = dataObj[k][i]["a"];
+      }
+      if (minVal === null || minVal > dataObj[k][i]["a"]) {
+        minVal = dataObj[k][i]["a"];
       }
     }
   });
@@ -31,7 +35,7 @@ function renderBoxplots(abundancesObj) {
 
   // Initialize the y axis scale
   var yScale = d3.scale.linear().range([height + margin.top, 0 + margin.top]);
-  yScale.domain([0, maxVal * 1.1]);
+  yScale.domain([minVal * 0.8, maxVal * 1.2]);
 
   // Initialize the x axis scale
   var xScale = d3.scale

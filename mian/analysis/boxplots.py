@@ -106,7 +106,8 @@ class Boxplots(AnalysisBase):
             i += 1
 
         # Calculate the statistical p-value
-        statistics = Statistics.getTtest(statsAbundances)
+        statistical_test = user_request.get_custom_attr("statisticalTest")
+        statistics = Statistics.getTtest(statsAbundances, statistical_test)
 
         logger.info("Calculated Ttest")
 
@@ -163,7 +164,8 @@ class Boxplots(AnalysisBase):
             i += 1
 
         # Calculate the statistical p-value
-        statistics = Statistics.getTtest(statsAbundances)
+        statistical_test = user_request.get_custom_attr("statisticalTest")
+        statistics = Statistics.getTtest(statsAbundances, statistical_test)
 
         abundancesObj = {}
         abundancesObj["abundances"] = abundances

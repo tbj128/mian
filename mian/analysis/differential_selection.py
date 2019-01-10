@@ -32,6 +32,7 @@ class DifferentialSelection(object):
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
         if differential_type == "ANCOM":
+            logger.info("Running ANCOM")
             return self.analyse_with_ancom(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map)
         else:
             return self.analyse(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map)
@@ -40,6 +41,8 @@ class DifferentialSelection(object):
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
         catVar1 = user_request.get_custom_attr("pwVar1")
         catVar2 = user_request.get_custom_attr("pwVar2")
+        statistical_test = user_request.get_custom_attr("type")
+        logger.info("Running statistical test " + statistical_test)
 
         # Perform differential analysis between two groups
 
@@ -64,7 +67,7 @@ class DifferentialSelection(object):
             groups_abundance = {catVar1: group1_arr, catVar2: group2_arr}
 
             # Calculate the statistical p-value
-            statistics = Statistics.getTtest(groups_abundance)
+            statistics = Statistics.getTtest(groups_abundance, statistical_test)
             otu_pvals.append(statistics[0]["pval"])
 
             j += 1

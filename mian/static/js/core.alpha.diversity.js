@@ -2,6 +2,11 @@
 // Alpha Diversity Boxplot JS Component
 // ============================================================
 
+var statsTypes = {
+  wilcoxon: "Wilcoxon Rank-Sum",
+  ttest: "Welch's T-Test"
+};
+
 //
 // Initialization
 //
@@ -26,6 +31,12 @@ function createSpecificListeners() {
   $("#alphaContext").change(function() {
     updateAnalysis();
   });
+
+  $("#statisticalTest").change(function() {
+    $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
+    updateAnalysis();
+  });
+
 
   $("#yvals").change(function() {
     var val = $("#yvals").val();
@@ -63,6 +74,7 @@ function updateAnalysis() {
   var catvar = $("#catvar").val();
   var alphaType = $("#alphaType").val();
   var alphaContext = $("#alphaContext").val();
+  var statisticalTest = $("#statisticalTest").val();
 
   var data = {
     pid: $("#project").val(),
@@ -75,7 +87,8 @@ function updateAnalysis() {
     level: level,
     catvar: catvar,
     alphaType: alphaType,
-    alphaContext: alphaContext
+    alphaContext: alphaContext,
+    statisticalTest: statisticalTest
   };
 
   $.ajax({
@@ -83,6 +96,7 @@ function updateAnalysis() {
     url: "alpha_diversity",
     data: data,
     success: function(result) {
+      $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
       var abundancesObj = JSON.parse(result);
       if ($.isEmptyObject(abundancesObj.abundances)) {
         hideLoading();

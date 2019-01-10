@@ -46,18 +46,15 @@ class BetaDiversity(AnalysisBase):
             distances = mod$distances
             return(distances)
         }
-    
-        mod <- betadisper(Habc, groups)
-        distances = mod$distances
-        return(distances)
     }
     
-    betaDiversityPERMANOVA <- function(allOTUs, groups, strata) {
-        return(adonis(allOTUs~groups, strata=strata))
-    }
-    
-    betaDiversityPERMANOVA2 <- function(allOTUs, groups) {
+    betaDiversityPERMANOVA <- function(allOTUs, groups) {
+        # Note, you can also pass in the data arg and specify the actual feature name instead of passing the array directly in as groups
         return(adonis(allOTUs~groups))
+    }
+
+    betaDiversityPERMANOVAWithStrata <- function(allOTUs, groups, strata) {
+        return(adonis(allOTUs~groups, strata=strata))
     }
     
     betaDiversityDisper <- function(allOTUs, groups, method) {
@@ -91,23 +88,16 @@ class BetaDiversity(AnalysisBase):
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
 
         metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+
+        strata_values = None
+        if user_request.get_custom_attr("strata").lower() != "none":
+            strata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("strata"))
+
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
-        # =====================================================================
-        # TODO: FIX
-        #
-        # table.get_sample_metadata().get_metadata_column_table_order(TBD)
-        # metaVals2 = Metadata.get_metadata_in_otu_table_order(otuTable, otuMetadata,
-        #                                                      Metadata.get_cat_col(otuMetadata, "Individual"))
-        #
-        # strata = robjects.FactorVector(robjects.StrVector(metaVals2))
-        #
-        # TODO: FIX
-        # =====================================================================
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_to_metadata_map)
 
-        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_to_metadata_map)
-
-    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_from_metadata):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_from_metadata):
         if len(metadata_values) == 0:
             raise ValueError("Beta diversity can only be used when there are at least two groups to compare between")
 
@@ -135,6 +125,8 @@ class BetaDiversity(AnalysisBase):
         # See: http://stackoverflow.com/questions/35410860/permanova-multivariate-spread-among-groups-is-not-similar-to-variance-homogeneit
         vals = self.veganR.betaDiversity(dataf, groups, betaType)
 
+        # https://www.researchgate.net/post/What_can_I_infer_from_PERMANOVA_outputs_indicating_similarity_between_two_groups_but_the_PERMDISP2_outlining_differences_in_the_beta_diversity
+
         # Calculate the statistical p-value
         abundances = {}
         statsAbundances = {}
@@ -153,17 +145,15 @@ class BetaDiversity(AnalysisBase):
 
             i += 1
 
-        statistics = Statistics.getTtest(statsAbundances)
-
         abundancesObj = {}
         abundancesObj["abundances"] = abundances
-        abundancesObj["stats"] = statistics
 
-        # permanova = veganR.betaDiversityPERMANOVA(dataf, groups, strata)
-        permanova = self.veganR.betaDiversityPERMANOVA2(dataf, groups)
-        # print strata
-        # print permanova
-        # print permanova2
+        if strata_values is None:
+            permanova = self.veganR.betaDiversityPERMANOVA(dataf, groups)
+        else:
+            strata = robjects.FactorVector(robjects.StrVector(strata_values))
+            permanova = self.veganR.betaDiversityPERMANOVAWithStrata(dataf, groups, strata)
+
         dispersions = self.veganR.betaDiversityDisper(dataf, groups, betaType)
         abundancesObj["permanova"] = str(permanova)
         abundancesObj["dispersions"] = str(dispersions)

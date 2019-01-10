@@ -475,6 +475,7 @@ def getAlphaDiversity():
     user_request = __get_user_request(request)
     user_request.set_custom_attr("alphaType", request.form['alphaType'])
     user_request.set_custom_attr("alphaContext", request.form['alphaContext'])
+    user_request.set_custom_attr("statisticalTest", request.form['statisticalTest'])
 
     plugin = AlphaDiversity()
     abundances = plugin.run(user_request)
@@ -486,6 +487,7 @@ def getAlphaDiversity():
 def getBetaDiversity():
     user_request = __get_user_request(request)
     user_request.set_custom_attr("betaType", request.form['betaType'])
+    user_request.set_custom_attr("strata", request.form['strata'])
 
     plugin = BetaDiversity()
     abundances = plugin.run(user_request)
@@ -510,6 +512,7 @@ def getBoxplots():
     user_request = __get_user_request(request)
     user_request.set_custom_attr("yvals", request.form['yvals'])
     user_request.set_custom_attr("yvalsSpecificTaxonomy", request.form['yvalsSpecificTaxonomy'])
+    user_request.set_custom_attr("statisticalTest", request.form['statisticalTest'])
 
     plugin = Boxplots()
     abundances = plugin.run(user_request)

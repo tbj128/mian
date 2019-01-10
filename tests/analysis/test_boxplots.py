@@ -12,6 +12,7 @@ class TestBoxplots(unittest.TestCase):
 
         user_request = AnalysisTestUtils.create_default_user_request()
         user_request.set_custom_attr("yvals", "MetadataSignificant")
+        user_request.set_custom_attr("statisticalTest", "ttest")
 
         metadata_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT, SAMPLE_METADATA_FILENAME)
 
@@ -33,6 +34,7 @@ class TestBoxplots(unittest.TestCase):
         user_request = AnalysisTestUtils.create_default_user_request()
         user_request.set_custom_attr("yvals", "mian-abundance")
         user_request.set_custom_attr("yvalsSpecificTaxonomy", "")
+        user_request.set_custom_attr("statisticalTest", "ttest")
 
         otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)

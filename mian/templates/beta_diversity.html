@@ -45,6 +45,10 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
+                <label class="control-label">Strata Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Strata" data-content="Indicate which metadata should be used as the strata variable. Strata is required for PERMANOVA for nested experiment studies (to control the groups that should be permuted). See: http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/adonis.html" data-trigger="hover"></i></label>
+                <select id="strata" name="strata" class="form-control">
+                </select>
+
                 <label class="control-label">Diversity Type   <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Type" data-content="The beta diversity index measure to use as described in the R 'Vegan' package <a href='https://cran.r-project.org/web/packages/vegan/vignettes/diversity-vegan.pdf' target='_blank'>here</a>" data-trigger="hover"></i></label>
                 <select id="betaType" name="betaType" class="form-control">
                     <option value="bray">Bray-Curtis</option>
@@ -69,29 +73,24 @@
 
     <hr style="margin-top:0px; margin-bottom:0px;"/>
 
-    <div id="stats-container" class="analysis-container" style="display:none;">
-        <h4>Welch's T-Test Summary</h4>
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>Category 1</th>
-                <th>Category 2</th>
-                <th>P-Value</th>
-            </tr>
-            </thead>
-            <tbody id="stats-rows">
-            </tbody>
-        </table>
-    </div><!-- /.container -->
-
     <div id="permanova-container" class="analysis-container" style="display:none;">
         <h4>PERMANOVA</h4>
-        <span id="permanova" style="font-family:'Lucida Console', Monaco, monospace;"></span>
+        <h4><small>Significance test for the difference in the centroid between groups. <a href="http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/adonis.html" target="_blank">Learn more here</a></small></h4>
+        <pre>
+            <code>
+                <span id="permanova" style="font-family:'Lucida Console', Monaco, monospace;"></span>
+            </code>
+        </pre>
     </div>
 
     <div id="betadisper-container" class="analysis-container" style="display:none;">
-        <h4>Dispersion</h4>
-        <span id="betadisper" style="font-family:'Lucida Console', Monaco, monospace;"></span>
+        <h4>ANOVA</h4>
+        <h4><small>Significance test for the multivariate homogeneity between groups (ie. whether the spread of samples is different between multiple group). <a href="http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/betadisper.html" target="_blank">Learn more here</a></small></h4>
+        <pre>
+            <code>
+                <span id="betadisper" style="font-family:'Lucida Console', Monaco, monospace;"></span>
+            </code>
+        </pre>
     </div>
 
     <div id="push" style="height:42px;"></div>

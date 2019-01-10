@@ -19,6 +19,10 @@ function createSpecificListeners() {
     updateAnalysis();
   });
 
+  $("#strata").change(function() {
+    updateAnalysis();
+  });
+
   $("#betaType").change(function() {
     updateAnalysis();
   });
@@ -41,6 +45,7 @@ function updateAnalysis() {
   var sampleFilterVals = getSelectedSampleFilterVals();
 
   var catvar = $("#catvar").val();
+  var strata = $("#strata").val();
   var betaType = $("#betaType").val();
 
   var data = {
@@ -53,6 +58,7 @@ function updateAnalysis() {
     sampleFilterVals: sampleFilterVals,
     level: level,
     catvar: catvar,
+    strata: strata,
     betaType: betaType
   };
 
@@ -64,17 +70,14 @@ function updateAnalysis() {
       $("#display-error").hide();
       hideLoading();
       $("#analysis-container").show();
-      $("#stats-container").show();
       var abundancesObj = JSON.parse(result);
       renderBoxplots(abundancesObj);
-      renderPvaluesTable(abundancesObj);
       renderPERMANOVA(abundancesObj);
       renderBetadisper(abundancesObj);
     },
     error: function(err) {
       hideLoading();
       $("#analysis-container").hide();
-      $("#stats-container").hide();
       $("#display-error").show();
       console.log(err);
     }
@@ -97,4 +100,22 @@ function renderBetadisper(abundancesObj) {
   betaDisper = betaDisper.replace(/<br \/><br \/>/g, "<br />");
   $("#betadisper").html(betaDisper);
   $("#betadisper-container").fadeIn(250);
+}
+
+
+function customCatVarCallback(json) {
+  updateStrata(json);
+}
+
+function updateStrata(result) {
+  var categoricalHeaders = [
+    "None",
+    ...result.filter(obj => obj.type === "categorical" || obj.type === "both").map(obj => obj.name)
+  ];
+
+  $("#strata").empty();
+
+  for (var i = 0; i < categoricalHeaders.length; i++) {
+    $("#strata").append('<option value="' + categoricalHeaders[i] + '">' + categoricalHeaders[i] + '</option>');
+  }
 }

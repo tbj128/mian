@@ -4,6 +4,11 @@
 
 var tagsInput;
 
+var statsTypes = {
+  wilcoxon: "Wilcoxon Rank-Sum",
+  ttest: "Welch's T-Test"
+};
+
 //
 // Initialization
 //
@@ -22,6 +27,11 @@ function createSpecificListeners() {
   });
 
   $("#specific-taxonomy-typeahead").change(function() {
+    updateAnalysis();
+  });
+
+  $("#statisticalTest").change(function() {
+    $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
     updateAnalysis();
   });
 
@@ -84,6 +94,8 @@ function updateAnalysis() {
 
   var catvar = $("#catvar").val();
   var yvals = $("#yvals").val();
+  var statisticalTest = $("#statisticalTest").val();
+
   var yvalsSpecificTaxonomy = $("#specific-taxonomy-typeahead").val();
   if (yvalsSpecificTaxonomy === "") {
     yvalsSpecificTaxonomy = JSON.stringify([]);
@@ -103,7 +115,8 @@ function updateAnalysis() {
     catvar: catvar,
     yvals: yvals,
     level: level,
-    yvalsSpecificTaxonomy: yvalsSpecificTaxonomy
+    yvalsSpecificTaxonomy: yvalsSpecificTaxonomy,
+    statisticalTest: statisticalTest
   };
 
   $.ajax({
@@ -115,6 +128,7 @@ function updateAnalysis() {
       hideLoading();
       $("#analysis-container").show();
       $("#stats-container").show();
+      $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
 
       var abundancesObj = JSON.parse(result);
       if ($.isEmptyObject(abundancesObj["abundances"])) {

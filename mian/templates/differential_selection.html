@@ -53,10 +53,11 @@
                 <select id="pwVar2" name="pwVar2" class="form-control">
                 </select>
 
-                <label class="control-label">Differential Test Type <i class="fa fa-info-circle" data-toggle="popover" data-title="Differential Test Type" data-content="Choose the type of test that will be applied. ANCOM is recommended when using an unsampled dataset." data-trigger="hover"></i></label>
+                <label class="control-label">Analysis Type  <i class="fa fa-info-circle" data-toggle="popover" data-title="Analysis Test" data-content="<ul><li><strong>ANCOM</strong> Differential abundance testing using pairwise log ratios and applying a parametric one-way ANOVA statistical test. Recommended if using unsampled data sets</li><li><strong>Wilcoxon Rank-Sum</strong> A non-parametric test to test whether a randomly selected sample from one group will be different from a randomly selected sample from another group</li><li><strong>Welch's T-Test</strong> A parametric test to test whether two populations have equal means</li></ul>"></i></label>
                 <select id="type" name="type" class="form-control">
-                    <option>Welch's t-test</option>
-                    <option>ANCOM</option>
+                    <option value="ttest">Welch's T-Test</option>
+                    <option value="wilcoxon">Wilcoxon Rank-Sum</option>
+                    <option value="ANCOM">ANCOM Differential Abundance Test (with 1-way ANOVA)</option>
                 </select>
 
                 <label class="control-label">P-Value Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="Only OTUs or taxas whose differential analysis t-test p-value was less than this threshold will be displayed"></i></label>

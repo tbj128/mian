@@ -2,6 +2,9 @@ import rpy2.robjects as robjects
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 from scipy import stats, math
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Statistics(object):
 
@@ -18,7 +21,7 @@ class Statistics(object):
         return rStats.fdr(pvals_r)
 
     @staticmethod
-    def getTtest(stats_abundances):
+    def getTtest(stats_abundances, statistical_test):
         # Calculate the statistical p-value
         statistics = []
         abundanceKeys = list(stats_abundances.keys())
@@ -44,8 +47,11 @@ class Statistics(object):
 
                 if allZeros == False and len(stats_abundances[abundanceKeys[i]]) > 0 and len(
                         stats_abundances[abundanceKeys[j]]) > 0:
-                    t, pvalue = stats.ttest_ind(stats_abundances[abundanceKeys[i]], stats_abundances[abundanceKeys[j]], 0,
-                                                False)
+                    if statistical_test == "ttest":
+                        t, pvalue = stats.ttest_ind(stats_abundances[abundanceKeys[i]], stats_abundances[abundanceKeys[j]], 0,
+                                                    False)
+                    else:
+                        t, pvalue = stats.ranksums(stats_abundances[abundanceKeys[i]], stats_abundances[abundanceKeys[j]])
                     if not math.isnan(pvalue):
                         stat["pval"] = pvalue
                         statistics.append(stat)

@@ -1,6 +1,11 @@
 // ============================================================
-// Fisher Exact JS Component
+// Table JS Component
 // ============================================================
+
+//
+// Global Components
+//
+var tableResults = [];
 
 //
 // Initialization
@@ -22,7 +27,13 @@ function initializeFields() {
 //
 // Component-Specific Sidebar Listeners
 //
-function createSpecificListeners() {}
+function createSpecificListeners() {
+    $("#download-btn").click(function () {
+        var csvContent = "data:text/csv;charset=utf-8," + tableResults.map(e=>e.join(",")).join("\n");
+        var encodedUri = encodeURI(csvContent);
+        window.open(encodedUri);
+    });
+}
 
 //
 // Analysis Specific Methods
@@ -53,6 +64,8 @@ function renderTableView(table) {
 }
 
 function updateAnalysis() {
+    $("#download-btn").hide();
+    $("#too-large-message").hide();
     showLoading();
 
     var level = taxonomyLevels[getTaxonomicLevel()];
@@ -87,15 +100,26 @@ function updateAnalysis() {
             hideLoading();
             $("#analysis-container").show();
             $("#stats-container").show();
+            $("#download-btn").show();
 
             var table = JSON.parse(result);
-            renderTableView(table);
+            tableResults = table;
+
+            if (result.length > 5000 && result[0].length > 5000) {
+                $("#too-large-message").show();
+            } else {
+                $("#too-large-message").hide();
+                renderTableView(table);
+            }
         },
         error: function(err) {
             hideLoading();
             $("#analysis-container").hide();
+            $("#too-large-message").hide();
+            $("#download-btn").hide();
             $("#stats-container").hide();
             $("#display-error").show();
+            tableResults = [];
             console.log(err);
         }
     });

@@ -49,6 +49,15 @@
 
 <div class="content-wrapper">
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+        <button type="button" id="download-btn" class="btn btn-default">Download as CSV</button>
+        <hr />
+        <div id="too-large-message" class="display-notification project-empty" style="display:none;margin:0;">
+            <i class="fa fa-exclamation-circle fa-4x"></i>
+            <h3>Table Too Large To Display</h3>
+            <h5>
+                The table is too large to display in the browser. You can still download the table as a CSV by pressing the button above.
+            </h5>
+        </div>
         <table class="table table-hover">
             <thead>
                 <tr id="stats-headers">

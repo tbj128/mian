@@ -97,6 +97,12 @@
     </div>
     {% endif %}
 
+    {% if status == "-8" %}
+    <div class="alert alert-danger">
+      <strong>Invalid OTU Data Type</strong> The OTU table contains values which are not integers or float. Please double check and try again.
+    </div>
+    {% endif %}
+
     <div id="otu-table-modified" class="message message-success" style="display:none;">
       <strong>Success</strong> Your changes have been successfully applied.
     </div>
@@ -151,15 +157,19 @@
                         <td class="col-md-3 subsampleDisplayContainer">
                           <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}
-                            Not Subsampled
-                            {% else %}
-                            Subsampled to
-                            <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">
-                              {{ projectNames[projectName]["subsampled_value"] }}
-                              {% if projectNames[projectName]["subsampled_type"] == "auto" %}
-                                (auto)
+                              {% if projectNames[projectName]["matrix_type"] == "int" %}
+                                Not Subsampled
+                              {% else %}
+                                Not Subsampled (Contains Non-Integer Values)
                               {% endif %}
-                            </b>
+                            {% else %}
+                              Subsampled to
+                              <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">
+                                {{ projectNames[projectName]["subsampled_value"] }}
+                                {% if projectNames[projectName]["subsampled_type"] == "auto" %}
+                                  (auto)
+                                {% endif %}
+                              </b>
                             {% endif %}
                           </span>
                           &nbsp;
@@ -199,7 +209,11 @@
                         <td class="col-md-3 subsampleDisplayContainer">
                           <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}
-                            Not Subsampled
+                              {% if projectNames[projectName]["matrix_type"] == "int" %}
+                                Not Subsampled
+                              {% else %}
+                                Not Subsampled (Contains Non-Integer Values)
+                              {% endif %}
                             {% else %}
                             Subsampled to 
                             <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">

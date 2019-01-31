@@ -50,7 +50,7 @@ class AnalysisTestUtils(object):
                 if len(o) > 1:
                     output.append(o)
         if use_np:
-            return np.array(output, dtype=int)
+            return np.array(output, dtype=float)
         return output
 
     @staticmethod

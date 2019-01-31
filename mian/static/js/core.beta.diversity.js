@@ -15,10 +15,8 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialStrata = getParameterByName("strata") ? getParameterByName("strata") : "";
 function initializeFields() {
-    if (getParameterByName("strata") !== null) {
-        $("#strata").val(getParameterByName("strata"));
-    }
     if (getParameterByName("betaType") !== null) {
         $("#betaType").val(getParameterByName("betaType"));
     }
@@ -131,6 +129,11 @@ function updateStrata(result) {
     $("#strata").empty();
 
     for (var i = 0; i < categoricalHeaders.length; i++) {
-        $("#strata").append('<option value="' + categoricalHeaders[i] + '">' + categoricalHeaders[i] + '</option>');
+        if (initialStrata && categoricalHeaders[i] == initialStrata) {
+            $("#strata").append('<option value="' + categoricalHeaders[i] + '" selected>' + categoricalHeaders[i] + '</option>');
+            initialStrata = null;
+        } else {
+            $("#strata").append('<option value="' + categoricalHeaders[i] + '">' + categoricalHeaders[i] + '</option>');
+        }
     }
 }

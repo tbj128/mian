@@ -103,6 +103,8 @@ class AlphaDiversity(AnalysisBase):
         while i < len(vals):
             obj = {}
             obj["s"] = str(sample_labels[i])
+            if vals[i] == float('inf'):
+                raise ValueError("Cannot have infinite values")
             obj["a"] = round(vals[i], 6)
             meta = metadata_values[i] if len(metadata_values) > 0 else "All"
 

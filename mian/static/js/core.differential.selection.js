@@ -16,13 +16,9 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialPwVar1 = getParameterByName("pwVar1");
+var initialPwVar2 = getParameterByName("pwVar2");
 function initializeFields() {
-    if (getParameterByName("pwVar1") !== null) {
-        $("#pwVar1").val(getParameterByName("pwVar1"));
-    }
-    if (getParameterByName("pwVar2") !== null) {
-        $("#pwVar2").val(getParameterByName("pwVar2"));
-    }
     if (getParameterByName("pvalthreshold") !== null) {
         $("#pvalthreshold").val(getParameterByName("pvalthreshold"));
     }
@@ -85,10 +81,27 @@ function updatePWComparisonSidebar(callback) {
             var uniqueVals = JSON.parse(result);
 
             for (var i = 0; i < uniqueVals.length; i++) {
-                $("#pwVar1").append(
-                    "<option value='" + uniqueVals[i] + "'>" + uniqueVals[i] + "</option>"
-                );
-                if (i == 1) {
+                if (initialPwVar1 && initialPwVar1 == uniqueVals[i]) {
+                    $("#pwVar1").append(
+                        "<option value='" + uniqueVals[i] + "' selected>" + uniqueVals[i] + "</option>"
+                    );
+                    initialPwVar1 = null;
+                } else {
+                    $("#pwVar1").append(
+                        "<option value='" + uniqueVals[i] + "'>" + uniqueVals[i] + "</option>"
+                    );
+                }
+
+
+                if (initialPwVar2 && initialPwVar2 == uniqueVals[i]) {
+                    $("#pwVar2").append(
+                        "<option value='" +
+                        uniqueVals[i] +
+                        "' selected>" +
+                        uniqueVals[i] +
+                        "</option>"
+                    );
+                } else if (i == 1) {
                     $("#pwVar2").append(
                         "<option value='" +
                         uniqueVals[i] +

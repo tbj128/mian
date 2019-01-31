@@ -93,6 +93,7 @@ function updateAnalysis() {
             hideLoading();
             $("#analysis-container").show();
             $("#stats-container").show();
+            $("#download-svg").show();
 
             var abundancesObj = JSON.parse(result);
             if ($("#plotType").val() == "bar") {
@@ -105,6 +106,7 @@ function updateAnalysis() {
             hideLoading();
             $("#analysis-container").hide();
             $("#stats-container").hide();
+            $("#download-svg").hide();
             $("#display-error").show();
             console.log(err);
         }

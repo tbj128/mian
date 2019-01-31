@@ -21,12 +21,10 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialYvalsSpecificTaxonomy = getParameterByName("yvalsSpecificTaxonomy") ? JSON.parse(getParameterByName("yvalsSpecificTaxonomy")) : [];
 function initializeFields() {
     if (getParameterByName("yvals") !== null) {
         $("#yvals").val(getParameterByName("yvals"));
-    }
-    if (getParameterByName("yvalsSpecificTaxonomy") !== null) {
-        $("#specific-taxonomy-typeahead").val(getParameterByName("yvalsSpecificTaxonomy"));
     }
     if (getParameterByName("statisticalTest") !== null) {
         $("#statisticalTest").val(getParameterByName("statisticalTest"));
@@ -216,6 +214,13 @@ function loadOTUTableHeaders() {
                     "width",
                     "320px"
                 );
+
+                if (initialYvalsSpecificTaxonomy) {
+                    initialYvalsSpecificTaxonomy.forEach(val => {
+                        $("#specific-taxonomy-typeahead").tagsinput('add', val);
+                    });
+                    initialYvalsSpecificTaxonomy = null;
+                }
             }
         });
         return headersPromise;

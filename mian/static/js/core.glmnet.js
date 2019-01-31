@@ -21,6 +21,14 @@ function initializeFields() {
     }
     if (getParameterByName("lambdathreshold") !== null) {
         $("#lambdathreshold").val(getParameterByName("lambdathreshold"));
+        
+        if ($("#lambdathreshold").val() === "Custom") {
+            $("#lambdaval").show();
+            $("#lambdatitle").show();
+        } else {
+            $("#lambdaval").hide();
+            $("#lambdatitle").hide();
+        }
     }
     if (getParameterByName("lambdaval") !== null) {
         $("#lambdaval").val(getParameterByName("lambdaval"));

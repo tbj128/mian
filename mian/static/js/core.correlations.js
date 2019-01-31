@@ -17,6 +17,8 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialCorrvar1SpecificTaxonomies = getParameterByName("corrvar1SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar1SpecificTaxonomies")) : [];
+var initialCorrvar2SpecificTaxonomies = getParameterByName("corrvar2SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar2SpecificTaxonomies")) : [];
 function initializeFields() {
     if (getParameterByName("corrvar1") !== null) {
         $("#corrvar1").val(getParameterByName("corrvar1"));
@@ -32,12 +34,6 @@ function initializeFields() {
     }
     if (getParameterByName("samplestoshow") !== null) {
         $("#samplestoshow").val(getParameterByName("samplestoshow"));
-    }
-    if (getParameterByName("corrvar1SpecificTaxonomies") !== null) {
-        $("#specific-taxonomy-typeahead-1").val(getParameterByName("corrvar1SpecificTaxonomies"));
-    }
-    if (getParameterByName("corrvar2SpecificTaxonomies") !== null) {
-        $("#specific-taxonomy-typeahead-2").val(getParameterByName("corrvar2SpecificTaxonomies"));
     }
 }
 
@@ -155,6 +151,13 @@ function loadOTUTableHeaders(corrvarType) {
                         "width",
                         "320px"
                     );
+
+                    if (initialCorrvar1SpecificTaxonomies) {
+                        initialCorrvar1SpecificTaxonomies.forEach(val => {
+                            $("#specific-taxonomy-typeahead-1").tagsinput('add', val);
+                        });
+                        initialCorrvar1SpecificTaxonomies = null;
+                    }
                 }
                 if (!corrvarType || corrvarType === "corrvar2") {
                     if (tagsInput) {
@@ -177,6 +180,13 @@ function loadOTUTableHeaders(corrvarType) {
                         "width",
                         "320px"
                     );
+
+                    if (initialCorrvar2SpecificTaxonomies) {
+                        initialCorrvar2SpecificTaxonomies.forEach(val => {
+                            $("#specific-taxonomy-typeahead-2").tagsinput('add', val);
+                        });
+                        initialCorrvar2SpecificTaxonomies = null;
+                    }
                 }
             }
         });

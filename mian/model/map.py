@@ -16,6 +16,7 @@ class Map(object):
         self.orig_taxonomy_name = ""
         self.orig_sample_metadata_name = ""
         self.taxonomy_type = ""
+        self.matrix_type = "int"
         self.load()
 
     def load(self):
@@ -31,6 +32,7 @@ class Map(object):
                 self.orig_taxonomy_name = map_from_json["orig_taxonomy_name"]
                 self.orig_sample_metadata_name = map_from_json["orig_sample_metadata_name"]
                 self.taxonomy_type = map_from_json["taxonomy_type"]
+                self.matrix_type = map_from_json["matrix_type"] if "matrix_type" in map_from_json else "int"
 
     def save(self):
         map_from_json = {
@@ -42,7 +44,8 @@ class Map(object):
             "orig_otu_table_name": self.orig_otu_table_name,
             "orig_taxonomy_name": self.orig_taxonomy_name,
             "orig_sample_metadata_name": self.orig_sample_metadata_name,
-            "taxonomy_type": self.taxonomy_type
+            "taxonomy_type": self.taxonomy_type,
+            "matrix_type": self.matrix_type
         }
 
         with open(self.__get_map_path(), 'w') as outfile:

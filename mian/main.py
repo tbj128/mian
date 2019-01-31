@@ -949,7 +949,8 @@ def get_project_ids_to_info(user_id):
                         "orig_biom_name": project_map.orig_biom_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
-                        "subsampled_removed_samples": project_map.subsampled_removed_samples
+                        "subsampled_removed_samples": project_map.subsampled_removed_samples,
+                        "matrix_type": project_map.matrix_type
                     }
                 else:
                     project_type = "table"
@@ -962,7 +963,8 @@ def get_project_ids_to_info(user_id):
                         "orig_taxonomy_name": project_map.orig_taxonomy_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
-                        "subsampled_removed_samples": project_map.subsampled_removed_samples
+                        "subsampled_removed_samples": project_map.subsampled_removed_samples,
+                        "matrix_type": project_map.matrix_type
                     }
                 logger.info("Read project info " + str(project_info))
                 if project_map.project_name != "":

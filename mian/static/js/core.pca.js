@@ -25,6 +25,9 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 function initializeFields() {
+    if (getParameterByName("numberAxes") !== null) {
+        $("#numberAxes").val(getParameterByName("numberAxes"));
+    }
     if (getParameterByName("pca1") !== null) {
         $("#pca1").val(getParameterByName("pca1"));
     }

@@ -18,7 +18,7 @@ from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, \
     SUBSAMPLED_OTU_TABLE_FILENAME, BIOM_FILENAME, TAXONOMY_FILENAME, SAMPLE_METADATA_FILENAME, \
-    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
+    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, SUBSAMPLE_TYPE_DISABLED
 import csv
 import os
 import re
@@ -39,6 +39,7 @@ TAXONOMY_ERROR = -4
 SAMPLE_METADATA_ERROR = -5
 OTU_HEADER_NOT_IN_TAXONOMY_ERROR = -6
 OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR = -7
+OTU_DATATYPE_ERROR = -8
 
 class ProjectManager(object):
     BASE_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))  # Gets the parent folder
@@ -119,7 +120,12 @@ class ProjectManager(object):
         # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
         try:
             logger.info("Beginning to process the OTU table")
-            base, headers, sample_labels = self.__process_base(self.user_id, pid, base_arr)
+            base, headers, sample_labels, matrix_type = self.__process_base(self.user_id, pid, base_arr)
+        except ValueError:
+            logger.exception("OTU file contains non-integers")
+            # Removes the project directory since the files in it are invalid
+            shutil.rmtree(project_dir, ignore_errors=True)
+            return OTU_DATATYPE_ERROR, ""
         except:
             logger.exception("Invalid OTU file format")
             # Removes the project directory since the files in it are invalid
@@ -151,6 +157,9 @@ class ProjectManager(object):
         # Subsamples raw OTU table
         try:
             logger.info("Beginning to subsample the OTU table")
+            if matrix_type == "float":
+                # Float-type matrix cannot be subsampled
+                subsample_type = SUBSAMPLE_TYPE_DISABLED
             subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                                                     pid=pid,
                                                                                                     base=base,
@@ -174,6 +183,7 @@ class ProjectManager(object):
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_value
         map_file.subsampled_removed_samples = samples_removed
+        map_file.matrix_type = matrix_type
         map_file.save()
 
         return pid, ""
@@ -200,6 +210,8 @@ class ProjectManager(object):
 
         base = []
 
+        matrix_type = "int"
+
         # Adds the numeric values into the base np array
         col_offset = 3 if is_mothur else 1
         row_offset = 1
@@ -208,12 +220,16 @@ class ProjectManager(object):
             new_row = []
             col = col_offset
             while col < len(base_arr[row]):
-                try:
-                    new_row.append(int(float(base_arr[row][col])))
-                except ValueError:
-                    logger.exception("Bad OTU table")
+                if base_arr[row][col] == "":
+                    # Empty values will default to zero
                     new_row.append(0)
-                    pass
+                else:
+                    val = float(base_arr[row][col])
+                    if val.is_integer():
+                        new_row.append(int(float(base_arr[row][col])))
+                    else:
+                        new_row.append(float(base_arr[row][col]))
+                        matrix_type = "float"
                 col += 1
             base.append(new_row)
             row += 1
@@ -232,7 +248,7 @@ class ProjectManager(object):
         DataIO.table_to_tsv(base, user_id, pid, raw_table_path)
         DataIO.table_to_tsv(labels, user_id, pid, output_raw_otu_labels_file_name)
 
-        return base, headers, sample_labels
+        return base, headers, sample_labels, matrix_type
 
     def __process_taxonomy_file(self, user_id, pid):
         taxonomy_table = DataIO.tsv_to_table(user_id, pid, TAXONOMY_FILENAME)
@@ -320,11 +336,21 @@ class ProjectManager(object):
         logger.info("Converting biom to intermediate TSV file " + biom_path)
 
         # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
-        base, headers, sample_labels = self.__save_biom_table_as_tsv(self.user_id, pid, biom_table)
+        try:
+            base, headers, sample_labels, matrix_type = self.__save_biom_table_as_tsv(self.user_id, pid, biom_table)
+        except ValueError:
+            logger.exception("OTU file contains non-integers")
+            # Removes the project directory since the files in it are invalid
+            shutil.rmtree(project_dir, ignore_errors=True)
+            return OTU_DATATYPE_ERROR, ""
 
         logger.info("Processed biom TSV file " + biom_path)
 
         # Subsamples the raw OTU file
+
+        if matrix_type == "float":
+            # Float-type matrix cannot be subsampled
+            subsample_type = SUBSAMPLE_TYPE_DISABLED
         subsample_to, removed_otus, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                                              pid=pid,
                                                                                              base=base,
@@ -457,6 +483,7 @@ class ProjectManager(object):
         map_file.subsampled_value = subsample_to
         map_file.subsampled_removed_samples = samples_removed
         map_file.taxonomy_type = taxonomy_type
+        map_file.matrix_type = matrix_type
         map_file.save()
 
         return OK, ""
@@ -467,6 +494,8 @@ class ProjectManager(object):
                                    metadata_formatter="sc_separated")
 
         logger.info("Finished table.to_tsv")
+
+        matrix_type = "int"
 
         # Converts the TSV string to an array
         f = StringIO(result)
@@ -495,7 +524,15 @@ class ProjectManager(object):
             new_row = []
             row = 1
             while row < len(base_csv):
-                new_row.append(int(float(base_csv[row][col])))
+                if base_csv[row][col] == "":
+                    new_row.append(0)
+                else:
+                    val = float(base_csv[row][col])
+                    if val.is_integer():
+                        new_row.append(int(float(base_csv[row][col])))
+                    else:
+                        new_row.append(float(base_csv[row][col]))
+                        matrix_type = "float"
                 row += 1
             intermediate_table.append(new_row)
             col += 1
@@ -506,7 +543,7 @@ class ProjectManager(object):
         DataIO.table_to_tsv(intermediate_table, user_id, pid, raw_table_path)
         DataIO.table_to_tsv(labels, user_id, pid, output_raw_otu_labels_file_name)
 
-        return intermediate_table, headers, sample_labels
+        return intermediate_table, headers, sample_labels, matrix_type
 
     def get_taxonomy_type(self, taxonomy_line):
         if type(taxonomy_line) is list:

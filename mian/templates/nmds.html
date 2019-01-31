@@ -75,16 +75,6 @@
                 <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
-
-                <hr/>
-
-                <label class="control-label">Axis 1 Range <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 1 Range" data-content="The range to show on the X-axis (you may need to adjust this to show the relevant portions of the NMDS graph)"></i></label>&nbsp;&nbsp;
-                <input id="nmds1-range" type="text" value="" style="display:none;"/>
-
-                <hr/>
-
-                <label class="control-label">Axis 2 Range <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 2 Range" data-content="The range to show on the Y-axis (you may need to adjust this to show the relevant portions of the NMDS graph)"></i></label>&nbsp;&nbsp;
-                <input id="nmds2-range" type="text" value="" style="display:none;"/>
               </div>
             </div>
         </div>
@@ -104,8 +94,7 @@
     <div id="push" style="height:42px;"></div>
 </div>
 
-{% include 'footer-viz.html' %}
-
+{% include 'footer-viz-d3v4.html' %}
 
 <!-- Include custom JS here -->
 <script src="static/js/plugins/bootstrap-slider.min.js"></script>

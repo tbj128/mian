@@ -1,127 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    {% include 'header.html' %}
-    <title>PCA - mian</title>
+    <head>
+        {% include 'header.html' %}
+        <title>PCA - mian</title>
+        <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
+        <style>
+            .line-chart .axis path,
+            .line-chart .axis line {
+                fill: none;
+                stroke: #3c3c3c;
+                shape-rendering: crispEdges;
+            }
+            .line-chart .line {
+                fill: none;
+                stroke: #0e4993;
+                stroke-width: 2px;
+            }
+            .pca circle {
+                stroke: #10598c;
+                stroke-width: 1px;
+            }
 
-    <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
-    <style>
-      .line-chart .axis path,
-      .line-chart .axis line {
-        fill: none;
-        stroke: #3c3c3c;
-        shape-rendering: crispEdges;
-      }
-
-      .line-chart .line {
-        fill: none;
-        stroke: #0e4993;
-        stroke-width: 2px;
-      }
-
-      .pca .dot {
-        stroke: none !important;
-      }
-
-    </style>
-</head>
-
-<body>
-{% include 'navigation.html' %}
-{% include 'loading-bar.html' %}
-
-<div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;PCA <i class="fa fa-info-circle" data-toggle="popover" data-title="PCA" data-content="Creates a principal component analysis (PCA) graph at the selected taxonomic level<br /><br />This test relies on the prcomp function in the R 'stats' package <a href='http://stat.ethz.ch/R-manual/R-devel/library/stats/html/prcomp.html' target='_blank'>here</a>"></i></h3>
-
-    {% include 'project_list.html' %}
-
-    <hr/>
-
-    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-        {% include 'filtering_options.html' %}
-
-        <div class="panel panel-default">
-            <div class="panel-heading" role="tab" id="headingAnalysisParameters">
-              <h4 class="panel-title">
-                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
-                  Visualization Parameters
-                </a>
-              </h4>
-            </div>
-            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
-              <div class="panel-body">
-
-                <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
-                <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-                    <option value="Kingdom">Kingdom</option>
-                    <option value="Phylum">Phylum</option>
-                    <option value="Class">Class</option>
-                    <option value="Order">Order</option>
-                    <option value="Family">Family</option>
-                    <option value="Genus">Genus</option>
-                    <option value="Species">Species</option>
-                    <option value="OTU" selected>OTU</option>
-                </select>
-
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
-                <select id="catvar" name="catvar" class="form-control">
-                </select>
-
-                <label class="control-label">Axis 1 <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 1" data-content="The PCA axis to show on the X-axis"></i></label>
-                <select id="pca1" name="pca1" class="form-control">
-                    <option value="1" selected>Principal Component 1</option>
-                    <option value="2">Principal Component 2</option>
-                    <option value="3">Principal Component 3</option>
-                    <option value="4">Principal Component 4</option>
-                    <option value="5">Principal Component 5</option>
-                </select>
-
-                <label class="control-label">Range <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 1 Range" data-content="The range to show on the X-axis (you may need to adjust this to show the relevant portions of the PCA graph)"></i></label>&nbsp;&nbsp;
-                <input id="pca1-range" type="text" value="" style="display:none;"/>
-
-                <hr/>
-
-                <label class="control-label">Axis 2 <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 2" data-content="The PCA axis to show on the Y-axis"></i></label>
-                <select id="pca2" name="pca2" class="form-control">
-                    <option value="1">Principal Component 1</option>
-                    <option value="2" selected>Principal Component 2</option>
-                    <option value="3">Principal Component 3</option>
-                    <option value="4">Principal Component 4</option>
-                    <option value="5">Principal Component 5</option>
-                </select>
-
-                <label class="control-label">Range <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 1 Range" data-content="The range to show on the Y-axis (you may need to adjust this to show the relevant portions of the PCA graph)"></i></label>&nbsp;&nbsp;
-                <input id="pca2-range" type="text" value="" style="display:none;"/>
-              </div>
+        </style>
+    </head>
+    <body>
+        {% include 'navigation.html' %}
+        {% include 'loading-bar.html' %}
+        <div id="editor" class="editor">
+            <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;PCA <i class="fa fa-info-circle" data-toggle="popover" data-title="PCA" data-content="Creates a principal component analysis (PCA) graph at the selected taxonomic level<br /><br />This test relies on the prcomp function in the R 'stats' package <a href='http://stat.ethz.ch/R-manual/R-devel/library/stats/html/prcomp.html' target='_blank'>here</a>"></i></h3>
+            {% include 'project_list.html' %}
+            <hr/>
+            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                {% include 'filtering_options.html' %}
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headingAnalysisParameters">
+                        <h4 class="panel-title">
+                            <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
+                            Visualization Parameters
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+                        <div class="panel-body">
+                            <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                            <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+                                <option value="Kingdom">Kingdom</option>
+                                <option value="Phylum">Phylum</option>
+                                <option value="Class">Class</option>
+                                <option value="Order">Order</option>
+                                <option value="Family">Family</option>
+                                <option value="Genus">Genus</option>
+                                <option value="Species">Species</option>
+                                <option value="OTU" selected>OTU</option>
+                            </select>
+                            <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                            <select id="catvar" name="catvar" class="form-control">
+                            </select>
+                            <label class="control-label">Type of Plot <i class="fa fa-info-circle" data-toggle="popover" data-title="Number of Axes" data-content="Choose to show either a 2D plot or a 3D plot"></i></label>
+                            <select id="numberAxes" name="numberAxes" class="form-control">
+                                <option value="3D" selected>3D</option>
+                                <option value="2D">2D</option>
+                            </select>
+                            <div id="axis-range-container">
+                                <label class="control-label">Axis Range <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis Range" data-content="The range of plots to show on the 3D PCA plot. Points falling outside of this range will be removed from the graph."></i></label>&nbsp;&nbsp;
+                                <div id="slider-range-1"></div>
+                            </div>
+                            <hr />
+                            <label class="control-label">Axis 1 <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 1" data-content="The PCA axis to show on the X-axis"></i></label>
+                            <select id="pca1" name="pca1" class="form-control">
+                                <option value="1" selected>Principal Component 1</option>
+                                <option value="2">Principal Component 2</option>
+                                <option value="3">Principal Component 3</option>
+                                <option value="4">Principal Component 4</option>
+                                <option value="5">Principal Component 5</option>
+                            </select>
+                            <hr />
+                            <label class="control-label">Axis 2 <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 2" data-content="The PCA axis to show on the Y-axis"></i></label>
+                            <select id="pca2" name="pca2" class="form-control">
+                                <option value="1">Principal Component 1</option>
+                                <option value="2" selected>Principal Component 2</option>
+                                <option value="3">Principal Component 3</option>
+                                <option value="4">Principal Component 4</option>
+                                <option value="5">Principal Component 5</option>
+                            </select>
+                            <hr />
+                            <div id="pca-axis3">
+                                <label class="control-label">Axis 3 <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis 3" data-content="The PCA axis to show on the Z-axis"></i></label>
+                                <select id="pca3" name="pca3" class="form-control">
+                                    <option value="1">Principal Component 1</option>
+                                    <option value="2">Principal Component 2</option>
+                                    <option value="3" selected>Principal Component 3</option>
+                                    <option value="4">Principal Component 4</option>
+                                    <option value="5">Principal Component 5</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="content-wrapper">
-    <div id="display-error" class="project-empty" style="display:none;">
-        <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Analysis cannot be performed with these parameters</h3>
-        <h5>Try changing the Category Breakdown parameter and try again</h5>
-    </div>
-
-    <div id="analysis-container" class="analysis-container pca" style="min-height:500px;">
-    </div><!-- /.container -->
-
-    <div id="variance-container" class="analysis-container line-chart" style="min-height:500px;">
-    </div><!-- /.container -->
-
-    <div id="push" style="height:42px;"></div>
-</div>
-
-{% include 'footer-viz.html' %}
-
-<!-- Include custom JS here -->
-<script src="static/js/plugins/bootstrap-slider.min.js"></script>
-<script src="static/js/core.pca.js"></script>
-
-<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
-
-</body>
+        <div class="content-wrapper">
+            <div id="display-error" class="project-empty" style="display:none;">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
+                <h3>Analysis cannot be performed with these parameters</h3>
+                <h5>Try changing the Category Breakdown parameter and try again</h5>
+            </div>
+            <div id="analysis-container" class="analysis-container pca" style="min-height:500px;">
+            </div>
+            <div id="analysis-container-2d" class="analysis-container pca" style="display:none; min-height:500px;">
+            </div>
+            <div id="analysis-container-3d-info" class="analysis-container pca" style="margin-top: 6px; ">
+                <small>The default axis range is based on the min and max of all three principal components</small>
+            </div>
+            <hr />
+            <div id="variance-container" class="analysis-container line-chart" style="min-height:500px;">
+            </div>
+            <div id="push" style="height:42px;"></div>
+        </div>
+        {% include 'footer-viz-d3v4.html' %}
+        <!-- Include custom JS here -->
+        <script src="static/js/plugins/lodash.min.js"></script>
+        <script src="static/js/d3-3d.js"></script>
+        <script src="static/js/plugins/simple-slider.js"></script>
+        <script src="static/js/core.pca.js"></script>
+        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+        <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+    </body>
 </html>

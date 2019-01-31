@@ -69,7 +69,12 @@ class PCA(AnalysisBase):
         allOTUs = []
         col = 0
         while col < len(base[0]):
-            allOTUs.append((headers[col], base[:, col]))
+            baseCol = []
+            row = 0
+            while row < len(base):
+                baseCol.append(base[row][col])
+                row += 1
+            allOTUs.append((headers[col], robjects.FloatVector(baseCol)))
             col += 1
 
         logger.info("After creating the R float vector table")
@@ -85,13 +90,16 @@ class PCA(AnalysisBase):
 
         logger.info("After running the R PCA")
 
-        pca1Min = 100
-        pca2Min = 100
+        pca1Min = 1000000
+        pca2Min = 1000000
+        pca3Min = 1000000
         pca1Max = 0
         pca2Max = 0
+        pca3Max = 0
 
         pca1 = user_request.get_custom_attr("pca1")
         pca2 = user_request.get_custom_attr("pca2")
+        pca3 = user_request.get_custom_attr("pca3")
 
         pcaRow = []
         i = 1  # RObjects use 1 based indexing
@@ -103,7 +111,9 @@ class PCA(AnalysisBase):
             pcaObj = {"s": sample_labels[i - 1],
                       "m": meta,
                       "pca1": round(float(pcaVals.rx(i, int(pca1))[0]), 8),
-                      "pca2": round(float(pcaVals.rx(i, int(pca2))[0]), 8)}
+                      "pca2": round(float(pcaVals.rx(i, int(pca2))[0]), 8),
+                      "pca3": round(float(pcaVals.rx(i, int(pca3))[0]), 8)
+                      }
             if pcaObj["pca1"] > pca1Max:
                 pca1Max = pcaObj["pca1"]
             if pcaObj["pca1"] < pca1Min:
@@ -113,6 +123,11 @@ class PCA(AnalysisBase):
                 pca2Max = pcaObj["pca2"]
             if pcaObj["pca2"] < pca2Min:
                 pca2Min = pcaObj["pca2"]
+
+            if pcaObj["pca3"] > pca3Max:
+                pca3Max = pcaObj["pca3"]
+            if pcaObj["pca3"] < pca3Min:
+                pca3Min = pcaObj["pca3"]
 
             pcaRow.append(pcaObj)
             i += 1
@@ -129,4 +144,6 @@ class PCA(AnalysisBase):
         abundancesObj["pca1Min"] = pca1Min
         abundancesObj["pca2Max"] = pca2Max
         abundancesObj["pca2Min"] = pca2Min
+        abundancesObj["pca3Max"] = pca3Max
+        abundancesObj["pca3Min"] = pca3Min
         return abundancesObj

@@ -15,7 +15,7 @@ import flask_login
 from flask_login import current_user
 from werkzeug import secure_filename
 from sqlite3 import dbapi2 as sqlite3
-import os
+from urllib.parse import unquote
 import random
 import json
 import hashlib
@@ -101,7 +101,8 @@ db.initDB(DB_PATH, SCHEMA_PATH)
 
 @login_manager.unauthorized_handler
 def unauthorized_callback():
-    return redirect('/login')
+    next = url_for(request.endpoint, **request.args)
+    return redirect(url_for('login', next=next))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -136,6 +137,15 @@ def signup():
         return render_template('signup.html', error=1)
 
 
+def redirect_dest(fallback):
+    dest = request.referrer
+    try:
+        dest = unquote(dest.split("next=")[1])
+        return redirect(dest)
+    except:
+        return redirect(fallback)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -148,7 +158,7 @@ def login():
         if isAuth:
             user = User(email, userID, True)
             flask_login.login_user(user)
-            return redirect(url_for('projects'))
+            return redirect_dest(fallback=url_for('projects'))
 
         return render_template('login.html', badlogin=1)
 
@@ -642,6 +652,7 @@ def getPCA():
     user_request = __get_user_request(request)
     user_request.set_custom_attr("pca1", request.form['pca1'])
     user_request.set_custom_attr("pca2", request.form['pca2'])
+    user_request.set_custom_attr("pca3", request.form['pca3'])
 
     plugin = PCA()
     abundances = plugin.run(user_request)

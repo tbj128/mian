@@ -125,6 +125,7 @@ hr {
 	border-right:1px solid #E8E8E8;
     background:#FAFAFA;
     overflow-y: auto;
+    z-index: 999;
 }
 
 .editor .pad-top {

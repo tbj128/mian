@@ -659,7 +659,7 @@ function renderPCA(data) {
         .append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(xAxis)
+        .call(xAxis);
     var gXTitle = gX
         .append("text")
         .attr("class", "label")

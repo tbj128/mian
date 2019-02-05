@@ -33,6 +33,28 @@ class Metadata(object):
         """
         return self.metadata
 
+    def get_as_table_in_table_order(self, sample_labels):
+        """
+        Returns the metadata of the metadata values. The values will correspond directly to the input OTU table order.
+        The header of the metadata is ignored.
+        :param meta_col:
+        :return:
+        """
+        sample_id_to_metadata_table_row = {}
+        i = 1
+        while i < len(self.metadata):
+            sample_id_to_metadata_table_row[self.metadata[i][0]] = i
+            i += 1
+
+        new_metadata_table = []
+        new_metadata_table.append(self.metadata[0])
+        i = 0
+        while i < len(sample_labels):
+            row_index = sample_id_to_metadata_table_row[sample_labels[i]]
+            new_metadata_table.append(self.metadata[row_index])
+            i += 1
+        return new_metadata_table
+
     def get_metadata_headers(self):
         """
         Gets the metadata headers in order of the metadata file

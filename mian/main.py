@@ -20,6 +20,8 @@ import random
 import json
 import hashlib
 import shutil
+import base64
+import zlib
 import logging
 #
 # Imports and installs R packages as needed
@@ -47,6 +49,7 @@ from mian.analysis.correlations_selection import CorrelationsSelection
 from mian.analysis.differential_selection import DifferentialSelection
 from mian.analysis.fisher_exact import FisherExact
 from mian.analysis.glmnet import GLMNet
+from mian.analysis.heatmap import Heatmap
 from mian.analysis.nmds import NMDS
 from mian.analysis.pca import PCA
 from mian.analysis.random_forest import RandomForest
@@ -332,6 +335,14 @@ def glmnet():
     return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
+@app.route('/heatmap')
+@flask_login.login_required
+def heatmap():
+    projectNames = get_project_ids_to_info(current_user.id)
+    currProject = request.args.get('pid', '')
+    return render_template('heatmap.html', projectNames=projectNames, currProject=currProject)
+
+
 @app.route('/nmds')
 @flask_login.login_required
 def nmds():
@@ -612,6 +623,21 @@ def getGlmnet():
     plugin = GLMNet()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
+
+
+@app.route('/heatmap', methods=['POST'])
+@flask_login.login_required
+def getHeatmap():
+    user_request = __get_user_request(request)
+    user_request.set_custom_attr("corrvar1", request.form['corrvar1'])
+    user_request.set_custom_attr("corrvar2", request.form['corrvar2'])
+    user_request.set_custom_attr("cluster", request.form['cluster'])
+    user_request.set_custom_attr("minSamplesPresent", request.form['minSamplesPresent'])
+
+    plugin = Heatmap()
+    abundances = plugin.run(user_request)
+    return base64.b64encode(zlib.compress(json.dumps(abundances).encode("utf-8")))
+    # return json.dumps(abundances)
 
 
 @app.route('/random_forest', methods=['POST'])

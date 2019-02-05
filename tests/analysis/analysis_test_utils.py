@@ -8,6 +8,7 @@ from mian.core.constants import SUBSAMPLED_OTU_TABLE_FILENAME, SAMPLE_METADATA_F
     SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
 from mian.model.user_request import UserRequest
 from mian.model.taxonomy import Taxonomy
+from mian.model.metadata import Metadata
 
 from mian.rutils import r_package_install
 
@@ -119,6 +120,21 @@ class AnalysisTestUtils(object):
                     output.append(o[target_col])
                 i += 1
         return output
+
+    @staticmethod
+    def get_metadata_obj(test_dir, csv_name=SAMPLE_METADATA_FILENAME, sep="\t"):
+        output = []
+        csv_name = os.path.join(test_dir, csv_name)
+        print("Opening file with name " + csv_name)
+        with open(csv_name, 'r') as csvfile:
+            base_csv = csv.reader(csvfile, delimiter=sep, quotechar='|')
+            i = 0
+            for o in base_csv:
+                output.append(o)
+                i += 1
+        metadata = Metadata("", "", load_samples=False)
+        metadata.set_table(output)
+        return metadata
 
     @staticmethod
     def compare_two_objects(obj1, obj2, order_matters=True, relative_tolerance=1e-5):

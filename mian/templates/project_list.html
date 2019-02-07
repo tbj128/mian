@@ -1,12 +1,19 @@
 <div class="pad-sides">
+
+  <input type="hidden" id="uid" name="uid" value="{{ uid }}" />
+  <input type="hidden" id="isShared" name="isShared" value="{{ share }}" />
+  {% if share != True %}
   <label class="control-label">Project  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="Project" data-content="Select the specific project you want to apply the analysis on. All other analysis parameters will remain the same." data-trigger="hover"></i></label>
   <select id="project" name="project" class="form-control">
     {% for projectName in projectNames %}
       {% if projectNames[projectName]['pid'] == currProject %}
-        <option value="{{ projectNames[projectName]['pid'] }}" selected>{{ projectName }}</option>
+        <option value="{{ projectNames[projectName]['pid'] }}" selected>{{ projectNames[projectName]['project_name'] }}</option>
       {% else %}
-        <option value="{{ projectNames[projectName]['pid'] }}">{{ projectName }}</option>
+        <option value="{{ projectNames[projectName]['pid'] }}">{{ projectNames[projectName]['project_name'] }}</option>
       {% endif %}
     {% endfor %}
   </select>
+  {% else %}
+  <input type="hidden" id="project" name="project" value="{{ currProject }}" />
+  {% endif %}
 </div>

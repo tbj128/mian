@@ -188,6 +188,7 @@ function render3dPCA(args) {
         .call(
             zoom
         );
+
     var svg = svgBase
         .append('g');
 
@@ -517,7 +518,7 @@ function render3dPCA(args) {
         };
         processData(data, 1000);
 
-        pcaOverrideScale = pcaOverrideScale ? pcaOverrideScale : 3;
+        pcaOverrideScale = pcaOverrideScale ? pcaOverrideScale : 15;
         svgBase.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(pcaOverrideScale));
     }
 
@@ -844,7 +845,6 @@ function renderPCAVar(data) {
         .attr("x", width / 2)
         .attr("y", 36)
         .style("fill", "#000")
-        .text($("#corrval").val())
         .text("Principal Component #");
 
     // y-axis
@@ -992,7 +992,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "pca",
+        url: "/pca",
         data: data,
         success: function(result) {
             $("#display-error").hide();

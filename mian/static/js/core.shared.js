@@ -60,8 +60,6 @@ if (getParameterByName("sampleFilterRole")) {
 }
 
 
-
-
 // Global cache of the "Category Breakdown" values
 var catVars = [];
 var hasCatVar;
@@ -105,6 +103,7 @@ function initializeComponent(catVarOptions) {
         false;
 
     createGlobalSidebarListeners();
+    createGlobalVisualizationListeners();
     handleGlobalURLParams();
 
     resetProject();
@@ -113,6 +112,30 @@ function initializeComponent(catVarOptions) {
 // ================================================================================
 // Globally Accessible Helper Methods
 //
+
+function getSharedPrefixIfNeeded() {
+    if ($("#isShared").val() === "True") {
+        return "/share"
+    } else {
+        return "";
+    }
+}
+
+function getSharedUserSuffixIfNeeded() {
+    if ($("#isShared").val() === "True") {
+        return "&uid=" + getParameterByName("uid")
+    } else {
+        return "";
+    }
+}
+
+function getSharedUserProjectSuffixIfNeeded() {
+    if ($("#isShared").val() === "True") {
+        return "&uid=" + getParameterByName("uid") + "&pid=" + getParameterByName("pid")
+    } else {
+        return "";
+    }
+}
 
 function showLoading() {
     $("#loading").show();
@@ -273,10 +296,11 @@ function updateFilterSamplesOptions() {
 
 function getSampleFilteringOptions(isSync) {
     $.ajax({
-        url: "metadata_vals?pid=" +
+        url: getSharedPrefixIfNeeded() + "/metadata_vals?pid=" +
             $("#project").val() +
             "&catvar=" +
-            $("#filter-sample").val(),
+            $("#filter-sample").val() +
+            getSharedUserSuffixIfNeeded(),
         async: isSync ? false : true,
         success: function(result) {
             var json = JSON.parse(result);
@@ -461,9 +485,61 @@ function createGlobalSidebarListeners() {
     });
 }
 
+function createGlobalVisualizationListeners() {
+    $("#share").click(function() {
+        setGetParameters({
+            "uid": $("#uid").val()
+        });
+
+        $.ajax({
+            url: "/get_sharing_status?pid=" + $("#project").val(),
+            success: function(result) {
+                var obj = JSON.parse(result);
+                if (obj["share"] === "yes") {
+                    $("#sharing-switch input").prop('checked', true);
+                    $("#sharing-link-container").show();
+                    $("#sharing-switch-text").text("Link sharing is on");
+                } else {
+                    $("#sharing-switch input").prop('checked', false);
+                    $("#sharing-link-container").hide();
+                    $("#sharing-switch-text").text("Link sharing is off");
+                }
+            }
+        });
+        $("#sharing-link-input").val(window.location.protocol + window.location.host + "/share" + window.location.pathname + window.location.search);
+    });
+    $("#sharing-link-input").focus(function() {
+        this.select();
+    });
+    $("#sharing-switch input").change(function() {
+        if ($("#sharing-switch input").is(':checked')) {
+            $("#sharing-link-container").show();
+            $("#sharing-switch-text").text("Link sharing is on");
+
+            $.ajax({
+                url: "/toggle_sharing?pid=" + $("#project").val() + "&share=yes",
+                success: function(result) {
+                    console.log("Sharing enabled")
+                }
+            });
+        } else {
+            $("#sharing-link-container").hide();
+            $("#sharing-switch-text").text("Link sharing is off");
+
+            $.ajax({
+                url: "/toggle_sharing?pid=" + $("#project").val() + "&share=no",
+                success: function(result) {
+                    console.log("Sharing enabled")
+                }
+            });
+        }
+    });
+}
+
 function updateCatVar(isNumeric) {
     var catVarPromise = $.ajax({
-        url: "metadata_headers_with_type?pid=" + $("#project").val(),
+        url: getSharedPrefixIfNeeded() + "/metadata_headers_with_type?pid=" + $("#project").val() +
+            getSharedUserSuffixIfNeeded(),
         success: function(result) {
             var json = JSON.parse(result);
             var headers =
@@ -556,7 +632,8 @@ function updateTaxonomicLevel(firstLoad, callback) {
     if ($.isEmptyObject(taxonomiesMap)) {
         // Load taxonomy map
         return $.ajax({
-            url: "taxonomies?pid=" + $("#project").val(),
+            url: getSharedPrefixIfNeeded() + "/taxonomies?pid=" + $("#project").val() +
+            getSharedUserSuffixIfNeeded(),
             success: function(result) {
                 var json = JSON.parse(result);
                 taxonomiesMap = json;
@@ -660,52 +737,6 @@ function renderTaxonomicLevel(firstLoad) {
     console.log("Finished rendering taxonomic level");
 }
 
-//function updateSamples(firstLoad) {
-//    return $.ajax({
-//        url: "samples?pid=" + $("#project").val(),
-//        success: function(result) {
-//            var json = JSON.parse(result);
-//            renderSamples(json, firstLoad);
-//        }
-//    });
-//}
-//
-//function renderSamples(json, firstLoad) {
-//    $("#samples").empty();
-//
-//    // Get the "Include" or "Exclude" role from the URL params
-//    var sampleFilterRole = getParameterByName("sampleFilterRole") ? getParameterByName("sampleFilterRole") : "Include";
-//    if (firstLoad) {
-//        $("#sample-typeahead-btn .typeahead-role").text(sampleFilterRole);
-//    }
-//
-//    // Get the samples to filter from the URL params
-//    var sampleFilterVals = getParameterByName("sampleFilterVals") ? JSON.parse(getParameterByName("sampleFilterVals")) : [];
-//
-//    options = "";
-//    for (var i = 0; i < json.length; i++) {
-//        if (firstLoad && (sampleFilterVals.indexOf(json[i]) > -1 || sampleFilterVals.indexOf("mian-select-all") > -1)) {
-//            options += "<option value='" + json[i] + "' selected>" + json[i] + "</option>";
-//        } else {
-//            options += "<option value='" + json[i] + "'>" + json[i] + "</option>";
-//        }
-//    }
-//    $("#samples").append(options);
-//
-//    if (firstLoad) {
-//        var outWidth = $("#project").outerWidth();
-//        $("#samples").multiselect({
-//            buttonWidth: outWidth ? outWidth + "px" : "320px",
-//            enableFiltering: true,
-//            includeSelectAllOption: true,
-//            maxHeight: 200
-//        });
-//    } else {
-//        $("#samples").multiselect("rebuild");
-//    }
-//    $("#samples").multiselect("selectAll", false);
-//    $("#samples").multiselect("updateButtonText");
-//}
 
 //
 // Statistics Container Shared

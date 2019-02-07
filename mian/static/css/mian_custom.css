@@ -323,13 +323,15 @@ hr {
  */
 
 .download-container {    
-  padding: 12px 0 0 0px;
+  padding: 6px 6px 0 0px;
   height: 34px;
+  text-align: right;
 }
 
-#download-svg {
-  position:fixed;
-  right: 12px;
+.download-container button {
+  margin-left: 3px;
+  font-size: 12px;
+  padding: 2px 6px;
 }
 
 .axis text {

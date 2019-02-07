@@ -75,7 +75,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "correlations_selection",
+        url: "/correlations_selection",
         data: data,
         success: function(result) {
             hideNotifications();

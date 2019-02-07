@@ -249,7 +249,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "correlation_network",
+        url: "/correlation_network",
         data: data,
         success: function(result) {
             $("#display-error").hide();

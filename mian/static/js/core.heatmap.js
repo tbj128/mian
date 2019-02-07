@@ -141,7 +141,7 @@ function renderHeatmap(abundancesObj) {
             var xElem = colHeaders[actualX];
             var yElem = rowHeaders[actualY];
             var d = 0;
-            if (corrvar1 !== corrvar2) {
+            if (corrvar1 === corrvar2) {
                 d = actualX >= actualY ? data[actualY][actualX - actualY] : data[actualX][actualY - actualX];
             } else {
                 d = data[actualY][actualX];
@@ -339,7 +339,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "heatmap",
+        url: "/heatmap",
         data: data,
         success: function(result) {
             hideLoading();

@@ -140,7 +140,7 @@ $(document).ready(function() {
         var formData = new FormData(form);
 
         $.ajax({
-            url: "upload",
+            url: "/upload",
             type: "POST",
             data: formData,
             cache: false,

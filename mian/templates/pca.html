@@ -2,8 +2,8 @@
 <html lang="en">
     <head>
         {% include 'header.html' %}
-        <title>PCA - mian</title>
-        <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
+        <title>PCA - Mian</title>
+        <link rel="stylesheet" href="/static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
         <style>
             .line-chart .axis path,
             .line-chart .axis line {
@@ -53,7 +53,7 @@
                                 <option value="Species">Species</option>
                                 <option value="OTU" selected>OTU</option>
                             </select>
-                            <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                            <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                             <select id="catvar" name="catvar" class="form-control">
                             </select>
                             <label class="control-label">Type of Plot <i class="fa fa-info-circle" data-toggle="popover" data-title="Number of Axes" data-content="Choose to show either a 2D plot or a 3D plot"></i></label>
@@ -62,7 +62,7 @@
                                 <option value="2D">2D</option>
                             </select>
                             <div id="axis-range-container">
-                                <label class="control-label">Axis Range <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis Range" data-content="The range of plots to show on the 3D PCA plot. Points falling outside of this range will be removed from the graph."></i></label>&nbsp;&nbsp;
+                                <label class="control-label">Axis Range <i class="fa fa-info-circle" data-toggle="popover" data-title="Axis Range" data-content="Define the range of the 3D PCA plot. Points falling outside of this range will be removed from the graph."></i></label>&nbsp;&nbsp;
                                 <div id="slider-range-1"></div>
                             </div>
                             <hr />
@@ -103,7 +103,7 @@
             <div id="display-error" class="project-empty" style="display:none;">
                 <i class="fa fa-exclamation-circle fa-4x"></i>
                 <h3>Analysis cannot be performed with these parameters</h3>
-                <h5>Try changing the Category Breakdown parameter and try again</h5>
+                <h5>Try changing the Categorical Variable parameter and try again</h5>
             </div>
             <div id="analysis-container" class="analysis-container pca" style="min-height:500px;">
             </div>
@@ -119,11 +119,11 @@
         </div>
         {% include 'footer-viz-d3v4.html' %}
         <!-- Include custom JS here -->
-        <script src="static/js/plugins/lodash.min.js"></script>
-        <script src="static/js/d3-3d.js"></script>
-        <script src="static/js/plugins/simple-slider.js"></script>
-        <script src="static/js/core.pca.js"></script>
+        <script src="/static/js/plugins/lodash.min.js"></script>
+        <script src="/static/js/d3-3d.js"></script>
+        <script src="/static/js/plugins/simple-slider.js"></script>
+        <script src="/static/js/core.pca.js"></script>
         <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-        <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+        <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
     </body>
 </html>

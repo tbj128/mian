@@ -77,7 +77,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "beta_diversity",
+        url: "/beta_diversity",
         data: data,
         success: function(result) {
             $("#display-error").hide();

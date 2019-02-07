@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Fisher Exact - mian</title>
+    <title>Fisher Exact - Mian</title>
 </head>
 
 <body>
@@ -42,17 +42,17 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping to build the contingency table with" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping to build the contingency table with" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Pairwise Comparison Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variables" data-content="The two unique values for the selected 'category breakdown' field that will be used to build a contingency table."></i></label>
+                <label class="control-label">Pairwise Comparison Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variables" data-content="The two unique values for the selected Categorical Variable field that will be used to build a contingency table."></i></label>
                 <select id="pwVar1" name="pwVar1" class="form-control" style="margin-bottom: 4px;">
                 </select>
                 <select id="pwVar2" name="pwVar2" class="form-control">
                 </select>
 
-                <label class="control-label">Min Presence Threshold  <i class="fa fa-info-circle" data-toggle="popover" data-title="Min Presence Threshold" data-content="In the Fisher Exact test, this parameter controls what constitutes whether a taxonomic item 'exists' in a given sample. By default, this is zero which means that a taxonomic item exists for a sample if it has a non-zero value for the sample."></i></label>
+                <label class="control-label">Min Presence Threshold  <i class="fa fa-info-circle" data-toggle="popover" data-title="Min Presence Threshold" data-content="In the Fisher Exact test, this parameter controls what constitutes whether a taxonomic item is 'present' in a given sample. By default, this is zero which means that a taxonomic item is present for a sample if it has a non-zero value for the sample. If this value was 10, this means that a taxonomic item must have a count of at least 10 for it to be considered present. "></i></label>
                 <input class="form-control" id="minthreshold" name="minthreshold" type="number" value="0"/>
               </div>
             </div>
@@ -63,7 +63,7 @@
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Category Breakdown Attribute</h3>
+        <h3>Choose a Categorical Variable Attribute</h3>
         <h5>
             The Fisher Exact test will involve building a presence/absence contingency table for each taxonomy/OTU between two groups of samples (eg. Disease vs Control). <br />The taxonomies/OTUs which are most significantly different between the two groups will be selected.
         </h5>
@@ -95,10 +95,10 @@
 
 
 <!-- Include custom JS here -->
-<script src="static/js/core.fisher.exact.js"></script>
+<script src="/static/js/core.fisher.exact.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

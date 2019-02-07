@@ -50,6 +50,8 @@ class Statistics(object):
                     if statistical_test == "ttest":
                         t, pvalue = stats.ttest_ind(stats_abundances[abundanceKeys[i]], stats_abundances[abundanceKeys[j]], 0,
                                                     False)
+                    elif statistical_test == "anova":
+                        t, pvalue = stats.f_oneway(stats_abundances[abundanceKeys[i]], stats_abundances[abundanceKeys[j]])
                     else:
                         t, pvalue = stats.ranksums(stats_abundances[abundanceKeys[i]], stats_abundances[abundanceKeys[j]])
                     if not math.isnan(pvalue):

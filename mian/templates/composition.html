@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Composition - mian</title>
+    <title>Composition - Mian</title>
 </head>
 
 <style>
@@ -78,7 +78,7 @@
 
                 <hr/>
 
-                <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
@@ -97,12 +97,10 @@
     <div id="display-error" class="project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
         <h3>Analysis cannot be performed with these parameters</h3>
-        <h5>Try changing the Category Breakdown parameter and try again</h5>
+        <h5>Try changing the Categorical Variable parameter and try again</h5>
     </div>
 
-    <div class="download-container">
-        <button id="download-svg" class="btn btn-default" type="button">Download</button>
-    </div>
+    {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
     </div><!-- /.container -->
@@ -116,14 +114,14 @@
 
 
 <!-- Include custom JS here -->
-<script src="static/js/core.composition.js"></script>
-<script type="text/javascript" src="static/js/plugins/rgbcolor.js"></script>
-<script type="text/javascript" src="static/js/plugins/StackBlur.js"></script>
-<script type="text/javascript" src="static/js/plugins/canvg.js"></script>
-<script type="text/javascript" src="static/js/plugins/FileSaver.js"></script>
+<script src="/static/js/core.composition.js"></script>
+<script type="text/javascript" src="/static/js/plugins/rgbcolor.js"></script>
+<script type="text/javascript" src="/static/js/plugins/StackBlur.js"></script>
+<script type="text/javascript" src="/static/js/plugins/canvg.js"></script>
+<script type="text/javascript" src="/static/js/plugins/FileSaver.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

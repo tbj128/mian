@@ -7,23 +7,23 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/"><img alt="mian" src="static/img/mian_logo_small.png" /></a>
+      <a class="navbar-brand" href="/"><img alt="mian" src="/static/img/mian_logo_small.png" /></a>
     </div>
     <div id="navbar" class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualize <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a class="nav-link" href="boxplots">Boxplots</a></li>
-            <li><a class="nav-link" href="composition">Composition</a></li>
-            <li><a class="nav-link" href="correlations">Simple Correlation</a></li>
-            <li><a class="nav-link" href="correlation_network">Correlation Network</a></li>
-            <li><a class="nav-link" href="heatmap">Heatmap</a></li>
-            <li><a class="nav-link" href="nmds">NMDS</a></li>
-            <li><a class="nav-link" href="pca">PCA</a></li>
-            <li><a class="nav-link" href="rarefaction">Rarefaction Curves</a></li>
-            <li><a class="nav-link" href="tree">Tree</a></li>
-            <li><a class="nav-link" href="table">Table</a></li>
+            <li><a class="nav-link" href="/boxplots">Boxplots</a></li>
+            <li><a class="nav-link" href="/composition">Composition</a></li>
+            <li><a class="nav-link" href="/correlations">Simple Correlation</a></li>
+            <li><a class="nav-link" href="/correlation_network">Correlation Network</a></li>
+            <li><a class="nav-link" href="/heatmap">Heatmap</a></li>
+            <li><a class="nav-link" href="/nmds">NMDS</a></li>
+            <li><a class="nav-link" href="/pca">PCA</a></li>
+            <li><a class="nav-link" href="/rarefaction">Rarefaction Curves</a></li>
+            <li><a class="nav-link" href="/tree">Tree</a></li>
+            <li><a class="nav-link" href="/table">Table</a></li>
           </ul>
         </li>
       </ul>
@@ -31,8 +31,8 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Diversity <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a class="nav-link" href="alpha_diversity">Alpha Diversity</a></li>
-            <li><a class="nav-link" href="beta_diversity">Beta Diversity</a></li>
+            <li><a class="nav-link" href="/alpha_diversity">Alpha Diversity</a></li>
+            <li><a class="nav-link" href="/beta_diversity">Beta Diversity</a></li>
           </ul>
         </li>
       </ul>
@@ -40,12 +40,12 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Feature Selection <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a class="nav-link" href="random_forest">Random Forest</a></li>
-            <li><a class="nav-link" href="boruta">Boruta</a></li>
-            <li><a class="nav-link" href="glmnet">GLM/ElasticNet</a></li>
-            <li><a class="nav-link" href="fisher_exact">Fisher Exact Test</a></li>
-            <li><a class="nav-link" href="differential_selection">Differential Selection</a></li>
-            <li><a class="nav-link" href="correlations_selection">Correlations Selection</a></li>
+            <li><a class="nav-link" href="/random_forest">Random Forest</a></li>
+            <li><a class="nav-link" href="/boruta">Boruta</a></li>
+            <li><a class="nav-link" href="/glmnet">GLM/ElasticNet</a></li>
+            <li><a class="nav-link" href="/fisher_exact">Fisher Exact Test</a></li>
+            <li><a class="nav-link" href="/differential_selection">Differential Selection</a></li>
+            <li><a class="nav-link" href="/correlations_selection">Correlations Selection</a></li>
           </ul>
         </li>
       </ul>
@@ -54,12 +54,11 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ current_user.name }} <span class="caret"></span></a>
             <ul class="dropdown-menu">
-              <li><a href="logout">Logout</a></li>
+              <li><a href="/logout">Logout</a></li>
             </ul>
           </li>
         {% else %}
-          <!--<li><a href="login" class="btn btn-default" style="margin-top: 6px;padding-top: 8px;padding-bottom: 8px;">Login</a></li>-->
-          <li><a href="login">Login</a></li>
+          <li><a href="/login">Login</a></li>
         {% endif %}
       </ul>
     </div><!--/.nav-collapse -->

@@ -184,7 +184,7 @@ $(document).ready(function() {
         filename = filename.split(/(\\|\/)/g).pop();
 
         $.ajax({
-            url: "upload",
+            url: "/upload",
             type: "POST",
             data: formData,
             cache: false,

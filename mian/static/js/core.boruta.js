@@ -94,7 +94,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "boruta",
+        url: "/boruta",
         data: data,
         success: function(result) {
             hideNotifications();

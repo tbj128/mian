@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Alpha Diversity - mian</title>
+    <title>Alpha Diversity - Mian</title>
 </head>
 
 <body>
@@ -42,7 +42,7 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Categorical Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable. A different alpha diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A different alpha diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
@@ -60,11 +60,7 @@
                     <option value="speciesnumber">Species Number</option>
                 </select>
 
-                <label class="control-label">Statistical Test  <i class="fa fa-info-circle" data-toggle="popover" data-title="Statistical Test" data-content="<ul><li><strong>Wilcoxon Rank-Sum</strong> A non-parametric test to test whether a randomly selected sample from one group will be different from a randomly selected sample from another group</li><li><strong>Welch's T-Test</strong> A parametric test to test whether two populations have equal means</li></ul>"></i></label>
-                <select id="statisticalTest" name="statisticalTest" class="form-control">
-                    <option value="wilcoxon">Wilcoxon Rank-Sum (Non-Parametric)</option>
-                    <option value="ttest">Welch's T-Test (Parametric)</option>
-                </select>
+                {% include 'filtering_options_statistical_test.html' %}
               </div>
             </div>
         </div>
@@ -75,7 +71,7 @@
     <div id="display-error" class="project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
         <h3>Analysis cannot be performed with these parameters</h3>
-        <h5>Try changing the Category Breakdown parameter and try again</h5>
+        <h5>Try changing the Categorical Variable parameter and try again</h5>
     </div>
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
@@ -105,11 +101,11 @@
 
 
 <!-- Include custom JS here -->
-<script src="static/js/core.shared.boxplots.js"></script>
-<script src="static/js/core.alpha.diversity.js"></script>
+<script src="/static/js/core.shared.boxplots.js"></script>
+<script src="/static/js/core.alpha.diversity.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

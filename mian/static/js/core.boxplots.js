@@ -136,7 +136,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "boxplots",
+        url: "/boxplots",
         data: data,
         success: function(result) {
             $("#display-error").hide();
@@ -188,7 +188,7 @@ function loadOTUTableHeaders() {
         $("#specific-taxonomy-typeahead").empty();
         var level = taxonomyLevels[$("#taxonomy-level").val()];
         var headersPromise = $.ajax({
-            url: "otu_table_headers_at_level?pid=" +
+            url: "/otu_table_headers_at_level?pid=" +
                 $("#project").val() +
                 "&level=" +
                 level,

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Glmnet Feature Selection - mian</title>
+    <title>Glmnet Feature Selection - Mian</title>
 </head>
 
 <body>
@@ -42,7 +42,7 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
@@ -67,7 +67,7 @@
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Category Breakdown Attribute</h3>
+        <h3>Choose a Categorical Variable Attribute</h3>
         <h5>
             The glmnet algorithm will fit a lasso/elastic-net regularization path based on the selected category breakdown value label. This analysis will then select the most important taxonomies/OTUs used within the model.
         </h5>
@@ -83,10 +83,10 @@
 
 
 <!-- Include custom JS here -->
-<script src="static/js/core.glmnet.js"></script>
+<script src="/static/js/core.glmnet.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

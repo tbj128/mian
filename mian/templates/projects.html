@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     {% include 'header.html' %}
-    <title>Projects - mian</title>
+    <title>Projects - Mian</title>
     <style>
       .blackout {
         opacity: .5;
@@ -115,13 +115,13 @@
       <h3>Modify Subsampling</h3>
       <input style="width:50%;" class="form-control" id="change-subsampling" name="change-subsampling" type="number" value="1020" />
       <div class="btn-group" role="group" style="margin-top:8px;">
-        <button type="button" class="btn btn-default change-cancel" data-project="{{ projectName }}">Cancel</button>
-        <button type="button" class="btn btn-primary change-confirm" data-project="{{ projectName }}" >Change</button>
+        <button type="button" class="btn btn-default change-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary change-confirm" >Change</button>
       </div>
       <hr />
       <h4>Other Options</h4>
-      <button type="button" class="btn btn-default change-auto" data-project="{{ projectName }}">Auto Subsampling</button>
-      <button type="button" class="btn btn-default change-reset" data-project="{{ projectName }}" >Reset</button>
+      <button type="button" class="btn btn-default change-auto">Auto Subsampling</button>
+      <button type="button" class="btn btn-default change-reset" >Reset</button>
       <a id="change-close" href="javascript:void(0);" style="position:absolute; top:18px; right:20px;cursor:pointer;font-size:24px;text-decoration:none;">&times;</a>
     </div>
     <div id="blackout" class="blackout" style="display:none;"></div>
@@ -146,16 +146,16 @@
               {% for projectName in projectNames %}
                 {% if projectNames[projectName]["project_type"] == "biom" %}
                   <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
-                  <h4>{{ projectName }}</h4>
-                  {% if not (demo and projectName == "COPD Example Project") %}
-                  <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
+                  <h4>{{ projectNames[projectName]["project_name"] }}</h4>
+                  {% if not (demo and projectNames[projectName]["project_name"] == "COPD Example Project") %}
+                  <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]['pid'] }}" data-projectname="{{ projectNames[projectName]['project_name'] }}" class="project-delete"><i class="fa fa-trash"></i></a>
                   {% endif %}
                   <table class="table table-hover" style="table-layout:fixed;">
                     <tbody>
                       <tr>
                         <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}&nbsp;<a class="download" data-downloadtype="biom" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the biom file"><i class="fa fa-download"></i></a></th>
                         <td class="col-md-3 subsampleDisplayContainer">
-                          <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
+                          <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]['pid'] }}">
                             {% if projectNames[projectName]["subsampled_value"] == 0 %}
                               {% if projectNames[projectName]["matrix_type"] == "int" %}
                                 Not Subsampled
@@ -164,7 +164,7 @@
                               {% endif %}
                             {% else %}
                               Subsampled to
-                              <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">
+                              <b id="subsampleDisplayVal-{{ projectNames[projectName]['pid'] }}">
                                 {{ projectNames[projectName]["subsampled_value"] }}
                                 {% if projectNames[projectName]["subsampled_type"] == "auto" %}
                                   (auto)
@@ -179,7 +179,7 @@
                           <br />
                           <br />
                           Removed samples:
-                          <b id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">
+                          <b id="subsampleRemoved-{{ projectNames[projectName]['pid'] }}">
                             {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
                           </b>
                           <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. Try subsampling to a lower depth to capture more samples"></i>
@@ -191,13 +191,13 @@
                   </table>
                 </div>
                 {% else %}
-                  <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
-                  <h4>{{ projectName }}</h4>
-                  {% if not (demo and projectName == "COPD Example Project") %}
-                  <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectName }}" class="project-delete"><i class="fa fa-trash"></i></a>
+                  <div class="project-item" id="p-{{ projectNames[projectName]['pid'] }}">
+                  <h4>{{ projectNames[projectName]["project_name"] }}</h4>
+                  {% if not (demo and projectNames[projectName]["project_name"] == "COPD Example Project") %}
+                  <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectNames[projectName]["project_name"] }}" class="project-delete"><i class="fa fa-trash"></i></a>
                   {% endif %}
 
-                  {% if projectName == "COPD Example Project" %}
+                  {% if projectNames[projectName]["project_name"] == "COPD Example Project" %}
                   <p><small class="text-muted">This example uses data from the Sze et al. study <a href="https://www.atsjournals.org/doi/full/10.1164/rccm.201502-0223OC" target="_blank">Host Response to the Lung Microbiome in Chronic Obstructive Pulmonary Disease</a></small></p>
                   {% endif %}
                   <table class="table table-hover" style="table-layout:fixed;">
@@ -269,14 +269,14 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/plugins/bootbox.min.js"></script>
-    <script src="static/js/core.shared.js"></script>
-    <script src="static/js/core.projects.js"></script>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/plugins/bootbox.min.js"></script>
+    <script src="/static/js/core.shared.js"></script>
+    <script src="/static/js/core.projects.js"></script>
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+    <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
   </body>
 </html>

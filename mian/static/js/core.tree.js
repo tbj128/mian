@@ -85,7 +85,7 @@ function updateAnalysis(abundancesObj) {
 
     $.ajax({
         type: "POST",
-        url: "tree",
+        url: "/tree",
         data: data,
         success: function(result) {
             $("#display-error").hide();

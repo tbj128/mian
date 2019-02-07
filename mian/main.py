@@ -10,7 +10,7 @@
 #
 from functools import lru_cache
 
-from flask import Flask, request, render_template, redirect, url_for, Response
+from flask import Flask, request, render_template, redirect, url_for, Response, abort
 import flask_login
 from flask_login import current_user
 from werkzeug import secure_filename
@@ -250,7 +250,7 @@ def home():
 def boxplots():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('boxplots.html', projectNames=projectNames, currProject=currProject)
+    return render_template('boxplots.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/alpha_diversity')
@@ -258,7 +258,7 @@ def boxplots():
 def alpha_diversity():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('alpha_diversity.html', projectNames=projectNames, currProject=currProject)
+    return render_template('alpha_diversity.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/beta_diversity')
@@ -266,7 +266,7 @@ def alpha_diversity():
 def beta_diversity():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('beta_diversity.html', projectNames=projectNames, currProject=currProject)
+    return render_template('beta_diversity.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/boruta')
@@ -274,7 +274,7 @@ def beta_diversity():
 def boruta():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('boruta.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
+    return render_template('boruta.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/composition')
@@ -282,7 +282,7 @@ def boruta():
 def composition():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('composition.html', projectNames=projectNames, currProject=currProject)
+    return render_template('composition.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, share=False)
 
 
 @app.route('/correlations')
@@ -291,7 +291,7 @@ def correlations():
     # TODO: Consider using only factors in the future for catVars
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('correlations.html', projectNames=projectNames, currProject=currProject)
+    return render_template('correlations.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/correlation_network')
@@ -299,7 +299,7 @@ def correlations():
 def correlation_network():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('correlation_network.html', projectNames=projectNames, currProject=currProject)
+    return render_template('correlation_network.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/correlations_selection')
@@ -307,7 +307,7 @@ def correlation_network():
 def correlations_selection():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('correlations_selection.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
+    return render_template('correlations_selection.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/differential_selection')
@@ -315,7 +315,7 @@ def correlations_selection():
 def differential_selection():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('differential_selection.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
+    return render_template('differential_selection.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/fisher_exact')
@@ -323,7 +323,7 @@ def differential_selection():
 def fisher_exact():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('fisher_exact.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
+    return render_template('fisher_exact.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/glmnet')
@@ -332,7 +332,7 @@ def glmnet():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
 
-    return render_template('glmnet.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
+    return render_template('glmnet.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/heatmap')
@@ -340,7 +340,7 @@ def glmnet():
 def heatmap():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('heatmap.html', projectNames=projectNames, currProject=currProject)
+    return render_template('heatmap.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/nmds')
@@ -348,7 +348,7 @@ def heatmap():
 def nmds():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('nmds.html', projectNames=projectNames, currProject=currProject)
+    return render_template('nmds.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/pca')
@@ -356,7 +356,7 @@ def nmds():
 def pca():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('pca.html', projectNames=projectNames, currProject=currProject)
+    return render_template('pca.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/random_forest')
@@ -364,7 +364,7 @@ def pca():
 def random_forest():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('random_forest.html', projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
+    return render_template('random_forest.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
 
 
 @app.route('/rarefaction')
@@ -372,7 +372,7 @@ def random_forest():
 def rarefaction():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('rarefaction.html', projectNames=projectNames, currProject=currProject)
+    return render_template('rarefaction.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/table')
@@ -380,7 +380,7 @@ def rarefaction():
 def table():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('table_view.html', projectNames=projectNames, currProject=currProject)
+    return render_template('table_view.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
 
 
 @app.route('/tree')
@@ -388,103 +388,214 @@ def table():
 def tree():
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('tree_view.html', projectNames=projectNames, currProject=currProject)
+    return render_template('tree_view.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
+
+
+# --- Sharing Pages ---
+
+@app.route('/share/composition')
+def compositionShare():
+    uid = request.args.get('uid', '')
+    pid = request.args.get('pid', '')
+    if uid == "" or pid == "":
+        redirect(url_for('home'))
+
+    projectNames = get_project_ids_to_info(uid)
+    if pid not in projectNames or projectNames[pid]["shared"] == "no":
+        return redirect(url_for('home'))
+
+    subProjectNames = {pid: projectNames[pid]}
+    return render_template('composition.html', uid=uid, projectNames=subProjectNames, currProject=pid, share=True)
+
+
+
 
 
 # ----- REST endpoints -----
 
 #
-# Sidebar endpoints
+# Sharing endpoints
 #
 
-@app.route('/samples')
+@app.route('/get_sharing_status')
 @flask_login.login_required
-def getSamples():
+def getSharingStatus():
     user = current_user.id
     pid = request.args.get('pid', '')
     if pid == '':
         return json.dumps({})
 
-    abundances = Metadata.get_metadata_samples(user, pid)
-    return json.dumps(abundances)
+    map_file = Map(user, pid)
+    if map_file.shared == "yes":
+        return json.dumps({"share": "yes"})
+    else:
+        return json.dumps({"share": "no"})
+
+@app.route('/toggle_sharing')
+@flask_login.login_required
+def toggleSharing():
+    user = current_user.id
+    pid = request.args.get('pid', '')
+    share = request.args.get('share', '')
+    if pid == '':
+        return json.dumps({})
+
+    map_file = Map(user, pid)
+    if share == "yes":
+        map_file.shared = "yes"
+    else:
+        map_file.shared = "no"
+    map_file.save()
+    return json.dumps({})
+
+#
+# Sidebar endpoints
+#
 
 
 @app.route('/taxonomies')
 @flask_login.login_required
-def getTaxonomies():
-    logger.info("Getting taxonomies")
+def getTaxonomiesSecure():
     user = current_user.id
     pid = request.args.get('pid', '')
     if pid == '':
         return json.dumps({})
+    return getTaxonomies(user, pid)
+
+@app.route('/share/taxonomies')
+def getTaxonomiesShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        pid = request.args.get('pid', '')
+        return getTaxonomies(uid, pid)
+    else:
+        abortNotShared()
+
+
+def getTaxonomies(user, pid):
+    logger.info("Getting taxonomies")
 
     taxonomy = Taxonomy(user, pid)
     abundances = taxonomy.get_taxonomy_map()
     logger.info("Returning taxonomies")
     return json.dumps(abundances)
 
-
-@app.route('/otu_table_headers')
-@flask_login.login_required
-def getOTUTableHeaders():
-    user = current_user.id
-    pid = request.args.get('pid', '')
-    if pid == '':
-        return json.dumps({})
-
-    metadata = Metadata(user, pid)
-    abundances = metadata.get_metadata_headers()
-    return json.dumps(abundances)
+# ---
 
 
 @app.route('/metadata_headers')
 @flask_login.login_required
-def getMetadataHeaders():
+def getMetadataHeadersSecure():
     user = current_user.id
     pid = request.args.get('pid', '')
     if pid == '':
         return json.dumps({})
+    return getMetadataHeaders(user, pid)
 
+
+@app.route('/share/metadata_headers')
+def getMetadataHeadersShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        pid = request.args.get('pid', '')
+        return getMetadataHeaders(uid, pid)
+    else:
+        abortNotShared()
+
+
+def getMetadataHeaders(user, pid):
     metadata = Metadata(user, pid)
     abundances = metadata.get_metadata_headers()
     return json.dumps(abundances)
 
+# ---
+
+
 @app.route('/metadata_headers_with_type')
 @flask_login.login_required
-def getMetadataHeadersWithType():
+def getMetadataHeadersWithTypeSecure():
     user = current_user.id
     pid = request.args.get('pid', '')
     if pid == '':
         return json.dumps({})
+    return getMetadataHeadersWithType(user, pid)
 
+
+@app.route('/share/metadata_headers_with_type')
+def getMetadataHeadersWithTypeShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        pid = request.args.get('pid', '')
+        return getMetadataHeadersWithType(uid, pid)
+    else:
+        abortNotShared()
+
+
+def getMetadataHeadersWithType(user, pid):
     metadata = Metadata(user, pid)
     abundances = metadata.get_metadata_headers_with_type()
     return json.dumps(abundances)
 
+# ---
+
+
 @app.route('/otu_table_headers_at_level')
 @flask_login.login_required
-def getOTUTableHeadersAtLevel():
+def getOTUTableHeadersAtLevelSecure():
     user = current_user.id
     pid = request.args.get('pid', '')
     level = request.args.get('level', '')
     if pid == '' or level == '':
         return json.dumps({})
+    return getOTUTableHeadersAtLevel(user, pid, level)
 
+
+@app.route('/share/otu_table_headers_at_level')
+def getOTUTableHeadersAtLevelShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        pid = request.args.get('pid', '')
+        level = request.args.get('level', '')
+        return getOTUTableHeadersAtLevel(uid, pid, level)
+    else:
+        abortNotShared()
+
+
+def getOTUTableHeadersAtLevel(user, pid, level):
     headers = OTUTable.get_otu_table_headers_at_taxonomic_level(user, pid, level)
     return json.dumps(headers)
 
+# ---
+
+
 @app.route('/metadata_vals')
 @flask_login.login_required
-def getMetadataVals():
+def getMetadataValsSecure():
     user = current_user.id
     pid = request.args.get('pid', '')
     catvar = request.args.get('catvar', '')
     if pid == '' or catvar == '':
         return json.dumps({})
+    return getMetadataVals(user, pid, catvar)
 
+
+@app.route('/share/metadata_vals')
+def getMetadataValsShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        pid = request.args.get('pid', '')
+        catvar = request.args.get('catvar', '')
+        return getMetadataVals(uid, pid, catvar)
+    else:
+        abortNotShared()
+
+
+def getMetadataVals(user, pid, catvar):
     metadata = Metadata(user, pid)
     uniqueCatVals = metadata.get_metadata_unique_vals(catvar)
     return json.dumps(uniqueCatVals)
+
+# ---
 
 
 
@@ -539,15 +650,32 @@ def getBoxplots():
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+# ---
 
 @app.route('/composition', methods=['POST'])
 @flask_login.login_required
-def getComposition():
+def getCompositionSecure():
     user_request = __get_user_request(request)
+    return getComposition(user_request)
+
+
+@app.route('/share/composition', methods=['POST'])
+def getCompositionShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getComposition(user_request)
+    else:
+        abortNotShared()
+
+
+def getComposition(user_request):
     plugin = Composition()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+
+# ---
 
 @app.route('/correlations', methods=['POST'])
 @flask_login.login_required
@@ -726,8 +854,10 @@ def getIsSubsampled():
 
 # ----- Data processing endpoints -----
 
-def __get_user_request(request):
-    user = current_user.id
+def __get_user_request(request, user=None):
+    if user is None:
+        user = current_user.id
+
     pid = request.form['pid']
     taxonomyFilterCount = request.form['taxonomyFilterCount'] if 'taxonomyFilterCount' in request.form else ""
     taxonomyFilterPrevalnce = request.form['taxonomyFilterPrevalence'] if 'taxonomyFilterPrevalence' in request.form else ""
@@ -976,7 +1106,8 @@ def get_project_ids_to_info(user_id):
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
                         "subsampled_removed_samples": project_map.subsampled_removed_samples,
-                        "matrix_type": project_map.matrix_type
+                        "matrix_type": project_map.matrix_type,
+                        "shared": project_map.shared
                     }
                 else:
                     project_type = "table"
@@ -990,9 +1121,27 @@ def get_project_ids_to_info(user_id):
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
                         "subsampled_removed_samples": project_map.subsampled_removed_samples,
-                        "matrix_type": project_map.matrix_type
+                        "matrix_type": project_map.matrix_type,
+                        "shared": project_map.shared
                     }
                 logger.info("Read project info " + str(project_info))
                 if project_map.project_name != "":
-                    project_name_to_info[project_map.project_name] = project_info
+                    project_name_to_info[project_map.pid] = project_info
     return project_name_to_info
+
+
+def checkSharedValidity(req):
+    uid = req.args.get('uid', '')
+    pid = req.args.get('pid', '')
+    if uid == "" or pid == "":
+        return False
+
+    project_names_to_info = get_project_ids_to_info(uid)
+    if pid not in project_names_to_info:
+        return False
+
+    return project_names_to_info[pid]["shared"] == "yes"
+
+def abortNotShared():
+    abort(403)
+    abort(Response('This project is not publicly accessible'))

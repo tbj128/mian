@@ -1,0 +1,116 @@
+
+<style>
+    /* The switch - the box around the slider */
+    #shareModal .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    /* Hide default HTML checkbox */
+    #shareModal .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    /* The slider */
+    #shareModal .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    #shareModal .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    #shareModal input:checked + .slider {
+      background-color: #2196F3;
+    }
+
+    #shareModal input:focus + .slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+
+    #shareModal input:checked + .slider:before {
+      -webkit-transform: translateX(26px);
+      -ms-transform: translateX(26px);
+      transform: translateX(26px);
+    }
+
+    /* Rounded sliders */
+    #shareModal .slider.round {
+      border-radius: 34px;
+    }
+
+    #shareModal .slider.round:before {
+      border-radius: 50%;
+    }
+
+    #sharing-switch-text {
+      line-height: 32px;
+      font-size: 16px;
+    }
+
+    #sharing-link-container {
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+
+</style>
+
+<div class="download-container">
+    <button id="download-svg" class="btn btn-xs btn-default" type="button">Download</button>
+
+    {% if isShared != True %}
+    <button id="share" class="btn btn-xs btn-default" type="button" data-toggle="modal" data-target="#shareModal">Share</button>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="shareModalLabel">Share</h4>
+            </div>
+          <div class="modal-body">
+              <div class="alert alert-warning" role="alert">
+                  With link sharing on, anyone with this link will be able to view this dataset.
+              </div>
+              <div class="row" id="sharing-switch-container">
+                  <div class="col-md-8">
+                      <span id="sharing-switch-text">Link sharing is off</span>
+                  </div>
+                  <div class="col-md-4" id="sharing-switch" style="text-align: right;">
+                      <label class="switch">
+                          <input type="checkbox">
+                          <span class="slider round"></span>
+                      </label>
+                  </div>
+              </div>
+              <div class="row" id="sharing-link-container" style="display:none;">
+                  <div class="col-md-12" id="sharing-link">
+                      <input type="text" style="border:none;border-color:transparent;outline:none;width:100%;" id="sharing-link-input" />
+                  </div>
+              </div>
+          </div>
+        </div>
+    </div>
+</div>

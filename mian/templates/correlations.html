@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Correlations - mian</title>
+    <title>Correlations - Mian</title>
 
-    <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
     <style>
     </style>
 </head>
@@ -14,7 +14,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlations" data-content="Draws a correlation graph between two metadata values and/or taxonomic abundances" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlations" data-content="Draws a correlation graph between two metadata values and/or taxonomic abundances. Correlations use the Pearson correlation coefficient." data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -48,29 +48,35 @@
                     </select>
                 </div>
 
-                <label class="control-label">Correlation Variable 1 <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which correlation variable should be used on the X-axis<br /><br /><strong>Aggregated Abundances</strong> the sum of all OTU counts for a sample <br /><strong>Max Abundances</strong> the count of the most frequently occurring OTU for a sample"></i></label>
+                <hr />
+
+                <label class="control-label">Correlation Variable 1 <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which correlation variable should be used on the X-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
                 <select id="corrvar1" name="corrvar1" class="form-control">
                 </select>
 
                 <div id="specific-taxonomy-container-1">
-                    <label id="specific-taxonomy-label-1" class="control-label">Taxonomies to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select Taxonomies" data-content="Choose the taxonomies whose abundance should be used in the correlation." data-trigger="hover"></i></label>
+                    <label id="specific-taxonomy-label-1" class="control-label">OTUs and Taxonomic Groups to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select OTUs and Taxonomic Groups" data-content="Choose the OTUs or taxonomic groups whose abundance should be used in the correlation." data-trigger="hover"></i></label>
 
                     <div id="taxonomy-specific-typeahead-wrapper-1">
                         <input id="specific-taxonomy-typeahead-1" type="text" data-background="" value="" />
                     </div>
                 </div>
 
-                <label class="control-label">Correlation Variable 2  <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which correlation variable should be used on the Y-axis<br /><br /><strong>Aggregated Abundances</strong> the sum of all OTU counts for a sample <br /><strong>Max Abundances</strong> the count of the most frequently occurring OTU for a sample"></i></label>
+                <hr />
+
+                <label class="control-label">Correlation Variable 2  <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which correlation variable should be used on the Y-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
                 <select id="corrvar2" name="corrvar2" class="form-control">
                 </select>
 
                 <div id="specific-taxonomy-container-2">
-                    <label id="specific-taxonomy-label-2" class="control-label">Taxonomies to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select Taxonomies" data-content="Choose the taxonomies whose abundance should be used in the correlation." data-trigger="hover"></i></label>
+                    <label id="specific-taxonomy-label-2" class="control-label">OTUs and Taxonomic Groups to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select OTUs and Taxonomic Groups" data-content="Choose the OTUs or taxonomic groups whose abundance should be used in the correlation." data-trigger="hover"></i></label>
 
                     <div id="taxonomy-specific-typeahead-wrapper-2">
                         <input id="specific-taxonomy-typeahead-2" type="text" data-background="" value="" />
                     </div>
                 </div>
+
+                <hr />
 
                 <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the correlation"></i></label>
                 <select id="colorvar" name="colorvar" class="form-control">
@@ -95,8 +101,8 @@
 <div class="content-wrapper">
     <div id="display-error" class="project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Analysis cannot be performed with these parameters</h3>
-        <h5>Try changing the parameters and try again</h5>
+        <h3>No Data Found</h3>
+        <h5>Try adding an OTU or taxonomic group and try again</h5>
     </div>
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
@@ -124,11 +130,11 @@
 
 
 <!-- Include custom JS here -->
-<script src="static/js/plugins/bootstrap-slider.min.js"></script>
-<script src="static/js/core.correlations.js"></script>
+<script src="/static/js/plugins/bootstrap-slider.min.js"></script>
+<script src="/static/js/core.correlations.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

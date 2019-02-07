@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>NMDS - mian</title>
+    <title>NMDS - Mian</title>
 
 
-    <link rel="stylesheet" href="static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
+    <link rel="stylesheet" href="/static/css/plugins/bootstrap-slider.min.css" type="text/css"/>
     <style>
       .line-chart .axis path,
       .line-chart .axis line {
@@ -72,7 +72,7 @@
                         multiple="multiple">
                 </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
               </div>
@@ -85,7 +85,7 @@
     <div id="display-error" class="project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
         <h3>Analysis cannot be performed with these parameters</h3>
-        <h5>Try changing the Category Breakdown parameter and try again</h5>
+        <h5>Try changing the Categorical Variable parameter and try again</h5>
     </div>
 
     <div id="analysis-container" class="analysis-container nmds" style="min-height:500px;">
@@ -97,11 +97,11 @@
 {% include 'footer-viz-d3v4.html' %}
 
 <!-- Include custom JS here -->
-<script src="static/js/plugins/bootstrap-slider.min.js"></script>
-<script src="static/js/core.nmds.js"></script>
+<script src="/static/js/plugins/bootstrap-slider.min.js"></script>
+<script src="/static/js/core.nmds.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

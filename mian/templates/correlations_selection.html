@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Correlations Selection - mian</title>
-    <link href="static/css/plugins/datatables.min.css" rel="stylesheet">
+    <title>Correlations Selection - Mian</title>
+    <link href="/static/css/plugins/datatables.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -54,7 +54,7 @@
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Category Breakdown Attribute</h3>
+        <h3>Choose a Categorical Variable Attribute</h3>
         <h5>
             The correlations selection analysis will apply a Pearson correlation between the selected numeric category breakdown metadata attribute and the taxonomy/OTU abundance for every taxonomy/OTU. <br />The most significant taxonomies/OTUs will be displayed.
         </h5>
@@ -82,11 +82,11 @@
 
 
 <!-- Include custom JS here -->
-<script src="static/js/core.correlations.selection.js"></script>
-<script src="static/js/plugins/datatables.min.js"></script>
+<script src="/static/js/core.correlations.selection.js"></script>
+<script src="/static/js/plugins/datatables.min.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Random Forest - mian</title>
+    <title>Random Forest - Mian</title>
 </head>
 
 <body>
@@ -42,7 +42,7 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                     {% for catVar in catVars %}
                     <option value="{{ catVar }}">{{ catVar }}</option>
@@ -63,7 +63,7 @@
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Category Breakdown Attribute</h3>
+        <h3>Choose a Categorical Variable Attribute</h3>
         <h5>
             The Random Forest algorithm generates a decision tree to predict the category breakdown value. The weights of the most taxonomies/OTUs the algorithm considers most important will be displayed.
         </h5>
@@ -96,10 +96,10 @@
 
 
 <!-- Include custom JS here -->
-<script src="static/js/core.random.forest.js"></script>
+<script src="/static/js/core.random.forest.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

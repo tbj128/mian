@@ -110,7 +110,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "random_forest",
+        url: "/random_forest",
         data: data,
         success: function(result) {
             hideNotifications();

@@ -93,7 +93,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "table",
+        url: "/table",
         data: data,
         success: function(result) {
             $("#display-error").hide();

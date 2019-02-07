@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Boruta Feature Selection - mian</title>
+    <title>Boruta Feature Selection - Mian</title>
 </head>
 
 <body>
@@ -41,7 +41,7 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Category Breakdown <i class="fa fa-info-circle" data-toggle="popover" data-title="Category Breakdown" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
@@ -59,7 +59,7 @@
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
         <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Category Breakdown Attribute</h3>
+        <h3>Choose a Categorical Variable Attribute</h3>
         <h5>
             The Boruta algorithm selects the taxonomies/OTUs it considers to be most important based on the weights derived from a random forest classification
         </h5>
@@ -82,10 +82,10 @@
 {% include 'footer-viz.html' %}
 
 <!-- Include custom JS here -->
-<script src="static/js/core.boruta.js"></script>
+<script src="/static/js/core.boruta.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="static/js/ie10-viewport-bug-workaround.js"></script>-->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
 </html>

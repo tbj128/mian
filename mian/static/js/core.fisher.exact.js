@@ -69,7 +69,7 @@ function updatePWComparisonSidebar() {
 
     return $.ajax({
         type: "GET",
-        url: "metadata_vals",
+        url: "/metadata_vals",
         data: data,
         success: function(result) {
             hideLoading();
@@ -181,7 +181,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "fisher_exact",
+        url: "/fisher_exact",
         data: data,
         success: function(result) {
             hideNotifications();

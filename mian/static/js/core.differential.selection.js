@@ -73,7 +73,7 @@ function updatePWComparisonSidebar(callback) {
 
     return $.ajax({
         type: "GET",
-        url: "metadata_vals",
+        url: "/metadata_vals",
         data: data,
         success: function(result) {
             $("#pwVar1").empty();
@@ -202,7 +202,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "differential_selection",
+        url: "/differential_selection",
         data: data,
         success: function(result) {
             hideNotifications();

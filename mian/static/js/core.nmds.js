@@ -304,7 +304,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "nmds",
+        url: "/nmds",
         data: data,
         success: function(result) {
             $("#display-error").hide();

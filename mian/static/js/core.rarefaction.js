@@ -196,7 +196,7 @@ function checkSubsampleWarning() {
 
     $.ajax({
         type: "POST",
-        url: "isSubsampled",
+        url: "/isSubsampled",
         data: data,
         success: function(result) {
             if (result == 1) {
@@ -221,7 +221,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "rarefaction",
+        url: "/rarefaction",
         data: data,
         success: function(result) {
             $("#display-error").hide();

@@ -110,7 +110,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "alpha_diversity",
+        url: "/alpha_diversity",
         data: data,
         success: function(result) {
             $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);

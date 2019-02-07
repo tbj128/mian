@@ -124,7 +124,7 @@ function loadOTUTableHeaders(corrvarType) {
         $("#specific-taxonomy-typeahead-2").empty();
         var level = taxonomyLevels[$("#taxonomy-level").val()];
         var headersPromise = $.ajax({
-            url: "otu_table_headers_at_level?pid=" +
+            url: "/otu_table_headers_at_level?pid=" +
                 $("#project").val() +
                 "&level=" +
                 level,
@@ -469,7 +469,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "correlations",
+        url: "/correlations",
         data: data,
         success: function(result) {
             $("#display-error").hide();
@@ -477,7 +477,13 @@ function updateAnalysis() {
             $("#analysis-container").show();
             $("#stats-container").show();
             abundancesObj = JSON.parse(result);
-            renderCorrelations(abundancesObj);
+            if (abundancesObj["corrArr"] && abundancesObj["corrArr"].length > 0) {
+                renderCorrelations(abundancesObj);
+            } else {
+                $("#analysis-container").hide();
+                $("#stats-container").hide();
+                $("#display-error").show();
+            }
         },
         error: function(err) {
             hideLoading();

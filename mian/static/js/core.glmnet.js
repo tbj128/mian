@@ -192,7 +192,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "glmnet",
+        url: "/glmnet",
         data: data,
         success: function(result) {
             hideNotifications();

@@ -86,7 +86,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "composition",
+        url: getSharedPrefixIfNeeded() + "/composition?" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();

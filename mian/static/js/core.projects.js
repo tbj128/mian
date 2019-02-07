@@ -16,7 +16,7 @@ $(document).ready(function() {
     $(".add-example-project").click(function() {
         $.ajax({
             type: "POST",
-            url: "loadExampleProject",
+            url: "/loadExampleProject",
             success: function(result) {
                 var baseURL = '//' + location.host + location.pathname;
                 window.location.href = baseURL;
@@ -41,7 +41,7 @@ $(document).ready(function() {
 
                     $.ajax({
                         type: "POST",
-                        url: "deleteProject",
+                        url: "/deleteProject",
                         data: data,
                         success: function(result) {
                             // TODO: Fix to use IDs
@@ -161,7 +161,7 @@ $(document).ready(function() {
     function changeSubsampling(data) {
         $.ajax({
             type: "POST",
-            url: "changeSubsampling",
+            url: "/changeSubsampling",
             data: data,
             success: function(result) {
                 hideLoading();

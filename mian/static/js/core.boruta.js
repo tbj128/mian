@@ -94,7 +94,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/boruta",
+        url: getSharedPrefixIfNeeded() + "/boruta" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             hideNotifications();

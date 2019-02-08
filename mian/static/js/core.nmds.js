@@ -304,7 +304,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/nmds",
+        url: getSharedPrefixIfNeeded() + "/nmds" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();

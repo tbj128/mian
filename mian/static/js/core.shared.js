@@ -131,7 +131,7 @@ function getSharedUserSuffixIfNeeded() {
 
 function getSharedUserProjectSuffixIfNeeded() {
     if ($("#isShared").val() === "True") {
-        return "&uid=" + getParameterByName("uid") + "&pid=" + getParameterByName("pid")
+        return "?uid=" + getParameterByName("uid") + "&pid=" + getParameterByName("pid")
     } else {
         return "";
     }
@@ -821,3 +821,51 @@ function getParameterByName(name, url) {
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
+
+function downloadSVG() {
+    $("#donwload-canvas").empty();
+    var svgsElems = $("#analysis-container").children();
+    var svgElemWidth = $("#analysis-container svg").width();
+    var svgContainerWidth = svgElemWidth;
+
+    var $tmpCanvas = $("#donwload-canvas");
+    $tmpCanvas.height($("#analysis-container svg").height());
+    $tmpCanvas.width(svgContainerWidth);
+
+    var svgContainer = document.createElement("svg");
+    $svgContainer = $(svgContainer);
+    $svgContainer.attr("id", "analysis-group");
+    $svgContainer.attr("width", svgContainerWidth);
+
+    var index = 0;
+    var svg = "";
+    for (var i = 0; i < svgsElems.length; i++) {
+        if (svgsElems[i].tagName === "svg") {
+            var e = svgsElems[i];
+            e.setAttribute("x", index * svgElemWidth);
+            $svgContainer.append($(e).clone());
+            index++;
+        }
+    }
+
+    canvg($tmpCanvas[0], $svgContainer[0].outerHTML, {
+        renderCallback: function() {
+            var dataURL = $tmpCanvas[0].toDataURL("image/png");
+            var ctx = $tmpCanvas[0].getContext("2d");
+
+            var project = $("#project").val();
+            var plotType = $("#plotType").val();
+            var tax = $("#taxonomy").val();
+            var catvar = $("#catvar").val();
+            var filename =
+                project + "." + plotType + "." + tax + "." + catvar + ".png";
+
+            $tmpCanvas[0].toBlob(function(blob) {
+                saveAs(blob, filename);
+            });
+
+            $tmpCanvas.empty();
+        }
+    });
+}
+

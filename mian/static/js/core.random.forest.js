@@ -110,7 +110,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/random_forest",
+        url: getSharedPrefixIfNeeded() + "/random_forest" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             hideNotifications();

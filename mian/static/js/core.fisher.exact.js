@@ -69,7 +69,7 @@ function updatePWComparisonSidebar() {
 
     return $.ajax({
         type: "GET",
-        url: "/metadata_vals",
+        url: getSharedPrefixIfNeeded() + "/metadata_vals" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             hideLoading();
@@ -181,7 +181,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/fisher_exact",
+        url: getSharedPrefixIfNeeded() + "/fisher_exact" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             hideNotifications();

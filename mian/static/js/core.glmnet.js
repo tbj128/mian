@@ -192,7 +192,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/glmnet",
+        url: getSharedPrefixIfNeeded() + "/glmnet" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             hideNotifications();

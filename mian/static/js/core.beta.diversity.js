@@ -77,7 +77,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/beta_diversity",
+        url: getSharedPrefixIfNeeded() + "/beta_diversity" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();

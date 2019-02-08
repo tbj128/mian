@@ -4,8 +4,7 @@ setup(
     name='mian',
     version='0.1.0',
     description="",
-    long_description=(open('README.rst').read() + '\n\n' +
-                      open('AUTHORS.rst').read()),
+    long_description=(open('README.md').read()),
     url='https://github.com/tbj128/mian',
     install_requires=['Flask', 'Werkzeug', 'flask_login', 'scipy', 'pandas', 'h5py', 'rpy2', 'biom-format', 'scikit-bio', 'scikit-learn'],
     license='MIT',

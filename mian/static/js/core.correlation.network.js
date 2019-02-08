@@ -249,7 +249,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/correlation_network",
+        url: getSharedPrefixIfNeeded() + "/correlation_network" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();

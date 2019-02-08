@@ -86,14 +86,14 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: getSharedPrefixIfNeeded() + "/composition?" + getSharedUserProjectSuffixIfNeeded(),
+        url: getSharedPrefixIfNeeded() + "/composition" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();
             hideLoading();
             $("#analysis-container").show();
             $("#stats-container").show();
-            $("#download-svg").show();
+            $("#download-container").show();
 
             var abundancesObj = JSON.parse(result);
             if ($("#plotType").val() == "bar") {
@@ -106,7 +106,7 @@ function updateAnalysis() {
             hideLoading();
             $("#analysis-container").hide();
             $("#stats-container").hide();
-            $("#download-svg").hide();
+            $("#download-container").hide();
             $("#display-error").show();
             console.log(err);
         }

@@ -136,7 +136,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/boxplots",
+        url: getSharedPrefixIfNeeded() + "/boxplots" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();
@@ -191,7 +191,8 @@ function loadOTUTableHeaders() {
             url: "/otu_table_headers_at_level?pid=" +
                 $("#project").val() +
                 "&level=" +
-                level,
+                level +
+                getSharedUserSuffixIfNeeded(),
             success: function(result) {
                 var typeAheadSource = JSON.parse(result);
                 if (tagsInput) {

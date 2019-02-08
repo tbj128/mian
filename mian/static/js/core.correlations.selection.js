@@ -75,7 +75,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/correlations_selection",
+        url: getSharedPrefixIfNeeded() + "/correlations_selection" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             hideNotifications();

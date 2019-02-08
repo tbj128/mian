@@ -992,7 +992,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/pca",
+        url: getSharedPrefixIfNeeded() + "/pca" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();

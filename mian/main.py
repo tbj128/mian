@@ -245,156 +245,17 @@ def home():
 #
 
 
-@app.route('/boxplots')
-@flask_login.login_required
-def boxplots():
+def render_normal(html_file, request, show_low_expression_filtering=False):
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
-    return render_template('boxplots.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
+    if show_low_expression_filtering:
+        return render_template(html_file, uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True, share=False)
+    else:
+        return render_template(html_file, uid=current_user.id, projectNames=projectNames,
+                               currProject=currProject, share=False)
 
 
-@app.route('/alpha_diversity')
-@flask_login.login_required
-def alpha_diversity():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('alpha_diversity.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/beta_diversity')
-@flask_login.login_required
-def beta_diversity():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('beta_diversity.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/boruta')
-@flask_login.login_required
-def boruta():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('boruta.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
-
-
-@app.route('/composition')
-@flask_login.login_required
-def composition():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('composition.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, share=False)
-
-
-@app.route('/correlations')
-@flask_login.login_required
-def correlations():
-    # TODO: Consider using only factors in the future for catVars
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('correlations.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/correlation_network')
-@flask_login.login_required
-def correlation_network():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('correlation_network.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/correlations_selection')
-@flask_login.login_required
-def correlations_selection():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('correlations_selection.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
-
-
-@app.route('/differential_selection')
-@flask_login.login_required
-def differential_selection():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('differential_selection.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
-
-
-@app.route('/fisher_exact')
-@flask_login.login_required
-def fisher_exact():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-    return render_template('fisher_exact.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
-
-
-@app.route('/glmnet')
-@flask_login.login_required
-def glmnet():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', projectNames[list(projectNames.keys())[0]]['pid'])
-
-    return render_template('glmnet.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
-
-
-@app.route('/heatmap')
-@flask_login.login_required
-def heatmap():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('heatmap.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/nmds')
-@flask_login.login_required
-def nmds():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('nmds.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/pca')
-@flask_login.login_required
-def pca():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('pca.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/random_forest')
-@flask_login.login_required
-def random_forest():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('random_forest.html', uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True)
-
-
-@app.route('/rarefaction')
-@flask_login.login_required
-def rarefaction():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('rarefaction.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/table')
-@flask_login.login_required
-def table():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('table_view.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-@app.route('/tree')
-@flask_login.login_required
-def tree():
-    projectNames = get_project_ids_to_info(current_user.id)
-    currProject = request.args.get('pid', '')
-    return render_template('tree_view.html', uid=current_user.id, projectNames=projectNames, currProject=currProject)
-
-
-# --- Sharing Pages ---
-
-@app.route('/share/composition')
-def compositionShare():
+def render_sharing(html_file, request, show_low_expression_filtering=False):
     uid = request.args.get('uid', '')
     pid = request.args.get('pid', '')
     if uid == "" or pid == "":
@@ -405,10 +266,208 @@ def compositionShare():
         return redirect(url_for('home'))
 
     subProjectNames = {pid: projectNames[pid]}
-    return render_template('composition.html', uid=uid, projectNames=subProjectNames, currProject=pid, share=True)
+    if show_low_expression_filtering:
+        return render_template(html_file, uid=uid, projectNames=subProjectNames, currProject=pid, lowExpressionFilteringEnabled=True, share=True)
+    else:
+        return render_template(html_file, uid=uid, projectNames=subProjectNames, currProject=pid, share=True)
 
 
+@app.route('/alpha_diversity')
+@flask_login.login_required
+def alpha_diversity():
+    return render_normal('alpha_diversity.html', request)
 
+
+@app.route('/share/alpha_diversity')
+def alpha_diversity_share():
+    return render_sharing('alpha_diversity.html', request)
+
+
+@app.route('/beta_diversity')
+@flask_login.login_required
+def beta_diversity():
+    return render_normal('beta_diversity.html', request)
+
+
+@app.route('/share/beta_diversity')
+def beta_diversity_share():
+    return render_sharing('beta_diversity.html', request)
+
+
+@app.route('/boruta')
+@flask_login.login_required
+def boruta():
+    return render_normal('boruta.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/boruta')
+def boruta_share():
+    return render_sharing('boruta.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/boxplots')
+@flask_login.login_required
+def boxplots():
+    return render_normal('boxplots.html', request)
+
+
+@app.route('/share/boxplots')
+def boxplots_share():
+    return render_sharing('boxplots.html', request)
+
+
+@app.route('/composition')
+@flask_login.login_required
+def composition():
+    return render_normal('composition.html', request)
+
+
+@app.route('/share/composition')
+def composition_share():
+    return render_sharing('composition.html', request)
+
+
+@app.route('/correlations')
+@flask_login.login_required
+def correlations():
+    return render_normal('correlations.html', request)
+
+
+@app.route('/share/correlations')
+def correlations_share():
+    return render_sharing('correlations.html', request)
+
+
+@app.route('/correlation_network')
+@flask_login.login_required
+def correlation_network():
+    return render_normal('correlation_network.html', request)
+
+
+@app.route('/share/correlation_network')
+def correlation_network_share():
+    return render_sharing('correlation_network.html', request)
+
+
+@app.route('/correlations_selection')
+@flask_login.login_required
+def correlations_selection():
+    return render_normal('correlations_selection.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/correlations_selection')
+def correlations_selection_share():
+    return render_sharing('correlations_selection.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/differential_selection')
+@flask_login.login_required
+def differential_selection():
+    return render_normal('differential_selection.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/differential_selection')
+def differential_selection_share():
+    return render_sharing('differential_selection.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/fisher_exact')
+@flask_login.login_required
+def fisher_exact():
+    return render_normal('fisher_exact.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/fisher_exact')
+def fisher_exact_share():
+    return render_sharing('fisher_exact.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/glmnet')
+@flask_login.login_required
+def glmnet():
+    return render_normal('glmnet.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/glmnet')
+def glmnet_share():
+    return render_sharing('glmnet.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/heatmap')
+@flask_login.login_required
+def heatmap():
+    return render_normal('heatmap.html', request)
+
+
+@app.route('/share/heatmap')
+def heatmap_share():
+    return render_sharing('heatmap.html', request)
+
+
+@app.route('/nmds')
+@flask_login.login_required
+def nmds():
+    return render_normal('nmds.html', request)
+
+
+@app.route('/share/nmds')
+def nmds_share():
+    return render_sharing('nmds.html', request)
+
+
+@app.route('/pca')
+@flask_login.login_required
+def pca():
+    return render_normal('pca.html', request)
+
+
+@app.route('/pca')
+def pca_share():
+    return render_sharing('pca.html', request)
+
+
+@app.route('/random_forest')
+@flask_login.login_required
+def random_forest():
+    return render_normal('random_forest.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/random_forest')
+def random_forest_share():
+    return render_sharing('random_forest.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/rarefaction')
+@flask_login.login_required
+def rarefaction():
+    return render_normal('rarefaction.html', request)
+
+
+@app.route('/rarefaction')
+def rarefaction_share():
+    return render_sharing('rarefaction.html', request)
+
+
+@app.route('/table')
+@flask_login.login_required
+def table():
+    return render_normal('table_view.html', request)
+
+
+@app.route('/share/table')
+def table_share():
+    return render_sharing('table_view.html', request)
+
+
+@app.route('/tree')
+@flask_login.login_required
+def tree():
+    return render_normal('tree_view.html', request)
+
+
+@app.route('/share/tree')
+def tree_share():
+    return render_sharing('tree_view.html', request)
 
 
 # ----- REST endpoints -----

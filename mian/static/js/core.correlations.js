@@ -124,10 +124,11 @@ function loadOTUTableHeaders(corrvarType) {
         $("#specific-taxonomy-typeahead-2").empty();
         var level = taxonomyLevels[$("#taxonomy-level").val()];
         var headersPromise = $.ajax({
-            url: "/otu_table_headers_at_level?pid=" +
+            url: getSharedPrefixIfNeeded() + "/otu_table_headers_at_level?pid=" +
                 $("#project").val() +
                 "&level=" +
-                level,
+                level +
+                getSharedUserSuffixIfNeeded(),
             success: function(result) {
                 var typeAheadSource = JSON.parse(result);
                 if (!corrvarType || corrvarType === "corrvar1") {
@@ -469,7 +470,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/correlations",
+        url: getSharedPrefixIfNeeded() + "/correlations" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();

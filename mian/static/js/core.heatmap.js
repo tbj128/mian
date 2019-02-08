@@ -339,7 +339,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/heatmap",
+        url: getSharedPrefixIfNeeded() + "/heatmap" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             hideLoading();

@@ -110,7 +110,7 @@ function updateAnalysis() {
 
     $.ajax({
         type: "POST",
-        url: "/alpha_diversity",
+        url: getSharedPrefixIfNeeded() + "/alpha_diversity" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);

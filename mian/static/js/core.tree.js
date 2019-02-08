@@ -85,7 +85,7 @@ function updateAnalysis(abundancesObj) {
 
     $.ajax({
         type: "POST",
-        url: "/tree",
+        url: getSharedPrefixIfNeeded() + "/tree" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             $("#display-error").hide();

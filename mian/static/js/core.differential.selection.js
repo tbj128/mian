@@ -1,6 +1,11 @@
 // ============================================================
 // Differential Selection JS Component
 // ============================================================
+
+//
+// Global Components
+//
+var tableResults = [];
 var differentialDataTable;
 
 //
@@ -54,6 +59,10 @@ function createSpecificListeners() {
 
     $("#type").change(function() {
         updateAnalysis();
+    });
+
+    $("#download-svg").click(function() {
+        downloadCSV(tableResults);
     });
 }
 
@@ -148,9 +157,14 @@ function renderDifferentialTable(abundancesObj) {
         });
     }
 
+    tableResults = [];
+    tableResults.push(["otu", "pval", "qval"]);
+
     var differentials = abundancesObj["differentials"];
     differentialDataTable.rows.add(differentials);
     differentialDataTable.draw();
+
+    tableResults = tableResults.concat(differentials);
 }
 
 function updateAnalysis() {
@@ -173,10 +187,7 @@ function updateAnalysis() {
     var type = $("#type").val();
 
     if (catvar === "none") {
-        $("#analysis-container").hide();
-        hideLoading();
-        hideNotifications();
-        showNoCatvar();
+        loadNoCatvar();
         return;
     }
 
@@ -205,23 +216,16 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/differential_selection" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            hideNotifications();
-            hideLoading();
-
             var abundancesObj = JSON.parse(result);
             if (abundancesObj["differentials"].length > 0) {
-                $("#analysis-container").show();
+                loadSuccess();
                 renderDifferentialTable(abundancesObj);
             } else {
-                $("#analysis-container").hide();
-                showNoResults();
+                loadNoResults();
             }
         },
         error: function(err) {
-            $("#analysis-container").hide();
-            hideLoading();
-            hideNotifications();
-            showError();
+            loadError();
             console.log(err);
         }
     });

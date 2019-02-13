@@ -59,6 +59,10 @@ function createSpecificListeners() {
             renderNMDS(abundancesObj["nmds"]);
         }
     });
+
+    $("#download-svg").click(function() {
+        downloadSVG("nmds." + $("#catvar").val());
+    });
 }
 
 //
@@ -307,10 +311,7 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/nmds" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
-            $("#stats-container").show();
+            loadSuccess();
 
             abundancesObj = JSON.parse(result);
 
@@ -320,10 +321,7 @@ function updateAnalysis() {
             renderNMDS(abundancesObj["nmds"]);
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

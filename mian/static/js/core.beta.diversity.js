@@ -37,6 +37,10 @@ function createSpecificListeners() {
     $("#betaType").change(function() {
         updateAnalysis();
     });
+
+    $("#download-svg").click(function() {
+        downloadSVG("beta.diversity." + $("#catvar").val() + "." + $("#strata").val() + "." + $("#betaType").val());
+    });
 }
 
 //
@@ -80,18 +84,18 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/beta_diversity" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
             var abundancesObj = JSON.parse(result);
-            renderBoxplots(abundancesObj);
-            renderPERMANOVA(abundancesObj);
-            renderBetadisper(abundancesObj);
+            if ($.isEmptyObject(abundancesObj.abundances)) {
+                loadNoResults();
+            } else {
+                loadSuccess();
+                renderBoxplots(abundancesObj);
+                renderPERMANOVA(abundancesObj);
+                renderBetadisper(abundancesObj);
+            }
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

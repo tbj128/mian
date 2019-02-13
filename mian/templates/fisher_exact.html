@@ -62,13 +62,20 @@
 
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
-        <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Categorical Variable Attribute</h3>
-        <h5>
-            The Fisher Exact test will involve building a presence/absence contingency table for each taxonomy/OTU between two groups of samples (eg. Disease vs Control). <br />The taxonomies/OTUs which are most significantly different between the two groups will be selected.
-        </h5>
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>Choose a Categorical Variable Attribute</h3>
+                <p>
+                    The Fisher Exact test will involve building a presence/absence contingency table for each taxonomic group/OTU between two groups of samples (eg. Disease vs Control). <br />The taxonomic groups/OTUs which are most significantly different between the two groups will be selected.
+                </p>
+            </div>
+        </div>
     </div>
     {% include 'notifications.html' %}
+    {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
         <table class="table table-hover">

@@ -153,8 +153,44 @@ function showNoCatvar() {
     $("#display-no-catvar").show();
 }
 
-function showError() {
+function loadError() {
+    $("#loading").hide();
     $("#display-error").show();
+    $("#display-no-results").hide();
+    $("#display-no-catvar").hide();
+    $("#download-container").hide();
+    $("#analysis-container").hide();
+    $("#stats-container").hide();
+}
+
+function loadNoResults() {
+    $("#loading").hide();
+    $("#display-error").hide();
+    $("#display-no-results").show();
+    $("#display-no-catvar").hide();
+    $("#download-container").hide();
+    $("#analysis-container").hide();
+    $("#stats-container").hide();
+}
+
+function loadSuccess() {
+    $("#loading").hide();
+    $("#display-error").hide();
+    $("#display-no-results").hide();
+    $("#display-no-catvar").hide();
+    $("#download-container").show();
+    $("#analysis-container").show();
+    $("#stats-container").show();
+}
+
+function loadNoCatvar() {
+    $("#loading").hide();
+    $("#display-error").hide();
+    $("#display-no-results").hide();
+    $("#display-no-catvar").show();
+    $("#download-container").hide();
+    $("#analysis-container").hide();
+    $("#stats-container").hide();
 }
 
 function showNoResults() {
@@ -555,24 +591,25 @@ function updateCatVar(isNumeric) {
             var $catvar = $("#catvar");
 
             if ($catvar.length > 0) {
-                var $filterSample = $("#filter-sample");
-
                 $catvar.empty();
                 if (hasCatVarNoneOption) {
                     $catvar.append("<option value='none'>None</option>");
                 }
-
-                $filterSample.empty();
-                $filterSample.append("<option value='none'>Don't Filter</option>");
-                $filterSample.append(
-                    "<option value='mian-sample-id'>Sample ID</option>"
-                );
 
                 for (var i = 0; i < headers.length; i++) {
                     $catvar.append(
                         "<option value='" + headers[i] + "'>" + headers[i] + "</option>"
                     );
                 }
+            }
+
+            var $filterSample = $("#filter-sample");
+            if ($filterSample.length > 0) {
+                $filterSample.empty();
+                $filterSample.append("<option value='none'>Don't Filter</option>");
+                $filterSample.append(
+                    "<option value='mian-sample-id'>Sample ID</option>"
+                );
 
                 for (var i = 0; i < filteringHeaders.length; i++) {
                     $filterSample.append(
@@ -822,7 +859,7 @@ function getParameterByName(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-function downloadSVG() {
+function downloadSVG(name) {
     $("#donwload-canvas").empty();
     var svgsElems = $("#analysis-container").children();
     var svgElemWidth = $("#analysis-container svg").width();
@@ -853,12 +890,7 @@ function downloadSVG() {
             var dataURL = $tmpCanvas[0].toDataURL("image/png");
             var ctx = $tmpCanvas[0].getContext("2d");
 
-            var project = $("#project").val();
-            var plotType = $("#plotType").val();
-            var tax = $("#taxonomy").val();
-            var catvar = $("#catvar").val();
-            var filename =
-                project + "." + plotType + "." + tax + "." + catvar + ".png";
+            var filename = name + ".png";
 
             $tmpCanvas[0].toBlob(function(blob) {
                 saveAs(blob, filename);
@@ -869,3 +901,8 @@ function downloadSVG() {
     });
 }
 
+function downloadCSV(table) {
+    var csvContent = "data:text/csv;charset=utf-8," + table.map(e=>e.join(",")).join("\n");
+    var encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+}

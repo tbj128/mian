@@ -84,6 +84,10 @@ function createSpecificListeners() {
             });
         }
     });
+
+    $("#download-svg").click(function() {
+        downloadSVG("boxplots." + $("#catvar").val() + "." + $("#yvals").val());
+    });
 }
 
 //
@@ -139,34 +143,26 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/boxplots" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
-            $("#stats-container").show();
             $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
 
             var abundancesObj = JSON.parse(result);
             if ($.isEmptyObject(abundancesObj["abundances"])) {
-                $("#display-error").show();
-                $("#analysis-container").hide();
-                $("#stats-container").hide();
+                loadNoResults();
             } else {
+                loadSuccess();
                 renderBoxplots(abundancesObj);
                 renderPvaluesTable(abundancesObj);
             }
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#stats-container").show();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });
 }
 
 function customCatVarCallback(result) {
-    var allHeaders = result.map(obj => obj.name);
+    var allHeaders = result.filter(obj => obj.type === "both" || obj.type === "numeric").map(obj => obj.name);
 
     $("#yvals").empty();
     $("#yvals").append(

@@ -57,10 +57,8 @@
 </div>
 
 <div class="content-wrapper">
-    <div id="display-error" class="project-empty analysis-container" style="display:none;">
-        <i class="fa fa-exclamation-o fa-4x"></i>
-        <h3>Visualization cannot be displayed with these parameters</h3>
-    </div>
+    {% include 'notifications.html' %}
+    {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
     </div><!-- /.container -->

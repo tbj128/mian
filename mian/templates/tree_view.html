@@ -108,11 +108,8 @@
 </div>
 
 <div class="content-wrapper">
-    <div id="display-error" class="project-empty" style="display:none;">
-        <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Analysis cannot be performed with these parameters</h3>
-        <h5>Try changing the Categorical Variable parameter and try again</h5>
-    </div>
+    {% include 'notifications.html' %}
+    {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container tree-view" style="min-height:500px;">
     </div><!-- /.container -->

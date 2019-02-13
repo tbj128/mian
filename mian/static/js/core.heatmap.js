@@ -46,6 +46,9 @@ function createSpecificListeners() {
     $("#minSamplesPresent").change(function() {
         updateAnalysis();
     });
+    $("#download-svg").click(function() {
+        downloadSVG("heatmap." + $("#corrvar1").val() + "." + $("#corrvar2").val());
+    });
 }
 
 //
@@ -342,19 +345,19 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/heatmap" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            hideLoading();
             var abundancesObj = JSON.parse(uncompress(result));
-            //            var abundancesObj = JSON.parse(result);
-            $("#analysis-container").show();
-            $("#stats-container").show();
-            $("#display-error").hide();
-            renderHeatmap(abundancesObj);
+            var rowHeaders = abundancesObj["row_headers"];
+            var colHeaders = abundancesObj["col_headers"];
+
+            if (rowHeaders.length === 0 || colHeaders.length === 0) {
+                loadNoResults();
+            } else {
+                loadSuccess();
+                renderHeatmap(abundancesObj);
+            }
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

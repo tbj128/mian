@@ -94,11 +94,7 @@
 </div>
 
 <div class="content-wrapper">
-    <div id="display-error" class="project-empty" style="display:none;">
-        <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Analysis cannot be performed with these parameters</h3>
-        <h5>Try changing the Categorical Variable parameter and try again</h5>
-    </div>
+    {% include 'notifications.html' %}
 
     {% include 'download_container.html' %}
 
@@ -115,7 +111,6 @@
 <script src="/static/js/core.composition.js"></script>
 <script type="text/javascript" src="/static/js/plugins/rgbcolor.js"></script>
 <script type="text/javascript" src="/static/js/plugins/StackBlur.js"></script>
-<script type="text/javascript" src="/static/js/plugins/FileSaver.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->

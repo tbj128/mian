@@ -36,6 +36,10 @@ function createSpecificListeners() {
     $("#subsamplestep").change(function() {
         updateAnalysis();
     });
+
+    $("#download-svg").click(function() {
+        downloadSVG("rarefaction." + $("#maxsubsample").val() + "." + $("#subsamplestep").val());
+    });
 }
 
 //
@@ -224,18 +228,12 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/rarefaction" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
-            $("#stats-container").show();
+            loadSuccess();
             abundancesObj = JSON.parse(result);
             renderRarefactionCurves(abundancesObj);
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

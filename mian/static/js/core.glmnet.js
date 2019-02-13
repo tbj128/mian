@@ -3,6 +3,12 @@
 // ============================================================
 
 //
+// Global Components
+//
+var tableResults = [];
+var expVarToType = {};
+
+//
 // Initialization
 //
 initializeFields();
@@ -15,13 +21,14 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialExpVar = getParameterByName("expvar");
 function initializeFields() {
     if (getParameterByName("alpha") !== null) {
         $("#alpha").val(getParameterByName("alpha"));
     }
     if (getParameterByName("lambdathreshold") !== null) {
         $("#lambdathreshold").val(getParameterByName("lambdathreshold"));
-        
+
         if ($("#lambdathreshold").val() === "Custom") {
             $("#lambdaval").show();
             $("#lambdatitle").show();
@@ -33,21 +40,26 @@ function initializeFields() {
     if (getParameterByName("lambdaval") !== null) {
         $("#lambdaval").val(getParameterByName("lambdaval"));
     }
+    if (getParameterByName("model") !== null) {
+        $("#model").val(getParameterByName("model"));
+    }
 }
 
 //
 // Component-Specific Sidebar Listeners
 //
 function createSpecificListeners() {
-    $("#catvar").change(function() {
+    $("#expvar").change(function() {
+        var expVarType = expVarToType[$(this).val()];
+        renderModelType(expVarType);
+        updateAnalysis();
+    });
+
+    $("#model").change(function() {
         updateAnalysis();
     });
 
     $("#alpha").change(function() {
-        updateAnalysis();
-    });
-
-    $("#family").change(function() {
         updateAnalysis();
     });
 
@@ -65,6 +77,10 @@ function createSpecificListeners() {
     $("#lambdaval").change(function() {
         updateAnalysis();
     });
+
+    $("#download-svg").click(function() {
+        downloadCSV(tableResults);
+    });
 }
 
 //
@@ -75,6 +91,48 @@ function customLoading() {
     $("#catvar option[value='none']").remove();
 }
 
+function customCatVarCallback(result) {
+    $("#expvar").empty();
+    var allHeaders = result.map(obj => obj.name);
+    result.forEach(obj => {
+        expVarToType[obj.name] = obj.type;
+        $("#expvar").append(
+            '<option value="' + obj.name + '">' + obj.name + "</option>"
+        );
+    });
+    if (initialExpVar) {
+        $("#expvar").val(initialExpVar);
+        initialExpVar = null;
+    }
+    renderModelType(expVarToType[$("#expvar").val()]);
+}
+
+function renderModelType(type) {
+    var prevSelectedModel = $("#model").val();
+    $("#model").empty();
+    if (type === "numeric" || type === "both") {
+        $("#model").append(
+            "<option value=\"poisson\">Poisson</option>"
+        );
+        $("#model").append(
+            "<option value=\"gaussian\">Gaussian</option>"
+        );
+
+        if (prevSelectedModel === "poisson" || prevSelectedModel === "gaussian") {
+            $("#model").val(prevSelectedModel);
+        }
+    }
+    if (type === "both" || type === "categorical") {
+        $("#model").append(
+            "<option value=\"multinomial\">Binomial/Multinomial (Logistic)</option>"
+        );
+
+        if (prevSelectedModel === "logistic") {
+            $("#model").val(prevSelectedModel);
+        }
+    }
+}
+
 function renderGlmnetTable(abundancesObj) {
     if ($.isEmptyObject(abundancesObj)) {
         return;
@@ -82,69 +140,66 @@ function renderGlmnetTable(abundancesObj) {
 
     $("#analysis-container").empty();
 
-    var familyType = $("#family").val();
+    var familyType = $("#model").val();
 
     var stats = abundancesObj["results"];
     var render = "<div>";
-
-    var s = 0;
+    var emptyTable = true;
     $.each(stats, function(key, value) {
-        if (familyType != "binomial") {
-            render += "<h3>" + key + "</h3>";
+        if (familyType === "multinomial") {
+            var multinomialPopover = '<i class="fa fa-info-circle" data-toggle="popover" data-title="Multinomial Response Value" data-content="The following odds ratios apply specifically for this particular response value of the experimental variable" data-trigger="hover" data-placement="bottom"></i>';
+
+            render += "<h3><strong>" + key + "</strong> " + multinomialPopover + "</h3>";
         }
 
-        if (familyType == "binomial" && s == 1) {
-            return;
-        } else {
-            s = 1;
-        }
+        tableResults = [];
 
-        var numPos = 0;
-        var numNeg = 0;
-        value.forEach(function(val) {
-            if (val[1] > 0) {
-                numPos += 1;
-            } else if (val[1] < 0) {
-                numNeg += 1;
-            }
-        });
+        var taxonomyPopover = '<i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Group/OTU" data-content="The taxonomic group or OTU that has a non-zero coefficient in the selected generalized linear model" data-trigger="hover" data-placement="bottom"></i>';
+        var valuePopover = '<i class="fa fa-info-circle" data-toggle="popover" data-title="Coefficient Value" data-content="This coefficient is the weight assigned to the corresponding taxonomic group/OTU - it should be interpreted in relation to the model itself. <br/><br/>For linear models (Poisson, Gaussian), coefficients generally represent the rate of change. <br/><br/>For logistic models, coefficients are odds ratio (ie. >1 values are associated with higher odds of categorical variable occurring).<br/><br/> Note: Use these coefficient values with caution as this tool does not validate the assumptions of the selected model (eg. whether it is a normal distribution)." data-html="true" data-trigger="hover" data-placement="bottom"></i>';
 
-        for (var i = 0; i < 2; i++) {
-            if (i == 0) {
-                render += "<h4>Positive (" + numPos + " Relevant)</h4>";
-            } else if (i == 1) {
-                render += "<h4>Negative (" + numNeg + " Relevant)</h4>";
-            } else if (i == 2) {
-                render += "<h4>Not Important</h4>";
-            }
-
+        if (familyType === "binomial" || familyType === "multinomial") {
             render +=
-                '<table class="table table-hover"><thead><tr><th>Taxonomy</th><th>Value</th></tr></thead><tbody> ';
+                '<table class="table table-hover"><thead><tr><th>Taxonomic Group/OTU ' + taxonomyPopover + '</th><th>Coefficient (Odds Ratio) ' + valuePopover + '</th></tr></thead><tbody> ';
+            tableResults.push(["Taxonomy", "Value"]);
+
             value.forEach(function(val) {
-                if (i == 0) {
-                    if (val[1] > 0) {
-                        render += "<tr><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>";
-                    }
-                } else if (i == 1) {
-                    if (val[1] < 0) {
-                        render += "<tr><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>";
-                    }
-                } else if (i == 2) {
-                    if (val[1] == 0) {
-                        render += "<tr><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>";
-                    }
+                if (val[1] !== 1) {
+                    render += "<tr><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>";
+                    tableResults.push([val[0], val[1]]);
+                    emptyTable = false;
+                }
+            });
+            render += "</tbody></table>";
+        } else {
+            render +=
+                '<table class="table table-hover"><thead><tr><th>Taxonomic Group/OTU ' + taxonomyPopover + '</th><th>Coefficient Value ' + valuePopover + '</th></tr></thead><tbody> ';
+            tableResults.push(["Taxonomy", "Value"]);
+
+            value.forEach(function(val) {
+                if (val[1] !== 0) {
+                    render += "<tr><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>";
+                    tableResults.push([val[0], val[1]]);
+                    emptyTable = false;
                 }
             });
             render += "</tbody></table>";
         }
+
+        tableResults.push([""]);
     });
 
     render += "</div><br /><hr /><br />";
-    $("#analysis-container").append(render);
+    if (emptyTable) {
+        loadNoResults();
+    } else {
+        $("#analysis-container").append(render);
+        $('[data-toggle="popover"]').popover();
+    }
 }
 
 function updateAnalysis() {
     showLoading();
+    $("#display-poisson-error").hide();
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -156,17 +211,13 @@ function updateAnalysis() {
     var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
-    var catvar = $("#catvar").val();
+    var expvar = $("#expvar").val();
     var alpha = $("#alpha").val();
-    var family = $("#family").val();
+    var model = $("#model").val();
     var lambdathreshold = $("#lambdathreshold").val();
-    var lambdaval = $("#lambdaval").val();
 
-    if (catvar === "none") {
-        $("#analysis-container").hide();
-        hideLoading();
-        hideNotifications();
-        showNoCatvar();
+    if (expvar === "none") {
+        loadNoCatvar();
         return;
     }
 
@@ -181,11 +232,10 @@ function updateAnalysis() {
         sampleFilterRole: sampleFilterRole,
         sampleFilterVals: sampleFilterVals,
         level: level,
-        catvar: catvar,
+        expvar: expvar,
         alpha: alpha,
-        family: family,
-        lambdathreshold: lambdathreshold,
-        lambdaval: lambdaval
+        model: model,
+        lambdathreshold: lambdathreshold
     };
 
     setGetParameters(data);
@@ -195,23 +245,21 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/glmnet" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            hideNotifications();
-            hideLoading();
-
             var abundancesObj = JSON.parse(result);
             if (!$.isEmptyObject(abundancesObj)) {
-                $("#analysis-container").show();
-                renderGlmnetTable(abundancesObj);
+                if (abundancesObj["error"]) {
+                    hideLoading();
+                    $("#display-poisson-error").show();
+                } else {
+                    loadSuccess();
+                    renderGlmnetTable(abundancesObj);
+                }
             } else {
-                $("#analysis-container").hide();
-                showNoResults();
+                loadNoResults();
             }
         },
         error: function(err) {
-            $("#analysis-container").hide();
-            hideLoading();
-            hideNotifications();
-            showError();
+            loadError();
             console.log(err);
         }
     });

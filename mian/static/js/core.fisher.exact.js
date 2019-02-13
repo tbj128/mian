@@ -3,6 +3,11 @@
 // ============================================================
 
 //
+// Global Components
+//
+var tableResults = [];
+
+//
 // Initialization
 //
 initializeFields();
@@ -50,6 +55,10 @@ function createSpecificListeners() {
 
     $("#pwVar2").change(function() {
         updateAnalysis();
+    });
+
+    $("#download-svg").click(function() {
+        downloadCSV(tableResults);
     });
 }
 
@@ -122,6 +131,11 @@ function renderFisherTable(abundancesObj) {
     $("#cat2-present").text(cat2);
     $("#cat2-tot").text(cat2);
 
+
+    tableResults = [];
+    tableResults.push(["Taxonomy", "P-Value", "Q-Value", cat1 + " Present", cat1 + "Total", cat2 + " Present", cat2 + "Total"]);
+
+
     for (var i = 0; i < statsArr.length; i++) {
         var r = "<tr>";
         for (var j = 0; j < statsArr[i].length; j++) {
@@ -129,6 +143,7 @@ function renderFisherTable(abundancesObj) {
         }
         r = r + "<tr>";
         $("#stats-rows").append(r);
+        tableResults.push(statsArr[i]);
     }
 
     $("#stats-container").fadeIn(250);
@@ -153,10 +168,7 @@ function updateAnalysis() {
     var pwVar2 = $("#pwVar2").val();
 
     if (catvar === "none") {
-        $("#analysis-container").hide();
-        hideLoading();
-        hideNotifications();
-        showNoCatvar();
+        loadNoCatvar();
         return;
     }
 
@@ -184,23 +196,16 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/fisher_exact" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            hideNotifications();
-            hideLoading();
-
             var abundancesObj = JSON.parse(result);
             if (!$.isEmptyObject(abundancesObj["results"])) {
-                $("#analysis-container").show();
+                loadSuccess();
                 renderFisherTable(abundancesObj);
             } else {
-                $("#analysis-container").hide();
-                showNoResults();
+                loadNoResults();
             }
         },
         error: function(err) {
-            $("#analysis-container").hide();
-            hideLoading();
-            hideNotifications();
-            showError();
+            loadError();
             console.log(err);
         }
     });

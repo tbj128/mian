@@ -33,7 +33,7 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Y-Axis Values  <i class="fa fa-info-circle" data-toggle="popover" data-title="Y-Axis Values" data-content="The parameter that should be represented on the Y-axis. <br />Note the special parameters below:<ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max/Min/Mean/Median</strong> The max/min/mean/median of all OTUs within a sample</li></ul>"></i></label>
+                <label class="control-label">Y-Axis Values  <i class="fa fa-info-circle" data-toggle="popover" data-title="Y-Axis Values" data-content="The numeric parameter that should be represented on the Y-axis. <br /><br />Note the special parameters below:<ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max/Min/Mean/Median</strong> The max/min/mean/median of all OTUs within a sample</li></ul>"></i></label>
                 <select id="yvals" name="yvals" class="form-control">
                 </select>
 
@@ -67,11 +67,22 @@
 </div>
 
 <div class="content-wrapper">
-    <div id="display-error" class="project-empty" style="display:none;">
-        <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>No Data Available</h3>
-        <h5>Try adding an OTU or taxonomic group in the options on the left</h5>
+    {% include 'notifications-error.html' %}
+    <div id="display-no-results" class="display-notification project-empty" style="display:none;">
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-asterisk fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>Add a Taxonomic Group or OTU To Display</h3>
+                <p>
+                    No results were returned. This can happen if you have not added a taxonomic group or OTU (if the y-axis should display taxonomic abundance) or if you have applied a too strict filter.
+                </p>
+            </div>
+        </div>
     </div>
+
+    {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
     </div><!-- /.container -->

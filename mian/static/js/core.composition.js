@@ -89,25 +89,20 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/composition" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
-            $("#stats-container").show();
-            $("#download-container").show();
-
             var abundancesObj = JSON.parse(result);
-            if ($("#plotType").val() == "bar") {
-                renderBarplot(abundancesObj);
+            if (abundancesObj["abundances"].length === 0) {
+                loadNoResults();
             } else {
-                renderDonut(abundancesObj);
+                loadSuccess();
+                if ($("#plotType").val() == "bar") {
+                    renderBarplot(abundancesObj);
+                } else {
+                    renderDonut(abundancesObj);
+                }
             }
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#stats-container").hide();
-            $("#download-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

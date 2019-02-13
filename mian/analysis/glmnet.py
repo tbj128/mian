@@ -8,6 +8,7 @@
 #
 # Imports
 #
+import math
 
 #
 # ======== R specific setup =========
@@ -22,50 +23,103 @@ rpy2.robjects.numpy2ri.activate()
 from mian.model.otu_table import OTUTable
 
 
+### Update GLMNet descriptions, add additional family types
+### Update tree description and check accuracy
+### Elasticnet overcomes limitations of L1 regularization on its own, which can saturate with high-dimensional datasets
+
+
+# GLMNet Usage Example
+# Source: https://stackoverflow.com/questions/25206844/how-to-specify-log-link-in-glmnet
+#
+# # Generate data
+# set.seed(1)
+# x <- replicate(3,runif(1000))
+# y <- exp(2*x[,1] + 3*x[,2] + x[,3] + runif(1000))
+# df <- data.frame(y,x)
+#
+# # Recreate the model using a Gaussian with a log-link function (in GLMNet, this is usually an identity function, which makes it linear regression as opposed to logistic)
+# glm(y~., family=gaussian(link="log"), data=df)$coef
+# # (Intercept)          X1          X2          X3
+# #   0.4977746   2.0449443   3.0812333   0.9451073
+#
+# # Creating the model using the identity function, two ways
+# glm(log(y)~., family=gaussian(link='identity'), data=df)$coef
+# # (Intercept)          X1          X2          X3
+# #   0.4726745   2.0395798   3.0167274   0.9957110
+# lm(log(y)~.,data=df)$coef
+# # (Intercept)          X1          X2          X3
+# #   0.4726745   2.0395798   3.0167274   0.9957110
+#
+# # Create model using Gaussian. Note that the original 'y' is no longer using exp function
+# Remember that GLMNet is essentially GLM with regularization
+# y <- 2*x[,1] + 3*x[,2] + x[,3] + runif(1000)
+# library(glmnet)
+# glmnet.model <- glmnet(x,y,family="gaussian", thresh=1e-8, lambda=0)
+# c(glmnet.model$a0, glmnet.model$beta[,1])
+# #        s0        V1        V2        V3
+# # 0.4726745 2.0395798 3.0167274 0.9957110
+
+
 class GLMNet(object):
     r = robjects.r
 
     rcode = """
     library(glmnet)
 
-    run_glmnet <- function(base, groups, alphaVal, familyType, lambda_threshold_type, lambda_val) {
+    run_glmnet <- function(base, groups, alphaVal, familyType, lambda_threshold_type) {
         x = base
-        y.1 = as.factor(groups)
-    
-        # x = x[,2:ncol(x)];
         x <- as.matrix(data.frame(x))
-        y <- as.factor(groups)
-        yN = as.numeric(y)
-        # y <- base[,SAV]
-        cv <- cv.glmnet(x,y,alpha=alphaVal,family=familyType)
-    
-        # plot(cv,cex=2)
-        if (lambda_threshold_type == "Custom") {
-            scAll = coef(cv,s=exp(lambda_val))
-        } else if (lambda_threshold_type == "lambda1se") {
-            scAll = coef(cv,s=cv$lambda.1se)
-        } else {
-            scAll = coef(cv,s=cv$lambda.min)
+        
+        y = groups
+        if (familyType == "multinomial") {
+            y <- as.factor(groups)
         }
-    
-    
+        
+        # Use cross validation to find an appropriate value for the regularization parameter lambda
+        cv <- cv.glmnet(x,y,alpha=alphaVal,family=familyType)
+        lambda <- cv$lambda.min
+        if (lambda_threshold_type == "lambda1se") {
+            lambda <- cv$lambda.1se
+        }
+        
+        # Use the lambda to get the actual model
+        glmnet.model <- glmnet(x,y,alpha=alphaVal,family=familyType,lambda=lambda)
+        scAll = coef(glmnet.model)
+        
+        # Creates an empty matrix to use as the return value
         uniqueGroups = unique(groups)
         if (familyType == "binomial") {
             results = matrix(,(length(scAll) - 1)*length(uniqueGroups), 3)
-        } else {
+        } else if (familyType == "multinomial") {
             results = matrix(,(length(scAll[[uniqueGroups[1]]]) - 1)*length(uniqueGroups), 3)
+        } else {
+            # Quantitative variables will not have categories
+            results = matrix(,(length(scAll) - 1), 3)
         }
+        
         index = 1
-        for (g in 1:length(uniqueGroups)) {
-            if (familyType == "binomial") {
-                sc = scAll
-            } else {
-                sc = scAll[[uniqueGroups[g]]]
+        if (familyType == "binomial" || familyType == "multinomial") {
+            for (g in 1:length(uniqueGroups)) {
+                if (familyType == "binomial") {
+                    sc = scAll
+                } else {
+                    sc = scAll[[uniqueGroups[g]]]
+                }
+        
+                # Start at 2 to discount the intercept entry
+                for (s in 2:length(sc)) {
+                    results[index, 1] = as.character(uniqueGroups[g])
+                    results[index, 2] = rownames(sc)[s]
+                    results[index, 3] = sc[s]
+                    index = index + 1
+                }
             }
-    
+        } else {
+            sc = scAll
+
             # Start at 2 to discount the intercept entry
-            for (s in 2:length(sc)) {
-                results[index, 1] = as.character(uniqueGroups[g])
+            for (s in 2:length(scAll)) {
+                results[index, 1] = ""
                 results[index, 2] = rownames(sc)[s]
                 results[index, 3] = sc[s]
                 index = index + 1
@@ -82,16 +136,12 @@ class GLMNet(object):
         table = OTUTable(user_request.user_id, user_request.pid)
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
-        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+        expvar = user_request.get_custom_attr("expvar")
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, expvar)
 
         return self.analyse(user_request, otu_table, headers, metadata_vals)
 
     def analyse(self, user_request, otuTable, headers, metadata_vals):
-
-        family = "binomial"
-        if len(set(metadata_vals)):
-            family = "multinomial"
-        groups = robjects.FactorVector(robjects.StrVector(metadata_vals))
 
         allOTUs = []
         col = 0
@@ -103,18 +153,30 @@ class GLMNet(object):
         dataf = robjects.DataFrame(od)
 
         alphaVal = user_request.get_custom_attr("alpha")
+        model = user_request.get_custom_attr("model")
         lambda_threshold_type = user_request.get_custom_attr("lambdathreshold")
-        lambda_val = user_request.get_custom_attr("lambdaval")
 
-        glmnetResult = self.rStats.run_glmnet(dataf, groups, float(alphaVal), family,
-                                              lambda_threshold_type, float(lambda_val))
+        if model == "poisson":
+            for val in metadata_vals:
+                if val.isnumeric() and val < 0:
+                    return {
+                        "error": "Negative metadata values are not allowed for the Poisson model"
+                    }
+
+        groups = robjects.FactorVector(robjects.StrVector(metadata_vals)) if model == "multinomial" or model == "binomial" else robjects.FloatVector(metadata_vals)
+
+        glmnetResult = self.rStats.run_glmnet(dataf, groups, float(alphaVal), model,
+                                              lambda_threshold_type)
 
         accumResults = {}
         i = 1
         while i <= glmnetResult.nrow:
             newRow = []
             newRow.append(glmnetResult.rx(i, 2)[0])
-            newRow.append(round(float(glmnetResult.rx(i, 3)[0]), 6))
+            if model == "multinomial" or model == "binomial":
+                newRow.append(round(math.exp(float(glmnetResult.rx(i, 3)[0])), 6))
+            else:
+                newRow.append(round(float(glmnetResult.rx(i, 3)[0]), 6))
 
             g = glmnetResult.rx(i, 1)[0]
             if g in accumResults:

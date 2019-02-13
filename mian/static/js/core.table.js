@@ -28,10 +28,8 @@ function initializeFields() {
 // Component-Specific Sidebar Listeners
 //
 function createSpecificListeners() {
-    $("#download-btn").click(function () {
-        var csvContent = "data:text/csv;charset=utf-8," + tableResults.map(e=>e.join(",")).join("\n");
-        var encodedUri = encodeURI(csvContent);
-        window.open(encodedUri);
+    $("#download-svg").click(function() {
+        downloadCSV(tableResults);
     });
 }
 
@@ -96,10 +94,7 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/table" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
-            $("#stats-container").show();
+            loadSuccess();
             $("#download-btn").show();
 
             var table = JSON.parse(result);
@@ -113,12 +108,9 @@ function updateAnalysis() {
             }
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
+            loadError();
             $("#too-large-message").hide();
             $("#download-btn").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
             tableResults = [];
             console.log(err);
         }

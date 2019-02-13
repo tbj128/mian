@@ -312,23 +312,32 @@ hr {
 }
 
 .project-empty {
-  margin:64px 64px 64px 360px;
-  color:#999;
-  text-align:center;
+  margin: 64px 64px 64px 424px;
+  color: #999;
   padding: 20px;
+  border: 1px dashed #AAA;
+}
+
+.project-empty .col-md-3 {
+  text-align: center;
+}
+
+.project-empty i {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 /**
  * D3 Custom
  */
 
-.download-container {    
+#download-container {
   padding: 6px 6px 0 0px;
   height: 34px;
   text-align: right;
 }
 
-.download-container button {
+#download-container button {
   margin-left: 3px;
   font-size: 12px;
   padding: 2px 6px;

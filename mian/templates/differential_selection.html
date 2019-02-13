@@ -71,13 +71,20 @@
 
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
-        <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Categorical Variable Attribute</h3>
-        <h5>
-            The differential selection analysis apply ANCOM (analysis of composition) on an unsampled dataset or Welch's t-test on every taxonomy/OTU between the sample groupings defined by the category breakdown value. <br />The most significant taxonomies/OTUs will be displayed.
-        </h5>
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>Choose a Categorical Variable Attribute</h3>
+                <p>
+                    The differential selection analysis apply ANCOM (analysis of composition) on an unsampled dataset or Welch's t-test on every taxonomic group/OTU between the sample groupings defined by the category breakdown value. <br />The most significant taxonomic groups/OTUs will be displayed.
+                </p>
+            </div>
+        </div>
     </div>
     {% include 'notifications.html' %}
+    {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="display:none;">
         <h4>Differential Selection Results</h4>

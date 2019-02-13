@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Random Forest - Mian</title>
+    <title>Random Forest - Feature Selection - Mian</title>
 </head>
 
 <body>
@@ -44,16 +44,29 @@
 
                 <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
-                    {% for catVar in catVars %}
-                    <option value="{{ catVar }}">{{ catVar }}</option>
-                    {% endfor %}
                 </select>
 
-                <label class="control-label">Number of Trees <i class="fa fa-info-circle" data-toggle="popover" data-title="Number of Trees" data-content="Indicate the number of trees to use in the Random Forest"></i></label>
-                <input class="form-control" id="numTrees" name="numTrees" type="number" value="10"/>
+                <label class="control-label">Feature Selection Method <i class="fa fa-info-circle" data-toggle="popover" data-title="Feature Selection Method" data-html="true" data-content="Choose how the taxonomic groups/OTUs should be selected. <ul><li><strong>Boruta </strong>Boruta is an all-relevant feature selection algorithm (as opposed to selecting the minimal-set of features to achieve the lowest error). See the <a href='https://cran.r-project.org/web/packages/Boruta/Boruta.pdf' target='_blank'>Boruta R package</a> for details.</li><li><strong>Random Forest Feature Importance </strong>Returns a set of features that are important in a Random Forest regressor estimator. See the <a href='https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html' target='_blank'>scikit-learn</a> docs for more information</li></ul>" data-trigger="hover"></i></label>
+                <select id="method" name="method" class="form-control">
+                    <option value="boruta">Boruta</option>
+                    <option value="randomForest">Random Forest Feature Importance</option>
+                </select>
 
-                <label class="control-label">Max Tree Depth <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Tree Depth" data-content="Indicate the maximum depth of each tree in the Random Forest. If blank, then nodes are expanded until all leaves are pure or until all leaves contain less than 2 samples."></i></label>
-                <input class="form-control" id="maxDepth" name="maxDepth" type="number" value="" placeholder=""/>
+                <div id="boruta-params" style="display:none">
+                    <label class="control-label">Max Runs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
+                    <input class="form-control" id="maxruns" name="maxruns" type="number" value="100"/>
+
+                    <label class="control-label">P-Value Threshold  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                    <input class="form-control" id="pval" name="pval" type="number" value="0.01"/>
+                </div>
+
+                <div id="rf-params" style="display:none">
+                    <label class="control-label">Number of Trees <i class="fa fa-info-circle" data-toggle="popover" data-title="Number of Trees" data-content="Indicate the number of trees to use in the Random Forest"></i></label>
+                    <input class="form-control" id="numTrees" name="numTrees" type="number" value="10"/>
+
+                    <label class="control-label">Max Tree Depth <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Tree Depth" data-content="Indicate the maximum depth of each tree in the Random Forest. If blank, then nodes are expanded until all leaves are pure or until all leaves contain less than 2 samples."></i></label>
+                    <input class="form-control" id="maxDepth" name="maxDepth" type="number" value="" placeholder=""/>
+                </div>
               </div>
             </div>
         </div>
@@ -62,31 +75,50 @@
 
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
-        <i class="fa fa-exclamation-circle fa-4x"></i>
-        <h3>Choose a Categorical Variable Attribute</h3>
-        <h5>
-            The Random Forest algorithm generates a decision tree to predict the category breakdown value. The weights of the most taxonomies/OTUs the algorithm considers most important will be displayed.
-        </h5>
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>Choose a Categorical Variable Attribute</h3>
+                <p>
+                    Create a random forest to selects the taxonomic groups/OTUs that can differentiate between the chosen categorical variable values. The weights of the taxonomic groups/OTUs the algorithm considers most important according to the <a href='https://cran.r-project.org/web/packages/Boruta/Boruta.pdf' target='_blank'>Boruta feature selection algorithm</a> or the <a href='https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html' target='_blank'>Random Forest regressor</a> will be displayed.
+                </p>
+            </div>
+        </div>
     </div>
     {% include 'notifications.html' %}
+    {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Taxonomy</th>
-                    <th>Importance</th>
+        <div id="boruta-container">
+            <table class="table table-hover">
+                <thead>
+                <tr id="boruta-stats-headers">
                 </tr>
-            </thead>
-            <tbody id="stats-rows">
-            </tbody>
-        </table>
+                </thead>
+                <tbody id="boruta-stats-rows">
+                </tbody>
+            </table>
+        </div>
+        <div id="rf-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Taxonomic Group/OTU <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Group/OTU" data-content="The taxonomic group/OTU which was important in the Random Forest regressor" data-trigger="hover" data-placement="bottom"></i></th>
+                        <th>Importance <i class="fa fa-info-circle" data-toggle="popover" data-title="Importance" data-content="The higher the value, the more important the taxonomic group/OTU is. This measure is not subject to statistical significance." data-trigger="hover" data-placement="bottom"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="rf-stats-rows">
+                </tbody>
+            </table>
 
-        <pre>
-            <code id="cmd-run">
+            <pre>
+                <code id="cmd-run">
 
-            </code>
-        </pre>
+                </code>
+            </pre>
+        </div>
     </div><!-- /.container -->
 
     <div id="push" style="height:42px;"></div>

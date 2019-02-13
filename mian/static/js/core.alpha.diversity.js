@@ -52,6 +52,10 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#download-svg").click(function() {
+        downloadSVG("alpha.diversity." + $("#catvar").val() + "." + $("#alphaType").val() + "." + $("#alphaContext").val() + "." + $("#statisticalTest").val());
+    });
+
 
     $("#yvals").change(function() {
         var val = $("#yvals").val();
@@ -116,24 +120,15 @@ function updateAnalysis() {
             $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
             var abundancesObj = JSON.parse(result);
             if ($.isEmptyObject(abundancesObj.abundances)) {
-                hideLoading();
-                $("#analysis-container").hide();
-                $("#stats-container").hide();
-                $("#display-error").show();
+                loadNoResults();
             } else {
-                $("#display-error").hide();
-                hideLoading();
-                $("#analysis-container").show();
-                $("#stats-container").show();
+                loadSuccess();
                 renderBoxplots(abundancesObj);
                 renderPvaluesTable(abundancesObj);
             }
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

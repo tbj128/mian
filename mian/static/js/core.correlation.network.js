@@ -34,6 +34,9 @@ function createSpecificListeners() {
     $("#cutoff").change(function() {
         updateAnalysis();
     });
+    $("#download-svg").click(function() {
+        downloadSVG("corrleation.network." + $("#maxFeatures").val() + "." + $("#cutoff").val());
+    });
 }
 
 //
@@ -252,27 +255,16 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/correlation_network" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
-            $("#stats-container").show();
             var abundancesObj = JSON.parse(result);
             if (abundancesObj["links"].length == 0) {
-                $("#analysis-container").hide();
-                $("#stats-container").hide();
-                $("#display-error").show();
+                loadError();
             } else {
-                $("#analysis-container").show();
-                $("#stats-container").show();
-                $("#display-error").hide();
+                loadSuccess();
                 renderNetwork(abundancesObj);
             }
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

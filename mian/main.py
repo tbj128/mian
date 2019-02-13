@@ -294,17 +294,6 @@ def beta_diversity_share():
     return render_sharing('beta_diversity.html', request)
 
 
-@app.route('/boruta')
-@flask_login.login_required
-def boruta():
-    return render_normal('boruta.html', request, show_low_expression_filtering=True)
-
-
-@app.route('/boruta')
-def boruta_share():
-    return render_sharing('boruta.html', request, show_low_expression_filtering=True)
-
-
 @app.route('/boxplots')
 @flask_login.login_required
 def boxplots():
@@ -421,7 +410,7 @@ def pca():
     return render_normal('pca.html', request)
 
 
-@app.route('/pca')
+@app.route('/share/pca')
 def pca_share():
     return render_sharing('pca.html', request)
 
@@ -432,7 +421,7 @@ def random_forest():
     return render_normal('random_forest.html', request, show_low_expression_filtering=True)
 
 
-@app.route('/random_forest')
+@app.route('/share/random_forest')
 def random_forest_share():
     return render_sharing('random_forest.html', request, show_low_expression_filtering=True)
 
@@ -443,7 +432,7 @@ def rarefaction():
     return render_normal('rarefaction.html', request)
 
 
-@app.route('/rarefaction')
+@app.route('/share/rarefaction')
 def rarefaction_share():
     return render_sharing('rarefaction.html', request)
 
@@ -490,6 +479,7 @@ def getSharingStatus():
     else:
         return json.dumps({"share": "no"})
 
+
 @app.route('/toggle_sharing')
 @flask_login.login_required
 def toggleSharing():
@@ -520,6 +510,7 @@ def getTaxonomiesSecure():
     if pid == '':
         return json.dumps({})
     return getTaxonomies(user, pid)
+
 
 @app.route('/share/taxonomies')
 def getTaxonomiesShare():
@@ -660,56 +651,124 @@ def getMetadataVals(user, pid, catvar):
 
 # Visualization endpoints
 
+
 @app.route('/alpha_diversity', methods=['POST'])
 @flask_login.login_required
-def getAlphaDiversity():
+def getAlphaDiversitySecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("alphaType", request.form['alphaType'])
-    user_request.set_custom_attr("alphaContext", request.form['alphaContext'])
-    user_request.set_custom_attr("statisticalTest", request.form['statisticalTest'])
+    return getAlphaDiversity(user_request, request)
+
+
+@app.route('/share/alpha_diversity', methods=['POST'])
+def getAlphaDiversityShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getAlphaDiversity(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getAlphaDiversity(user_request, req):
+    user_request.set_custom_attr("alphaType", req.form['alphaType'])
+    user_request.set_custom_attr("alphaContext", req.form['alphaContext'])
+    user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
 
     plugin = AlphaDiversity()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# --
+
+
 @app.route('/beta_diversity', methods=['POST'])
 @flask_login.login_required
-def getBetaDiversity():
+def getBetaDiversitySecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("betaType", request.form['betaType'])
-    user_request.set_custom_attr("strata", request.form['strata'])
+    return getBetaDiversity(user_request, request)
+
+
+@app.route('/share/beta_diversity', methods=['POST'])
+def getBetaDiversityShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getBetaDiversity(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getBetaDiversity(user_request, req):
+    user_request.set_custom_attr("betaType", req.form['betaType'])
+    user_request.set_custom_attr("strata", req.form['strata'])
 
     plugin = BetaDiversity()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# --
+
+
 @app.route('/boruta', methods=['POST'])
 @flask_login.login_required
-def getBoruta():
+def getBorutaSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("pval", request.form['pval'])
-    user_request.set_custom_attr("maxruns", request.form['maxruns'])
+    return getBoruta(user_request, request)
+
+
+@app.route('/share/boruta', methods=['POST'])
+def getBorutaShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getBoruta(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getBoruta(user_request, req):
+    user_request.set_custom_attr("pval", req.form['pval'])
+    user_request.set_custom_attr("maxruns", req.form['maxruns'])
 
     plugin = Boruta()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# --
+
+
 @app.route('/boxplots', methods=['POST'])
 @flask_login.login_required
-def getBoxplots():
+def getBorutaSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("yvals", request.form['yvals'])
-    user_request.set_custom_attr("yvalsSpecificTaxonomy", request.form['yvalsSpecificTaxonomy'])
-    user_request.set_custom_attr("statisticalTest", request.form['statisticalTest'])
+    return getBoxplots(user_request, request)
+
+
+@app.route('/share/boxplots', methods=['POST'])
+def getBorutaShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getBoxplots(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getBoxplots(user_request, req):
+    user_request.set_custom_attr("yvals", req.form['yvals'])
+    user_request.set_custom_attr("yvalsSpecificTaxonomy", req.form['yvalsSpecificTaxonomy'])
+    user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
 
     plugin = Boxplots()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
-# ---
+
+# --
+
 
 @app.route('/composition', methods=['POST'])
 @flask_login.login_required
@@ -736,156 +795,379 @@ def getComposition(user_request):
 
 # ---
 
+
 @app.route('/correlations', methods=['POST'])
 @flask_login.login_required
-def getCorrelations():
+def getCorrelationsSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("corrvar1", request.form['corrvar1'])
-    user_request.set_custom_attr("corrvar2", request.form['corrvar2'])
-    user_request.set_custom_attr("colorvar", request.form['colorvar'])
-    user_request.set_custom_attr("sizevar", request.form['sizevar'])
-    user_request.set_custom_attr("samplestoshow", request.form['samplestoshow'])
-    user_request.set_custom_attr("corrvar1SpecificTaxonomies", request.form['corrvar1SpecificTaxonomies'])
-    user_request.set_custom_attr("corrvar2SpecificTaxonomies", request.form['corrvar2SpecificTaxonomies'])
+    return getCorrelations(user_request, request)
+
+
+@app.route('/share/correlations', methods=['POST'])
+def getCorrelationsShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getCorrelations(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getCorrelations(user_request, req):
+    user_request.set_custom_attr("corrvar1", req.form['corrvar1'])
+    user_request.set_custom_attr("corrvar2", req.form['corrvar2'])
+    user_request.set_custom_attr("colorvar", req.form['colorvar'])
+    user_request.set_custom_attr("sizevar", req.form['sizevar'])
+    user_request.set_custom_attr("samplestoshow", req.form['samplestoshow'])
+    user_request.set_custom_attr("corrvar1SpecificTaxonomies", req.form['corrvar1SpecificTaxonomies'])
+    user_request.set_custom_attr("corrvar2SpecificTaxonomies", req.form['corrvar2SpecificTaxonomies'])
 
     plugin = Correlations()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# ---
+
+
 @app.route('/correlation_network', methods=['POST'])
 @flask_login.login_required
-def getCorrelationNetwork():
+def getCorrelationNetworkSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("maxFeatures", request.form['maxFeatures'])
-    user_request.set_custom_attr("cutoff", request.form['cutoff'])
+    return getCorrelationNetwork(user_request, request)
+
+
+@app.route('/share/correlation_network', methods=['POST'])
+def getCorrelationNetworkShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getCorrelationNetwork(user_request, request)
+    else:
+        abortNotShared()
+
+
+@app.route('/correlation_network', methods=['POST'])
+@flask_login.login_required
+def getCorrelationNetwork(user_request, req):
+    user_request.set_custom_attr("maxFeatures", req.form['maxFeatures'])
+    user_request.set_custom_attr("cutoff", req.form['cutoff'])
 
     plugin = CorrelationNetwork()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+
+# ---
+
+
 @app.route('/correlations_selection', methods=['POST'])
 @flask_login.login_required
-def getCorrelationsSelection():
+def getCorrelationsSelectionSecure():
     user_request = __get_user_request(request)
+    return getCorrelationsSelection(user_request)
 
+
+@app.route('/share/correlations_selection', methods=['POST'])
+def getCorrelationsSelectionShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getCorrelationsSelection(user_request)
+    else:
+        abortNotShared()
+
+
+def getCorrelationsSelection(user_request):
     plugin = CorrelationsSelection()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+
+# ---
+
+
 @app.route('/differential_selection', methods=['POST'])
 @flask_login.login_required
-def getDifferentialSelection():
+def getDifferentialSelectionSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("type", request.form['type'])
-    user_request.set_custom_attr("pvalthreshold", request.form['pvalthreshold'])
-    user_request.set_custom_attr("pwVar1", request.form['pwVar1'])
-    user_request.set_custom_attr("pwVar2", request.form['pwVar2'])
+    return getDifferentialSelection(user_request, request)
+
+
+@app.route('/share/differential_selection', methods=['POST'])
+def getDifferentialSelectionShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getDifferentialSelection(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getDifferentialSelection(user_request, req):
+    user_request.set_custom_attr("type", req.form['type'])
+    user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
+    user_request.set_custom_attr("pwVar1", req.form['pwVar1'])
+    user_request.set_custom_attr("pwVar2", req.form['pwVar2'])
 
     plugin = DifferentialSelection()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+
+# ---
+
+
 @app.route('/fisher_exact', methods=['POST'])
 @flask_login.login_required
-def getFisherExact():
+def getFisherExactSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("minthreshold", request.form['minthreshold'])
-    user_request.set_custom_attr("pwVar1", request.form['pwVar1'])
-    user_request.set_custom_attr("pwVar2", request.form['pwVar2'])
+    return getFisherExact(user_request, request)
+
+
+@app.route('/share/fisher_exact', methods=['POST'])
+def getFisherExactShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getFisherExact(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getFisherExact(user_request, req):
+    user_request.set_custom_attr("minthreshold", req.form['minthreshold'])
+    user_request.set_custom_attr("pwVar1", req.form['pwVar1'])
+    user_request.set_custom_attr("pwVar2", req.form['pwVar2'])
 
     plugin = FisherExact()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# ---
+
+
 @app.route('/glmnet', methods=['POST'])
 @flask_login.login_required
-def getGlmnet():
+def getGlmnetSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("alpha", request.form['alpha'])
-    user_request.set_custom_attr("lambdathreshold", request.form['lambdathreshold'])
-    user_request.set_custom_attr("lambdaval", request.form['lambdaval'])
+    return getGlmnet(user_request, request)
+
+
+@app.route('/share/glmnet', methods=['POST'])
+def getGlmnetShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getGlmnet(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getGlmnet(user_request, req):
+    user_request.set_custom_attr("expvar", req.form['expvar'])
+    user_request.set_custom_attr("alpha", req.form['alpha'])
+    user_request.set_custom_attr("model", req.form['model'])
+    user_request.set_custom_attr("lambdathreshold", req.form['lambdathreshold'])
 
     plugin = GLMNet()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# ---
+
+
 @app.route('/heatmap', methods=['POST'])
 @flask_login.login_required
-def getHeatmap():
+def getHeatmapSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("corrvar1", request.form['corrvar1'])
-    user_request.set_custom_attr("corrvar2", request.form['corrvar2'])
-    user_request.set_custom_attr("cluster", request.form['cluster'])
-    user_request.set_custom_attr("minSamplesPresent", request.form['minSamplesPresent'])
+    return getHeatmap(user_request, request)
+
+
+@app.route('/share/heatmap', methods=['POST'])
+def getHeatmapShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getHeatmap(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getHeatmap(user_request, req):
+    user_request.set_custom_attr("corrvar1", req.form['corrvar1'])
+    user_request.set_custom_attr("corrvar2", req.form['corrvar2'])
+    user_request.set_custom_attr("cluster", req.form['cluster'])
+    user_request.set_custom_attr("minSamplesPresent", req.form['minSamplesPresent'])
 
     plugin = Heatmap()
     abundances = plugin.run(user_request)
     return base64.b64encode(zlib.compress(json.dumps(abundances).encode("utf-8")))
-    # return json.dumps(abundances)
+
+
+# ---
 
 
 @app.route('/random_forest', methods=['POST'])
 @flask_login.login_required
-def getRandomForest():
+def getRandomForestSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("numTrees", request.form['numTrees'])
-    user_request.set_custom_attr("maxDepth", request.form['maxDepth'])
+    return getRandomForest(user_request, request)
+
+
+@app.route('/share/random_forest', methods=['POST'])
+def getRandomForestShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getRandomForest(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getRandomForest(user_request, req):
+    user_request.set_custom_attr("numTrees", req.form['numTrees'])
+    user_request.set_custom_attr("maxDepth", req.form['maxDepth'])
 
     plugin = RandomForest()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# ---
+
+
 @app.route('/rarefaction', methods=['POST'])
 @flask_login.login_required
-def getRarefaction():
-    print("getRarefaction")
+def getRarefactionSecure():
     user_request = __get_user_request(request)
-    # subsamplestep = int(request.form['subsamplestep'])
+    return getRarefaction(user_request)
 
+
+@app.route('/share/rarefaction', methods=['POST'])
+def getRarefactionShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getRarefaction(user_request)
+    else:
+        abortNotShared()
+
+
+def getRarefaction(user_request):
     plugin = RarefactionCurves()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
 
+# ---
+
+
 @app.route('/nmds', methods=['POST'])
 @flask_login.login_required
-def getNMDS():
+def getNMDSSecure():
+    user_request = __get_user_request(request)
+    return getNMDS(user_request)
+
+
+@app.route('/share/nmds', methods=['POST'])
+def getNMDSShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getNMDS(user_request)
+    else:
+        abortNotShared()
+
+
+def getNMDS(user_request):
     plugin = NMDS()
-    abundances = plugin.run(__get_user_request(request))
+    abundances = plugin.run(user_request)
     return json.dumps(abundances)
+
+
+# ---
 
 
 @app.route('/pca', methods=['POST'])
 @flask_login.login_required
-def getPCA():
+def getPCASecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("pca1", request.form['pca1'])
-    user_request.set_custom_attr("pca2", request.form['pca2'])
-    user_request.set_custom_attr("pca3", request.form['pca3'])
+    return getPCA(user_request, request)
+
+
+@app.route('/share/pca', methods=['POST'])
+def getPCAShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getPCA(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getPCA(user_request, req):
+    user_request.set_custom_attr("pca1", req.form['pca1'])
+    user_request.set_custom_attr("pca2", req.form['pca2'])
+    user_request.set_custom_attr("pca3", req.form['pca3'])
 
     plugin = PCA()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+
+# ---
+
+
 @app.route('/table', methods=['POST'])
 @flask_login.login_required
-def getTable():
+def getTableSecure():
     user_request = __get_user_request(request)
+    return getTable(user_request)
+
+
+@app.route('/share/table', methods=['POST'])
+def getTableShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getTable(user_request)
+    else:
+        abortNotShared()
+
+def getTable(user_request):
     plugin = TableView()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
+
+# ---
+
+
 @app.route('/tree', methods=['POST'])
 @flask_login.login_required
-def getTree():
+def getTreeSecure():
     user_request = __get_user_request(request)
-    user_request.set_custom_attr("taxonomy_display_level", request.form['taxonomy_display_level'])
-    user_request.set_custom_attr("display_values", request.form['display_values'])
-    user_request.set_custom_attr("exclude_unclassified", request.form['exclude_unclassified'])
+    return getTree(user_request, request)
+
+
+@app.route('/share/tree', methods=['POST'])
+def getTreeShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getTree(user_request, request)
+    else:
+        abortNotShared()
+
+@app.route('/tree', methods=['POST'])
+@flask_login.login_required
+def getTree(user_request, req):
+    user_request.set_custom_attr("taxonomy_display_level", req.form['taxonomy_display_level'])
+    user_request.set_custom_attr("display_values", req.form['display_values'])
+    user_request.set_custom_attr("exclude_unclassified", req.form['exclude_unclassified'])
     plugin = TreeView()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)

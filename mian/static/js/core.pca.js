@@ -71,6 +71,10 @@ function createSpecificListeners() {
             "numberAxes": $("#numberAxes").val(),
         });
     });
+
+    $("#download-svg").click(function() {
+        downloadSVG("pca." + $("#catvar").val());
+    });
 }
 
 //
@@ -942,12 +946,14 @@ function render() {
         $("#pca-axis3").show();
         $("#axis-range-container").show();
         $("#analysis-container").show();
+        $("#analysis-container-3d-info").show();
         $("#analysis-container-2d").hide();
         render3dPCA(abundancesObj);
     } else {
         $("#pca-axis3").hide();
         $("#axis-range-container").hide();
         $("#analysis-container").hide();
+        $("#analysis-container-3d-info").hide();
         $("#analysis-container-2d").show();
         renderPCA(abundancesObj["pca"]);
     }
@@ -995,8 +1001,8 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/pca" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
+            loadSuccess();
+            $("#variance-container").show();
 
             abundancesObj = JSON.parse(result);
             boundX = [];
@@ -1005,11 +1011,11 @@ function updateAnalysis() {
             render();
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
+            loadError();
             $("#analysis-container-2d").hide();
-            $("#stats-container").hide();
-            $("#display-error").show();
+            $("#analysis-container-3d-info").hide();
+            $("#variance-container").hide();
+
             console.log(err);
         }
     });

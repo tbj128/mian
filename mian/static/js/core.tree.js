@@ -46,6 +46,10 @@ function createSpecificListeners() {
     $("#exclude_unclassified").change(function() {
         updateAnalysis();
     });
+
+    $("#download-svg").click(function() {
+        downloadSVG("tree." + $("#catvar").val() + "." + $("#taxonomy_display_level").val());
+    });
 }
 
 //
@@ -88,17 +92,13 @@ function updateAnalysis(abundancesObj) {
         url: getSharedPrefixIfNeeded() + "/tree" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            $("#display-error").hide();
-            hideLoading();
-            $("#analysis-container").show();
+            loadSuccess();
 
             var abundancesObj = JSON.parse(result);
             renderTree(abundancesObj);
         },
         error: function(err) {
-            hideLoading();
-            $("#analysis-container").hide();
-            $("#display-error").show();
+            loadError();
             console.log(err);
         }
     });

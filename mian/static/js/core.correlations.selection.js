@@ -1,6 +1,11 @@
 // ============================================================
 // Correlations Selection JS Component
 // ============================================================
+
+//
+// Global Components
+//
+var tableResults = [];
 var correlationDataTable;
 
 //
@@ -27,6 +32,10 @@ function createSpecificListeners() {
     $("#catvar").change(function() {
         updateAnalysis();
     });
+
+    $("#download-svg").click(function() {
+        downloadCSV(tableResults);
+    });
 }
 
 //
@@ -52,10 +61,7 @@ function updateAnalysis() {
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     if (catvar === "none") {
-        $("#analysis-container").hide();
-        hideLoading();
-        hideNotifications();
-        showNoCatvar();
+        loadNoCatvar();
         return;
     }
 
@@ -83,20 +89,14 @@ function updateAnalysis() {
 
             var abundancesObj = JSON.parse(result);
             if (!$.isEmptyObject(abundancesObj["correlations"])) {
-                $("#analysis-container").show();
-
-                abundancesObj = JSON.parse(result);
+                loadSuccess();
                 renderCorrelationsSelection(abundancesObj);
             } else {
-                $("#analysis-container").hide();
-                showNoResults();
+                loadNoResults();
             }
         },
         error: function(err) {
-            $("#analysis-container").hide();
-            hideLoading();
-            hideNotifications();
-            showError();
+            loadError();
             console.log(err);
         }
     });
@@ -128,7 +128,12 @@ function renderCorrelationsSelection(abundancesObj) {
         });
     }
 
+    tableResults = [];
+    tableResults.push(["otu", "coef", "pval", "qval"]);
+
     var correlations = abundancesObj["correlations"];
     correlationDataTable.rows.add(correlations);
     correlationDataTable.draw();
+
+    tableResults = tableResults.concat(correlations);
 }

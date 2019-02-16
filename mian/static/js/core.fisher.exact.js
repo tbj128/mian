@@ -133,7 +133,7 @@ function renderFisherTable(abundancesObj) {
 
 
     tableResults = [];
-    tableResults.push(["Taxonomy", "P-Value", "Q-Value", cat1 + " Present", cat1 + "Total", cat2 + " Present", cat2 + "Total"]);
+    tableResults.push(["Taxonomic Group/OTU", "P-Value", "Q-Value", cat1 + " Present", cat1 + " Absent", cat2 + " Present", cat2 + " Absent"]);
 
 
     for (var i = 0; i < statsArr.length; i++) {

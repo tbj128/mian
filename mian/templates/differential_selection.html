@@ -11,7 +11,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Differential Selection <i class="fa fa-info-circle" data-toggle="popover" data-title="Differential Selection" data-content="Performs differential analysis of OTU data based on pairwise quantitative metadata." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Differential Selection <i class="fa fa-info-circle" data-toggle="popover" data-title="Differential Selection" data-html="true" data-content="Performs differential analysis of OTU data based on pairwise categorical metadata. <br /><br/>Taxonomic groups/OTUs that are statistically different between the two sample groupings will be displayed." data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -47,7 +47,7 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Pairwise Comparison Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variable" data-content="Indicate the two metadata parameter values that will be used to select taxonomic items that are significantly different in one group over the other."></i></label>
+                <label class="control-label">Pairwise Comparison Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variable" data-content="Indicate the two metadata parameter values that will be used to select taxonomic groups/OTUs that are significantly different in one sample group over the other."></i></label>
                 <select id="pwVar1" name="pwVar1" class="form-control" style="margin-bottom: 4px;">
                 </select>
                 <select id="pwVar2" name="pwVar2" class="form-control">
@@ -91,7 +91,7 @@
         <table id="differential-table" class="table table-hover">
             <thead>
                 <tr>
-                    <th>Taxonomy</th>
+                    <th>Taxonomic Group/OTU</th>
                     <th>P-Value</th>
                     <th>Q-Value (FDR-Corrected)</th>
                 </tr>

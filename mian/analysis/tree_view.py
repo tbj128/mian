@@ -94,6 +94,20 @@ class TreeView(AnalysisBase):
                                 else:
                                     otuObj[metaVal]["c"] = 0
                                 otuObj[metaVal]["tc"] = 1
+                        elif displayValues == "nonzerosample":
+                            # We want to count the number of non-zero samples per group so we need to keep track
+                            # of what samples had a non-zero count
+                            if metaVal in otuObj:
+                                if otuVal > 0:
+                                    otuObj[metaVal]["c"][sampleID] = True
+                                otuObj[metaVal]["tc"][sampleID] = True
+                            else:
+                                otuObj[metaVal] = {}
+                                otuObj[metaVal]["c"] = {}
+                                otuObj[metaVal]["tc"] = {}
+                                if otuVal > 0:
+                                    otuObj[metaVal]["c"][sampleID] = True
+                                otuObj[metaVal]["tc"][sampleID] = True
                         else:
                             if metaVal in otuObj:
                                 otuObj[metaVal]["v"].append(otuVal)
@@ -151,6 +165,11 @@ class TreeView(AnalysisBase):
         numLeaves = 0
 
         if taxonomyDisplayLevel == taxLevel:
+            if "numOTUs" in treeObj[levelClassification]:
+                treeObj[levelClassification]["numOTUs"] += 1
+            else:
+                treeObj[levelClassification]["numOTUs"] = 1
+
             # Associate the values
             for meta in uniqueMetadataVals:
                 if meta in otuObj:
@@ -162,6 +181,15 @@ class TreeView(AnalysisBase):
                             treeObj[levelClassification][meta] = {}
                             treeObj[levelClassification][meta]["c"] = otuObj[meta]["c"]
                             treeObj[levelClassification][meta]["tc"] = otuObj[meta]["tc"]
+                            numLeaves = 1
+                    elif "nonzerosample" == displayValues:
+                        if meta in treeObj[levelClassification]:
+                            # Do nothing because the non-zero samples have already been counted
+                            pass
+                        else:
+                            treeObj[levelClassification][meta] = {}
+                            treeObj[levelClassification][meta]["c"] = len(otuObj[meta]["c"].keys())
+                            treeObj[levelClassification][meta]["tc"] = len(otuObj[meta]["tc"].keys())
                             numLeaves = 1
                     else:
                         if meta in treeObj[levelClassification]:
@@ -192,13 +220,16 @@ class TreeView(AnalysisBase):
             newChildObj = {}
             newChildObj["name"] = taxa
             if level == taxonomyDisplayLevel:
-                if "nonzero" == displayValues:
+                if "nonzero" == displayValues or "nonzerosample" == displayValues:
                     newChildObj["val"] = child
                 else:
                     # Collapse the array into specific values
                     if displayValues == "avgabun":
                         metas = list(child.keys())
                         for meta in metas:
+                            if "numOTUs"  == meta:
+                                # numOTUs is not an actual metadata and only used to accumulate the number of OTUs
+                                continue
                             metaVals = child[meta]
                             avg = np.mean(metaVals["v"])
                             child[meta] = round(avg, 2)
@@ -207,6 +238,9 @@ class TreeView(AnalysisBase):
                     elif displayValues == "medianabun":
                         metas = list(child.keys())
                         for meta in metas:
+                            if "numOTUs"  == meta:
+                                # numOTUs is not an actual metadata and only used to accumulate the number of OTUs
+                                continue
                             metaVals = child[meta]
                             child[meta] = np.median(metaVals["v"])
                             child["c"] = len(metaVals["v"])
@@ -214,6 +248,9 @@ class TreeView(AnalysisBase):
                     elif displayValues == "maxabun":
                         metas = list(child.keys())
                         for meta in metas:
+                            if "numOTUs"  == meta:
+                                # numOTUs is not an actual metadata and only used to accumulate the number of OTUs
+                                continue
                             metaVals = child[meta]
                             child[meta] = np.amax(metaVals["v"])
                             child["c"] = len(metaVals["v"])

@@ -20,9 +20,14 @@
           <h2><strong>Mian</strong> login</h2>
           <h4>Don't have an account? <a href="signup">Sign up here</a></h4>
           <h5 style="color: #999;">Try the <a href="javascript:{}" onclick="document.getElementById('demo-login').submit(); return false;">demo account</a></h5><hr />
-          {% if badlogin %}
+          {% if badlogin == 1 %}
           <div class="alert alert-danger">
             <strong>Invalid Username/Password</strong> Please try again
+          </div>
+          {% endif %}
+          {% if badlogin == 2 %}
+          <div class="alert alert-danger">
+            <strong>Could Not Reset Password</strong> Please try again
           </div>
           {% endif %}
 
@@ -32,7 +37,7 @@
               <input type="email" class="form-control" id="email" name="email" placeholder="Email">
             </div>
             <div class="form-group">
-              <label for="password">Password</label>
+              <label for="password">Password <small style="font-weight: normal;">(<a href="/forgot_password">Forgot Password?</a>)</small></label>
               <input type="password" class="form-control" id="password" name="password" placeholder="Password">
             </div>
             <button type="submit" class="btn btn-default">Login</button>

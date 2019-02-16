@@ -125,23 +125,24 @@ function renderTree(abundancesObj) {
     var numLeaves = abundancesObj["numLeaves"];
 
     var width = 300 * taxLevelMultiplier + 26 * metaUnique.length,
-        height = 20 * numLeaves;
+        height = 20 * numLeaves + 40;
 
     var cluster = d3.layout
         .cluster()
-        .size([height, width - 32 * metaUnique.length - 80]);
+        .size([height - 40, width - 32 * metaUnique.length - 80]);
 
     var diagonal = d3.svg.diagonal().projection(function(d) {
         return [d.y, d.x];
     });
 
-    var svg = d3
+    var svgBase = d3
         .select("#analysis-container")
         .append("svg")
         .attr("width", width)
-        .attr("height", height)
+        .attr("height", height);
+    var svg = svgBase
         .append("g")
-        .attr("transform", "translate(40,0)");
+        .attr("transform", "translate(40,40)");
 
     var tooltip = d3
         .select("#analysis-container")
@@ -196,13 +197,12 @@ function renderTree(abundancesObj) {
     });
 
     var display_values = $("#display_values").val();
-    //   var maxSValue = abundancesObj["maxPerAbun"];
     var sValue = function(d) {
         if (d.hasOwnProperty("val")) {
             var maxPer = 0;
             for (var i = 0; i < metaUnique.length; i++) {
                 if (d["val"][metaUnique[i]]) {
-                    if (display_values == "nonzero") {
+                    if (display_values == "nonzero" || display_values == "nonzerosample") {
                         var perAbun =
                             d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
                         if (perAbun > maxPer) {
@@ -243,7 +243,7 @@ function renderTree(abundancesObj) {
             })
             .attr("r", function(d) {
                 if (d["val"][metaUnique[i]]) {
-                    if (display_values == "nonzero") {
+                    if (display_values === "nonzero" || display_values === "nonzerosample") {
                         var perAbun =
                             d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
                         return sScale(perAbun);
@@ -257,16 +257,11 @@ function renderTree(abundancesObj) {
             })
             .on("mouseover", function(d) {
                 var meta = d3.select(this).attr("meta");
-                if (display_values == "nonzero") {
+                if (display_values === "nonzero") {
                     var c = d["val"][meta].c;
                     var tc = d["val"][meta].tc;
+                    var numOTUs = d["val"].numOTUs;
 
-                    var allMeta = Object.keys(d["val"]);
-                    var totalOTUCountsAllMeta = 0;
-                    allMeta.forEach(m => (totalOTUCountsAllMeta += d["val"][m].tc));
-
-                    // TODO: Num OTUs cannot be calculated correctly at this point
-                    var numOTUs = totalOTUCountsAllMeta / numSamples;
                     var per = 100 * c / tc;
                     tooltip
                         .transition()
@@ -276,13 +271,39 @@ function renderTree(abundancesObj) {
                         .html(
                             "<strong>" +
                             meta +
-                            "</strong><br />Samples with Non-Zero Count: <strong>" +
+                            "</strong><br /><br />Non-Zero Count: <strong>" +
                             c +
-                            " / " +
-                            tc +
-                            " (" +
+                            " out of " + tc + " OTU-samples (" +
                             per.toFixed(2) +
-                            "%)</strong>"
+                            "%)</strong><br /><br />Number of OTUs in this taxonomic group: <strong>" +
+                            numOTUs +
+                            "</strong><br /><br />Number of Samples: <strong>" +
+                            (tc / numOTUs) +
+                            "</strong>"
+                        )
+                        .style("left", d3.event.pageX - 160 + "px")
+                        .style("top", d3.event.pageY + 12 + "px");
+                } else if (display_values === "nonzerosample") {
+                    var c = d["val"][meta].c;
+                    var tc = d["val"][meta].tc;
+                    var numOTUs = d["val"].numOTUs;
+
+                    var per = 100 * c / tc;
+                    tooltip
+                        .transition()
+                        .duration(100)
+                        .style("opacity", 1);
+                    tooltip
+                        .html(
+                            "<strong>" +
+                            meta +
+                            "</strong><br /><br />Non-Zero Count: <strong>" +
+                            c +
+                            " out of " + (tc / numOTUs) + " samples (" +
+                            per.toFixed(2) +
+                            "%)</strong><br /><br />Number of OTUs in this taxonomic group: <strong>" +
+                            numOTUs +
+                            "</strong>"
                         )
                         .style("left", d3.event.pageX - 160 + "px")
                         .style("top", d3.event.pageY + 12 + "px");
@@ -290,12 +311,7 @@ function renderTree(abundancesObj) {
                     var metaVal = d["val"][meta];
                     var c = d["val"]["c"];
                     var tc = d["val"]["tc"];
-
-                    var allMeta = Object.keys(d["val"]);
-                    var totalOTUCountsAllMeta = 0;
-                    allMeta.forEach(m => (totalOTUCountsAllMeta += d["val"][m].tc));
-                    var numOTUs = tc / numSamples;
-                    var numSamplesForCat = c / numOTUs;
+                    var numOTUs = d["val"].numOTUs;
 
                     tooltip
                         .transition()
@@ -315,12 +331,14 @@ function renderTree(abundancesObj) {
                         .html(
                             "<strong>" +
                             meta +
-                            "</strong><br />" +
+                            "</strong><br /><br />" +
                             header +
                             ": <strong>" +
                             metaVal +
-                            "</strong><br />Number of Samples: <strong>" +
-                            numSamplesForCat +
+                            "</strong><br /><br />Number of Samples: <strong>" +
+                            (tc / numOTUs) +
+                            "</strong><br /><br />Number of OTUs in this taxonomic group: <strong>" +
+                            numOTUs +
                             "</strong>"
                         )
                         .style("left", d3.event.pageX - 160 + "px")
@@ -335,7 +353,7 @@ function renderTree(abundancesObj) {
             });
     }
 
-    var legend = svg
+    var legend = svgBase
         .selectAll(".legend")
         .data(color.domain())
         .enter()

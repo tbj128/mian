@@ -6,6 +6,7 @@
 // Global Components
 //
 var tableResults = [];
+var differentialDataTable;
 
 //
 // Initialization
@@ -39,26 +40,23 @@ function createSpecificListeners() {
 function customLoading() {}
 
 function renderTableView(table) {
-    $("#stats-container").hide();
 
-    $("#stats-headers").empty();
-    var headers = table[0];
-    for (var i = 0; i < headers.length; i++) {
-        var r = "<th>" + headers[i] + "</th>";
-        $("#stats-headers").append(r);
+    if (differentialDataTable) {
+        differentialDataTable.clear();
+    } else {
+        differentialDataTable = $("#table-view").DataTable({
+            order: [
+                [0, "asc"]
+            ],
+            columns: table[0].map(t => {
+                return {
+                    title: t
+                }
+            }),
+            data: table.slice(1)
+        });
     }
-
-    $("#stats-rows").empty();
-    for (var i = 1; i < table.length; i++) {
-        var r = "<tr>";
-        for (var j = 0; j < table[i].length; j++) {
-            r = r + "<td>" + table[i][j] + "</td>";
-        }
-        r = r + "</tr>";
-        $("#stats-rows").append(r);
-    }
-
-    $("#stats-container").fadeIn(250);
+    tableResults = table;
 }
 
 function updateAnalysis() {
@@ -100,7 +98,7 @@ function updateAnalysis() {
             var table = JSON.parse(result);
             tableResults = table;
 
-            if (result.length > 5000 && result[0].length > 5000) {
+            if (tableResults.length > 2000 || tableResults[0].length > 2000) {
                 $("#too-large-message").show();
             } else {
                 $("#too-large-message").hide();

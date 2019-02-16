@@ -55,9 +55,9 @@ class FisherExact(object):
             results[i,2] = ftest$p.value
             results[i,3] = 1
             results[i,4] = fisherMatrix[1, 1]
-            results[i,5] = totalSumCat2
+            results[i,5] = totalSumCat2 - fisherMatrix[1, 1]
             results[i,6] = fisherMatrix[2, 1]
-            results[i,7] = totalSumCat1
+            results[i,7] = totalSumCat1 - fisherMatrix[2, 1]
         }
     
         results[,3] = p.adjust(results[,2], method = "fdr");

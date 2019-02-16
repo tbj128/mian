@@ -3,6 +3,7 @@
 <head>
     {% include 'header.html' %}
     <title>Table - Mian</title>
+    <link href="/static/css/plugins/datatables.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -48,30 +49,29 @@
 </div>
 
 <div class="content-wrapper">
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-        {% include 'download_container.html' %}
+    {% include 'download_container.html' %}
 
-        {% include 'notifications.html' %}
+    {% include 'notifications.html' %}
 
-        <div id="too-large-message" class="display-notification project-empty" style="display:none;">
-            <div class="row">
-                <div class="col-md-3">
-                    <i class="fa fa-exclamation-circle fa-4x"></i>
-                </div>
-                <div class="col-md-9">
-                    <h3>Table Too Large To Display</h3>
-                    <p>
-                        The table is too large to display in the browser. You can still download the table as a CSV by pressing the button above.
-                    </p>
-                </div>
+    <div id="too-large-message" class="display-notification project-empty" style="display:none;">
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>Table Too Large To Display</h3>
+                <p>
+                    The table is too large to display in the browser. You can still download the table as a CSV by pressing the button above.
+                </p>
             </div>
         </div>
-        <table class="table table-hover">
+    </div>
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+        <table id="table-view" class="table table-hover">
             <thead>
-                <tr id="stats-headers">
-                </tr>
+                <tr id="table-view-header"></tr>
             </thead>
-            <tbody id="stats-rows">
+            <tbody id="table-view-rows">
             </tbody>
         </table>
     </div><!-- /.container -->
@@ -83,6 +83,7 @@
 
 <!-- Include custom JS here -->
 <script src="/static/js/core.table.js"></script>
+<script src="/static/js/plugins/datatables.min.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->

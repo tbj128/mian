@@ -865,9 +865,11 @@ function downloadSVG(name) {
     var svgElemWidth = $("#analysis-container svg").width();
     var svgContainerWidth = svgElemWidth;
 
+    var pixelRatio = 1;
+
     var $tmpCanvas = $("#donwload-canvas");
-    $tmpCanvas.height($("#analysis-container svg").height());
-    $tmpCanvas.width(svgContainerWidth);
+    $tmpCanvas.height($("#analysis-container svg").height() * pixelRatio);
+    $tmpCanvas.width(svgContainerWidth * pixelRatio);
 
     var svgContainer = document.createElement("svg");
     $svgContainer = $(svgContainer);
@@ -889,6 +891,7 @@ function downloadSVG(name) {
         renderCallback: function() {
             var dataURL = $tmpCanvas[0].toDataURL("image/png");
             var ctx = $tmpCanvas[0].getContext("2d");
+            ctx.setTransform(pixelRatio,0,0,pixelRatio,0,0);
 
             var filename = name + ".png";
 

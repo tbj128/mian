@@ -11,6 +11,7 @@
 from functools import lru_cache
 
 from flask import Flask, request, render_template, redirect, url_for, Response, abort
+from flask_mail import Mail, Message
 import flask_login
 from flask_login import current_user
 from werkzeug import secure_filename
@@ -22,6 +23,8 @@ import hashlib
 import shutil
 import base64
 import zlib
+import time
+import uuid
 import logging
 #
 # Imports and installs R packages as needed
@@ -85,6 +88,14 @@ logger = logging.getLogger(__name__)
 
 # Initialize the web app
 app = Flask(__name__)
+app.config.update(
+    MAIL_SERVER='email-smtp.us-east-1.amazonaws.com',
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.environ['MAIL_USERNAME'] if 'MAIL_USERNAME' in os.environ else "",
+    MAIL_PASSWORD=os.environ['MAIL_PASSWORD'] if 'MAIL_PASSWORD' in os.environ else ""
+)
+mail = Mail(app)
 
 # Initialize the login manager
 login_manager = flask_login.LoginManager()
@@ -166,6 +177,35 @@ def login():
         return render_template('login.html', badlogin=1)
 
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'GET':
+        return render_template('forgot_password.html')
+    else:
+        email = request.form['email']
+        sendResetPasswordLink(email)
+        return render_template('forgot_password_check_link.html')
+
+
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'GET':
+        id = request.args.get('id', '')
+        secret = request.args.get('secret', '')
+        return render_template('reset_password.html', user=id, secret=secret)
+    else:
+        user = request.form['user']
+        secret = request.form['secret']
+        password = request.form['password']
+
+        success = resetPassword(user, secret, password)
+
+        if success:
+            return render_template('login.html')
+        else:
+            return render_template('login.html', badlogin=2)
+
+
 @app.route("/logout")
 @flask_login.login_required
 def logout():
@@ -229,6 +269,11 @@ def create():
         return redirect(url_for('projects', status=status, message=message))
 
 
+@app.route('/project_not_found')
+def project_not_found():
+    return render_template('project_not_found.html')
+
+
 @app.route('/')
 def home():
     if current_user.is_authenticated:
@@ -236,6 +281,10 @@ def home():
     else:
         return render_template('index.html')
 
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('not_found.html')
 
 
 # ----- Analysis Pages -----
@@ -248,6 +297,15 @@ def home():
 def render_normal(html_file, request, show_low_expression_filtering=False):
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
+
+    not_found = True
+    for projectName in projectNames:
+        if projectNames[projectName]['pid'] == currProject or currProject == '':
+            not_found = False
+    if not_found:
+        # The requested project was not found
+        return redirect(url_for('project_not_found'))
+
     if show_low_expression_filtering:
         return render_template(html_file, uid=current_user.id, projectNames=projectNames, currProject=currProject, lowExpressionFilteringEnabled=True, share=False)
     else:
@@ -742,13 +800,13 @@ def getBoruta(user_request, req):
 
 @app.route('/boxplots', methods=['POST'])
 @flask_login.login_required
-def getBorutaSecure():
+def getBoxplotsSecure():
     user_request = __get_user_request(request)
     return getBoxplots(user_request, request)
 
 
 @app.route('/share/boxplots', methods=['POST'])
-def getBorutaShare():
+def getBoxplotsShare():
     if checkSharedValidity(request):
         uid = request.args.get('uid', '')
         user_request = __get_user_request(request, user=uid)
@@ -847,8 +905,6 @@ def getCorrelationNetworkShare():
         abortNotShared()
 
 
-@app.route('/correlation_network', methods=['POST'])
-@flask_login.login_required
 def getCorrelationNetwork(user_request, req):
     user_request.set_custom_attr("maxFeatures", req.form['maxFeatures'])
     user_request.set_custom_attr("cutoff", req.form['cutoff'])
@@ -1162,8 +1218,6 @@ def getTreeShare():
     else:
         abortNotShared()
 
-@app.route('/tree', methods=['POST'])
-@flask_login.login_required
 def getTree(user_request, req):
     user_request.set_custom_attr("taxonomy_display_level", req.form['taxonomy_display_level'])
     user_request.set_custom_attr("display_values", req.form['display_values'])
@@ -1402,6 +1456,83 @@ def checkAuth(username, password):
             return okay, id
         else:
             return okay, -1
+
+
+def sendResetPasswordLink(email):
+    """
+    Resets the user password if they possess the correct secret
+    """
+    db = sqlite3.connect(DB_PATH)
+    c = db.cursor()
+    t = (email,)
+    c.execute('SELECT id FROM accounts WHERE user_email=?', t)
+    row = c.fetchone()
+    db.close()
+
+    if row is None:
+        # This account doesn't actually exist
+        return False
+    else:
+        id = row[0]
+        secret = str(uuid.uuid4())
+        expiry = int(time.time()) + 60 * 24
+
+        db = sqlite3.connect(DB_PATH)
+        c = db.cursor()
+        c.execute('DELETE FROM reset WHERE id = ?', (id,))
+        db.commit()
+        c.execute('INSERT INTO reset (id, secret, expiry) VALUES (?,?,?)', (id, secret, expiry))
+        db.commit()
+        db.close()
+
+        logger.info("Generated a reset link: https://miandata.org/reset_password?id=" + str(id) + "&secret=" + secret)
+
+        if not app.debug:
+            msg = Message("Reset Password on Mian",
+                          sender="no-reply@miandata.org",
+                          recipients=[email])
+            msg.body = "Reset your password here: https://miandata.org/reset_password?id=" + str(id) + "&secret=" + secret
+            mail.send(msg)
+
+        return True
+
+
+def resetPassword(user, secret, new_password):
+    """
+    Resets the user password if they possess the correct secret
+    """
+    db = sqlite3.connect(DB_PATH)
+    c = db.cursor()
+    t = (user,)
+    c.execute('SELECT secret, expiry FROM reset WHERE id=?', t)
+    row = c.fetchone()
+    db.close()
+
+    if row is None:
+        # Cannot reset because no reset request was sent
+        return False
+    else:
+        actual_secret = row[0]
+        actual_expiry = row[1]
+
+        curr_time = int(time.time())
+        if curr_time > actual_expiry:
+            return False
+
+        if secret != actual_secret:
+            return False
+
+        db = sqlite3.connect(DB_PATH)
+        c = db.cursor()
+        salt = createSalt()
+
+        calculatedPassword = hashlib.md5(str(salt + new_password).encode('utf-8')).hexdigest()
+        c.execute('UPDATE accounts SET password_hash = ?, salt = ? WHERE id = ?',
+                  (calculatedPassword, salt, user))
+        db.commit()
+        db.close()
+
+        return True
 
 
 class User(flask_login.UserMixin):

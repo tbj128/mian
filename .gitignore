@@ -11,6 +11,7 @@ mian/static/tmp/*
 .DS_Store
 .idea/*
 
+set_env_var.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

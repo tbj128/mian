@@ -50,7 +50,7 @@
                 <select id="model" name="model" class="form-control">
                 </select>
 
-                <label class="control-label">Ridge/Lasso Mixing Parameter <i class="fa fa-info-circle" data-toggle="popover" data-html="true" data-title="Alpha" data-content="The elastic net mixing parameter (α) that is between 0 and 1. Regularization is ridge (L1) when α = 0 and lasso (L2) when α = 1. Choose a value close to 0 if you want a sparser model. (See the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a> for more details)"></i></label>
+                <label class="control-label">Ridge/Lasso Mixing Parameter <i class="fa fa-info-circle" data-toggle="popover" data-html="true" data-title="Alpha" data-content="The elastic net mixing parameter (α) that is between 0 and 1. Regularization is ridge (L2) when α = 0 and lasso (L1) when α = 1. Choose a value close to 1 if you want a sparser model. (See the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a> for more details)"></i></label>
                 <input class="form-control" id="alpha" name="alpha" type="number" value="0.5" max="1" min="0" />
 
                 <label class="control-label">Lambda Threshold <i class="fa fa-info-circle" data-toggle="popover" data-html="true" data-title="Lambda" data-content="The regularization penalty that is chosen through cross-validation. 'lambda.1se' will use the lambda value that is within one standard error of the minimum cross-validated error. 'lambda.min' will use the lambda value that is at the minimum mean cross-validated error. (See the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf'>here</a> for more details)"></i></label>

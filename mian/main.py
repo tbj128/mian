@@ -937,7 +937,7 @@ def getCorrelationNetwork(user_request, req):
 @flask_login.login_required
 def getCorrelationsSelectionSecure():
     user_request = __get_user_request(request)
-    return getCorrelationsSelection(user_request)
+    return getCorrelationsSelection(user_request, request)
 
 
 @app.route('/share/correlations_selection', methods=['POST'])
@@ -945,12 +945,14 @@ def getCorrelationsSelectionShare():
     if checkSharedValidity(request):
         uid = request.args.get('uid', '')
         user_request = __get_user_request(request, user=uid)
-        return getCorrelationsSelection(user_request)
+        return getCorrelationsSelection(user_request, request)
     else:
         abortNotShared()
 
 
-def getCorrelationsSelection(user_request):
+def getCorrelationsSelection(user_request, req):
+    user_request.set_custom_attr("expvar", req.form['expvar'])
+
     plugin = CorrelationsSelection()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)

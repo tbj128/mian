@@ -30,7 +30,8 @@ class CorrelationsSelection(AnalysisBase):
         return self.analyse(user_request, otu_table, headers, sample_labels, metadata)
 
     def analyse(self, user_request, base, headers, sample_labels, metadata):
-        metadata_values = metadata.get_metadata_column_table_order(sample_labels, user_request.catvar)
+        expvar = user_request.get_custom_attr("expvar")
+        metadata_values = metadata.get_metadata_column_table_order(sample_labels, expvar)
         metadata_values = list(map(float, metadata_values))
 
         correlations = []

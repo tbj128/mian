@@ -19,18 +19,14 @@ createSpecificListeners();
 //
 var initialCorrvar1SpecificTaxonomies = getParameterByName("corrvar1SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar1SpecificTaxonomies")) : [];
 var initialCorrvar2SpecificTaxonomies = getParameterByName("corrvar2SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar2SpecificTaxonomies")) : [];
+var initialColorVar = getParameterByName("colorvar");
+var initialSizeVar = getParameterByName("sizevar");
 function initializeFields() {
     if (getParameterByName("corrvar1") !== null) {
         $("#corrvar1").val(getParameterByName("corrvar1"));
     }
     if (getParameterByName("corrvar2") !== null) {
         $("#corrvar2").val(getParameterByName("corrvar2"));
-    }
-    if (getParameterByName("colorvar") !== null) {
-        $("#colorvar").val(getParameterByName("colorvar"));
-    }
-    if (getParameterByName("sizevar") !== null) {
-        $("#sizevar").val(getParameterByName("sizevar"));
     }
     if (getParameterByName("samplestoshow") !== null) {
         $("#samplestoshow").val(getParameterByName("samplestoshow"));
@@ -528,8 +524,15 @@ function updateCorrVar(result) {
     addCorrGroup("mian-abundance", "Aggregate Abundance");
     addCorrGroup("mian-max", "Max Abundance");
 
-    // Make sure the second option is selected if possible
-    // $('#corrvar2 option:eq(1)').attr('selected', 'selected');
+    if (initialColorVar) {
+        $("#colorvar").val(initialColorVar);
+        initialColorVar = null;
+    }
+
+    if (initialSizeVar) {
+        $("#sizevar").val(initialSizeVar);
+        initialSizeVar = null;
+    }
 }
 
 function addCorrGroup(val, text) {

@@ -5,7 +5,8 @@ var tagsInput;
 
 var statsTypes = {
     wilcoxon: "Wilcoxon Rank-Sum",
-    ttest: "Welch's T-Test"
+    ttest: "Welch's T-Test",
+    anova: "ANOVA"
 };
 
 //
@@ -184,7 +185,7 @@ function loadOTUTableHeaders() {
         $("#specific-taxonomy-typeahead").empty();
         var level = taxonomyLevels[$("#taxonomy-level").val()];
         var headersPromise = $.ajax({
-            url: "/otu_table_headers_at_level?pid=" +
+            url: getSharedPrefixIfNeeded() + "/otu_table_headers_at_level?pid=" +
                 $("#project").val() +
                 "&level=" +
                 level +

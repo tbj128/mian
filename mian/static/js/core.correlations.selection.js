@@ -21,6 +21,7 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialExpVar = getParameterByName("expvar");
 function initializeFields() {
     // No initial fields
 }
@@ -29,7 +30,7 @@ function initializeFields() {
 // Component-Specific Sidebar Listeners
 //
 function createSpecificListeners() {
-    $("#catvar").change(function() {
+    $("#expvar").change(function() {
         updateAnalysis();
     });
 
@@ -42,15 +43,27 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 
-function customLoading() {
-    return updateCatVar(true);
+function customCatVarCallback(result) {
+    $("#expvar").empty();
+    var allHeaders = result.map(obj => obj.name);
+    result.forEach(obj => {
+        if (obj.type !== "categorical") {
+            $("#expvar").append(
+                '<option value="' + obj.name + '">' + obj.name + "</option>"
+            );
+        }
+    });
+    if (initialExpVar) {
+        $("#expvar").val(initialExpVar);
+        initialExpVar = null;
+    }
 }
 
 function updateAnalysis() {
     showLoading();
 
     var level = taxonomyLevels[getTaxonomicLevel()];
-    var catvar = $("#catvar").val();
+    var expvar = $("#expvar").val();
 
     var taxonomyFilter = getSelectedTaxFilter();
     var taxonomyFilterRole = getSelectedTaxFilterRole();
@@ -60,7 +73,7 @@ function updateAnalysis() {
     var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
-    if (catvar === "none") {
+    if (expvar === "none") {
         loadNoCatvar();
         return;
     }
@@ -73,7 +86,7 @@ function updateAnalysis() {
         sampleFilter: sampleFilter,
         sampleFilterRole: sampleFilterRole,
         sampleFilterVals: sampleFilterVals,
-        catvar: catvar,
+        expvar: expvar,
         level: level
     };
 
@@ -103,7 +116,7 @@ function updateAnalysis() {
 }
 
 function renderCorrelationsSelection(abundancesObj) {
-    $("#correlation-metadata").text($("#catvar").val());
+    $("#correlation-metadata").text($("#expvar").val());
 
     if (correlationDataTable) {
         correlationDataTable.clear();

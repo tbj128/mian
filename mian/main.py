@@ -206,6 +206,22 @@ def reset_password():
             return render_template('login.html', badlogin=2)
 
 
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if request.method == 'GET':
+        return render_template('change_password.html')
+    else:
+        old_password = request.form['old_password']
+        new_password = request.form['new_password']
+
+        success = changePassword(current_user.id, old_password, new_password)
+
+        if success:
+            return render_template('change_password.html', success=1)
+        else:
+            return render_template('change_password.html', error=1)
+
+
 @app.route("/logout")
 @flask_login.login_required
 def logout():
@@ -1533,6 +1549,41 @@ def resetPassword(user, secret, new_password):
         db.close()
 
         return True
+
+
+def changePassword(id, original_password, new_password):
+    """
+    Changes the user password
+    """
+    db = sqlite3.connect(DB_PATH)
+    c = db.cursor()
+    t = (id,)
+    c.execute('SELECT password_hash, salt FROM accounts WHERE id=?', t)
+    row = c.fetchone()
+    db.close()
+
+    if row is None:
+        logger.info("No user exists when attempting to change password for id " + str(id))
+        return False
+    else:
+        knownPassword = row[0]
+        salt = row[1]
+        calculatedPassword = hashlib.md5(str(salt + original_password).encode('utf-8')).hexdigest()
+        if calculatedPassword != knownPassword:
+            logger.info("User id " + str(id) + " password change had the wrong old password")
+            return False
+
+    db = sqlite3.connect(DB_PATH)
+    c = db.cursor()
+    salt = createSalt()
+
+    calculatedPassword = hashlib.md5(str(salt + new_password).encode('utf-8')).hexdigest()
+    c.execute('UPDATE accounts SET password_hash = ?, salt = ? WHERE id = ?',
+              (calculatedPassword, salt, id))
+    db.commit()
+    db.close()
+
+    return True
 
 
 class User(flask_login.UserMixin):

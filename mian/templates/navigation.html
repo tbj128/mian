@@ -14,6 +14,18 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualize <span class="caret"></span></a>
           <ul class="dropdown-menu">
+            {% if share %}
+            <li><a class="nav-link" href="/share/boxplots">Boxplots</a></li>
+            <li><a class="nav-link" href="/share/composition">Composition</a></li>
+            <li><a class="nav-link" href="/share/correlations">Simple Correlation</a></li>
+            <li><a class="nav-link" href="/share/correlation_network">Correlation Network</a></li>
+            <li><a class="nav-link" href="/share/heatmap">Heatmap</a></li>
+            <li><a class="nav-link" href="/share/nmds">NMDS</a></li>
+            <li><a class="nav-link" href="/share/pca">PCA</a></li>
+            <li><a class="nav-link" href="/share/rarefaction">Rarefaction Curves</a></li>
+            <li><a class="nav-link" href="/share/tree">Tree</a></li>
+            <li><a class="nav-link" href="/share/table">Table</a></li>
+            {% else %}
             <li><a class="nav-link" href="/boxplots">Boxplots</a></li>
             <li><a class="nav-link" href="/composition">Composition</a></li>
             <li><a class="nav-link" href="/correlations">Simple Correlation</a></li>
@@ -24,6 +36,7 @@
             <li><a class="nav-link" href="/rarefaction">Rarefaction Curves</a></li>
             <li><a class="nav-link" href="/tree">Tree</a></li>
             <li><a class="nav-link" href="/table">Table</a></li>
+            {% endif %}
           </ul>
         </li>
       </ul>
@@ -31,8 +44,13 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Diversity <span class="caret"></span></a>
           <ul class="dropdown-menu">
+            {% if share %}
+            <li><a class="nav-link" href="/share/alpha_diversity">Alpha Diversity</a></li>
+            <li><a class="nav-link" href="/share/beta_diversity">Beta Diversity</a></li>
+            {% else %}
             <li><a class="nav-link" href="/alpha_diversity">Alpha Diversity</a></li>
             <li><a class="nav-link" href="/beta_diversity">Beta Diversity</a></li>
+            {% endif %}
           </ul>
         </li>
       </ul>
@@ -40,11 +58,19 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Feature Selection <span class="caret"></span></a>
           <ul class="dropdown-menu">
+            {% if share %}
+            <li><a class="nav-link" href="/share/random_forest">Random Forest</a></li>
+            <li><a class="nav-link" href="/share/glmnet">Generalized Linear Model</a></li>
+            <li><a class="nav-link" href="/share/fisher_exact">Fisher Exact Test</a></li>
+            <li><a class="nav-link" href="/share/differential_selection">Differential Selection</a></li>
+            <li><a class="nav-link" href="/share/correlations_selection">Correlations Selection</a></li>
+            {% else %}
             <li><a class="nav-link" href="/random_forest">Random Forest</a></li>
             <li><a class="nav-link" href="/glmnet">Generalized Linear Model</a></li>
             <li><a class="nav-link" href="/fisher_exact">Fisher Exact Test</a></li>
             <li><a class="nav-link" href="/differential_selection">Differential Selection</a></li>
             <li><a class="nav-link" href="/correlations_selection">Correlations Selection</a></li>
+            {% endif %}
           </ul>
         </li>
       </ul>

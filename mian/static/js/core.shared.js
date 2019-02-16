@@ -204,7 +204,12 @@ function setExtraNavLinks(attr) {
         if (currHrefArr.length > 1) {
             currHref = currHrefArr[0];
         }
-        $(this).attr("href", currHref + "?pid=" + attr);
+        var uid = getParameterByName("uid");
+        if (uid) {
+            $(this).attr("href", currHref + "?pid=" + attr + "&uid=" + uid);
+        } else {
+            $(this).attr("href", currHref + "?pid=" + attr);
+        }
     });
 }
 

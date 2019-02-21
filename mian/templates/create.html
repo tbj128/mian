@@ -181,6 +181,26 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
             </div>
           </div>
         </div>
+        <div>
+          <div id="phylogenetic-upload-container" class="row upload-item" >
+            <div class="col-md-10">
+              <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Phylogenetic Tree (Optional)</h3>
+                <p>Newick-formatted phylogenetic tree, where the leaves are the OTUs from the OTU table. This is only needed if you want to use <a href="https://en.wikipedia.org/wiki/UniFrac">Unifrac</a> distances in your analysis. Note that not all OTU-picking pipelines will produce a phylogenetic tree.</p>
+            </div>
+            <div class="col-md-2 upload-status">
+              <form id="phylogeneticForm" action="/upload" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="category" value="phylogenetic" />
+                <span id="phylogeneticOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
+                <span id="phylogeneticLoading" style="display:none;">
+                  <i class="fa fa-spinner upload-loading"></i>
+                </span>
+                <span id="phylogeneticWrapper" class="btn btn-default btn-file">
+                    <span id="phylogeneticText">Upload</span> <input type="file" name="upload" id="phylogenetic" accept=".txt,.tre" />
+                </span>
+              </form>
+            </div>
+          </div>
+        </div>
         <div class="row upload-item" style="background:none !important;box-shadow:none !important;text-align:center;padding-top:0px;padding-right:0px;">
           <form data-toggle="validator" method="POST" action="/create">
             <input type="hidden" id="projectName" name="projectName" value="" />
@@ -189,6 +209,7 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
             <input type="hidden" id="projectOTUTableName" name="projectOTUTableName" value="" />
             <input type="hidden" id="projectTaxaMapName" name="projectTaxaMapName" value="" />
             <input type="hidden" id="projectSampleIDName" name="projectSampleIDName" value="" />
+            <input type="hidden" id="projectPhylogeneticName" name="projectPhylogeneticName" value="" />
             <input type="hidden" id="projectSubsampleType" name="projectSubsampleType" value="auto" />
             <input type="hidden" id="projectSubsampleTo" name="projectSubsampleTo" value="" />
             <button id="upload-submit" type="submit" class="btn btn-primary" style="width:180px;" disabled>Create</button>

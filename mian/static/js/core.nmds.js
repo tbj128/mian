@@ -20,6 +20,9 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 function initializeFields() {
+    if (getParameterByName("type") !== null) {
+        $("#type").val(getParameterByName("type"));
+    }
     if (getParameterByName("lambdathreshold") !== null) {
         $("#lambdathreshold").val(getParameterByName("lambdathreshold"));
     }
@@ -33,6 +36,10 @@ function initializeFields() {
 //
 function createSpecificListeners() {
     $("#catvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#type").change(function() {
         updateAnalysis();
     });
 
@@ -291,6 +298,7 @@ function updateAnalysis() {
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
+    var type = $("#type").val();
 
     var data = {
         pid: $("#project").val(),
@@ -301,7 +309,8 @@ function updateAnalysis() {
         sampleFilterRole: sampleFilterRole,
         sampleFilterVals: sampleFilterVals,
         level: level,
-        catvar: catvar
+        catvar: catvar,
+        type: type
     };
 
     setGetParameters(data);
@@ -311,14 +320,18 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/nmds" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            loadSuccess();
+            if (abundancesObj["no_tree"]) {
+                loadNoTree();
+            } else {
+                loadSuccess();
 
-            abundancesObj = JSON.parse(result);
+                abundancesObj = JSON.parse(result);
 
-            boundX = [];
-            boundY = [];
+                boundX = [];
+                boundY = [];
 
-            renderNMDS(abundancesObj["nmds"]);
+                renderNMDS(abundancesObj["nmds"]);
+            }
         },
         error: function(err) {
             loadError();

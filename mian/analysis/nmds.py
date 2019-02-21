@@ -17,8 +17,11 @@ import shutil
 import uuid
 import numpy as np
 from sklearn import manifold
-from sklearn.metrics import euclidean_distances
+from skbio import TreeNode
+from io import StringIO
+from skbio.diversity import beta_diversity
 from sklearn.decomposition import PCA
+from sklearn.metrics import euclidean_distances
 
 from mian.util import ROOT_DIR
 from mian.model.otu_table import OTUTable
@@ -38,12 +41,39 @@ class NMDS(object):
         table = OTUTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
-        return self.analyse(user_request, base, sample_labels, metadata_vals)
+        phylogenetic_tree = table.get_phylogenetic_tree()
+        return self.analyse(user_request, base, headers, sample_labels, metadata_vals, phylogenetic_tree)
 
-    def analyse(self, user_request, base, sample_labels, metadata_vals):
+    def analyse(self, user_request, base, headers, sample_labels, metadata_vals, phylogenetic_tree):
         logger.info("Starting NMDS analysis")
+        type = user_request.get_custom_attr("type")
 
-        similarities = euclidean_distances(base)
+        if type == "weighted_unifrac" or type == "unweighted_unifrac":
+            if phylogenetic_tree == "":
+                return {
+                    "no_tree": True
+                }
+            # TODO: Warn users about decimals
+            base = base.astype(int)
+            tree = TreeNode.read(StringIO(phylogenetic_tree))
+            dist_matrix = beta_diversity(type, base, ids=sample_labels, otu_ids=headers, tree=tree)
+        elif type == "euclidean":
+            dist_matrix = euclidean_distances(base)
+        else:
+            base = base.astype(int)
+            dist_matrix = beta_diversity(type, base)
+
+        similarities = []
+        i = 0
+        while i < dist_matrix.shape[0]:
+            new_row = []
+            j = 0
+            while j < dist_matrix.shape[0]:
+                new_row.append(dist_matrix[i][j])
+                j += 1
+            similarities.append(new_row)
+            i += 1
+
         # Use traditional MDS to determine the initial position
         mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, dissimilarity="precomputed", n_jobs=1)
         pos = mds.fit(similarities).embedding_

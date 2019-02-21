@@ -260,9 +260,11 @@ def create():
         if project_type == "biom":
             # Biom files are self-contained - they must be split up and subsampled to be compatible with mian
             project_biom_name = secure_filename(request.form['projectBiomName'])
+            project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
             try:
                 status, message = project_manager.create_project_from_biom(project_name=project_name,
                                                                  biom_name=project_biom_name,
+                                                                 phylogenetic_filename=project_phylogenetic_name,
                                                                  subsample_type=project_subsample_type,
                                                                  subsample_to=project_subsample_to)
             except:
@@ -272,11 +274,13 @@ def create():
             project_otu_table_name = secure_filename(request.form['projectOTUTableName'])
             project_taxa_map_name = secure_filename(request.form['projectTaxaMapName'])
             project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
+            project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
             try:
                 status, message = project_manager.create_project_from_tsv(project_name=project_name,
                                                                 otu_filename=project_otu_table_name,
                                                                 taxonomy_filename=project_taxa_map_name,
                                                                 sample_metadata_filename=project_sample_id_name,
+                                                                phylogenetic_filename=project_phylogenetic_name,
                                                                 subsample_type=project_subsample_type,
                                                                 subsample_to=project_subsample_to)
             except:
@@ -776,6 +780,37 @@ def getBetaDiversityShare():
 def getBetaDiversity(user_request, req):
     user_request.set_custom_attr("betaType", req.form['betaType'])
     user_request.set_custom_attr("strata", req.form['strata'])
+    user_request.set_custom_attr("api", "beta")
+
+    plugin = BetaDiversity()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
+# --
+
+
+@app.route('/beta_diversity_permanova', methods=['POST'])
+@flask_login.login_required
+def getBetaDiversityPERMANOVASecure():
+    user_request = __get_user_request(request)
+    return getBetaDiversityPERMANOVA(user_request, request)
+
+
+@app.route('/share/beta_diversity_permanova', methods=['POST'])
+def getBetaDiversityPERMANOVAShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getBetaDiversityPERMANOVA(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getBetaDiversityPERMANOVA(user_request, req):
+    user_request.set_custom_attr("betaType", req.form['betaType'])
+    user_request.set_custom_attr("strata", req.form['strata'])
+    user_request.set_custom_attr("api", "permanova")
 
     plugin = BetaDiversity()
     abundances = plugin.run(user_request)
@@ -1143,7 +1178,7 @@ def getRarefaction(user_request):
 @flask_login.login_required
 def getNMDSSecure():
     user_request = __get_user_request(request)
-    return getNMDS(user_request)
+    return getNMDS(user_request, request)
 
 
 @app.route('/share/nmds', methods=['POST'])
@@ -1151,12 +1186,14 @@ def getNMDSShare():
     if checkSharedValidity(request):
         uid = request.args.get('uid', '')
         user_request = __get_user_request(request, user=uid)
-        return getNMDS(user_request)
+        return getNMDS(user_request, request)
     else:
         abortNotShared()
 
 
-def getNMDS(user_request):
+def getNMDS(user_request, req):
+    user_request.set_custom_attr("type", req.form['type'])
+
     plugin = NMDS()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
@@ -1183,6 +1220,7 @@ def getPCAShare():
 
 
 def getPCA(user_request, req):
+    user_request.set_custom_attr("type", req.form['type'])
     user_request.set_custom_attr("pca1", req.form['pca1'])
     user_request.set_custom_attr("pca2", req.form['pca2'])
     user_request.set_custom_attr("pca3", req.form['pca3'])
@@ -1628,10 +1666,13 @@ def get_project_ids_to_info(user_id):
                         "pid": pid,
                         "project_type": project_type,
                         "orig_biom_name": project_map.orig_biom_name,
+                        "orig_phylogenetic_name": project_map.orig_phylogenetic_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
                         "subsampled_removed_samples": project_map.subsampled_removed_samples,
                         "matrix_type": project_map.matrix_type,
+                        "num_samples": project_map.num_samples,
+                        "num_otus": project_map.num_otus,
                         "shared": project_map.shared
                     }
                 else:
@@ -1643,10 +1684,13 @@ def get_project_ids_to_info(user_id):
                         "orig_otu_table_name": project_map.orig_otu_table_name,
                         "orig_sample_metadata_name": project_map.orig_sample_metadata_name,
                         "orig_taxonomy_name": project_map.orig_taxonomy_name,
+                        "orig_phylogenetic_name": project_map.orig_phylogenetic_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
                         "subsampled_removed_samples": project_map.subsampled_removed_samples,
                         "matrix_type": project_map.matrix_type,
+                        "num_samples": project_map.num_samples,
+                        "num_otus": project_map.num_otus,
                         "shared": project_map.shared
                     }
                 logger.info("Read project info " + str(project_info))

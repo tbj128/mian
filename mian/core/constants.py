@@ -29,3 +29,6 @@ TAXONOMY_FILENAME = "taxonomy.tsv"
 # The sample metadata file
 SAMPLE_METADATA_FILENAME = "sample_metadata.tsv"
 
+# The phylogenetic tree file (optional)
+PHYLOGENETIC_FILENAME = "phylogenetic.tre"
+

@@ -17,3 +17,9 @@
   <input type="hidden" id="project" name="project" value="{{ currProject }}" />
   {% endif %}
 </div>
+
+
+{% for projectName in projectNames %}
+  <input type="hidden" id="num_samples-{{ projectNames[projectName]['pid'] }}" value="{{ projectNames[projectName]['num_samples'] }}" />
+  <input type="hidden" id="num_otus-{{ projectNames[projectName]['pid'] }}" value="{{ projectNames[projectName]['num_otus'] }}" />
+{% endfor %}

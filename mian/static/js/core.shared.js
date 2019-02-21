@@ -137,12 +137,60 @@ function getSharedUserProjectSuffixIfNeeded() {
     }
 }
 
-function showLoading() {
+function getNumSamplesCurrentProject() {
+    return parseInt($("#num_samples-" + $("#project").val()).val());
+}
+
+function getNumOTUsCurrentProject() {
+    return parseInt($("#num_otus-" + $("#project").val()).val());
+}
+
+function showLoading(expectedLoadFactor) {
+    var numSamples = getNumSamplesCurrentProject();
+    var numOTUs = getNumOTUsCurrentProject();
+    if (expectedLoadFactor) {
+        var expectedLoadTime = numSamples * numOTUs / expectedLoadFactor;
+
+        if (expectedLoadTime > 1000) {
+            console.log("Expected load time is " + expectedLoadTime);
+            $("#progress").show();
+            $({property: 0}).animate({property: 75}, {
+                duration: expectedLoadTime,
+                step: function() {
+                    var p = Math.round(this.property);
+                    $('#progress').css('width',  p + "%");
+                },
+                complete: function() {
+                }
+            });
+        }
+    }
+
     $("#loading").show();
+    if (getNumSamplesCurrentProject() > 100) {
+        $("#large-data").show();
+    }
+    $("#editor :input").prop("disabled", true);
 }
 
 function hideLoading() {
     $("#loading").hide();
+    $("#large-data").hide();
+    $("#editor :input").prop("disabled", false);
+
+    var currentProgress = ($("#progress").width() / $('#progress').parent().width()) * 100;
+    $({property: currentProgress}).animate({property: 105}, {
+        duration: 500,
+        step: function() {
+            var p = Math.round(this.property);
+            $('#progress').css('width',  p + "%");
+        },
+        complete: function() {
+            setTimeout(function() {
+                $("#progress").hide();
+            }, 1000);
+        }
+    });
 }
 
 function hideNotifications() {
@@ -154,40 +202,55 @@ function showNoCatvar() {
 }
 
 function loadError() {
-    $("#loading").hide();
+    hideLoading();
     $("#display-error").show();
     $("#display-no-results").hide();
     $("#display-no-catvar").hide();
+    $("#display-no-tree").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
 }
 
 function loadNoResults() {
-    $("#loading").hide();
+    hideLoading();
     $("#display-error").hide();
     $("#display-no-results").show();
     $("#display-no-catvar").hide();
+    $("#display-no-tree").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
 }
 
 function loadSuccess() {
-    $("#loading").hide();
+    hideLoading();
     $("#display-error").hide();
     $("#display-no-results").hide();
     $("#display-no-catvar").hide();
+    $("#display-no-tree").hide();
     $("#download-container").show();
     $("#analysis-container").show();
     $("#stats-container").show();
 }
 
 function loadNoCatvar() {
-    $("#loading").hide();
+    hideLoading();
     $("#display-error").hide();
     $("#display-no-results").hide();
     $("#display-no-catvar").show();
+    $("#display-no-tree").hide();
+    $("#download-container").hide();
+    $("#analysis-container").hide();
+    $("#stats-container").hide();
+}
+
+function loadNoTree() {
+    hideLoading();
+    $("#display-error").hide();
+    $("#display-no-results").hide();
+    $("#display-no-catvar").hide();
+    $("#display-no-tree").show();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();

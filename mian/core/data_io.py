@@ -3,7 +3,6 @@ import os
 import logging
 from functools import lru_cache
 import numpy as np
-import pandas as pd
 
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, TAXONOMY_FILENAME, \
     SAMPLE_METADATA_FILENAME
@@ -49,15 +48,19 @@ class DataIO:
 
         return DataIO.tsv_to_table_from_path(csv_name, sep)
 
-    # @staticmethod
-    # def get_sep_type(csv_path):
-    #     sniffer = csv.Sniffer()
-    #     with open(csv_path) as f:
-    #         reader = csv.reader(f)
-    #         sample_row = next(reader)
-    #         dialect = sniffer.sniff(sample_row)
-    #         dialect.delimiter
-
+    @staticmethod
+    def text_from_path(user_id, pid, filename):
+        project_dir = os.path.dirname(__file__)
+        project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
+        project_dir = os.path.join(project_dir, "data")
+        project_dir = os.path.join(project_dir, user_id)
+        project_dir = os.path.join(project_dir, pid)
+        csv_name = os.path.join(project_dir, filename)
+        if not os.path.isfile(csv_name):
+            return ""
+        else:
+            with open(csv_name, 'r') as fn:
+                return fn.read().replace('\n', '')
 
     @staticmethod
     def tsv_to_table_from_path(csv_path, sep="\t"):

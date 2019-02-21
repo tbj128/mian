@@ -15,8 +15,11 @@ class Map(object):
         self.orig_otu_table_name = ""
         self.orig_taxonomy_name = ""
         self.orig_sample_metadata_name = ""
+        self.orig_phylogenetic_name = ""
         self.taxonomy_type = ""
         self.matrix_type = "int"
+        self.num_samples = 0
+        self.num_otus = 0
         self.shared = "no"
         self.load()
 
@@ -32,8 +35,11 @@ class Map(object):
                 self.orig_otu_table_name = map_from_json["orig_otu_table_name"]
                 self.orig_taxonomy_name = map_from_json["orig_taxonomy_name"]
                 self.orig_sample_metadata_name = map_from_json["orig_sample_metadata_name"]
+                self.orig_phylogenetic_name = map_from_json["orig_phylogenetic_name"] if "orig_phylogenetic_name" in map_from_json else ""
                 self.taxonomy_type = map_from_json["taxonomy_type"]
                 self.matrix_type = map_from_json["matrix_type"] if "matrix_type" in map_from_json else "int"
+                self.num_samples = map_from_json["num_samples"] if "num_samples" in map_from_json else 0
+                self.num_otus = map_from_json["num_otus"] if "num_otus" in map_from_json else 0
                 self.shared = map_from_json["shared"] if "shared" in map_from_json else "no"
 
     def save(self):
@@ -46,8 +52,11 @@ class Map(object):
             "orig_otu_table_name": self.orig_otu_table_name,
             "orig_taxonomy_name": self.orig_taxonomy_name,
             "orig_sample_metadata_name": self.orig_sample_metadata_name,
+            "orig_phylogenetic_name": self.orig_phylogenetic_name,
             "taxonomy_type": self.taxonomy_type,
             "matrix_type": self.matrix_type,
+            "num_samples": self.num_samples,
+            "num_otus": self.num_otus,
             "shared": self.shared
         }
 

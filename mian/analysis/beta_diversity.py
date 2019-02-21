@@ -12,6 +12,11 @@
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+import time
+
+from skbio import TreeNode
+from skbio.diversity import beta_diversity
+from io import StringIO
 
 from mian.analysis.analysis_base import AnalysisBase
 from mian.core.statistics import Statistics
@@ -28,13 +33,21 @@ class BetaDiversity(AnalysisBase):
 
     rcode = """
     
+    betaDiversityFromDistanceMatrix <- function(Habc, groups) {
+        dm <- as.dist(Habc)
+        mod <- betadisper(dm, groups)
+        distances = mod$distances
+        return(distances)
+    }
+    
     betaDiversity <- function(allOTUs, groups, method) {
         if (method == "bray") {
             Habc = vegdist(allOTUs, method=method)
     
             mod <- betadisper(Habc, groups)
             distances = mod$distances
-            return(distances)
+            
+            return(list(distances, anova(mod)))
         } else {
             abc <- betadiver(allOTUs, method=method)
             Habc = abc
@@ -44,7 +57,7 @@ class BetaDiversity(AnalysisBase):
     
             mod <- betadisper(Habc, groups)
             distances = mod$distances
-            return(distances)
+            return(list(distances, anova(mod)))
         }
     }
     
@@ -83,6 +96,7 @@ class BetaDiversity(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
+        table.load_phylogenetic_tree_if_exists()
 
         # No OTUs should be excluded for diversity analysis
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
@@ -95,13 +109,26 @@ class BetaDiversity(AnalysisBase):
 
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
 
-        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_to_metadata_map)
+        phylogenetic_tree = table.get_phylogenetic_tree()
 
-    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_from_metadata):
+        if user_request.get_custom_attr("api").lower() == "beta":
+            return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_to_metadata_map, phylogenetic_tree)
+        else:
+            return self.analyse_permanova(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_to_metadata_map)
+
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_from_metadata, phylogenetic_tree):
         if len(metadata_values) == 0:
             raise ValueError("Beta diversity can only be used when there are at least two groups to compare between")
 
+        print("Starting Beta Diversity Analyse")
+        print(time.ctime())
+
+        betaType = user_request.get_custom_attr("betaType")
+
         groups = robjects.FactorVector(robjects.StrVector(metadata_values))
+
+        print("DDD")
+        print(time.ctime())
 
         # Forms an OTU only table (without IDs)
         allOTUs = []
@@ -117,15 +144,52 @@ class BetaDiversity(AnalysisBase):
             allOTUs.append((headers[col], robjects.FloatVector(colVals)))
             col += 1
 
+        print(time.ctime())
+
         od = rlc.OrdDict(allOTUs)
         dataf = robjects.DataFrame(od)
 
-        betaType = user_request.get_custom_attr("betaType")
+        print("Before beta R code")
+        print(time.ctime())
 
-        # See: http://stackoverflow.com/questions/35410860/permanova-multivariate-spread-among-groups-is-not-similar-to-variance-homogeneit
-        vals = self.veganR.betaDiversity(dataf, groups, betaType)
+        dispersions = ""
+        vals = []
+        if betaType == "weighted_unifrac" or betaType == "unweighted_unifrac":
+            if phylogenetic_tree == "":
+                return {
+                    "no_tree": True
+                }
+
+            # TODO: Warn users
+            otu_table = otu_table.astype(int)
+
+            tree = TreeNode.read(StringIO(phylogenetic_tree))
+            dist_matrix = beta_diversity(betaType, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
+            dm = []
+            j = 0
+            while j < dist_matrix.shape[0]:
+                new_col = []
+                i = 0
+                while i < dist_matrix.shape[0]:
+                    new_col.append(dist_matrix[i][j])
+                    i += 1
+                dm.append((j, robjects.FloatVector(new_col)))
+                j += 1
+
+            dm = rlc.OrdDict(dm)
+            dist_matrix_df = robjects.DataFrame(dm)
+            vals = self.veganR.betaDiversityFromDistanceMatrix(dist_matrix_df, groups)
+
+        else:
+            # See: http://stackoverflow.com/questions/35410860/permanova-multivariate-spread-among-groups-is-not-similar-to-variance-homogeneit
+            raw_vals = self.veganR.betaDiversity(dataf, groups, betaType)
+            vals = raw_vals[0]
+            dispersions = raw_vals[1]
 
         # https://www.researchgate.net/post/What_can_I_infer_from_PERMANOVA_outputs_indicating_similarity_between_two_groups_but_the_PERMDISP2_outlining_differences_in_the_beta_diversity
+
+        print("After beta R code")
+        print(time.ctime())
 
         # Calculate the statistical p-value
         abundances = {}
@@ -150,14 +214,47 @@ class BetaDiversity(AnalysisBase):
         abundancesObj = {}
         abundancesObj["abundances"] = abundances
 
+        if betaType != "weighted_unifrac" and betaType != "unweighted_unifrac":
+            abundancesObj["dispersions"] = str(dispersions)
+        else:
+            abundancesObj["dispersions"] = ""
+        return abundancesObj
+
+    def analyse_permanova(self, user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_from_metadata):
+
+        print("Starting PERMANOVA")
+        groups = robjects.FactorVector(robjects.StrVector(metadata_values))
+
+        print("CCC")
+        print(time.ctime())
+
+        # Forms an OTU only table (without IDs)
+        allOTUs = []
+        col = 0
+        while col < len(otu_table[0]):
+            colVals = []
+            row = 0
+            while row < len(otu_table):
+                sampleID = sample_labels[row]
+                if sampleID in sample_ids_from_metadata:
+                    colVals.append(otu_table[row][col])
+                row += 1
+            allOTUs.append((headers[col], robjects.FloatVector(colVals)))
+            col += 1
+
+        print("Before PERM R code")
+        print(time.ctime())
+
+        od = rlc.OrdDict(allOTUs)
+        dataf = robjects.DataFrame(od)
+
         if strata_values is None:
             permanova = self.veganR.betaDiversityPERMANOVA(dataf, groups)
         else:
             strata = robjects.FactorVector(robjects.StrVector(strata_values))
             permanova = self.veganR.betaDiversityPERMANOVAWithStrata(dataf, groups, strata)
-
-        dispersions = self.veganR.betaDiversityDisper(dataf, groups, betaType)
+        abundancesObj = {}
         abundancesObj["permanova"] = str(permanova)
-        abundancesObj["dispersions"] = str(dispersions)
 
+        print("After PERM R code")
         return abundancesObj

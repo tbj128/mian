@@ -42,20 +42,19 @@ function customLoading() {}
 function renderTableView(table) {
 
     if (differentialDataTable) {
-        differentialDataTable.clear();
-    } else {
-        differentialDataTable = $("#table-view").DataTable({
-            order: [
-                [0, "asc"]
-            ],
-            columns: table[0].map(t => {
-                return {
-                    title: t
-                }
-            }),
-            data: table.slice(1)
-        });
+        differentialDataTable.destroy();
     }
+    differentialDataTable = $("#table-view").DataTable({
+        order: [
+            [0, "asc"]
+        ],
+        columns: table[0].map(t => {
+            return {
+                title: t
+            }
+        }),
+        data: table.slice(1)
+    });
     tableResults = table;
 }
 

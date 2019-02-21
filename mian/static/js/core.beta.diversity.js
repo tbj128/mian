@@ -2,6 +2,8 @@
 // Beta Diversity Boxplot JS Component
 // ============================================================
 
+var expectedLoadFactor = 100;
+
 //
 // Initialization
 //
@@ -47,7 +49,9 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
+    $("#permanova-loading").show();
+    $("#permanova").empty();
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -85,17 +89,34 @@ function updateAnalysis() {
         data: data,
         success: function(result) {
             var abundancesObj = JSON.parse(result);
-            if ($.isEmptyObject(abundancesObj.abundances)) {
+            if (abundancesObj["no_tree"]) {
+                loadNoTree();
+            } else if ($.isEmptyObject(abundancesObj.abundances)) {
                 loadNoResults();
             } else {
                 loadSuccess();
                 renderBoxplots(abundancesObj);
-                renderPERMANOVA(abundancesObj);
                 renderBetadisper(abundancesObj);
+                $("#permanova-container").show();
             }
         },
         error: function(err) {
             loadError();
+            console.log(err);
+        }
+    });
+
+    $.ajax({
+        type: "POST",
+        url: getSharedPrefixIfNeeded() + "/beta_diversity_permanova" + getSharedUserProjectSuffixIfNeeded(),
+        data: data,
+        success: function(result) {
+            var abundancesObj = JSON.parse(result);
+            renderPERMANOVA(abundancesObj);
+        },
+        error: function(err) {
+            $("#permanova-container").hide();
+            $("#permanova-loading").hide();
             console.log(err);
         }
     });
@@ -107,6 +128,7 @@ function renderPERMANOVA(abundancesObj) {
     permanova = permanova.replace(/(?:\r\n|\r|\n)/g, "<br />");
     permanova = permanova.replace(/<br \/><br \/>/g, "<br />");
     $("#permanova").html(permanova);
+    $("#permanova-loading").hide();
     $("#permanova-container").fadeIn(250);
 }
 

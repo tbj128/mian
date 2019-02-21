@@ -46,19 +46,22 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Diversity Index <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Index" data-content="Indicate the method by which the alpha diversity should be calculated. More information on the different diversity types can be found <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a>"></i></label>
+                <label class="control-label">Diversity Index <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Index" data-content="Indicate the method by which the alpha diversity should be calculated. More information on the different diversity types can be found <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a><br /><br />Faith's Phylogenetic Diversity is a taxonomic richness analogue based on the phylogenetic tree"></i></label>
                 <select id="alphaType" name="alphaType" class="form-control">
                     <option value="shannon">Shannon</option>
                     <option value="simpson">Simpson</option>
                     <option value="invsimpson">Inverse Simpson</option>
+                    <option value="faith_pd">Faith's Phylogenetic Diversity</option>
                 </select>
 
-                <label class="control-label">Diversity Context  <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Context" data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>Species Number</strong> The number of unique species within each sample</li></ul>"></i></label>
-                <select id="alphaContext" name="alphaContext" class="form-control">
-                    <option value="alpha">Alpha Diversity</option>
-                    <option value="evenness">Evenness</option>
-                    <option value="speciesnumber">Species Number</option>
-                </select>
+                <div id="alphaContextContainer">
+                    <label class="control-label">Diversity Context  <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Context" data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>Species Number</strong> The number of unique species within each sample</li></ul>"></i></label>
+                    <select id="alphaContext" name="alphaContext" class="form-control">
+                        <option value="alpha">Alpha Diversity</option>
+                        <option value="evenness">Evenness</option>
+                        <option value="speciesnumber">Species Number</option>
+                    </select>
+                </div>
 
                 {% include 'filtering_options_statistical_test.html' %}
               </div>

@@ -5,6 +5,7 @@ var statsTypes = {
     wilcoxon: "Wilcoxon Rank-Sum",
     ttest: "Welch's T-Test"
 };
+var expectedLoadFactor = 712;
 
 //
 // Initialization
@@ -22,6 +23,9 @@ createSpecificListeners();
 function initializeFields() {
     if (getParameterByName("alphaType") !== null) {
         $("#alphaType").val(getParameterByName("alphaType"));
+        if (getParameterByName("alphaType") === "faith_pd") {
+            $("#alphaContextContainer").hide();
+        }
     }
     if (getParameterByName("alphaContext") !== null) {
         $("#alphaContext").val(getParameterByName("alphaContext"));
@@ -41,6 +45,12 @@ function createSpecificListeners() {
 
     $("#alphaType").change(function() {
         updateAnalysis();
+
+        if ($("#alphaType").val() === "faith_pd") {
+            $("#alphaContextContainer").hide();
+        } else {
+            $("#alphaContextContainer").show();
+        }
     });
 
     $("#alphaContext").change(function() {
@@ -79,7 +89,8 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 function updateAnalysis() {
-    showLoading();
+
+    showLoading(expectedLoadFactor);
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
@@ -119,7 +130,9 @@ function updateAnalysis() {
         success: function(result) {
             $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
             var abundancesObj = JSON.parse(result);
-            if ($.isEmptyObject(abundancesObj.abundances)) {
+            if (abundancesObj["no_tree"]) {
+                loadNoTree();
+            } else if ($.isEmptyObject(abundancesObj.abundances)) {
                 loadNoResults();
             } else {
                 loadSuccess();

@@ -16,6 +16,7 @@ class TestAlphaDiversity(unittest.TestCase):
         user_request.set_custom_attr("alphaType", "shannon")
         user_request.set_custom_attr("alphaContext", "evenness")
         user_request.set_custom_attr("statisticalTest", "ttest")
+        user_request.set_custom_attr("phylogenetic_tree", "")
 
         otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
@@ -23,7 +24,7 @@ class TestAlphaDiversity(unittest.TestCase):
         sample_ids_from_metadata = AnalysisTestUtils.get_sample_ids_from_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
 
         plugin = AlphaDiversity()
-        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_from_metadata)
+        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_from_metadata, "")
         print(json.dumps(actual_output))
 
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,

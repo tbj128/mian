@@ -20,8 +20,6 @@
             <li><a class="nav-link" href="/share/correlations">Simple Correlation</a></li>
             <li><a class="nav-link" href="/share/correlation_network">Correlation Network</a></li>
             <li><a class="nav-link" href="/share/heatmap">Heatmap</a></li>
-            <li><a class="nav-link" href="/share/nmds">NMDS</a></li>
-            <li><a class="nav-link" href="/share/pca">PCA</a></li>
             <li><a class="nav-link" href="/share/rarefaction">Rarefaction Curves</a></li>
             <li><a class="nav-link" href="/share/tree">Tree</a></li>
             <li><a class="nav-link" href="/share/table">Table</a></li>
@@ -31,8 +29,6 @@
             <li><a class="nav-link" href="/correlations">Simple Correlation</a></li>
             <li><a class="nav-link" href="/correlation_network">Correlation Network</a></li>
             <li><a class="nav-link" href="/heatmap">Heatmap</a></li>
-            <li><a class="nav-link" href="/nmds">NMDS</a></li>
-            <li><a class="nav-link" href="/pca">PCA</a></li>
             <li><a class="nav-link" href="/rarefaction">Rarefaction Curves</a></li>
             <li><a class="nav-link" href="/tree">Tree</a></li>
             <li><a class="nav-link" href="/table">Table</a></li>
@@ -47,9 +43,13 @@
             {% if share %}
             <li><a class="nav-link" href="/share/alpha_diversity">Alpha Diversity</a></li>
             <li><a class="nav-link" href="/share/beta_diversity">Beta Diversity</a></li>
+            <li><a class="nav-link" href="/share/nmds">NMDS</a></li>
+            <li><a class="nav-link" href="/share/pca">PCA</a></li>
             {% else %}
             <li><a class="nav-link" href="/alpha_diversity">Alpha Diversity</a></li>
             <li><a class="nav-link" href="/beta_diversity">Beta Diversity</a></li>
+            <li><a class="nav-link" href="/nmds">NMDS</a></li>
+            <li><a class="nav-link" href="/pca">PCA</a></li>
             {% endif %}
           </ul>
         </li>
@@ -90,3 +90,7 @@
     </div><!--/.nav-collapse -->
   </div>
 </nav>
+<div id="progress" class="waiting">
+    <dt></dt>
+    <dd></dd>
+</div>

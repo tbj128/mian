@@ -18,7 +18,7 @@ from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, \
     SUBSAMPLED_OTU_TABLE_FILENAME, BIOM_FILENAME, TAXONOMY_FILENAME, SAMPLE_METADATA_FILENAME, \
-    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, SUBSAMPLE_TYPE_DISABLED
+    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, SUBSAMPLE_TYPE_DISABLED, PHYLOGENETIC_FILENAME
 import csv
 import os
 import re
@@ -50,7 +50,9 @@ class ProjectManager(object):
         self.user_id = user_id
 
     def get_file_for_download(self, project_name, type):
-        if type == "sample_metadata":
+        if type == "phylogenetic":
+            return DataIO.tsv_to_table(self.user_id, project_name, PHYLOGENETIC_FILENAME)
+        elif type == "sample_metadata":
             return DataIO.tsv_to_table(self.user_id, project_name, SAMPLE_METADATA_FILENAME)
         elif type == "taxonomy":
             return DataIO.tsv_to_table(self.user_id, project_name, TAXONOMY_FILENAME)
@@ -87,7 +89,7 @@ class ProjectManager(object):
 
 
     def create_project_from_tsv(self, project_name, otu_filename, taxonomy_filename, sample_metadata_filename,
-                                subsample_type="auto", subsample_to=0):
+                                phylogenetic_filename, subsample_type="auto", subsample_to=0):
 
         # Creates a directory for this project
         pid = str(uuid.uuid4())
@@ -104,6 +106,9 @@ class ProjectManager(object):
         os.rename(os.path.join(user_staging_dir, taxonomy_filename), os.path.join(project_dir, TAXONOMY_FILENAME))
         os.rename(os.path.join(user_staging_dir, sample_metadata_filename),
                   os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
+        if phylogenetic_filename != "":
+            os.rename(os.path.join(user_staging_dir, phylogenetic_filename),
+                      os.path.join(project_dir, PHYLOGENETIC_FILENAME))
 
         sample_ids_from_sample_metadata = {}
         sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME)
@@ -180,10 +185,13 @@ class ProjectManager(object):
         map_file.orig_otu_table_name = otu_filename
         map_file.orig_sample_metadata_name = sample_metadata_filename
         map_file.orig_taxonomy_name = taxonomy_filename
+        map_file.orig_phylogenetic_name = phylogenetic_filename
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_value
         map_file.subsampled_removed_samples = samples_removed
         map_file.matrix_type = matrix_type
+        map_file.num_samples = len(sample_labels)
+        map_file.num_otus = len(headers)
         map_file.save()
 
         return pid, ""
@@ -291,7 +299,7 @@ class ProjectManager(object):
 
         return otus_from_taxonomy_file
 
-    def create_project_from_biom(self, project_name, biom_name, subsample_type="auto", subsample_to=0):
+    def create_project_from_biom(self, project_name, biom_name, phylogenetic_filename, subsample_type="auto", subsample_to=0):
         """
         Reads a .biom from a provided file location and converts it into a mian-compatible TSV file
 
@@ -308,7 +316,7 @@ class ProjectManager(object):
             raise Exception("Cannot create project folder as it already exists")
 
         try:
-            status, message = self.__process_biom_file(pid, project_dir, project_name, biom_name, subsample_type, subsample_to)
+            status, message = self.__process_biom_file(pid, project_dir, project_name, biom_name, phylogenetic_filename, subsample_type, subsample_to)
             if status != OK:
                 # Removes the project directory since the files in it are invalid
                 shutil.rmtree(project_dir, ignore_errors=True)
@@ -320,13 +328,18 @@ class ProjectManager(object):
             shutil.rmtree(project_dir, ignore_errors=True)
             return BIOM_ERROR, ""
 
-    def __process_biom_file(self, pid, project_dir, project_name, biom_name, subsample_type="auto", subsample_to=0):
+    def __process_biom_file(self, pid, project_dir, project_name, biom_name, phylogenetic_filename, subsample_type="auto", subsample_to=0):
         # Renames the uploaded file to a standard file schema and moves to the project directory
         biom_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
         biom_staging_dir = os.path.join(biom_staging_dir, biom_name)
         biom_project_dir = os.path.join(project_dir, BIOM_FILENAME)
         os.rename(biom_staging_dir, biom_project_dir)
         logger.info("Moved " + str(biom_staging_dir) + " to " + str(biom_project_dir))
+
+        # Move the phylogenetic tree to the correction location
+        if phylogenetic_filename != "":
+            os.rename(os.path.join(biom_staging_dir, phylogenetic_filename),
+                      os.path.join(project_dir, PHYLOGENETIC_FILENAME))
 
         # Extracts the OTU table from the biom file and saves the raw OTU file
         biom_path = os.path.join(project_dir, BIOM_FILENAME)
@@ -479,11 +492,14 @@ class ProjectManager(object):
         map_file = Map(self.user_id, pid)
         map_file.project_name = project_name
         map_file.orig_biom_name = biom_name
+        map_file.orig_phylogenetic_name = phylogenetic_filename
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_to
         map_file.subsampled_removed_samples = samples_removed
         map_file.taxonomy_type = taxonomy_type
         map_file.matrix_type = matrix_type
+        map_file.num_samples = len(sample_labels)
+        map_file.num_otus = len(headers)
         map_file.save()
 
         return OK, ""

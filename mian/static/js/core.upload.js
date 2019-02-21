@@ -180,6 +180,10 @@ $(document).ready(function() {
             $("#otuMetadataLoading").show();
             filename = $("#otuMetadata").val();
         }
+        if (formID == "phylogeneticForm") {
+            $("#phylogeneticLoading").show();
+            filename = $("#phylogenetic").val();
+        }
 
         filename = filename.split(/(\\|\/)/g).pop();
 
@@ -219,6 +223,12 @@ $(document).ready(function() {
                     $("#otuMetadataText").text("Replace");
                     $("#projectSampleIDName").val(filename);
                     otuMetadataUploaded = true;
+                }
+                if (formID == "phylogeneticForm") {
+                    $("#phylogeneticLoading").hide();
+                    $("#phylogeneticOK").show();
+                    $("#phylogeneticText").text("Replace");
+                    $("#projectPhylogeneticName").val(filename);
                 }
 
                 checkComplete();

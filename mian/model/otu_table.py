@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, \
-    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
+    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, PHYLOGENETIC_FILENAME
 from mian.core.data_io import DataIO
 from mian.model.metadata import Metadata
 from mian.model.taxonomy import Taxonomy
@@ -22,6 +22,7 @@ class OTUTable(object):
         self.pid = ""
         self.sample_metadata = ""
         self.otu_metadata = ""
+        self.phylogenetic_tree = ""
         self.table = []
         self.headers = []
         self.sample_labels = []
@@ -49,6 +50,9 @@ class OTUTable(object):
             self.headers = labels[0]
             self.sample_labels = labels[1]
         logger.info("Finished table loading")
+
+    def load_phylogenetic_tree_if_exists(self):
+        self.phylogenetic_tree = DataIO.text_from_path(self.user_id, self.pid, PHYLOGENETIC_FILENAME)
 
     def get_table(self):
         return self.table
@@ -103,6 +107,9 @@ class OTUTable(object):
 
     def get_sample_metadata(self):
         return self.sample_metadata
+
+    def get_phylogenetic_tree(self):
+        return self.phylogenetic_tree
 
     def filter_otu_table_by_metadata(self, base, headers, sample_labels, user_request):
         """

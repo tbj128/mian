@@ -28,6 +28,9 @@ function initializeFields() {
     if (getParameterByName("numberAxes") !== null) {
         $("#numberAxes").val(getParameterByName("numberAxes"));
     }
+    if (getParameterByName("type") !== null) {
+        $("#type").val(getParameterByName("type"));
+    }
     if (getParameterByName("pca1") !== null) {
         $("#pca1").val(getParameterByName("pca1"));
     }
@@ -50,6 +53,10 @@ function initializeFields() {
 //
 function createSpecificListeners() {
     $("#catvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#type").change(function() {
         updateAnalysis();
     });
 
@@ -975,6 +982,7 @@ function updateAnalysis() {
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
+    var type = $("#type").val();
     var pca1 = $("#pca1").val();
     var pca2 = $("#pca2").val();
     var pca3 = $("#pca3").val();
@@ -989,6 +997,7 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         level: level,
         catvar: catvar,
+        type: type,
         pca1: pca1,
         pca2: pca2,
         pca3: pca3
@@ -1001,14 +1010,20 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/pca" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
-            loadSuccess();
-            $("#variance-container").show();
-
             abundancesObj = JSON.parse(result);
-            boundX = [];
-            boundY = [];
+            if (abundancesObj["no_tree"]) {
+                loadNoTree();
+                $("#analysis-container-2d").hide();
+                $("#analysis-container-3d-info").hide();
+                $("#variance-container").hide();
+            } else {
+                loadSuccess();
+                $("#variance-container").show();
+                boundX = [];
+                boundY = [];
 
-            render();
+                render();
+            }
         },
         error: function(err) {
             loadError();

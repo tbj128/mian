@@ -187,6 +187,13 @@
                         </td>
                         <td class="col-md-3">BIOM File</td>
                       </tr>
+                      {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
+                        <tr>
+                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>
+                          <td class="subsampleDisplayContainer"></td>
+                          <td>Phylogenetic Tree</td>
+                        </tr>
+                      {% endif %}
                     </tbody>
                   </table>
                 </div>
@@ -251,6 +258,13 @@
                         <td class="subsampleDisplayContainer"></td> 
                         <td>Metadata</td>
                       </tr>
+                      {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
+                        <tr>
+                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>
+                          <td class="subsampleDisplayContainer"></td>
+                          <td>Phylogenetic Tree</td>
+                        </tr>
+                      {% endif %}
                     </tbody> 
                   </table>
                 </div>

@@ -75,6 +75,15 @@
                 <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
+
+                <label class="control-label">Distance Metric <i class="fa fa-info-circle" data-toggle="popover" data-title="Dissimilarity Distance" data-content="Choose to show either a 2D plot or a 3D plot"></i></label>
+                <select id="type" name="type" class="form-control">
+                    <option value="braycurtis">Bray-Curtis</option>
+                    <option value="jaccard">Jaccard</option>
+                    <option value="weighted_unifrac">Weighted Unifrac</option>
+                    <option value="unweighted_unifrac">Unweighted Unifrac</option>
+                    <option value="euclidean">Euclidean</option>
+                </select>
               </div>
             </div>
         </div>
@@ -82,6 +91,19 @@
 </div>
 
 <div class="content-wrapper">
+    <div id="display-no-tree" class="display-notification project-empty" style="display:none;">
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>No Phylogenetic Tree For This Project</h3>
+                <p>
+                    The Unifrac distance metric requires a phylogenetic tree with the OTUs as the leaf nodes. Create a new project with a phylogenetic tree and try again. This tree can be generated in OTU picking pipelines <a href="http://qiime.org/scripts/make_phylogeny.html">like Qiime</a>.
+                </p>
+            </div>
+        </div>
+    </div>
     {% include 'notifications.html' %}
     {% include 'download_container.html' %}
 

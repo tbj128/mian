@@ -43,6 +43,7 @@ function renderTableView(table) {
 
     if (differentialDataTable) {
         differentialDataTable.destroy();
+        $('#table-view').empty();
     }
     differentialDataTable = $("#table-view").DataTable({
         order: [

@@ -132,6 +132,8 @@ function updateAnalysis() {
             var abundancesObj = JSON.parse(result);
             if (abundancesObj["no_tree"]) {
                 loadNoTree();
+            } else if (abundancesObj["has_float"]) {
+                loadFloatDataWarning();
             } else if ($.isEmptyObject(abundancesObj.abundances)) {
                 loadNoResults();
             } else {

@@ -126,7 +126,10 @@ function renderCorrelationsSelection(abundancesObj) {
                 [2, "asc"]
             ],
             columns: [{
-                    data: "otu"
+                    data: "otu",
+                    fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
+                        $(nTd).html("<a href='"+ shareToBoxplotLink(oData.otu) + "' target='_blank'>" + oData.otu + "</a>");
+                    }
                 },
                 {
                     data: "coef"

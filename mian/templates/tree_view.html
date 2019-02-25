@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Tree View - Mian</title>
+    <title>Taxonomic Tree View - Mian</title>
 </head>
 
 <style>
@@ -52,7 +52,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Tree View <i class="fa fa-info-circle" data-toggle="popover" data-title="Tree View" data-html="true" data-content="Renders a taxonomic tree up until the specified taxonomic level. At the lowest taxonomic level, the tree shows either the non-zero count or the mean/median/max abundances of all OTU-Samples that fall under the taxonomic group. <br /><br />Because each taxonomic group can contain one or more OTUs, the OTU-Sample unit is defined as the product of the number of OTUs under the taxonomic group and the number of samples." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Taxonomic Tree View <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Tree View" data-html="true" data-content="Renders a taxonomic tree up until the specified taxonomic level. At the lowest taxonomic level, the tree shows either the non-zero count or the mean/median/max abundances of all OTU-Samples that fall under the taxonomic group. <br /><br />Because each taxonomic group can contain one or more OTUs, the OTU-Sample unit is defined as the product of the number of OTUs under the taxonomic group and the number of samples." data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 

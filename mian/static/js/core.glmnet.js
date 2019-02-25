@@ -164,7 +164,7 @@ function renderGlmnetTable(abundancesObj) {
 
             value.forEach(function(val) {
                 if (val[1] !== 1) {
-                    render += "<tr><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>";
+                    render += "<tr><td><a href='" + shareToBoxplotLink(val[0]) + "' target='_blank'>" + val[0] + "</a></td><td>" + val[1] + "</td></tr>";
                     tableResults.push([val[0], val[1]]);
                     emptyTable = false;
                 }
@@ -177,7 +177,7 @@ function renderGlmnetTable(abundancesObj) {
 
             value.forEach(function(val) {
                 if (val[1] !== 0) {
-                    render += "<tr><td>" + val[0] + "</td><td>" + val[1] + "</td></tr>";
+                    render += "<tr><td><a href='" + shareToBoxplotLink(val[0]) + "' target='_blank'>" + val[0] + "</a></td><td>" + val[1] + "</td></tr>";
                     tableResults.push([val[0], val[1]]);
                     emptyTable = false;
                 }

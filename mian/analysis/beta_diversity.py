@@ -19,9 +19,9 @@ from skbio.diversity import beta_diversity
 from io import StringIO
 
 from mian.analysis.analysis_base import AnalysisBase
-from mian.core.statistics import Statistics
 
 from mian.model.otu_table import OTUTable
+from mian.model.map import Map
 
 
 class BetaDiversity(AnalysisBase):
@@ -121,14 +121,10 @@ class BetaDiversity(AnalysisBase):
             raise ValueError("Beta diversity can only be used when there are at least two groups to compare between")
 
         print("Starting Beta Diversity Analyse")
-        print(time.ctime())
 
         betaType = user_request.get_custom_attr("betaType")
 
         groups = robjects.FactorVector(robjects.StrVector(metadata_values))
-
-        print("DDD")
-        print(time.ctime())
 
         # Forms an OTU only table (without IDs)
         allOTUs = []
@@ -144,27 +140,31 @@ class BetaDiversity(AnalysisBase):
             allOTUs.append((headers[col], robjects.FloatVector(colVals)))
             col += 1
 
-        print(time.ctime())
-
         od = rlc.OrdDict(allOTUs)
         dataf = robjects.DataFrame(od)
 
-        print("Before beta R code")
-        print(time.ctime())
-
         dispersions = ""
         vals = []
-        if betaType == "weighted_unifrac" or betaType == "unweighted_unifrac":
-            if phylogenetic_tree == "":
+        if betaType == "weighted_unifrac" or betaType == "unweighted_unifrac" or betaType == "jaccard":
+            if (betaType == "weighted_unifrac" or betaType == "unweighted_unifrac") and phylogenetic_tree == "":
                 return {
                     "no_tree": True
                 }
 
-            # TODO: Warn users
+            project_map = Map(user_request.user_id, user_request.pid)
+            if project_map.matrix_type == "float":
+                return {
+                    "has_float": True
+                }
+
             otu_table = otu_table.astype(int)
 
-            tree = TreeNode.read(StringIO(phylogenetic_tree))
-            dist_matrix = beta_diversity(betaType, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
+            if (betaType == "weighted_unifrac" or betaType == "unweighted_unifrac"):
+                tree = TreeNode.read(StringIO(phylogenetic_tree))
+                dist_matrix = beta_diversity(betaType, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
+            else:
+                dist_matrix = beta_diversity(betaType, otu_table)
+
             dm = []
             j = 0
             while j < dist_matrix.shape[0]:
@@ -187,9 +187,6 @@ class BetaDiversity(AnalysisBase):
             dispersions = raw_vals[1]
 
         # https://www.researchgate.net/post/What_can_I_infer_from_PERMANOVA_outputs_indicating_similarity_between_two_groups_but_the_PERMDISP2_outlining_differences_in_the_beta_diversity
-
-        print("After beta R code")
-        print(time.ctime())
 
         # Calculate the statistical p-value
         abundances = {}
@@ -225,9 +222,6 @@ class BetaDiversity(AnalysisBase):
         print("Starting PERMANOVA")
         groups = robjects.FactorVector(robjects.StrVector(metadata_values))
 
-        print("CCC")
-        print(time.ctime())
-
         # Forms an OTU only table (without IDs)
         allOTUs = []
         col = 0
@@ -242,9 +236,6 @@ class BetaDiversity(AnalysisBase):
             allOTUs.append((headers[col], robjects.FloatVector(colVals)))
             col += 1
 
-        print("Before PERM R code")
-        print(time.ctime())
-
         od = rlc.OrdDict(allOTUs)
         dataf = robjects.DataFrame(od)
 
@@ -256,5 +247,4 @@ class BetaDiversity(AnalysisBase):
         abundancesObj = {}
         abundancesObj["permanova"] = str(permanova)
 
-        print("After PERM R code")
         return abundancesObj

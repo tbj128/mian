@@ -16,21 +16,25 @@
           <ul class="dropdown-menu">
             {% if share %}
             <li><a class="nav-link" href="/share/boxplots">Boxplots</a></li>
-            <li><a class="nav-link" href="/share/composition">Composition</a></li>
-            <li><a class="nav-link" href="/share/correlations">Simple Correlation</a></li>
+            <li><a class="nav-link" href="/share/composition_bar">Stacked Barplot (Composition)</a></li>
+            <li><a class="nav-link" href="/share/composition_donut">Donut (Composition)</a></li>
+            <li><a class="nav-link" href="/share/composition_heatmap">Heatmap (Composition)</a></li>
+            <li><a class="nav-link" href="/share/heatmap">Heatmap (Correlation)</a></li>
+            <li><a class="nav-link" href="/share/correlations">Scatterplot (Correlation)</a></li>
             <li><a class="nav-link" href="/share/correlation_network">Correlation Network</a></li>
-            <li><a class="nav-link" href="/share/heatmap">Heatmap</a></li>
             <li><a class="nav-link" href="/share/rarefaction">Rarefaction Curves</a></li>
-            <li><a class="nav-link" href="/share/tree">Tree</a></li>
+            <li><a class="nav-link" href="/share/tree">Taxonomic Tree</a></li>
             <li><a class="nav-link" href="/share/table">Table</a></li>
             {% else %}
             <li><a class="nav-link" href="/boxplots">Boxplots</a></li>
-            <li><a class="nav-link" href="/composition">Composition</a></li>
-            <li><a class="nav-link" href="/correlations">Simple Correlation</a></li>
+            <li><a class="nav-link" href="/composition_bar">Barplot (Composition)</a></li>
+            <li><a class="nav-link" href="/composition_donut">Donut (Composition)</a></li>
+            <li><a class="nav-link" href="/composition_heatmap">Heatmap (Composition)</a></li>
+            <li><a class="nav-link" href="/heatmap">Heatmap (Correlation)</a></li>
+            <li><a class="nav-link" href="/correlations">Scatterplot (Correlation)</a></li>
             <li><a class="nav-link" href="/correlation_network">Correlation Network</a></li>
-            <li><a class="nav-link" href="/heatmap">Heatmap</a></li>
             <li><a class="nav-link" href="/rarefaction">Rarefaction Curves</a></li>
-            <li><a class="nav-link" href="/tree">Tree</a></li>
+            <li><a class="nav-link" href="/tree">Taxonomic Tree</a></li>
             <li><a class="nav-link" href="/table">Table</a></li>
             {% endif %}
           </ul>
@@ -90,7 +94,7 @@
     </div><!--/.nav-collapse -->
   </div>
 </nav>
-<div id="progress" class="waiting">
+<div id="progress" class="waiting" style="display:none;">
     <dt></dt>
     <dd></dd>
 </div>

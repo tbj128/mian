@@ -383,15 +383,37 @@ def boxplots_share():
     return render_sharing('boxplots.html', request)
 
 
-@app.route('/composition')
+@app.route('/composition_bar')
 @flask_login.login_required
-def composition():
-    return render_normal('composition.html', request)
+def compositionBar():
+    return render_normal('composition_bar.html', request)
 
 
-@app.route('/share/composition')
-def composition_share():
-    return render_sharing('composition.html', request)
+@app.route('/share/composition_bar')
+def compositionBar_share():
+    return render_sharing('composition_bar.html', request)
+
+
+@app.route('/composition_donut')
+@flask_login.login_required
+def compositionDonut():
+    return render_normal('composition_donut.html', request)
+
+
+@app.route('/share/composition_donut')
+def compositionDonut_share():
+    return render_sharing('composition_donut.html', request)
+
+
+@app.route('/composition_heatmap')
+@flask_login.login_required
+def compositionHeatmap():
+    return render_normal('composition_heatmap.html', request)
+
+
+@app.route('/share/composition_heatmap')
+def compositionHeatmap_share():
+    return render_sharing('composition_heatmap.html', request)
 
 
 @app.route('/correlations')
@@ -883,7 +905,7 @@ def getBoxplots(user_request, req):
 @flask_login.login_required
 def getCompositionSecure():
     user_request = __get_user_request(request)
-    return getComposition(user_request)
+    return getComposition(user_request, request)
 
 
 @app.route('/share/composition', methods=['POST'])
@@ -891,13 +913,15 @@ def getCompositionShare():
     if checkSharedValidity(request):
         uid = request.args.get('uid', '')
         user_request = __get_user_request(request, user=uid)
-        return getComposition(user_request)
+        return getComposition(user_request, request)
     else:
         abortNotShared()
 
 
-def getComposition(user_request):
+def getComposition(user_request, req):
     plugin = Composition()
+    user_request.set_custom_attr("plotType", req.form['plotType'])
+    user_request.set_custom_attr("xaxis", req.form['xaxis'])
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 

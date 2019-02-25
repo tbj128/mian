@@ -1,4 +1,4 @@
-// ============================================================
+ // ============================================================
 // Random Forest JS Component
 // ============================================================
 
@@ -167,7 +167,7 @@ function renderBorutaTable(abundancesObj) {
                 row.push("");
             } else {
                 var head = stats[keys[k]].shift();
-                newRow += "<td>" + head + "</td>";
+                newRow += "<td><a href='" + shareToBoxplotLink(head) + "' target='_blank'>" + head + "</a></td>";
                 empty = false;
                 row.push(head);
             }

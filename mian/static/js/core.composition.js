@@ -3,7 +3,8 @@
 // ============================================================
 
 // Global variables storing the data
-var uniqueCatvarVals = [];
+var uniqueGroupVals = [];
+var idMap = {};
 
 //
 // Initialization
@@ -22,6 +23,15 @@ function initializeFields() {
     if (getParameterByName("plotType") !== null) {
         $("#plotType").val(getParameterByName("plotType"));
     }
+    if (getParameterByName("xaxis") !== null) {
+        $("#xaxis").val(getParameterByName("xaxis"));
+    }
+    if (getParameterByName("showlabels") !== null) {
+        $("#showlabels").val(getParameterByName("showlabels"));
+    }
+    if (getParameterByName("colorscheme") !== null) {
+        $("#colorscheme").val(getParameterByName("colorscheme"));
+    }
 }
 
 //
@@ -29,7 +39,6 @@ function initializeFields() {
 //
 function createSpecificListeners() {
     $("#catvar").change(function() {
-        $("#catvar").prepend("<option value='All'>None</option>");
         updateAnalysis();
     });
 
@@ -37,16 +46,31 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#showlabels").change(function() {
+        updateAnalysis();
+    });
+
+    $("#colorscheme").change(function() {
+        updateAnalysis();
+    });
+
+    $("#xaxis").change(function() {
+        updateAnalysis();
+    });
+
     $("#download-svg").click(function() {
-        download();
+        downloadSVG("composition." + $("#catvar").val());
     });
 }
 
 //
 // Analysis Specific Methods
 //
-function customLoading() {
-    $("#catvar").prepend("<option value='All'>None</option>");
+function customCatVarCallback() {
+    $('#catvar option:first').after("<option value='SampleID'>Sample ID</option>");
+    if ($("#plotType").val() === "heatmap") {
+        $("#catvar").val("SampleID");
+    }
 }
 
 function getTaxonomicLevel() {
@@ -79,8 +103,16 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         level: level,
         catvar: catvar,
-        plotType: $("#plotType").val()
+        plotType: $("#plotType").val(),
+        xaxis: $("#xaxis").val()
     };
+    if ($("#colorscheme").length) {
+        data["colorscheme"] = $("#colorscheme").val();
+    }
+    if ($("#showlabels").length) {
+        data["showlabels"] = $("#showlabels").val();
+    }
+
 
     setGetParameters(data);
 
@@ -90,12 +122,14 @@ function updateAnalysis() {
         data: data,
         success: function(result) {
             var abundancesObj = JSON.parse(result);
-            if (abundancesObj["abundances"].length === 0) {
+            if ((abundancesObj["abundances"] && abundancesObj["abundances"].length === 0) || (abundancesObj["row_headers"] && abundancesObj["row_headers"].length === 0)) {
                 loadNoResults();
             } else {
                 loadSuccess();
-                if ($("#plotType").val() == "bar") {
-                    renderBarplot(abundancesObj);
+                if ($("#plotType").val() === "stackedbar") {
+                    renderStackedBarplot(abundancesObj);
+                } else if ($("#plotType").val() === "heatmap") {
+                    renderHeatmap(abundancesObj, abundancesObj["min"], abundancesObj["max"]);
                 } else {
                     renderDonut(abundancesObj);
                 }
@@ -108,11 +142,14 @@ function updateAnalysis() {
     });
 }
 
-function renderBarplot(abundancesObj) {
+
+function renderStackedBarplot(abundancesObj) {
     $("#analysis-container").empty();
 
     var data = abundancesObj["abundances"];
-    uniqueCatvarVals = abundancesObj["metaVals"];
+    uniqueGroupVals = abundancesObj["uniqueVals"].map(tuple => tuple[0]);
+    idMap = abundancesObj["idMap"];
+
     var uniqueTaxas = data.map(function(d) {
         return d.t;
     });
@@ -124,20 +161,19 @@ function renderBarplot(abundancesObj) {
     var margin = {
             top: 20,
             right: 20,
-            bottom: 30,
+            bottom: 160,
             left: 56
         },
-        width =
-        Math.max(120, 24 * uniqueCatvarVals.length + 16) * uniqueTaxas.length -
-        margin.left -
-        margin.right,
+        legendMargin = 80,
+        legendWidth = 160,
+        width = 20 * uniqueTaxas.length,
         height = 500 - margin.top - margin.bottom,
-        barWidth = 24;
+        barWidth = 12;
 
     var xScaleTax = d3.scale
         .ordinal()
         .domain(uniqueTaxas)
-        .rangeRoundBands([0, width]),
+        .rangeRoundBands([0, width], 0),
         xScaleCatvar = d3.scale.ordinal(),
         xAxis = d3.svg
         .axis()
@@ -154,19 +190,20 @@ function renderBarplot(abundancesObj) {
         .scale(xScaleTaxForLabels)
         .orient("bottom");
     xScaleCatvar
-        .domain(uniqueCatvarVals)
+        .domain(uniqueGroupVals)
         .rangeRoundBands([0, xScaleTax.rangeBand()]);
-    var rangeOffset =
-        (xScaleCatvar.rangeBand() * uniqueCatvarVals.length -
-            barWidth * uniqueCatvarVals.length) /
-        2;
 
     data.forEach(function(d) {
-        d.cv = uniqueCatvarVals.map(function(name) {
-            return {
+        var sumSoFar = 0;
+        d.cv = uniqueGroupVals.map(function(name, i) {
+            var val = d.o.hasOwnProperty(name) ? +d.o[name] : 0;
+            var obj = {
                 name: name,
-                value: +d.o[name]
+                offset: sumSoFar,
+                value: val
             };
+            sumSoFar += val;
+            return obj;
         });
     });
 
@@ -178,19 +215,21 @@ function renderBarplot(abundancesObj) {
     yScale.domain([
         0,
         d3.max(data, function(d) {
-            return d3.max(d.cv, function(d) {
-                return d.value;
+            var sum = 0;
+            d.cv.forEach(cv => {
+                sum += cv.value;
             });
+            return sum;
         })
     ]);
 
-    var color = d3.scale.category10();
+    var color = d3.scale.category20();
 
     // add the graph canvas to the body of the webpage
     var svg = d3
         .select("#analysis-container")
         .append("svg")
-        .attr("width", width + margin.left + margin.right)
+        .attr("width", legendMargin + legendWidth + width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -205,18 +244,17 @@ function renderBarplot(abundancesObj) {
         .append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(xAxisForLabels);
+        .call(xAxisForLabels)
+        .selectAll("text")
+        .attr("x", -9)
+        .attr("y", -4)
+        .attr("transform", "rotate(-90)")
+        .style("text-anchor", "end");
 
     svg
         .append("g")
         .attr("class", "y axis")
-        .call(yAxis)
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Average Relative Abundance");
+        .call(yAxis);
 
     var tax = svg
         .selectAll(".tax")
@@ -235,22 +273,22 @@ function renderBarplot(abundancesObj) {
         })
         .enter()
         .append("rect")
-        .attr("width", barWidth) // xScaleCatvar.rangeBand()
-        .attr("x", function(d, i) {
-            return rangeOffset + i * barWidth;
-        }) // xScaleCatvar(d.name)
-        .attr("y", function(d) {
-            return yScale(d.value);
+        .attr("width", barWidth)
+        .attr("x", function(d) {
+            return xScaleTax.rangeBand() / 2 - barWidth / 2;
+        })
+        .attr("y", function(d, i) {
+            return yScale(d.offset + d.value);
         })
         .attr("height", function(d) {
             return height - yScale(d.value);
         })
         .style("fill", function(d) {
-            return color(d.name);
+            return color(idMap[d.name]);
         })
         .attr("class", "bar")
         .on("mouseover", function(d) {
-            var meta = d.name;
+            var meta = idMap[d.name];
             tooltip
                 .transition()
                 .duration(100)
@@ -258,7 +296,7 @@ function renderBarplot(abundancesObj) {
             tooltip
                 .html(
                     "<strong>" +
-                    d.name +
+                    idMap[d.name] +
                     "</strong><br />Average Relative Abundance: <strong>" +
                     d.value +
                     "</strong>"
@@ -275,7 +313,7 @@ function renderBarplot(abundancesObj) {
 
     var legend = svg
         .selectAll(".legend")
-        .data(uniqueCatvarVals.slice())
+        .data(uniqueGroupVals.slice(0, 10).map(v => idMap[v]))
         .enter()
         .append("g")
         .attr("class", "legend")
@@ -285,65 +323,99 @@ function renderBarplot(abundancesObj) {
 
     legend
         .append("rect")
-        .attr("x", width - 18)
+        .attr("x", width + legendMargin)
         .attr("width", 18)
         .attr("height", 18)
         .style("fill", color);
 
     legend
         .append("text")
-        .attr("x", width - 24)
+        .attr("x", width + legendMargin + 24)
         .attr("y", 9)
         .attr("dy", ".35em")
-        .style("text-anchor", "end")
         .text(function(d) {
             return d;
         });
+
+    svg
+        .append("text")
+        .attr("x", width + legendMargin)
+        .attr("y", -6)
+        .style("text-anchor", "start")
+        .style("font-weight", "bold")
+        .text("Top 10 Colors:");
 }
 
 function renderDonut(abundancesObj) {
     $("#analysis-container").empty();
 
     var data = abundancesObj["abundances"];
-    uniqueCatvarVals = abundancesObj["metaVals"];
-    var uniqueTaxas = [];
-    data.forEach(function(d) {
-        var pos = false;
-        d.cv = uniqueCatvarVals.map(function(name) {
-            if (d.o[name] > 0) {
-                pos = true;
-            }
-            return {
-                name: name,
-                value: +d.o[name]
-            };
-        });
+    uniqueGroupVals = abundancesObj["uniqueVals"].map(tuple => tuple[0]);
+    idMap = abundancesObj["idMap"];
 
-        if (pos) {
-            uniqueTaxas.push(d.t);
-        }
+    var uniqueSubGroupVals = data.map(function(d) {
+        return d.t;
     });
 
-    uniqueCatvarVals.forEach(function(cat, index) {
-        var margin = {
-                top: 20,
-                right: 20,
-                bottom: 30,
-                left: 56
-            },
-            width = 540 - margin.left - margin.right,
-            height = 540 - margin.top - margin.bottom,
-            radius = Math.min(width, height) / 2;
+    var containerWidth = 800;
+    var legendMargin = 60;
+    var legendWidth = 180;
+    var donutDiameter = 200;
+    var donutsPerRow = containerWidth / donutDiameter;
+    var color = d3.scale.category20();
+    var legendOffset = uniqueGroupVals.length > donutsPerRow ? containerWidth : uniqueGroupVals.length * donutDiameter;
 
-        var color = d3.scale.category20();
-        if (uniqueTaxas.length < 20) {
-            color = d3.scale.category10();
-        }
+
+    var svgBase = d3
+        .select("#analysis-container")
+        .append("svg")
+        .attr("width", (containerWidth + legendMargin + legendWidth))
+        .attr("height", (Math.ceil(uniqueGroupVals.length / donutsPerRow) * donutDiameter));
+
+    var legend = svgBase
+        .selectAll(".legend")
+        .data(uniqueSubGroupVals.slice(0, 10))
+        .enter()
+        .append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) {
+            return "translate(0," + (20 + i * 20) + ")";
+        });
+
+    legend
+        .append("rect")
+        .attr("x", legendOffset + legendMargin)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", color);
+
+    legend
+        .append("text")
+        .attr("x", legendOffset + legendMargin + 24)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .text(function(d) {
+            return d;
+        });
+
+    svgBase
+        .append("text")
+        .attr("x", legendOffset + legendMargin)
+        .attr("y", 12)
+        .style("text-anchor", "start")
+        .style("font-weight", "bold")
+        .text("Top 10 Colors:");
+
+    uniqueGroupVals.forEach(function(cat, index) {
+        var radius = donutDiameter / 2;
+        var val = idMap[cat];
+        var valArr = val.split(";");
+        var varTrim = valArr[valArr.length - 1];
 
         var arc = d3.svg
             .arc()
             .outerRadius(radius - 10)
-            .innerRadius(radius - 90);
+            .innerRadius(radius - 30);
 
         var pie = d3.layout
             .pie()
@@ -352,20 +424,17 @@ function renderDonut(abundancesObj) {
                 return d.o[cat];
             });
 
-        var svg = d3
-            .select("#analysis-container")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
+        var svg = svgBase
             .append("g")
-            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+            .attr("transform", "translate(" + ((index % donutsPerRow) * donutDiameter + radius) + "," + (Math.floor(index / donutsPerRow) * donutDiameter + radius) + ")");
 
         svg
             .append("text")
             .attr("dy", ".35em")
             .attr("class", "donut-header")
             .attr("text-anchor", "middle")
-            .text(cat);
+            .text(varTrim)
+            .style("font-size", "11px");
 
         var tooltip = d3
             .select("#analysis-container")
@@ -396,7 +465,7 @@ function renderDonut(abundancesObj) {
                         "<strong>" +
                         d.data.t +
                         "</strong><br />" +
-                        cat +
+                        val +
                         "<br />Average Relative Abundance: <strong>" +
                         d.value +
                         "</strong>"
@@ -411,69 +480,21 @@ function renderDonut(abundancesObj) {
                     .style("opacity", 0);
             });
 
-        g
-            .append("text")
-            .attr("transform", function(d) {
-                return "translate(" + arc.centroid(d) + ")";
-            })
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .attr("fill", "#333")
-            .text(function(d) {
-                if (d.data.o[cat] >= 0.05) {
-                    var dArr = d.data.t.split(";");
-                    return dArr[dArr.length - 1];
-                }
-            });
+        // Uncomment to display text on the pie segments
+//        g
+//            .append("text")
+//            .attr("transform", function(d) {
+//                return "translate(" + arc.centroid(d) + ")";
+//            })
+//            .attr("dy", ".35em")
+//            .attr("text-anchor", "middle")
+//            .attr("fill", "#333")
+//            .text(function(d) {
+//                if (d.data.o[cat] >= 0.05) {
+//                    var dArr = d.data.t.split(";");
+//                    return dArr[dArr.length - 1];
+//                }
+//            });
     });
 }
 
-function download() {
-    $("#donwload-canvas").empty();
-    var svgsElems = $("#analysis-container").children();
-    var svgElemWidth = $("#analysis-container svg").width();
-    var svgContainerWidth = svgElemWidth;
-    if ($("#plotType").val() != "bar") {
-        svgContainerWidth = uniqueCatvarVals.length * svgElemWidth;
-    }
-
-    var $tmpCanvas = $("#donwload-canvas");
-    $tmpCanvas.height($("#analysis-container svg").height());
-    $tmpCanvas.width(svgContainerWidth);
-
-    var svgContainer = document.createElement("svg");
-    $svgContainer = $(svgContainer);
-    $svgContainer.attr("id", "analysis-group");
-    $svgContainer.attr("width", svgContainerWidth);
-
-    var index = 0;
-    var svg = "";
-    for (var i = 0; i < svgsElems.length; i++) {
-        if (svgsElems[i].tagName === "svg") {
-            var e = svgsElems[i];
-            e.setAttribute("x", index * svgElemWidth);
-            $svgContainer.append($(e).clone());
-            index++;
-        }
-    }
-
-    canvg($tmpCanvas[0], $svgContainer[0].outerHTML, {
-        renderCallback: function() {
-            var dataURL = $tmpCanvas[0].toDataURL("image/png");
-            var ctx = $tmpCanvas[0].getContext("2d");
-
-            var project = $("#project").val();
-            var plotType = $("#plotType").val();
-            var tax = $("#taxonomy").val();
-            var catvar = $("#catvar").val();
-            var filename =
-                project + "." + plotType + "." + tax + "." + catvar + ".png";
-
-            $tmpCanvas[0].toBlob(function(blob) {
-                saveAs(blob, filename);
-            });
-
-            $tmpCanvas.empty();
-        }
-    });
-}

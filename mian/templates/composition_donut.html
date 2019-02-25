@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Composition - Mian</title>
+    <title>Composition Donut - Mian</title>
 </head>
 
 <style>
@@ -28,15 +28,6 @@
       pointer-events:all;
     }
 
-    .analysis-container .donut-header {
-      font-size: 20px !important;
-      fill: #555;
-    }
-
-    .analysis-container text {
-      font-size: 12px !important;
-    }
-
 </style>
 
 <body>
@@ -44,7 +35,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Analysis <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Compositional Analysis" data-content="Visualizes the contents of the OTU table grouped at the indicated taxonomic level" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Donut <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Composition Donut Analysis" data-content="Visualizes the contents of the OTU table grouped at the indicated taxonomic level as a donut plot" data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -82,11 +73,13 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Plot Type  <i class="fa fa-info-circle" data-toggle="popover" data-title="Plot Type" data-content="The type of graph to show"></i></label>
-                <select id="plotType" name="plotType" class="form-control pad-bottom">
-                    <option value="bar">Bar</option>
-                    <option value="donut" selected>Donut</option>
+                <label class="control-label">Donut Grouping <i class="fa fa-info-circle" data-toggle="popover" data-title="X-Axis Display" data-content="Choose to either show the taxonomic groups on the x-axis or the categorical variable"></i></label>
+                <select id="xaxis" name="xaxis" class="form-control pad-bottom">
+                    <option value="Taxonomic">Taxonomic Groups</option>
+                    <option value="Categorical">Categorical Variable</option>
                 </select>
+
+                <input type="hidden" id="plotType" value="donut" />
               </div>
             </div>
         </div>

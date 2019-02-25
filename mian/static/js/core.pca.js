@@ -1016,6 +1016,11 @@ function updateAnalysis() {
                 $("#analysis-container-2d").hide();
                 $("#analysis-container-3d-info").hide();
                 $("#variance-container").hide();
+            } else if (abundancesObj["has_float"]) {
+                loadFloatDataWarning();
+                $("#analysis-container-2d").hide();
+                $("#analysis-container-3d-info").hide();
+                $("#variance-container").hide();
             } else {
                 loadSuccess();
                 $("#variance-container").show();

@@ -12,21 +12,17 @@
 #
 # ======== R specific setup =========
 #
-import os
-import shutil
-import uuid
 import numpy as np
 from sklearn import manifold
 from skbio import TreeNode
 from io import StringIO
 from skbio.diversity import beta_diversity
-from sklearn.decomposition import PCA
 from sklearn.metrics import euclidean_distances
-
-from mian.util import ROOT_DIR
 from mian.model.otu_table import OTUTable
 
 import logging
+
+from mian.model.map import Map
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -53,7 +49,13 @@ class NMDS(object):
                 return {
                     "no_tree": True
                 }
-            # TODO: Warn users about decimals
+
+            project_map = Map(user_request.user_id, user_request.pid)
+            if project_map.matrix_type == "float":
+                return {
+                    "has_float": True
+                }
+
             base = base.astype(int)
             tree = TreeNode.read(StringIO(phylogenetic_tree))
             dist_matrix = beta_diversity(type, base, ids=sample_labels, otu_ids=headers, tree=tree)

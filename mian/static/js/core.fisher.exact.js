@@ -139,7 +139,11 @@ function renderFisherTable(abundancesObj) {
     for (var i = 0; i < statsArr.length; i++) {
         var r = "<tr>";
         for (var j = 0; j < statsArr[i].length; j++) {
-            r = r + "<td>" + statsArr[i][j] + "</td>";
+            if (j == 0) {
+                r = r + "<td><a href='" + shareToBoxplotLink(statsArr[i][j]) + "' target='_blank'>" + statsArr[i][j] + "</a></td>";
+            } else {
+                r = r + "<td>" + statsArr[i][j] + "</td>";
+            }
         }
         r = r + "<tr>";
         $("#stats-rows").append(r);

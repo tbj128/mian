@@ -322,6 +322,8 @@ function updateAnalysis() {
         success: function(result) {
             if (abundancesObj["no_tree"]) {
                 loadNoTree();
+            } else if (abundancesObj["has_float"]) {
+                loadFloatDataWarning();
             } else {
                 loadSuccess();
 

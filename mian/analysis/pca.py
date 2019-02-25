@@ -24,6 +24,9 @@ from skbio.stats.ordination import pcoa
 from io import StringIO
 import logging
 import rpy2.robjects.numpy2ri
+
+from mian.model.map import Map
+
 rpy2.robjects.numpy2ri.activate()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
@@ -90,7 +93,12 @@ class PCA(AnalysisBase):
     def analyse_other(self, user_request, otu_table, headers, sample_labels, metaVals, phylogenetic_tree):
         type = user_request.get_custom_attr("type")
 
-        # TODO: Warn users about decimals
+        project_map = Map(user_request.user_id, user_request.pid)
+        if project_map.matrix_type == "float":
+            return {
+                "has_float": True
+            }
+
         otu_table = otu_table.astype(int)
 
         if type == "weighted_unifrac" or type == "unweighted_unifrac":

@@ -25,6 +25,7 @@ var taxonomyLevelsReverseLookup = {
     "-2": "none"
 };
 var taxonomiesMap = {};
+var loaded = false;
 
 //
 // Sets the initial field values based on the URL
@@ -137,6 +138,10 @@ function getSharedUserProjectSuffixIfNeeded() {
     }
 }
 
+function shareToBoxplotLink(otu_name) {
+    return "/boxplots?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&catvar=" + getParameterByName("catvar") + "&yvals=mian-taxonomy-abundance&level=" + getParameterByName("level") + "&yvalsSpecificTaxonomy=[\"" + otu_name + "\"]";
+}
+
 function getNumSamplesCurrentProject() {
     return parseInt($("#num_samples-" + $("#project").val()).val());
 }
@@ -146,6 +151,7 @@ function getNumOTUsCurrentProject() {
 }
 
 function showLoading(expectedLoadFactor) {
+    loaded = false;
     var numSamples = getNumSamplesCurrentProject();
     var numOTUs = getNumOTUsCurrentProject();
     if (expectedLoadFactor) {
@@ -153,12 +159,15 @@ function showLoading(expectedLoadFactor) {
 
         if (expectedLoadTime > 1000) {
             console.log("Expected load time is " + expectedLoadTime);
+            $('#progress').css('width',  "0%");
             $("#progress").show();
             $({property: 0}).animate({property: 75}, {
                 duration: expectedLoadTime,
                 step: function() {
-                    var p = Math.round(this.property);
-                    $('#progress').css('width',  p + "%");
+                    if (!loaded) {
+                        var p = Math.round(this.property);
+                        $('#progress').css('width',  p + "%");
+                    }
                 },
                 complete: function() {
                 }
@@ -174,6 +183,7 @@ function showLoading(expectedLoadFactor) {
 }
 
 function hideLoading() {
+    loaded = true;
     $("#loading").hide();
     $("#large-data").hide();
     $("#editor :input").prop("disabled", false);
@@ -207,6 +217,7 @@ function loadError() {
     $("#display-no-results").hide();
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
+    $("#display-float-data").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -218,6 +229,7 @@ function loadNoResults() {
     $("#display-no-results").show();
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
+    $("#display-float-data").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -229,6 +241,7 @@ function loadSuccess() {
     $("#display-no-results").hide();
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
+    $("#display-float-data").hide();
     $("#download-container").show();
     $("#analysis-container").show();
     $("#stats-container").show();
@@ -240,6 +253,7 @@ function loadNoCatvar() {
     $("#display-no-results").hide();
     $("#display-no-catvar").show();
     $("#display-no-tree").hide();
+    $("#display-float-data").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -251,6 +265,19 @@ function loadNoTree() {
     $("#display-no-results").hide();
     $("#display-no-catvar").hide();
     $("#display-no-tree").show();
+    $("#display-float-data").hide();
+    $("#download-container").hide();
+    $("#analysis-container").hide();
+    $("#stats-container").hide();
+}
+
+function loadFloatDataWarning() {
+    hideLoading();
+    $("#display-error").hide();
+    $("#display-no-results").hide();
+    $("#display-no-catvar").hide();
+    $("#display-no-tree").hide();
+    $("#display-float-data").show();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -708,16 +735,17 @@ function updateCatVar(isNumeric) {
                     getSampleFilteringOptions(true);
                 }
             }
+
+            if (typeof customCatVarCallback === "function") {
+                // Callback used to load any additional filtering parameters
+                customCatVarCallback(json);
+            }
+
             if (initialCatvar) {
                 $("#catvar").val(initialCatvar);
 
                 // Reset the initial catvar (we only want to load it during the first page load)
                 initialCatvar = null;
-            }
-
-            if (typeof customCatVarCallback === "function") {
-                // Callback used to load any additional filtering parameters
-                customCatVarCallback(json);
             }
 
             catVars = json;

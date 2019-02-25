@@ -26,6 +26,7 @@ from mian.analysis.analysis_base import AnalysisBase
 from mian.core.statistics import Statistics
 
 from mian.model.otu_table import OTUTable
+from mian.model.map import Map
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -84,7 +85,12 @@ class AlphaDiversity(AnalysisBase):
                     "no_tree": True
                 }
 
-            # TODO: Warn users
+            project_map = Map(user_request.user_id, user_request.pid)
+            if project_map.matrix_type == "float":
+                return {
+                    "has_float": True
+                }
+
             otu_table = otu_table.astype(int)
 
             tree = TreeNode.read(StringIO(phylogenetic_tree))

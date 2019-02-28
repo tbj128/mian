@@ -109,10 +109,10 @@ class PCA(AnalysisBase):
             tree = TreeNode.read(StringIO(phylogenetic_tree))
             dist_matrix = beta_diversity(type, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
         else:
-            dist_matrix = beta_diversity(type, otu_table, ids=sample_labels, otu_ids=headers)
+            dist_matrix = beta_diversity(type, otu_table)
 
         results = pcoa(dist_matrix)
-        pcaVals = results.eigvals
+        pcaVals = results.samples
         pcaVariances = results.proportion_explained
 
         logger.info("After running the R PCA")
@@ -129,17 +129,17 @@ class PCA(AnalysisBase):
         pca3 = user_request.get_custom_attr("pca3")
 
         pcaRow = []
-        i = 1  # RObjects use 1 based indexing
-        while i <= len(pcaVals):
+        i = 0
+        while i < len(pcaVals):
             meta = ""
             if metaVals and len(metaVals) == len(pcaVals):
-                meta = metaVals[i - 1]
+                meta = metaVals[i]
 
-            pcaObj = {"s": sample_labels[i - 1],
+            pcaObj = {"s": sample_labels[i],
                       "m": meta,
-                      "pca1": round(pcaVals[pca1], 8),
-                      "pca2": round(pcaVals[pca2], 8),
-                      "pca3": round(pcaVals[pca3], 8)
+                      "pca1": round(pcaVals.iloc[i]["PC" + pca1], 8),
+                      "pca2": round(pcaVals.iloc[i]["PC" + pca2], 8),
+                      "pca3": round(pcaVals.iloc[i]["PC" + pca3], 8)
                       }
             if pcaObj["pca1"] > pca1Max:
                 pca1Max = pcaObj["pca1"]

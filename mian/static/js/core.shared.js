@@ -961,33 +961,44 @@ function downloadSVG(name) {
     var svgElemWidth = $("#analysis-container svg").width();
     var svgContainerWidth = svgElemWidth;
 
-    var pixelRatio = 1;
+    var pixelRatio = window.devicePixelRatio || 1;
 
     var $tmpCanvas = $("#donwload-canvas");
-    $tmpCanvas.height($("#analysis-container svg").height() * pixelRatio);
-    $tmpCanvas.width(svgContainerWidth * pixelRatio);
+    var currHeight = $("#analysis-container svg").height();
+    if ($("#canvas").length > 0) {
+        currHeight = Math.max(currHeight, $("#canvas").height());
+    }
+    $tmpCanvas.height(currHeight);
+    $tmpCanvas.width(svgContainerWidth);
 
     var svgContainer = document.createElement("svg");
     $svgContainer = $(svgContainer);
     $svgContainer.attr("id", "analysis-group");
-    $svgContainer.attr("width", svgContainerWidth);
+    $svgContainer.attr("width", svgContainerWidth * pixelRatio);
+    $svgContainer.attr("height", currHeight * pixelRatio);
 
     var index = 0;
     var svg = "";
     for (var i = 0; i < svgsElems.length; i++) {
         if (svgsElems[i].tagName === "svg") {
             var e = svgsElems[i];
-            e.setAttribute("x", index * svgElemWidth);
-            $svgContainer.append($(e).clone());
+            var eClone = $(e).clone();
+            eClone[0].setAttribute("width", $(e).width() * pixelRatio)
+            eClone[0].setAttribute("height", $(e).height() * pixelRatio)
+            eClone[0].setAttribute("viewBox", "0 0 " + $(e).width() + " " + $(e).height())
+            $svgContainer.append(eClone);
             index++;
         }
     }
 
     canvg($tmpCanvas[0], $svgContainer[0].outerHTML, {
         renderCallback: function() {
-            var dataURL = $tmpCanvas[0].toDataURL("image/png");
             var ctx = $tmpCanvas[0].getContext("2d");
-            ctx.setTransform(pixelRatio,0,0,pixelRatio,0,0);
+            if ($("#canvas").length > 0) {
+                var outerPaddingX = parseInt($("#analysis-container").css("padding-left")) * pixelRatio;
+                var outerPaddingY = parseInt($("#analysis-container").css("padding-top")) * pixelRatio;
+                ctx.drawImage(document.getElementById('canvas'), 0, 0, $("#canvas").width(), $("#canvas").height(), $("#canvas").position().left * pixelRatio - outerPaddingX, $("#canvas").position().top * pixelRatio - outerPaddingY, $("#canvas").width() * pixelRatio, $("#canvas").height() * pixelRatio);
+            }
 
             var filename = name + ".png";
 

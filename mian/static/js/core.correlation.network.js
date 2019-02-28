@@ -96,8 +96,7 @@ function renderNetwork(abundancesObj) {
             }
         })
         .attr("stroke-width", function(d) {
-            return Math.abs(d.v);
-            // return Math.sqrt(Math.abs(d.v));
+            return (1 + Math.abs(d.v)) ^ 2;
         })
         .on("mouseover", function(d) {
             tooltip
@@ -110,7 +109,7 @@ function renderNetwork(abundancesObj) {
                     d.source.id +
                     "<br />Target: " +
                     d.target.id +
-                    "<br />Strength: " +
+                    "<br />Correlation Coefficient: " +
                     d.v
                 )
                 .style("left", d3.event.pageX + 10 + "px")

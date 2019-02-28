@@ -46,6 +46,7 @@ from mian.analysis.beta_diversity import BetaDiversity
 from mian.analysis.boruta import Boruta
 from mian.analysis.boxplots import Boxplots
 from mian.analysis.composition import Composition
+from mian.analysis.composition_heatmap import CompositionHeatmap
 from mian.analysis.correlations import Correlations
 from mian.analysis.correlation_network import CorrelationNetwork
 from mian.analysis.correlations_selection import CorrelationsSelection
@@ -922,6 +923,38 @@ def getComposition(user_request, req):
     plugin = Composition()
     user_request.set_custom_attr("plotType", req.form['plotType'])
     user_request.set_custom_attr("xaxis", req.form['xaxis'])
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
+# --
+
+
+@app.route('/composition_heatmap', methods=['POST'])
+@flask_login.login_required
+def getCompositionHeatmapSecure():
+    user_request = __get_user_request(request)
+    return getCompositionHeatmap(user_request, request)
+
+
+@app.route('/share/composition_heatmap', methods=['POST'])
+def getCompositionHeatmapShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getCompositionHeatmap(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getCompositionHeatmap(user_request, req):
+    plugin = CompositionHeatmap()
+    user_request.set_custom_attr("rows", req.form['rows'])
+    user_request.set_custom_attr("cols", req.form['cols'])
+    user_request.set_custom_attr("clustersamples", req.form['clustersamples'])
+    user_request.set_custom_attr("clustertaxonomic", req.form['clustertaxonomic'])
+    user_request.set_custom_attr("showlabels", req.form['showlabels'])
+    user_request.set_custom_attr("colorscheme", req.form['colorscheme'])
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 

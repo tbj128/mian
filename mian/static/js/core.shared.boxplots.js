@@ -38,26 +38,19 @@ function renderBoxplots(abundancesObj) {
         height = 520 - margin.top - margin.bottom;
 
     // Initialize the y axis scale
-    var yScale = d3.scale.linear().range([height + margin.top, 0 + margin.top]);
+    var yScale = d3.scaleLinear().range([height + margin.top, 0 + margin.top]);
     yScale.domain([minVal * 0.8, maxVal * 1.2]);
 
     // Initialize the x axis scale
-    var xScale = d3.scale
-        .ordinal()
+    var xScale = d3.scaleBand()
         .domain(categories)
-        .rangeRoundBands([0, width]);
+        .rangeRound([0, width]);
 
     // Initialize the y axis
-    var yAxis = d3.svg
-        .axis()
-        .scale(yScale)
-        .orient("left");
+    var yAxis = d3.axisLeft(yScale);
 
     // Initialize the x axis
-    var xAxis = d3.svg
-        .axis()
-        .scale(xScale)
-        .orient("bottom");
+    var xAxis = d3.axisBottom(xScale);
 
     // Append the axis onto the figure
     var svgContainer = d3
@@ -230,7 +223,6 @@ function renderBoxplots(abundancesObj) {
                 return yScale(d.a);
             })
             .on("mouseover", function(d) {
-                console.log(d);
                 tooltip
                     .transition()
                     .duration(100)

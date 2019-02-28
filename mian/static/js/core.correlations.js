@@ -223,33 +223,27 @@ function renderCorrelations(abundancesObj) {
     var xValue = function(d) {
             return d.c1;
         }, // data -> value
-        xScale = d3.scale.linear().range([0, width]), // value -> display
+        xScale = d3.scaleLinear().range([0, width]), // value -> display
         xMap = function(d) {
             return xScale(xValue(d));
         }, // data -> display
-        xAxis = d3.svg
-        .axis()
-        .scale(xScale)
-        .orient("bottom");
+        xAxis = d3.axisBottom(xScale);
 
     // setup y
     var yValue = function(d) {
             return d.c2;
         }, // data -> value
-        yScale = d3.scale.linear().range([height, 0]), // value -> display
+        yScale = d3.scaleLinear().range([height, 0]), // value -> display
         yMap = function(d) {
             return yScale(yValue(d));
         }, // data -> display
-        yAxis = d3.svg
-        .axis()
-        .scale(yScale)
-        .orient("left");
+        yAxis = d3.axisLeft(yScale);
 
     // setup fill color
     var cValue = function(d) {
             return d.color;
         },
-        color = d3.scale.category10();
+        color = d3.scaleOrdinal(d3.schemeCategory10);
 
     // setup circle size
     var sValue = function(d) {
@@ -257,8 +251,7 @@ function renderCorrelations(abundancesObj) {
     };
     var minSValue = d3.min(data, sValue);
     var maxSValue = d3.max(data, sValue);
-    var sScale = d3.scale
-        .linear()
+    var sScale = d3.scaleLinear()
         .domain([minSValue, maxSValue])
         .range([2, 8]);
 
@@ -492,11 +485,11 @@ function updateCorrVar(result) {
     var allHeaders = ["None", ...result.map(obj => obj.name)];
     var numericHeaders = [
         "None",
-        ...result.filter(obj => obj.type === "numeric").map(obj => obj.name)
+        ...result.filter(obj => obj.type === "numeric" || obj.type === "both").map(obj => obj.name)
     ];
     var categoricalHeaders = [
         "None",
-        ...result.filter(obj => obj.type === "categorical").map(obj => obj.name)
+        ...result.filter(obj => obj.type === "categorical" || obj.type === "both").map(obj => obj.name)
     ];
 
     addCorrGroup("mian-none", "None Selected");

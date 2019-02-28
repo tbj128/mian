@@ -579,8 +579,6 @@ function render3dPCA(args) {
         processData(data, 0);
     }
 
-    d3.selectAll('button').on('click', init);
-
     init(args);
 }
 

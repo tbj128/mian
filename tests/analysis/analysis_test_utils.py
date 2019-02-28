@@ -157,8 +157,11 @@ class AnalysisTestUtils(object):
             return obj1 == obj2
         elif type(obj1) is dict:
             for attr, v in obj1.items():
-                if attr not in obj2:
+                if attr not in obj2 and (not attr.isnumeric() or float(attr) not in obj2):
                     return False
+
+                if attr.isnumeric():
+                    attr = float(attr)
 
                 value1 = v
                 value2 = obj2[attr]

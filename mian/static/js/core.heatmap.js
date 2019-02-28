@@ -133,7 +133,9 @@ function updateAnalysis() {
                 loadNoResults();
             } else {
                 loadSuccess();
-                renderHeatmap(abundancesObj, -1, 1);
+                var corrvar1 = $("#corrvar1").val();
+                var corrvar2 = $("#corrvar2").val();
+                renderHeatmap(abundancesObj, -1, 1, corrvar1, corrvar2);
             }
         },
         error: function(err) {

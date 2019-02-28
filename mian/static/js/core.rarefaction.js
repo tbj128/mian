@@ -69,30 +69,24 @@ function renderRarefactionCurves(abundancesObj) {
     var xValue = function(d) {
             return d.h;
         },
-        xScale = d3.scale.linear().range([0, width]),
+        xScale = d3.scaleLinear().range([0, width]),
         xMap = function(d, i) {
             return xScale(xValue(d, i));
         },
-        xAxis = d3.svg
-        .axis()
-        .scale(xScale)
-        .orient("bottom");
+        xAxis = d3.axisBottom(xScale);
 
     // setup y
     var yValue = function(d) {
             return d.v;
         },
-        yScale = d3.scale.linear().range([height, 0]),
+        yScale = d3.scaleLinear().range([height, 0]),
         yMap = function(d) {
             return yScale(yValue(d));
         },
-        yAxis = d3.svg
-        .axis()
-        .scale(yScale)
-        .orient("left");
+        yAxis = d3.axisLeft(yScale);
 
     // setup fill color
-    var color = d3.scale.category10();
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
 
     // add the graph canvas to the body of the webpage
     var svg = d3

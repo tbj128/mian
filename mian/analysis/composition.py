@@ -1,5 +1,3 @@
-import numpy as np
-import math
 import logging
 
 from mian.analysis.analysis_base import AnalysisBase
@@ -23,82 +21,10 @@ class Composition(AnalysisBase):
     def analyse(self, user_request, base, headers, sample_labels, metadata):
         plotType = user_request.get_custom_attr("plotType")
         xaxis = user_request.get_custom_attr("xaxis")
-        if plotType == "heatmap":
-            return self.analyse_heatmap(user_request, base, headers, sample_labels, metadata, xaxis)
-
         if xaxis == "Taxonomic":
             return self.analyse_taxonomic_groups(user_request, base, headers, sample_labels, metadata)
         else:
             return self.analyse_metadata(user_request, base, headers, sample_labels, metadata)
-
-    def analyse_heatmap(self, user_request, base, headers, sample_labels, metadata, xaxis):
-        """
-        Return the composition to be parsed as a heatmap
-        """
-
-        row_headers = []
-        if user_request.catvar == "none":
-            row_headers = []
-        elif user_request.catvar == "SampleID":
-            row_headers = sample_labels
-        else:
-            metadata_sample_to_value = {}
-            j = 0
-            while j < len(metadata[0]):
-                if metadata[0][j] == user_request.catvar:
-                    # Found the column that contains the catvar so add all the values from this column
-                    i = 1
-                    while i < len(metadata):
-                        sample = metadata[i][0]
-                        metadata_sample_to_value[sample] = metadata[i][j]
-                        i += 1
-                    break
-                j += 1
-
-            i = 0
-            for sample_label in sample_labels:
-                row_headers.append(metadata_sample_to_value[sample_label])
-                i += 1
-
-        min = 10000000
-        max = 0
-        for row in base:
-            for col in row:
-                if col > max:
-                    max = col
-                if col < min:
-                    min = col
-
-        if xaxis == "Taxonomic":
-            abundances_obj = {
-                "row_headers": row_headers,
-                "col_headers": headers,
-                "data": base,
-                "max": max,
-                "min": min
-            }
-            return abundances_obj
-        else:
-            # Transpose the table
-            new_base = []
-            j = 0
-            while j < len(base[0]):
-                new_row = []
-                i = 0
-                while i < len(base):
-                    new_row.append(base[i][j])
-                    i += 1
-                new_base.append(new_row)
-                j += 1
-
-            abundances_obj = {
-                "row_headers": headers,
-                "col_headers": row_headers,
-                "data": new_base,
-                "max": max,
-                "min": min
-            }
-            return abundances_obj
 
 
     def analyse_metadata(self, user_request, base, headers, sample_labels, metadata):
@@ -159,7 +85,7 @@ class Composition(AnalysisBase):
                         logger.warning("Sample is missing from the OTU table: " + str(sample))
                         continue
                     rowIndex = sampleIDToRowIndex[sample]
-                    valsSum += base[rowIndex][j]
+                    valsSum += float(base[rowIndex][j])
                     valsTot += 1
 
                 avgVal = 0
@@ -178,9 +104,15 @@ class Composition(AnalysisBase):
                 "o": headerToVal
             })
 
+        sortedVals = sorted(headerToTotalVal.items(), key=lambda kv: kv[1], reverse=True)
+        i = 0
+        while i < len(sortedVals):
+            sortedVals[i] = list(sortedVals[i])
+            i += 1
+
         abundancesObj = {}
         abundancesObj["abundances"] = output
-        abundancesObj["uniqueVals"] = sorted(headerToTotalVal.items(), key=lambda kv: kv[1], reverse=True)
+        abundancesObj["uniqueVals"] = sortedVals
         abundancesObj["idMap"] = reverse_map(headerToId)
         return abundancesObj
 
@@ -266,9 +198,15 @@ class Composition(AnalysisBase):
             newObj = {"t": otu, "o": relativeAbunObj}
             formattedCompositionAbun.append(newObj)
 
+        sortedVals = sorted(metadataToTotalVal.items(), key=lambda kv: kv[1], reverse=True)
+        i = 0
+        while i < len(sortedVals):
+            sortedVals[i] = list(sortedVals[i])
+            i += 1
+
         abundancesObj = {}
         abundancesObj["abundances"] = formattedCompositionAbun
-        abundancesObj["uniqueVals"] = sorted(metadataToTotalVal.items(), key=lambda kv: kv[1], reverse=True)
+        abundancesObj["uniqueVals"] = sortedVals
         abundancesObj["idMap"] = reverse_map(metadataToId)
         return abundancesObj
 

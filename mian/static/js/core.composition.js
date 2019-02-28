@@ -32,6 +32,9 @@ function initializeFields() {
     if (getParameterByName("colorscheme") !== null) {
         $("#colorscheme").val(getParameterByName("colorscheme"));
     }
+    if (getParameterByName("highlight") !== null) {
+        $("#highlight").val(getParameterByName("highlight"));
+    }
 }
 
 //
@@ -39,6 +42,10 @@ function initializeFields() {
 //
 function createSpecificListeners() {
     $("#catvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#highlight").change(function() {
         updateAnalysis();
     });
 
@@ -67,10 +74,9 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 function customCatVarCallback() {
+    var selectedVal = $("#catvar option:nth-child(2)").length > 0 ? $("#catvar option:nth-child(2)").val() : "SampleID";
     $('#catvar option:first').after("<option value='SampleID'>Sample ID</option>");
-    if ($("#plotType").val() === "heatmap") {
-        $("#catvar").val("SampleID");
-    }
+    $("#catvar").val(selectedVal);
 }
 
 function getTaxonomicLevel() {
@@ -170,28 +176,19 @@ function renderStackedBarplot(abundancesObj) {
         height = 500 - margin.top - margin.bottom,
         barWidth = 12;
 
-    var xScaleTax = d3.scale
-        .ordinal()
+    var xScaleTax = d3.scaleBand()
         .domain(uniqueTaxas)
-        .rangeRoundBands([0, width], 0),
-        xScaleCatvar = d3.scale.ordinal(),
-        xAxis = d3.svg
-        .axis()
-        .scale(xScaleTax)
-        .orient("bottom");
+        .rangeRound([0, width], 0),
+        xAxis = d3.axisBottom(xScaleTax);
 
     // We don't want the labels to display the fully quantified version of the taxonomic group
-    var xScaleTaxForLabels = d3.scale
-        .ordinal()
+    var xScaleTaxForLabels = d3.scaleBand()
         .domain(uniqueTaxasForLabels)
-        .rangeRoundBands([0, width]),
-        xAxisForLabels = d3.svg
-        .axis()
-        .scale(xScaleTaxForLabels)
-        .orient("bottom");
-    xScaleCatvar
+        .rangeRound([0, width]),
+        xAxisForLabels = d3.axisBottom(xScaleTaxForLabels);
+    var xScaleCatvar = d3.scaleBand()
         .domain(uniqueGroupVals)
-        .rangeRoundBands([0, xScaleTax.rangeBand()]);
+        .rangeRound([0, xScaleTax.bandwidth()]);
 
     data.forEach(function(d) {
         var sumSoFar = 0;
@@ -207,11 +204,8 @@ function renderStackedBarplot(abundancesObj) {
         });
     });
 
-    var yScale = d3.scale.linear().range([height, 0]),
-        yAxis = d3.svg
-        .axis()
-        .scale(yScale)
-        .orient("left");
+    var yScale = d3.scaleLinear().range([height, 0]),
+        yAxis = d3.axisLeft(yScale);
     yScale.domain([
         0,
         d3.max(data, function(d) {
@@ -223,7 +217,7 @@ function renderStackedBarplot(abundancesObj) {
         })
     ]);
 
-    var color = d3.scale.category20();
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
 
     // add the graph canvas to the body of the webpage
     var svg = d3
@@ -275,7 +269,7 @@ function renderStackedBarplot(abundancesObj) {
         .append("rect")
         .attr("width", barWidth)
         .attr("x", function(d) {
-            return xScaleTax.rangeBand() / 2 - barWidth / 2;
+            return xScaleTax.bandwidth() / 2 - barWidth / 2;
         })
         .attr("y", function(d, i) {
             return yScale(d.offset + d.value);
@@ -362,7 +356,7 @@ function renderDonut(abundancesObj) {
     var legendWidth = 180;
     var donutDiameter = 200;
     var donutsPerRow = containerWidth / donutDiameter;
-    var color = d3.scale.category20();
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
     var legendOffset = uniqueGroupVals.length > donutsPerRow ? containerWidth : uniqueGroupVals.length * donutDiameter;
 
 
@@ -412,13 +406,11 @@ function renderDonut(abundancesObj) {
         var valArr = val.split(";");
         var varTrim = valArr[valArr.length - 1];
 
-        var arc = d3.svg
-            .arc()
+        var arc = d3.arc()
             .outerRadius(radius - 10)
             .innerRadius(radius - 30);
 
-        var pie = d3.layout
-            .pie()
+        var pie = d3.pie()
             .sort(null)
             .value(function(d) {
                 return d.o[cat];

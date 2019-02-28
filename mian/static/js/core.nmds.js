@@ -320,14 +320,14 @@ function updateAnalysis() {
         url: getSharedPrefixIfNeeded() + "/nmds" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
+            abundancesObj = JSON.parse(result);
+
             if (abundancesObj["no_tree"]) {
                 loadNoTree();
             } else if (abundancesObj["has_float"]) {
                 loadFloatDataWarning();
             } else {
                 loadSuccess();
-
-                abundancesObj = JSON.parse(result);
 
                 boundX = [];
                 boundY = [];

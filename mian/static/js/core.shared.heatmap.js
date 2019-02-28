@@ -2,9 +2,7 @@
 // Shared Heatmap JS Component
 // ============================================================
 
-function renderHeatmap(abundancesObj, rangeMin, rangeMax) {
-    var corrvar1 = $("#corrvar1").val();
-    var corrvar2 = $("#corrvar2").val();
+function renderHeatmap(abundancesObj, rangeMin, rangeMax, corrvar1, corrvar2) {
     var showXLabels = $("#showlabels").val() === "all" || $("#showlabels").val() === "x";
     var showYLabels = $("#showlabels").val() === "all" || $("#showlabels").val() === "y";
 
@@ -47,10 +45,11 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax) {
 
     var margin = {
             top: 90,
-            right: 60,
+            right: 120,
             bottom: 120,
             left: 90
         },
+        legendMargin = 18,
         width = xGridSize * colHeaders.length,
         height = yGridSize * rowHeaders.length;
 
@@ -185,14 +184,6 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax) {
         .attr("x", -8)
         .attr("dy", ".35em")
         .style("font-size", "9px");
-    var gXTitle = gX
-        .append("text")
-        .attr("class", "label")
-        .attr("x", "30")
-        .attr("y", -6)
-        .style("text-anchor", "end")
-        .style("fill", "#000")
-        .text("x");
 
     // y-axis
     var gY = svg
@@ -202,14 +193,92 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax) {
         .call(yAxis)
         .selectAll("text")
         .style("font-size", "9px");
-    var gYTitle = gY
-        .append("text")
-        .attr("class", "label")
-        .attr("x", "30")
-        .attr("y", -6)
-        .style("text-anchor", "end")
-        .style("fill", "#000")
-        .text("y");
+
+    var colorCat = d3.scaleOrdinal(d3.schemeCategory10);
+    var rowVal = $("#rows").val();
+    var colVal = $("#cols").val();
+    var catvarDataInput = abundancesObj["catvar"] && abundancesObj["catvar"].length > 0 ? abundancesObj["catvar"] : [];
+
+    if (catvarDataInput.length > 0) {
+        var catvarIndicator = svg
+            .selectAll(".indicator")
+            .data(catvarDataInput)
+            .enter()
+            .append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) {
+                if (rowVal === "Taxonomic") {
+                    return "translate(" + (margin.left + i * xGridSize) + ", " + (margin.top - 7) + ")";
+                } else {
+                    return "translate(" + (margin.left - 7) + "," + (margin.top + i * yGridSize) + ")";
+                }
+            });
+
+        catvarIndicator
+            .append("rect")
+            .attr("x", 0)
+            .attr("width", rowVal === "Taxonomic" ? (xGridSize - 1) : 6)
+            .attr("height", colVal === "Taxonomic" ? (yGridSize - 1) : 6)
+            .style("fill", colorCat)
+            .on("mouseover", function(d) {
+                var mouseX = d3.event.layerX || d3.event.offsetX;
+                var mouseY = d3.event.layerY || d3.event.offsetY;
+                tooltip
+                    .transition()
+                    .duration(100)
+                    .style("opacity", 1);
+                tooltip
+                    .html(
+                        "Categorical Variable: <strong>" +
+                        d +
+                        "</strong><br />"
+                    )
+                    .style("left", mouseX + 12 + "px")
+                    .style("top", mouseY + 12 + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip
+                    .transition()
+                    .duration(100)
+                    .style("opacity", 0);
+            });
+
+        var catvarUniqueMap = {};
+        var catvarUnique = [];
+        for (var i = 0; i < catvarDataInput.length; i++) {
+            if (!catvarUniqueMap[catvarDataInput[i]]) {
+                catvarUniqueMap[catvarDataInput[i]] = true;
+                catvarUnique.push(catvarDataInput[i]);
+            }
+        }
+
+        var legend = svg
+            .selectAll(".indicatorLegend")
+            .data(catvarUnique)
+            .enter()
+            .append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) {
+                return "translate(0," + (20 + i * 20) + ")";
+            });
+
+        legend
+            .append("rect")
+            .attr("x", width + margin.left + legendMargin)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", colorCat);
+
+        legend
+            .append("text")
+            .attr("x", width + margin.left + legendMargin + 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .text(function(d) {
+                return d;
+            });
+
+    }
 
 
 

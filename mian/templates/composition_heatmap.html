@@ -64,22 +64,40 @@
 
                 <hr/>
 
+                <label class="control-label">Row Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
+                <select id="rows" name="rows" class="form-control">
+                    <option value="Taxonomic">Taxonomic Groups/OTUs</option>
+                    <option value="SampleID">Sample ID</option>
+                </select>
+
+                <label class="control-label">Column Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
+                <select id="cols" name="cols" class="form-control">
+                    <option value="SampleID">Sample ID</option>
+                    <option value="Taxonomic">Taxonomic Groups/OTUs</option>
+                </select>
+
                 <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Show Labels <i class="fa fa-info-circle" data-toggle="popover" data-title="Show Labels?" data-content="If the labels are hidden, the heatmap will be more compact"></i></label>
+                <label class="control-label">Label Visibility <i class="fa fa-info-circle" data-toggle="popover" data-title="Show Labels?" data-content="If the labels are hidden, the heatmap will be more compact"></i></label>
                 <select id="showlabels" name="showlabels" class="form-control">
-                    <option value="all">Show All Lables</option>
-                    <option value="x">Show X-Axis Labels Only</option>
-                    <option value="y">Show Y-Axis Labels Only</option>
+                    <option value="all">Show All Labels</option>
+                    <option value="x">Show Column Labels Only</option>
+                    <option value="y">Show Row Labels Only</option>
                     <option value="no">Hide Labels</option>
                 </select>
 
-                <label class="control-label">Taxonomic Groups Axis <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Groups Axis" data-content="Choose to either show the taxonomic groups on the x-axis or the categorical variable"></i></label>
-                <select id="xaxis" name="xaxis" class="form-control pad-bottom">
-                    <option value="Taxonomic">X-Axis</option>
-                    <option value="Categorical">Y-Axis</option>
+                <label class="control-label">Cluster Samples By <i class="fa fa-info-circle" data-toggle="popover" data-title="Apply Clustering?" data-content="Determines whether the heatmap should be clustered by the OTU count, the categorical value, or the original OTU table order"></i></label>
+                <select id="clustersamples" name="cluster" class="form-control">
+                    <option value="categorical">Categorical Variable</option>
+                    <option value="none">Don't Cluster</option>
+                </select>
+
+                <label class="control-label">Cluster Taxonomic Groups/OTU By <i class="fa fa-info-circle" data-toggle="popover" data-title="Apply Clustering?" data-content="Determines whether the heatmap should be clustered by the OTU count, the categorical value, or the original OTU table order"></i></label>
+                <select id="clustertaxonomic" name="cluster" class="form-control">
+                    <option value="otu">OTU Count</option>
+                    <option value="none">Don't Cluster</option>
                 </select>
 
                 <label class="control-label">Color Scheme <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Groups Axis" data-content="Choose to either show the taxonomic groups on the x-axis or the categorical variable"></i></label>
@@ -87,10 +105,6 @@
                     <option value="blue">Blue</option>
                     <option value="rainbow">Rainbow</option>
                 </select>
-
-                <input type="hidden" id="corrvar1" value="otus" />
-                <input type="hidden" id="corrvar2" value="samples" />
-                <input type="hidden" id="plotType" value="heatmap" />
               </div>
             </div>
         </div>
@@ -113,7 +127,7 @@
 
 <!-- Include custom JS here -->
 <script src="/static/js/core.shared.heatmap.js"></script>
-<script src="/static/js/core.composition.js"></script>
+<script src="/static/js/core.composition.heatmap.js"></script>
 <script type="text/javascript" src="/static/js/plugins/rgbcolor.js"></script>
 <script type="text/javascript" src="/static/js/plugins/StackBlur.js"></script>
 

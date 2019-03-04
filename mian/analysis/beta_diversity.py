@@ -99,7 +99,7 @@ class BetaDiversity(AnalysisBase):
         table.load_phylogenetic_tree_if_exists()
 
         # No OTUs should be excluded for diversity analysis
-        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
 
@@ -161,6 +161,9 @@ class BetaDiversity(AnalysisBase):
 
             if (betaType == "weighted_unifrac" or betaType == "unweighted_unifrac"):
                 tree = TreeNode.read(StringIO(phylogenetic_tree))
+                if len(tree.root().children) > 2:
+                    # Ensure that the tree is rooted if it is not already rooted
+                    tree = tree.root_at_midpoint()
                 dist_matrix = beta_diversity(betaType, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
             else:
                 dist_matrix = beta_diversity(betaType, otu_table)

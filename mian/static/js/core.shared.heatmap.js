@@ -22,15 +22,15 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax, corrvar1, corrvar2) {
 
     $("#analysis-container").empty();
 
-    var xGridSize = Math.max(3, 30 - Math.round(27 * rowColMax / 1000));
-    var yGridSize = Math.max(3, 30 - Math.round(27 * rowColMax / 1000));
+    var xGridSize = Math.max(3, 12 - Math.round(10 * rowColMax / 1000));
+    var yGridSize = Math.max(3, 12 - Math.round(10 * rowColMax / 1000));
     if (!showXLabels) {
         // Try to make the heatmap fit within 600x600 with a max grid size of 20x20 and a min grid size of 2x2
         xGridSize = Math.floor(600 / colHeaders.length);
         if (xGridSize < 2) {
             xGridSize = 2;
-        } else if (xGridSize > 20) {
-            xGridSize = 20;
+        } else if (xGridSize > 12) {
+            xGridSize = 12;
         }
     }
     if (!showYLabels) {
@@ -38,8 +38,8 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax, corrvar1, corrvar2) {
         yGridSize = Math.floor(600 / rowHeaders.length);
         if (yGridSize < 2) {
             yGridSize = 2;
-        } else if (yGridSize > 20) {
-            yGridSize = 20;
+        } else if (yGridSize > 12) {
+            yGridSize = 12;
         }
     }
 

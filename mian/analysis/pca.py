@@ -76,7 +76,7 @@ class PCA(AnalysisBase):
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
         table.load_phylogenetic_tree_if_exists()
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
         phylogenetic_tree = table.get_phylogenetic_tree()
@@ -107,6 +107,9 @@ class PCA(AnalysisBase):
                     "no_tree": True
                 }
             tree = TreeNode.read(StringIO(phylogenetic_tree))
+            if len(tree.root().children) > 2:
+                # Ensure that the tree is rooted if it is not already rooted
+                tree = tree.root_at_midpoint()
             dist_matrix = beta_diversity(type, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
         else:
             dist_matrix = beta_diversity(type, otu_table)

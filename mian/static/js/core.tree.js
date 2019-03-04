@@ -2,6 +2,8 @@
 // Tree JS Component
 // ============================================================
 
+var expectedLoadFactor = 500;
+
 //
 // Initialization
 //
@@ -56,7 +58,7 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 function updateAnalysis(abundancesObj) {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var taxonomyFilter = getSelectedTaxFilter();
     var taxonomyFilterRole = getSelectedTaxFilterRole();
@@ -73,6 +75,8 @@ function updateAnalysis(abundancesObj) {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

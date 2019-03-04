@@ -19,7 +19,7 @@ class CompositionHeatmap(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata_column = []
         catvar = user_request.catvar

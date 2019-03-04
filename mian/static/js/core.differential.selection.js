@@ -7,6 +7,7 @@
 //
 var tableResults = [];
 var differentialDataTable;
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -171,7 +172,7 @@ function renderDifferentialTable(abundancesObj) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 

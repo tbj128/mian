@@ -2,6 +2,8 @@
 // Composition Heatmap JS Component
 // ============================================================
 
+var expectedLoadFactor = 3000;
+
 // Global variables storing the data
 var uniqueGroupVals = [];
 var idMap = {};
@@ -98,7 +100,7 @@ function getTaxonomicLevel() {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
     $("#stats-container").fadeIn(250);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
@@ -115,6 +117,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

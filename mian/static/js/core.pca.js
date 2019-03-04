@@ -9,6 +9,7 @@ var pcaOverrideAlpha = null;
 var pcaOverrideBeta = null;
 var pcaOverrideRangeMin = null;
 var pcaOverrideRangeMax = null;
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -512,11 +513,12 @@ function render3dPCA(args) {
             };
         });
 
-        scatter = scatter.filter(d => {
-            return d.pca1 >= maxRange[0] && d.pca1 <= maxRange[1]
-                && d.pca2 >= maxRange[0] && d.pca2 <= maxRange[1]
-                && d.pca3 >= maxRange[0] && d.pca3 <= maxRange[1];
-        });
+        // Uncomment if you want to filter points outside of the range
+//        scatter = scatter.filter(d => {
+//            return d.pca1 >= maxRange[0] && d.pca1 <= maxRange[1]
+//                && d.pca2 >= maxRange[0] && d.pca2 <= maxRange[1]
+//                && d.pca3 >= maxRange[0] && d.pca3 <= maxRange[1];
+//        });
 
         var data = {
             xGrid: xgrid3d(xg),
@@ -694,6 +696,14 @@ function renderPCA(data) {
         .style("fill", "#000")
         .text($("#pca2 option:selected").text());
 
+    var view = svg.append("rect")
+        .attr("class", "zoom")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .call(zoom);
+
     // draw dots
     var dots = svg
         .selectAll(".dot")
@@ -739,14 +749,6 @@ function renderPCA(data) {
                 .duration(100)
                 .style("opacity", 0);
         });
-
-    var view = svg.append("rect")
-        .attr("class", "zoom")
-        .attr("width", width)
-        .attr("height", height)
-        .style("fill", "none")
-        .style("pointer-events", "all")
-        .call(zoom);
 
     if ($("#colorvar").val() != "" && $("#colorvar").val() != "None") {
         // draw legend
@@ -967,7 +969,7 @@ function render() {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -987,6 +989,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

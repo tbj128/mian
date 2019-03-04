@@ -67,9 +67,13 @@ class DataIO:
         otu_map = []
         with open(csv_path, 'r') as csvfile:
             dialect = csv.Sniffer().sniff(csvfile.readline())
+            delimiter = dialect.delimiter
+            if delimiter != "\t" and delimiter != ",":
+                delimiter = "\t"
+
             csvfile.seek(0)
-            # base_csv = csv.reader(csvfile, delimiter=dialect, quotechar='|')
-            base_csv = csv.reader(csvfile, dialect)
+
+            base_csv = csv.reader(csvfile, delimiter=delimiter)
             for o in base_csv:
                 if o != "":
                     otu_map.append(o)

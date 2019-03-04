@@ -45,6 +45,14 @@ if (getParameterByName("taxonomyFilterRole")) {
     $("#taxonomy-typeahead-btn .typeahead-role").text(getParameterByName("taxonomyFilterRole"));
 }
 
+if (getParameterByName("taxonomyFilterCount")) {
+    $("#taxonomyFilterCount").val(getParameterByName("taxonomyFilterCount"));
+}
+
+if (getParameterByName("taxonomyFilterPrevalence")) {
+    $("#taxonomyFilterPrevalence").val(getParameterByName("taxonomyFilterPrevalence"));
+}
+
 if (getParameterByName("level") !== null) {
     $("#taxonomy").val(taxonomyLevelsReverseLookup[getParameterByName("level")]);
 }
@@ -150,14 +158,19 @@ function getNumOTUsCurrentProject() {
     return parseInt($("#num_otus-" + $("#project").val()).val());
 }
 
-function showLoading(expectedLoadFactor) {
+function showLoading(expectedLoadFactor, useTaxonomicOnly) {
+    showFilteringAppliedNotification();
+
     loaded = false;
     var numSamples = getNumSamplesCurrentProject();
     var numOTUs = getNumOTUsCurrentProject();
     if (expectedLoadFactor) {
         var expectedLoadTime = numSamples * numOTUs / expectedLoadFactor;
+        if (useTaxonomicOnly) {
+            expectedLoadTime = numOTUs / expectedLoadFactor;
+        }
 
-        if (expectedLoadTime > 1000) {
+        if (expectedLoadTime > 1000 ) {
             console.log("Expected load time is " + expectedLoadTime);
             $('#progress').css('width',  "0%");
             $("#progress").show();
@@ -176,16 +189,12 @@ function showLoading(expectedLoadFactor) {
     }
 
     $("#loading").show();
-    if (getNumSamplesCurrentProject() > 100) {
-        $("#large-data").show();
-    }
     $("#editor :input").prop("disabled", true);
 }
 
 function hideLoading() {
     loaded = true;
     $("#loading").hide();
-    $("#large-data").hide();
     $("#editor :input").prop("disabled", false);
 
     var currentProgress = ($("#progress").width() / $('#progress').parent().width()) * 100;
@@ -201,6 +210,17 @@ function hideLoading() {
             }, 1000);
         }
     });
+}
+
+function showFilteringAppliedNotification() {
+    if (($("#countthreshold").length > 0 && $("#countthreshold").val() > 0)
+        || ($("#prevalence").length > 0 && $("#prevalence").val() > 0)
+        || $("#filter-otu").val() !== "none"
+        || $("#filter-sample").val() !== "none") {
+        $(".applied-indicator").show();
+    } else {
+        $(".applied-indicator").hide();
+    }
 }
 
 function hideNotifications() {

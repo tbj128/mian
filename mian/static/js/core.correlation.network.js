@@ -5,6 +5,8 @@
 //
 // Initialization
 //
+var expectedLoadFactor = 0.1;
+
 initializeFields();
 initializeComponent({
     hasCatVar: true,
@@ -16,11 +18,14 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 function initializeFields() {
-    if (getParameterByName("maxFeatures") !== null) {
-        $("#maxFeatures").val(getParameterByName("maxFeatures"));
+    if (getParameterByName("type") !== null) {
+        $("#type").val(getParameterByName("type"));
     }
     if (getParameterByName("cutoff") !== null) {
         $("#cutoff").val(getParameterByName("cutoff"));
+    }
+    if ($("#type").val() === "SampleID") {
+        $("#catvar-container").show();
     }
 }
 
@@ -28,7 +33,15 @@ function initializeFields() {
 // Component-Specific Sidebar Listeners
 //
 function createSpecificListeners() {
-    $("#maxFeatures").change(function() {
+    $("#catvar").change(function() {
+        updateAnalysis();
+    });
+    $("#type").change(function() {
+        if ($("#type").val() === "SampleID") {
+            $("#catvar-container").show();
+        } else {
+            $("#catvar-container").hide();
+        }
         updateAnalysis();
     });
     $("#cutoff").change(function() {
@@ -47,10 +60,30 @@ function customLoading() {}
 function renderNetwork(abundancesObj) {
     var nodes = abundancesObj["nodes"];
     var links = abundancesObj["links"];
+    var cutoffVal = abundancesObj["cutoff_val"];
+    var nodesRemoved = abundancesObj["nodes_removed"];
+    var uniqueGroups = abundancesObj["unique_groups"];
+
+    $("#heads-up li.transient").hide();
+    if (parseFloat(cutoffVal) !== parseFloat($("#cutoff").val())) {
+        $("#item-actual-coefficient").show();
+        $("#actual-coefficient").html(cutoffVal);
+    }
+    if (nodesRemoved > 0) {
+        if ($("#type").val() === "SampleID") {
+            $("#item-removed-samples").show();
+            $("#removed-samples").html(nodesRemoved);
+        } else {
+            $("#item-removed-taxonomic-groups").show();
+            $("#removed-taxonomic-groups").html(nodesRemoved);
+        }
+    }
 
     $("#analysis-container svg").empty();
     var svg = d3.select("#analysis-container svg");
-    var width = $("#analysis-container svg").width(),
+    var legendWidth = 100,
+        legendMargin = 12,
+        width = $("#analysis-container svg").width() - legendWidth,
         height = $("#analysis-container svg").height(),
         radius = 5;
 
@@ -60,10 +93,10 @@ function renderNetwork(abundancesObj) {
         .attr("class", "tooltip")
         .style("opacity", 0);
 
-    var color = d3.scaleOrdinal(d3.schemeCategory20);
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
 
     var simulation = d3
-        .forceSimulation()
+        .forceSimulation(nodes)
         .force(
             "link",
             d3
@@ -71,12 +104,14 @@ function renderNetwork(abundancesObj) {
             .id(function(d) {
                 return d.id;
             })
-            .distance(function() {
-                return 20;
-            })
         )
         .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height / 2));
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .stop();
+
+    simulation.force("link").links(links);
+
+    for (var i = 0; i < 300; ++i) simulation.tick();
 
     var g = svg.append("g");
     var link = g
@@ -86,6 +121,10 @@ function renderNetwork(abundancesObj) {
         .data(links)
         .enter()
         .append("line")
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; })
         .attr("stroke", function(d) {
             if (d.v < 0) {
                 return "#9d2424";
@@ -96,7 +135,8 @@ function renderNetwork(abundancesObj) {
             }
         })
         .attr("stroke-width", function(d) {
-            return (1 + Math.abs(d.v)) ^ 2;
+//            return (1 + Math.abs(d.v)) ^ 2;
+            return Math.sqrt(d.v);
         })
         .on("mouseover", function(d) {
             tooltip
@@ -129,18 +169,26 @@ function renderNetwork(abundancesObj) {
         .data(nodes)
         .enter()
         .append("circle")
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; })
         .attr("r", radius)
         .attr("fill", function(d) {
-            return "#242C70";
-            //return color(d.c);
+            return color(d.v);
         })
         .on("mouseover", function(d) {
+            var message = "";
+            if ($("#type").val() === "SampleID") {
+                message = "ID: <strong>" + d.id + "</strong><br />Categorical Variable: <strong>" + d.v + "</strong>";
+            } else {
+                message = "ID: <strong>" + d.id + "</strong><br />";
+            }
+
             tooltip
                 .transition()
                 .duration(100)
                 .style("opacity", 0.9);
             tooltip
-                .html("ID: " + d.id)
+                .html(message)
                 .style("left", d3.event.pageX + 10 + "px")
                 .style("top", d3.event.pageY + "px");
         })
@@ -165,6 +213,34 @@ function renderNetwork(abundancesObj) {
     simulation.nodes(nodes).on("tick", ticked);
 
     simulation.force("link").links(links);
+
+    if (uniqueGroups.length > 0) {
+        var legend = svg
+            .selectAll(".legend")
+            .data(uniqueGroups)
+            .enter()
+            .append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) {
+                return "translate(0," + i * 20 + ")";
+            });
+
+        legend
+            .append("rect")
+            .attr("x", width + legendMargin)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+
+        legend
+            .append("text")
+            .attr("x", width + legendMargin + 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .text(function(d) {
+                return d;
+            });
+    }
 
     //add zoom capabilities
     var zoom_handler = d3.zoom().on("zoom", zoom_actions);
@@ -217,7 +293,12 @@ function renderNetwork(abundancesObj) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    var type = $("#type").val();
+    if (type === "SampleID") {
+        showLoading();
+    } else {
+        showLoading(expectedLoadFactor, true);
+    }
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -230,11 +311,12 @@ function updateAnalysis() {
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
-    var maxFeatures = $("#maxFeatures").val();
     var cutoff = $("#cutoff").val();
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,
@@ -243,7 +325,7 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         level: level,
         catvar: catvar,
-        maxFeatures: maxFeatures,
+        type: type,
         cutoff: cutoff
     };
 

@@ -3,6 +3,7 @@
 // ============================================================
 var tagsInput;
 var abundancesObj = {};
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -17,17 +18,13 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialCorrvar1 = getParameterByName("corrvar1");
+var initialCorrvar2 = getParameterByName("corrvar2");
 var initialCorrvar1SpecificTaxonomies = getParameterByName("corrvar1SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar1SpecificTaxonomies")) : [];
 var initialCorrvar2SpecificTaxonomies = getParameterByName("corrvar2SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar2SpecificTaxonomies")) : [];
 var initialColorVar = getParameterByName("colorvar");
 var initialSizeVar = getParameterByName("sizevar");
 function initializeFields() {
-    if (getParameterByName("corrvar1") !== null) {
-        $("#corrvar1").val(getParameterByName("corrvar1"));
-    }
-    if (getParameterByName("corrvar2") !== null) {
-        $("#corrvar2").val(getParameterByName("corrvar2"));
-    }
     if (getParameterByName("samplestoshow") !== null) {
         $("#samplestoshow").val(getParameterByName("samplestoshow"));
     }
@@ -405,7 +402,7 @@ function renderCorrelations(abundancesObj) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[$("#taxonomy-level").val()];
 
@@ -443,6 +440,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,
@@ -517,6 +516,14 @@ function updateCorrVar(result) {
     addCorrGroup("mian-abundance", "Aggregate Abundance");
     addCorrGroup("mian-max", "Max Abundance");
 
+    if (initialCorrvar1) {
+        $("#corrvar1").val(initialCorrvar1);
+        initialCorrvar1 = null;
+    }
+    if (initialCorrvar2) {
+        $("#corrvar2").val(initialCorrvar2);
+        initialCorrvar2 = null;
+    }
     if (initialColorVar) {
         $("#colorvar").val(initialColorVar);
         initialColorVar = null;

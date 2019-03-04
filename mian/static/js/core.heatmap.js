@@ -2,6 +2,8 @@
 // Heatmap JS Component
 // ============================================================
 
+var expectedLoadFactor = 300;
+
 //
 // Initialization
 //
@@ -86,7 +88,7 @@ function uncompress(base64data) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -105,6 +107,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

@@ -2,6 +2,7 @@
 // Boxplot JS Component
 // ============================================================
 var tagsInput;
+var expectedLoadFactor = 5000;
 
 var statsTypes = {
     wilcoxon: "Wilcoxon Rank-Sum",
@@ -99,7 +100,7 @@ function createSpecificListeners() {
 function updateAnalysis() {
     console.log("Updating analysis");
 
-    showLoading();
+    showLoading(expectedLoadFactor);
     $("#stats-container").hide();
 
     var taxonomyFilter = getSelectedTaxFilter();
@@ -124,6 +125,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

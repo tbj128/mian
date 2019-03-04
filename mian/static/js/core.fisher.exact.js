@@ -6,6 +6,7 @@
 // Global Components
 //
 var tableResults = [];
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -154,7 +155,7 @@ function renderFisherTable(abundancesObj) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 

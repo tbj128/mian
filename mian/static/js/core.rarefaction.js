@@ -2,6 +2,7 @@
 // Rarefaction JS Component
 // ============================================================
 var abundancesObj = {};
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -208,7 +209,7 @@ function checkSubsampleWarning() {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var data = {
         pid: $("#project").val()

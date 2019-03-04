@@ -73,10 +73,11 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
+                <!-- NOTE: This grouping is swapped on purpose, to reflect a more natural interpretation of the parameters -->
                 <label class="control-label">Donut Grouping <i class="fa fa-info-circle" data-toggle="popover" data-title="X-Axis Display" data-content="Choose to either show the taxonomic groups on the x-axis or the categorical variable"></i></label>
                 <select id="xaxis" name="xaxis" class="form-control pad-bottom">
-                    <option value="Taxonomic">Taxonomic Groups</option>
-                    <option value="Categorical">Categorical Variable</option>
+                    <option value="Categorical">Taxonomic Variable</option>
+                    <option value="Taxonomic">Categorical Groups</option>
                 </select>
 
                 <input type="hidden" id="plotType" value="donut" />

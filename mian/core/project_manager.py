@@ -243,6 +243,7 @@ class ProjectManager(object):
             row += 1
 
         headers = base_arr[0][col_offset:]
+
         sample_labels = []
 
         sample_col = 1 if is_mothur else 0
@@ -281,7 +282,6 @@ class ProjectManager(object):
                 if len(row) > max_length:
                     max_length = len(row)
 
-
             if max_length > 2:
                 new_taxonomy_table = taxonomy_table
             else:
@@ -299,7 +299,7 @@ class ProjectManager(object):
 
         return otus_from_taxonomy_file
 
-    def create_project_from_biom(self, project_name, biom_name, phylogenetic_filename, subsample_type="auto", subsample_to=0):
+    def create_project_from_biom(self, project_name, biom_name, sample_metadata_filename, phylogenetic_filename, subsample_type="auto", subsample_to=0):
         """
         Reads a .biom from a provided file location and converts it into a mian-compatible TSV file
 
@@ -316,7 +316,7 @@ class ProjectManager(object):
             raise Exception("Cannot create project folder as it already exists")
 
         try:
-            status, message = self.__process_biom_file(pid, project_dir, project_name, biom_name, phylogenetic_filename, subsample_type, subsample_to)
+            status, message = self.__process_biom_file(pid, project_dir, project_name, biom_name, sample_metadata_filename, phylogenetic_filename, subsample_type, subsample_to)
             if status != OK:
                 # Removes the project directory since the files in it are invalid
                 shutil.rmtree(project_dir, ignore_errors=True)
@@ -328,17 +328,23 @@ class ProjectManager(object):
             shutil.rmtree(project_dir, ignore_errors=True)
             return BIOM_ERROR, ""
 
-    def __process_biom_file(self, pid, project_dir, project_name, biom_name, phylogenetic_filename, subsample_type="auto", subsample_to=0):
+    def __process_biom_file(self, pid, project_dir, project_name, biom_name, sample_metadata_filename, phylogenetic_filename, subsample_type="auto", subsample_to=0):
         # Renames the uploaded file to a standard file schema and moves to the project directory
-        biom_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
-        biom_staging_dir = os.path.join(biom_staging_dir, biom_name)
+        biom_base_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, self.user_id)
+        biom_staging_dir = os.path.join(biom_base_staging_dir, biom_name)
         biom_project_dir = os.path.join(project_dir, BIOM_FILENAME)
         os.rename(biom_staging_dir, biom_project_dir)
         logger.info("Moved " + str(biom_staging_dir) + " to " + str(biom_project_dir))
 
+        # Move the sample metadata to the correction location
+        orig_sample_metadata_filename = ""
+        if sample_metadata_filename != "":
+            os.rename(os.path.join(biom_base_staging_dir, sample_metadata_filename),
+                      os.path.join(project_dir, SAMPLE_METADATA_FILENAME))
+
         # Move the phylogenetic tree to the correction location
         if phylogenetic_filename != "":
-            os.rename(os.path.join(biom_staging_dir, phylogenetic_filename),
+            os.rename(os.path.join(biom_base_staging_dir, phylogenetic_filename),
                       os.path.join(project_dir, PHYLOGENETIC_FILENAME))
 
         # Extracts the OTU table from the biom file and saves the raw OTU file
@@ -380,37 +386,64 @@ class ProjectManager(object):
         sample_metadata = biom_table.metadata(None, 'sample')
         sample_ids = biom_table.ids('sample')
         sample_ids_from_sample_metadata = {}
-        with open(sample_metadata_path, 'w') as f:
-            output_tsv = csv.writer(f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            sample_index = 0
-            if sample_metadata is not None:
-                for k in sample_metadata:
-                    if sample_index == 0:
-                        # We will write out the metadata headers at the top of this file
-                        headers = ["SampleID"]
-                        for key, value in sorted(k.items()):
-                            headers.append(key)
-                        output_tsv.writerow(headers)
 
-                    sample_id = sample_ids[sample_index]
-                    sample_ids_from_sample_metadata[sample_id] = 1
-                    row_data = [sample_id]
-                    for key, value in sorted(k.items()):
-                        # Write out the contents of each metadata
-                        row_data.append(value)
-                    output_tsv.writerow(row_data)
-                    sample_index += 1
+        if sample_metadata is not None and len(sample_metadata) > 1 and len(sample_metadata[0]) > 1:
+            # Write out the sample metadata from the biom file (this will overwrite any uploaded sample metadata)
+            with open(sample_metadata_path, 'w') as f:
+                output_tsv = csv.writer(f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                sample_index = 0
+                if sample_metadata is not None:
+                    for k in sample_metadata:
+                        if sample_index == 0:
+                            # We will write out the metadata headers at the top of this file
+                            headers = ["SampleID"]
+                            for key, value in sorted(k.items()):
+                                headers.append(key)
+                            output_tsv.writerow(headers)
+
+                        sample_id = sample_ids[sample_index]
+                        sample_ids_from_sample_metadata[sample_id] = 1
+                        row_data = [sample_id]
+                        for key, value in sorted(k.items()):
+                            # Write out the contents of each metadata
+                            row_data.append(value)
+                        output_tsv.writerow(row_data)
+                        sample_index += 1
+                else:
+                    # There is no sample metadata associated with this biom
+                    while sample_index < len(sample_ids):
+                        if sample_index == 0:
+                            headers = ["SampleID"]
+                            output_tsv.writerow(headers)
+                        sample_id = sample_ids[sample_index]
+                        sample_ids_from_sample_metadata[sample_id] = 1
+                        row_data = [sample_id]
+                        output_tsv.writerow(row_data)
+                        sample_index += 1
+        else:
+            if sample_metadata_filename != "":
+                # Maybe the user uploaded the sample metadata themselves, so we'll use that instead
+                sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME)
+                i = 0
+                while i < len(sample_metadata):
+                    if i > 0:
+                        sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
+                    i += 1
+                # Set the original sample metadata filename only when we are confident
+                # that we are going to usethis file
+                orig_sample_metadata_filename = sample_metadata_filename
             else:
-                # There is no sample metadata associated with this biom
-                while sample_index < len(sample_ids):
-                    if sample_index == 0:
-                        headers = ["SampleID"]
-                        output_tsv.writerow(headers)
-                    sample_id = sample_ids[sample_index]
-                    sample_ids_from_sample_metadata[sample_id] = 1
-                    row_data = [sample_id]
-                    output_tsv.writerow(row_data)
-                    sample_index += 1
+                # User did not upload a sample metadata file and the biom file had not sample metadata so
+                # we will just use the sample labels as-is (ie. treat it like there's no sample metadata)
+                with open(sample_metadata_path, 'w') as f:
+                    output_tsv = csv.writer(f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    output_tsv.writerow(["SampleID"])
+
+                    i = 0
+                    while i < len(sample_labels):
+                        sample_ids_from_sample_metadata[sample_labels[i]] = 1
+                        output_tsv.writerow([sample_labels[i]])
+                        i += 1
 
         missing_labels = self.__validate_otu_table_sample_labels(sample_labels, sample_ids_from_sample_metadata)
         if len(missing_labels) > 0:
@@ -493,13 +526,15 @@ class ProjectManager(object):
         map_file.project_name = project_name
         map_file.orig_biom_name = biom_name
         map_file.orig_phylogenetic_name = phylogenetic_filename
+        if orig_sample_metadata_filename != "":
+            map_file.orig_sample_metadata_name = orig_sample_metadata_filename
         map_file.subsampled_type = subsample_type
         map_file.subsampled_value = subsample_to
         map_file.subsampled_removed_samples = samples_removed
         map_file.taxonomy_type = taxonomy_type
         map_file.matrix_type = matrix_type
         map_file.num_samples = len(sample_labels)
-        map_file.num_otus = len(headers)
+        map_file.num_otus = len(otu_metadata)
         map_file.save()
 
         return OK, ""
@@ -665,6 +700,10 @@ class ProjectManager(object):
     def modify_subsampling(self, pid, subsample_type="auto", subsample_to=0):
         # Subsamples raw OTU table
         base = DataIO.tsv_to_np_table(self.user_id, pid, RAW_OTU_TABLE_FILENAME)
+
+        # Convert to int as you can only subsample int tables
+        base = base.astype(int)
+
         labels = DataIO.tsv_to_table(self.user_id, pid, RAW_OTU_TABLE_LABELS_FILENAME)
         subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                                                 pid=pid,
@@ -673,6 +712,9 @@ class ProjectManager(object):
                                                                                                 base=base,
                                                                                                 headers=labels[0],
                                                                                                 sample_labels=labels[1])
+
+        if isinstance(subsample_value, (np.generic)):
+            subsample_value = subsample_value.item()
 
         # Updates the map.txt file
         map_file = Map(self.user_id, pid)

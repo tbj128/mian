@@ -5,6 +5,7 @@ var abundancesObj = {};
 var boundX = [];
 var boundY = [];
 var boundRenderFire = 0;
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -285,7 +286,7 @@ function renderNMDS(data) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -302,6 +303,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Heatmap - Mian</title>
+    <title>Correlation Heatmap - Mian</title>
 </head>
 
 <style>
@@ -31,7 +31,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Heatmap <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Heatmap" data-content="Generates a heatmap of the Pearson product-moment correlation matrix (grouped at the indicated taxonomic level).<br />Correlations are calculated across all samples - apply a sample filter if you wish to correlate only on specific groups of samples." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Correlation Heatmap <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Heatmap" data-content="Generates a heatmap of the Pearson product-moment correlation matrix (grouped at the indicated taxonomic level).<br />Correlations are calculated across all samples - apply a sample filter if you wish to correlate only on specific groups of samples." data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -62,13 +62,13 @@
                         <option value="OTU" selected>OTU</option>
                     </select>
 
-                    <label class="control-label">Correlation Variable 1 <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which variable should be used for correlations (on the X-axis)<br /><br /><strong>Taxonomy</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
+                    <label class="control-label">Correlation Variable 1 (Columns) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which variable should be used for correlations (on the X-axis)<br /><br /><strong>Taxonomy</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
                     <select id="corrvar1" name="corrvar1" class="form-control">
                         <option value="Taxonomy">Taxonomy</option>
                         <option value="Metadata">Sample Metadata</option>
                     </select>
 
-                    <label class="control-label">Correlation Variable 2 <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which variable should be used for correlations (on the Y-axis)<br /><br /><strong>Taxonomy</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
+                    <label class="control-label">Correlation Variable 2 (Rows) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which variable should be used for correlations (on the Y-axis)<br /><br /><strong>Taxonomy</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
                     <select id="corrvar2" name="corrvar2" class="form-control">
                         <option value="Taxonomy">Taxonomy</option>
                         <option value="Metadata">Sample Metadata</option>

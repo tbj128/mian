@@ -24,7 +24,7 @@ class TreeView(AnalysisBase):
     def run(self, user_request):
         logger.info("Starting TreeView analysis")
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 

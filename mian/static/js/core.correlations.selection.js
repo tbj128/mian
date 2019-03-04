@@ -7,6 +7,7 @@
 //
 var tableResults = [];
 var correlationDataTable;
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -60,7 +61,7 @@ function customCatVarCallback(result) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
     var expvar = $("#expvar").val();
@@ -80,6 +81,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

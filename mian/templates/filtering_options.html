@@ -3,25 +3,31 @@
     <div class="panel-heading" role="tab" id="headingDataFiltering">
       <h4 class="panel-title">
         <a class="accordion-toggle collapsed" role="button" data-toggle="collapse" href="#dataFiltering" aria-expanded="false" aria-controls="dataFiltering">
-          Data Filtering
+            Data Filtering <sup class="applied-indicator" style="display:none;"><small>APPLIED</small></sup>
         </a>
       </h4>
     </div>
     <div id="dataFiltering" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingDataFiltering">
       <div class="panel-body">
-          {% if lowExpressionFilteringEnabled %}
           <label class="control-label">OTU Filtering (By Low Expression)  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="OTU Filtering" data-content="Any taxonomic items that do not meet the min count and prevalence thresholds will be excluded from this analysis (does not apply to diversity analysis)" data-trigger="hover"></i></label>
           <div class="row">
             <div class="col-md-6">
                 <span class="inner-control-label">Count Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="Count Threshold" data-content="A taxonomic item is considered present in a sample if it is expressed at or above the count threshold. The taxonomic item is kept if it is present in more than or equal to the prevalence percentage of samples."></i></span>
+                {% if lowExpressionFilteringEnabled %}
                 <input class="form-control" id="countthreshold" name="countthreshold" type="number" value="2"/>
+                {% else %}
+                <input class="form-control" id="countthreshold" name="countthreshold" type="number" value="0"/>
+                {% endif %}
             </div>
             <div class="col-md-6">
                 <span class="inner-control-label">Prevalence (%) <i class="fa fa-info-circle" data-toggle="popover" data-title="Prevalence" data-content="A taxonomic item is considered present in a sample if it is expressed at or above the count threshold. The taxonomic item is kept if it is present in more than or equal to the prevalence percentage of samples."></i></span>
-                <input class="form-control" id="prevalence" name="prevalence" type="number" value="10" step="5"/>
+                {% if lowExpressionFilteringEnabled %}
+                <input class="form-control" id="prevalence" name="prevalence" type="number" value="10" step="1"/>
+                {% else %}
+                <input class="form-control" id="prevalence" name="prevalence" type="number" value="0" step="1"/>
+                {% endif %}
             </div>
           </div>
-          {% endif %}
 
           <label class="control-label">OTU Filtering (By Taxonomy Level)  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="OTU Filtering" data-content="Applies the analysis after filtering the OTU table by specific taxonomies. <br />For example, you can filter the table by only including OTUs that fall under a specific phylum." data-trigger="hover"></i></label>
           <select id="filter-otu" name="filter-otu" class="form-control pad-bottom">

@@ -22,6 +22,7 @@ $(document).ready(function() {
         $("#upload-otu-tab")
             .removeClass("btn-primary")
             .addClass("btn-default");
+        $(".biom-only").show();
         $("#otu-upload-container").fadeOut(250);
         $("#biom-upload-container").fadeIn(250);
         $("#projectUploadType").val("biom");
@@ -33,6 +34,7 @@ $(document).ready(function() {
         $("#upload-biom-tab")
             .removeClass("btn-primary")
             .addClass("btn-default");
+        $(".biom-only").hide();
         $("#otu-upload-container").fadeIn(250);
         $("#biom-upload-container").fadeOut(250);
         $("#projectUploadType").val("otu");
@@ -54,6 +56,9 @@ $(document).ready(function() {
     document
         .getElementById("otuMetadata")
         .addEventListener("change", uploadMetadata, false);
+    document
+        .getElementById("phylogenetic")
+        .addEventListener("change", uploadPhylogenetic, false);
 
     document.getElementById("subsampleType").addEventListener(
         "change",
@@ -156,6 +161,10 @@ $(document).ready(function() {
 
     function uploadMetadata() {
         upload("otuMetadataForm");
+    }
+
+    function uploadPhylogenetic() {
+        upload("phylogeneticForm");
     }
 
     // Catch the form submit and upload the files

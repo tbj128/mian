@@ -32,7 +32,7 @@
           <div>
             <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;biom</h3>
-              <p>Upload a biom file containing the OTU table, sample metadata, and OTU taxonomy information.</p>
+              <p>Upload a biom file containing the OTU table and taxonomy information. Optionally include the sample metadata in the biom file.</p>
               <p>Both dense and sparse <a href="http://biom-format.org/documentation/biom_format.html" target="_blank">biom file formats</a> are supported (v1.0, v2.0, v2.1)</p>
             </div>
             <div class="col-md-2 upload-status">
@@ -69,6 +69,7 @@
             </div>
           </div>
         </div>
+
         <div id="otu-upload-container" style="display:none;">
           <div id="otu-table-upload-container" class="row upload-item">
             <div>
@@ -157,11 +158,13 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
               </form>
             </div>
           </div>
-
+        </div>
+        <div>
           <div id="sample-metadata-upload-container" class="row upload-item" >
             <div class="col-md-10">
-              <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Sample Metadata</h3>
-              <p>Tab-delimited or comma-delimited file with each row representing an sample/group ID and its corresponding metadata. Example metadata:</p>
+              <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Sample Metadata<span class="biom-only"> (Optional)</span></h3>
+              <p><span class="biom-only">Mian automatically uses the sample metadata in the biom file, if available. </span>Tab-delimited or comma-delimited file with each row representing an sample/group ID and its corresponding metadata. Example metadata:</p>
+
 <pre><code>Sample	body_site	disease	...
 1a	gut		Disease	...
 1b	skin		Control	...
@@ -180,12 +183,10 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
               </form>
             </div>
           </div>
-        </div>
-        <div>
           <div id="phylogenetic-upload-container" class="row upload-item" >
             <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Phylogenetic Tree (Optional)</h3>
-                <p>Newick-formatted phylogenetic tree, where the leaves are the OTUs from the OTU table. This is only needed if you want to use <a href="https://en.wikipedia.org/wiki/UniFrac">Unifrac</a> distances in your analysis. Note that not all OTU-picking pipelines will produce a phylogenetic tree.</p>
+                <p>Newick-formatted phylogenetic tree, where the leaves are the OTUs from the OTU table. This is only needed if you want to use <a href="https://en.wikipedia.org/wiki/UniFrac" target="_blank">Unifrac</a> distances in your analysis. Note that not all OTU-picking pipelines will produce a phylogenetic tree.</p>
             </div>
             <div class="col-md-2 upload-status">
               <form id="phylogeneticForm" action="/upload" method="post" enctype="multipart/form-data">

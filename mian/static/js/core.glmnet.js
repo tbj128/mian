@@ -7,6 +7,7 @@
 //
 var tableResults = [];
 var expVarToType = {};
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -198,7 +199,7 @@ function renderGlmnetTable(abundancesObj) {
 }
 
 function updateAnalysis() {
-    showLoading();
+    showLoading(expectedLoadFactor);
     $("#display-poisson-error").hide();
 
     var level = taxonomyLevels[getTaxonomicLevel()];

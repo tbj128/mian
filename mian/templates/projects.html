@@ -173,7 +173,9 @@
                             {% endif %}
                           </span>
                           &nbsp;
-                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-html="true" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+                          {% if projectNames[projectName]["matrix_type"] == "int" %}
+                            <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-html="true" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+                          {% endif %}
 
                           {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
                           <br />
@@ -187,6 +189,13 @@
                         </td>
                         <td class="col-md-3">BIOM File</td>
                       </tr>
+                      {% if projectNames[projectName]["orig_sample_metadata_name"] != "" %}
+                        <tr>
+                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
+                          <td class="subsampleDisplayContainer"></td>
+                          <td>Sample Metadata</td>
+                        </tr>
+                      {% endif %}
                       {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
                         <tr>
                           <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>
@@ -232,7 +241,11 @@
                             {% endif %} 
                           </span>
                           &nbsp;
-                          <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>&nbsp;
+                          &nbsp;
+                          {% if projectNames[projectName]["matrix_type"] == "int" %}
+                            <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>&nbsp;
+                          {% endif %}
+
                           <a class="download" data-downloadtype="otu_subsampled" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the subsampled OTU table"><i class="fa fa-download"></i></a>
 
 
@@ -256,7 +269,7 @@
                       <tr> 
                         <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
                         <td class="subsampleDisplayContainer"></td> 
-                        <td>Metadata</td>
+                        <td>Sample Metadata</td>
                       </tr>
                       {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
                         <tr>

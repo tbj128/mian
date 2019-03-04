@@ -90,6 +90,7 @@ class OTUTableSubsampler(object):
         samples_removed = []
         subsampled_base = []
         subsampled_sample_labels = []
+
         i = 0
         for row in base:
             if subsample_type == SUBSAMPLE_TYPE_MANUAL and sum(row) < subsample_to:

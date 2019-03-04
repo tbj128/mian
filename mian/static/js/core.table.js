@@ -7,6 +7,7 @@
 //
 var tableResults = [];
 var differentialDataTable;
+var expectedLoadFactor = 500;
 
 //
 // Initialization
@@ -62,7 +63,7 @@ function renderTableView(table) {
 function updateAnalysis() {
     $("#download-btn").hide();
     $("#too-large-message").hide();
-    showLoading();
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -76,6 +77,8 @@ function updateAnalysis() {
 
     var data = {
         pid: $("#project").val(),
+        taxonomyFilterCount: getLowCountThreshold(),
+        taxonomyFilterPrevalence: getPrevalenceThreshold(),
         taxonomyFilter: taxonomyFilter,
         taxonomyFilterRole: taxonomyFilterRole,
         taxonomyFilterVals: taxonomyFilterVals,

@@ -262,9 +262,11 @@ def create():
             # Biom files are self-contained - they must be split up and subsampled to be compatible with mian
             project_biom_name = secure_filename(request.form['projectBiomName'])
             project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
+            project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
             try:
                 status, message = project_manager.create_project_from_biom(project_name=project_name,
                                                                  biom_name=project_biom_name,
+                                                                 sample_metadata_filename=project_sample_id_name,
                                                                  phylogenetic_filename=project_phylogenetic_name,
                                                                  subsample_type=project_subsample_type,
                                                                  subsample_to=project_subsample_to)
@@ -431,12 +433,12 @@ def correlations_share():
 @app.route('/correlation_network')
 @flask_login.login_required
 def correlation_network():
-    return render_normal('correlation_network.html', request)
+    return render_normal('correlation_network.html', request, show_low_expression_filtering=True)
 
 
 @app.route('/share/correlation_network')
 def correlation_network_share():
-    return render_sharing('correlation_network.html', request)
+    return render_sharing('correlation_network.html', request, show_low_expression_filtering=True)
 
 
 @app.route('/correlations_selection')
@@ -486,12 +488,12 @@ def glmnet_share():
 @app.route('/heatmap')
 @flask_login.login_required
 def heatmap():
-    return render_normal('heatmap.html', request)
+    return render_normal('heatmap.html', request, show_low_expression_filtering=True)
 
 
 @app.route('/share/heatmap')
 def heatmap_share():
-    return render_sharing('heatmap.html', request)
+    return render_sharing('heatmap.html', request, show_low_expression_filtering=True)
 
 
 @app.route('/nmds')
@@ -1014,7 +1016,7 @@ def getCorrelationNetworkShare():
 
 
 def getCorrelationNetwork(user_request, req):
-    user_request.set_custom_attr("maxFeatures", req.form['maxFeatures'])
+    user_request.set_custom_attr("type", req.form['type'])
     user_request.set_custom_attr("cutoff", req.form['cutoff'])
 
     plugin = CorrelationNetwork()
@@ -1723,6 +1725,7 @@ def get_project_ids_to_info(user_id):
                         "pid": pid,
                         "project_type": project_type,
                         "orig_biom_name": project_map.orig_biom_name,
+                        "orig_sample_metadata_name": project_map.orig_sample_metadata_name,
                         "orig_phylogenetic_name": project_map.orig_phylogenetic_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,

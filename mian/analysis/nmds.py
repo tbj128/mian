@@ -35,7 +35,7 @@ class NMDS(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
         phylogenetic_tree = table.get_phylogenetic_tree()
         return self.analyse(user_request, base, headers, sample_labels, metadata_vals, phylogenetic_tree)
@@ -58,6 +58,9 @@ class NMDS(object):
 
             base = base.astype(int)
             tree = TreeNode.read(StringIO(phylogenetic_tree))
+            if len(tree.root().children) > 2:
+                # Ensure that the tree is rooted if it is not already rooted
+                tree = tree.root_at_midpoint()
             dist_matrix = beta_diversity(type, base, ids=sample_labels, otu_ids=headers, tree=tree)
         elif type == "euclidean":
             dist_matrix = euclidean_distances(base)

@@ -12,7 +12,7 @@ class Composition(AnalysisBase):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata = table.get_sample_metadata().get_as_table()
 
@@ -91,7 +91,12 @@ class Composition(AnalysisBase):
                 avgVal = 0
                 if valsTot > 0:
                     avgVal = round(valsSum / float(valsTot), 3)
-                    headerToVal[headerIndex] = avgVal
+
+                headerToVal[headerIndex] = {
+                    "sum": valsSum,
+                    "tot": valsTot,
+                    "avgVal": avgVal
+                }
 
                 if header not in headerToTotalVal:
                     headerToTotalVal[headerIndex] = 0
@@ -188,7 +193,11 @@ class Composition(AnalysisBase):
                     relativeAbun = round(otuSumsByGroup[k] / float(totalByGroup[k]), 3)
                 else:
                     relativeAbun = 0
-                relativeAbunObj[id] = relativeAbun
+                relativeAbunObj[id] = {
+                    "sum": otuSumsByGroup[k],
+                    "tot": totalByGroup[k],
+                    "avgVal": relativeAbun
+                }
 
                 # Calculate the total val for each metadata (just so we can return the top metadata in each category)
                 if k not in metadataToTotalVal:

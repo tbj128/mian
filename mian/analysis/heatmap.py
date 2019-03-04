@@ -17,7 +17,7 @@ class Heatmap(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation(user_request)
+        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
         metadata = table.get_sample_metadata()
 
         return self.analyse(user_request, base, headers, sample_labels, metadata)

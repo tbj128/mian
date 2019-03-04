@@ -57,7 +57,7 @@ class TestProjectManager(unittest.TestCase):
 
         shutil.copyfile(os.path.join(unit_tests_dir, "table.biom"), os.path.join(test_staging_dir, "table.biom"))
 
-        pid, status = project_manager.create_project_from_biom("tmp_project", "table.biom", "")
+        pid, status = project_manager.create_project_from_biom("tmp_project", "table.biom", "", "")
 
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))

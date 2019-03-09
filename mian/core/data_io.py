@@ -86,15 +86,16 @@ class DataIO:
                                     empty_header_cols[j] = True
                                 j += 1
 
-                    if accept_empty_headers:
-                        otu_map.append(o)
-                    else:
-                        new_row = []
-                        j = 0
-                        while j < len(o):
-                            if j not in empty_header_cols:
+                    new_row = []
+                    j = 0
+                    while j < len(o):
+                        if j not in empty_header_cols:
+                            if isinstance(o[j], str):
+                                new_row.append(o[j].strip())
+                            else:
                                 new_row.append(o[j])
-                            j += 1
+                        j += 1
+                    if len(new_row) > 0:
                         otu_map.append(new_row)
                 i += 1
 
@@ -116,8 +117,15 @@ class DataIO:
         project_dir = os.path.join(project_dir, user_id)
         project_dir = os.path.join(project_dir, pid)
         csv_path = os.path.join(project_dir, csv_name)
-        logger.info("Before write")
         outputCSV = csv.writer(open(csv_path, 'w'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row in base:
-            outputCSV.writerow(row)
+            new_row = []
+            j = 0
+            while j < len(row):
+                if isinstance(row[j], str):
+                    new_row.append(row[j].strip())
+                else:
+                    new_row.append(row[j])
+                j += 1
+            outputCSV.writerow(new_row)
         logger.info("After write")

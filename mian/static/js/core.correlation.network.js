@@ -177,7 +177,7 @@ function renderNetwork(abundancesObj) {
         })
         .on("mouseover", function(d) {
             var message = "";
-            if ($("#type").val() === "SampleID") {
+            if ($("#type").val() === "SampleID" && $("#catvar").val() !== "none") {
                 message = "ID: <strong>" + d.id + "</strong><br />Categorical Variable: <strong>" + d.v + "</strong>";
             } else {
                 message = "ID: <strong>" + d.id + "</strong><br />";

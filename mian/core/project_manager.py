@@ -111,16 +111,17 @@ class ProjectManager(object):
                       os.path.join(project_dir, PHYLOGENETIC_FILENAME))
 
         sample_ids_from_sample_metadata = {}
-        sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME)
+        sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME, accept_empty_headers=False)
 
         i = 0
         while i < len(sample_metadata):
             if i > 0:
-                sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
+                if len(sample_metadata[i]) > 0:
+                    sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
             i += 1
 
         logger.info("Beginning to load the OTU table")
-        base_arr = DataIO.tsv_to_table_from_path(os.path.join(user_staging_dir, otu_filename))
+        base_arr = DataIO.tsv_to_table_from_path(os.path.join(user_staging_dir, otu_filename), accept_empty_headers=False)
 
         # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
         try:
@@ -288,12 +289,13 @@ class ProjectManager(object):
                 new_taxonomy_table.append(taxonomy_table[0])
                 row = 1
                 while row < len(taxonomy_table):
-                    taxonomy_line = taxonomy_table[row][1]
-                    taxonomy_type = self.get_taxonomy_type(taxonomy_line)
-                    taxonomy_arr = self.process_taxonomy_line(taxonomy_type, taxonomy_line)
+                    if len(taxonomy_table[row]) > 1:
+                        taxonomy_line = taxonomy_table[row][1]
+                        taxonomy_type = self.get_taxonomy_type(taxonomy_line)
+                        taxonomy_arr = self.process_taxonomy_line(taxonomy_type, taxonomy_line)
 
-                    new_row = [taxonomy_table[row][0]] + taxonomy_arr
-                    new_taxonomy_table.append(new_row)
+                        new_row = [taxonomy_table[row][0]] + taxonomy_arr
+                        new_taxonomy_table.append(new_row)
                     row += 1
             DataIO.table_to_tsv(new_taxonomy_table, user_id, pid, TAXONOMY_FILENAME)
 
@@ -423,11 +425,12 @@ class ProjectManager(object):
         else:
             if sample_metadata_filename != "":
                 # Maybe the user uploaded the sample metadata themselves, so we'll use that instead
-                sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME)
+                sample_metadata = DataIO.tsv_to_table(self.user_id, pid, SAMPLE_METADATA_FILENAME, accept_empty_headers=False)
                 i = 0
                 while i < len(sample_metadata):
                     if i > 0:
-                        sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
+                        if len(sample_metadata[i]) > 0:
+                            sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
                     i += 1
                 # Set the original sample metadata filename only when we are confident
                 # that we are going to usethis file

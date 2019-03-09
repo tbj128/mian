@@ -113,7 +113,7 @@ function updateAnalysis(abundancesObj) {
 function renderTree(abundancesObj) {
     $("#analysis-container").empty();
 
-    var root = abundancesObj["root"];
+    var root = d3.hierarchy(abundancesObj["root"]);
     var metaUnique = abundancesObj["metaUnique"];
     var numSamples = abundancesObj["numSamples"];
     root = root["children"][0];
@@ -131,13 +131,16 @@ function renderTree(abundancesObj) {
     var width = 300 * taxLevelMultiplier + 26 * metaUnique.length,
         height = 20 * numLeaves + 40;
 
-    var cluster = d3.layout
-        .cluster()
+    var cluster = d3.cluster()
         .size([height - 40, width - 32 * metaUnique.length - 80]);
 
-    var diagonal = d3.svg.diagonal().projection(function(d) {
-        return [d.y, d.x];
-    });
+//    var diagonal = d3.diagonal().projection(function(d) {
+//        return [d.y, d.x];
+//    });
+
+    var diagonal = d3.linkHorizontal()
+        .x(function(d) { return d.y; })
+        .y(function(d) { return d.x; });
 
     var svgBase = d3
         .select("#analysis-container")
@@ -155,8 +158,9 @@ function renderTree(abundancesObj) {
         .style("opacity", 0)
         .style("width", "160px");
 
-    var nodes = cluster.nodes(root),
-        links = cluster.links(nodes);
+    var nodes = cluster(root),
+        links = nodes.links();
+    nodes = nodes.descendants();
 
     var link = svg
         .selectAll(".link")
@@ -189,7 +193,7 @@ function renderTree(abundancesObj) {
             return d.children ? "end" : "end";
         })
         .text(function(d) {
-            return d.name;
+            return d.data.name;
         });
 
     var nodeAbun = node.filter(function(d) {
@@ -202,18 +206,18 @@ function renderTree(abundancesObj) {
 
     var display_values = $("#display_values").val();
     var sValue = function(d) {
-        if (d.hasOwnProperty("val")) {
+        if (d.data.hasOwnProperty("val")) {
             var maxPer = 0;
             for (var i = 0; i < metaUnique.length; i++) {
-                if (d["val"][metaUnique[i]]) {
+                if (d.data["val"][metaUnique[i]]) {
                     if (display_values == "nonzero" || display_values == "nonzerosample") {
                         var perAbun =
-                            d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
+                            d.data["val"][metaUnique[i]].c / d.data["val"][metaUnique[i]].tc;
                         if (perAbun > maxPer) {
                             maxPer = perAbun;
                         }
                     } else {
-                        var perAbun = d["val"][metaUnique[i]];
+                        var perAbun = d.data["val"][metaUnique[i]];
                         if (perAbun > maxPer) {
                             maxPer = perAbun;
                         }
@@ -226,12 +230,11 @@ function renderTree(abundancesObj) {
         }
     };
     var maxSValue = d3.max(nodes, sValue);
-    var sScale = d3.scale
-        .linear()
+    var sScale = d3.scaleLinear()
         .domain([0, maxSValue])
         .range([0.5, 8]);
 
-    var color = d3.scale.category10();
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
 
     var a = false;
     for (var i = 0; i < metaUnique.length; i++) {
@@ -246,13 +249,13 @@ function renderTree(abundancesObj) {
                 return color(metaUnique[i]);
             })
             .attr("r", function(d) {
-                if (d["val"][metaUnique[i]]) {
+                if (d.data["val"][metaUnique[i]]) {
                     if (display_values === "nonzero" || display_values === "nonzerosample") {
                         var perAbun =
-                            d["val"][metaUnique[i]].c / d["val"][metaUnique[i]].tc;
+                            d.data["val"][metaUnique[i]].c / d.data["val"][metaUnique[i]].tc;
                         return sScale(perAbun);
                     } else {
-                        var perAbun = d["val"][metaUnique[i]];
+                        var perAbun = d.data["val"][metaUnique[i]];
                         return sScale(perAbun);
                     }
                 } else {
@@ -262,9 +265,9 @@ function renderTree(abundancesObj) {
             .on("mouseover", function(d) {
                 var meta = d3.select(this).attr("meta");
                 if (display_values === "nonzero") {
-                    var c = d["val"][meta].c;
-                    var tc = d["val"][meta].tc;
-                    var numOTUs = d["val"].numOTUs;
+                    var c = d.data["val"][meta].c;
+                    var tc = d.data["val"][meta].tc;
+                    var numOTUs = d.data["val"].numOTUs;
 
                     var per = 100 * c / tc;
                     tooltip
@@ -288,9 +291,9 @@ function renderTree(abundancesObj) {
                         .style("left", d3.event.pageX - 160 + "px")
                         .style("top", d3.event.pageY + 12 + "px");
                 } else if (display_values === "nonzerosample") {
-                    var c = d["val"][meta].c;
-                    var tc = d["val"][meta].tc;
-                    var numOTUs = d["val"].numOTUs;
+                    var c = d.data["val"][meta].c;
+                    var tc = d.data["val"][meta].tc;
+                    var numOTUs = d.data["val"].numOTUs;
 
                     var per = 100 * c / tc;
                     tooltip
@@ -312,10 +315,10 @@ function renderTree(abundancesObj) {
                         .style("left", d3.event.pageX - 160 + "px")
                         .style("top", d3.event.pageY + 12 + "px");
                 } else {
-                    var metaVal = d["val"][meta];
-                    var c = d["val"]["c"];
-                    var tc = d["val"]["tc"];
-                    var numOTUs = d["val"].numOTUs;
+                    var metaVal = d.data["val"][meta];
+                    var c = d.data["val"]["c"];
+                    var tc = d.data["val"]["tc"];
+                    var numOTUs = d.data["val"].numOTUs;
 
                     tooltip
                         .transition()

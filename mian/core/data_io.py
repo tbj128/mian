@@ -20,7 +20,7 @@ class DataIO:
 
     @staticmethod
     @lru_cache(maxsize=128)
-    def tsv_to_table(user_id, pid, csv_name, sep="\t"):
+    def tsv_to_table(user_id, pid, csv_name, sep="\t", accept_empty_headers=True):
         """
         Reads a CSV/TSV table from a provided file location and returns the table
         contents in an array, where each row in the array is a row in the original
@@ -46,7 +46,7 @@ class DataIO:
 
         logger.info("Opening file with name " + csv_name)
 
-        return DataIO.tsv_to_table_from_path(csv_name, sep)
+        return DataIO.tsv_to_table_from_path(csv_name, sep, accept_empty_headers)
 
     @staticmethod
     def text_from_path(user_id, pid, filename):
@@ -63,7 +63,7 @@ class DataIO:
                 return fn.read().replace('\n', '')
 
     @staticmethod
-    def tsv_to_table_from_path(csv_path, sep="\t"):
+    def tsv_to_table_from_path(csv_path, sep="\t", accept_empty_headers=True):
         otu_map = []
         with open(csv_path, 'r') as csvfile:
             dialect = csv.Sniffer().sniff(csvfile.readline())
@@ -74,9 +74,29 @@ class DataIO:
             csvfile.seek(0)
 
             base_csv = csv.reader(csvfile, delimiter=delimiter)
+            empty_header_cols = {}
+            i = 0
             for o in base_csv:
-                if o != "":
-                    otu_map.append(o)
+                if len(o) > 0:
+                    if i == 0:
+                        if not accept_empty_headers:
+                            j = 0
+                            while j < len(o):
+                                if o[j].strip() == "":
+                                    empty_header_cols[j] = True
+                                j += 1
+
+                    if accept_empty_headers:
+                        otu_map.append(o)
+                    else:
+                        new_row = []
+                        j = 0
+                        while j < len(o):
+                            if j not in empty_header_cols:
+                                new_row.append(o[j])
+                            j += 1
+                        otu_map.append(new_row)
+                i += 1
 
         return otu_map
 

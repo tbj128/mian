@@ -21,14 +21,16 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 function initializeFields() {
-    if (getParameterByName("alphaType") !== null) {
-        $("#alphaType").val(getParameterByName("alphaType"));
-        if (getParameterByName("alphaType") === "faith_pd") {
-            $("#alphaContextContainer").hide();
-        }
-    }
     if (getParameterByName("alphaContext") !== null) {
         $("#alphaContext").val(getParameterByName("alphaContext"));
+        if ($("#alphaContext").val() === "speciesnumber") {
+            $("#alphaTypeContainer").hide();
+        } else {
+            $("#alphaTypeContainer").show();
+        }
+    }
+    if (getParameterByName("alphaType") !== null) {
+        $("#alphaType").val(getParameterByName("alphaType"));
     }
     if (getParameterByName("statisticalTest") !== null) {
         $("#statisticalTest").val(getParameterByName("statisticalTest"));
@@ -43,20 +45,18 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#alphaContext").change(function() {
+        if ($("#alphaContext").val() === "speciesnumber") {
+            $("#alphaTypeContainer").hide();
+        } else {
+            $("#alphaTypeContainer").show();
+        }
+        updateAnalysis();
+    });
+
     $("#alphaType").change(function() {
         updateAnalysis();
-
-        if ($("#alphaType").val() === "faith_pd") {
-            $("#alphaContextContainer").hide();
-        } else {
-            $("#alphaContextContainer").show();
-        }
     });
-
-    $("#alphaContext").change(function() {
-        updateAnalysis();
-    });
-
     $("#statisticalTest").change(function() {
         $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
         updateAnalysis();
@@ -105,6 +105,11 @@ function updateAnalysis() {
     var alphaType = $("#alphaType").val();
     var alphaContext = $("#alphaContext").val();
     var statisticalTest = $("#statisticalTest").val();
+
+    if (alphaType === "faith_pd" && alphaContext === "evenness") {
+        loadError("<strong>Evenness cannot be calculated using Faith's Phylogenetic Diversity.</strong>");
+        return;
+    }
 
     var data = {
         pid: $("#project").val(),

@@ -231,9 +231,10 @@ function showNoCatvar() {
     $("#display-no-catvar").show();
 }
 
-function loadError() {
+function loadError(details) {
     hideLoading();
     $("#display-error").show();
+    $("#display-error-details").empty();
     $("#display-no-results").hide();
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
@@ -241,6 +242,10 @@ function loadError() {
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
+
+    if (details) {
+        $("#display-error-details").html(details + " ");
+    }
 }
 
 function loadNoResults() {
@@ -906,7 +911,7 @@ function renderPvaluesTable(abundancesObj) {
     var statsArr = abundancesObj["stats"];
     if (statsArr.length == 0) {
         $("#stats-rows").append(
-            '<tr><td colspan=3>No p-values could be generated. Try adjusting the search parameters. <br /><i style="color:#999">Try changing the Category Breakdown on the left.</i></td></tr>'
+            '<tr><td colspan=3>No p-values could be generated. Try adjusting the search parameters. <br /><i style="color:#999">Try changing the Categorical Variable on the left.</i></td></tr>'
         );
     } else {
         for (var i = 0; i < statsArr.length; i++) {

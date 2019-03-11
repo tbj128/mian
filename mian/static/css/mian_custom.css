@@ -369,7 +369,7 @@ hr {
 }
 
 .analysis-container circle:hover {
-  fill: orange;
+  fill: orange !important;
   stroke: orange;
   opacity: 1;
 }

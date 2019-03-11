@@ -222,6 +222,7 @@ function renderBoxplots(abundancesObj) {
             .attr("cy", function(d) {
                 return yScale(d.a);
             })
+            .style("fill", "#242C70")
             .on("mouseover", function(d) {
                 tooltip
                     .transition()

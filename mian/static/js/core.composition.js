@@ -157,7 +157,7 @@ function renderStackedBarplot(abundancesObj) {
     $("#analysis-container").empty();
 
     var data = abundancesObj["abundances"];
-    uniqueGroupVals = abundancesObj["uniqueVals"].map(tuple => tuple[0]);
+    uniqueGroupVals = abundancesObj["uniqueVals"].map(function(tuple) { return tuple[0]; });
     idMap = abundancesObj["idMap"];
 
     var uniqueTaxas = data.map(function(d) {
@@ -214,7 +214,7 @@ function renderStackedBarplot(abundancesObj) {
         0,
         d3.max(data, function(d) {
             var sum = 0;
-            d.cv.forEach(cv => {
+            d.cv.forEach(function(cv) {
                 sum += cv.value.avgVal;
             });
             return sum;
@@ -341,7 +341,7 @@ function renderStackedBarplot(abundancesObj) {
 
     var legend = svg
         .selectAll(".legend")
-        .data(uniqueGroupVals.slice(0, 10).map(v => idMap[v]))
+        .data(uniqueGroupVals.slice(0, 10).map(function(v) { return idMap[v]; }))
         .enter()
         .append("g")
         .attr("class", "legend")
@@ -378,7 +378,7 @@ function renderDonut(abundancesObj) {
     $("#analysis-container").empty();
 
     var data = abundancesObj["abundances"];
-    uniqueGroupVals = abundancesObj["uniqueVals"].map(tuple => tuple[0]);
+    uniqueGroupVals = abundancesObj["uniqueVals"].map(function(tuple) { return tuple[0]; });
     idMap = abundancesObj["idMap"];
 
     var uniqueSubGroupVals = data.map(function(d) {

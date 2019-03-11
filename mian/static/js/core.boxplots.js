@@ -166,7 +166,7 @@ function updateAnalysis() {
 }
 
 function customCatVarCallback(result) {
-    var allHeaders = result.filter(obj => obj.type === "both" || obj.type === "numeric").map(obj => obj.name);
+    var allHeaders = result.filter(function(obj) { return obj.type === "both" || obj.type === "numeric"; }).map(function(obj) { return obj.name; });
 
     $("#yvals").empty();
     $("#yvals").append(
@@ -203,7 +203,7 @@ function loadOTUTableHeaders() {
                 tagsInput = $("#specific-taxonomy-typeahead").tagsinput({
                     typeahead: {
                         source: typeAheadSource,
-                        afterSelect: () => {
+                        afterSelect: function() {
                             $("#specific-taxonomy-typeahead")
                                 .tagsinput("input")
                                 .val("");
@@ -217,7 +217,7 @@ function loadOTUTableHeaders() {
                 );
 
                 if (initialYvalsSpecificTaxonomy) {
-                    initialYvalsSpecificTaxonomy.forEach(val => {
+                    initialYvalsSpecificTaxonomy.forEach(function(val) {
                         $("#specific-taxonomy-typeahead").tagsinput('add', val);
                     });
                     initialYvalsSpecificTaxonomy = null;

@@ -503,7 +503,7 @@ function getSampleFilteringOptions(isSync) {
                     placeholderText: "Enter",
                     typeahead: {
                         source: json,
-                        afterSelect: () => {
+                        afterSelect: function() {
                             $("#sample-typeahead-filter")
                                 .tagsinput("input")
                                 .val("");
@@ -513,7 +513,7 @@ function getSampleFilteringOptions(isSync) {
 
                 // Add default selected based on URL
                 if (initialSampleFilterVals) {
-                    initialSampleFilterVals.forEach(val => {
+                    initialSampleFilterVals.forEach(function(val) {
                         $("#taxonomy-typeahead-filter").tagsinput('add', val);
                     });
                 }
@@ -701,12 +701,12 @@ function updateCatVar(isNumeric) {
             var headers =
                 isNumeric === true ?
                 json
-                .filter(obj => obj.type === "numeric" || obj.type === "both")
-                .map(obj => obj.name) :
+                .filter(function(obj) { return obj.type === "numeric" || obj.type === "both"; })
+                .map(function(obj) { return obj.name; }) :
                 json
-                .filter(obj => obj.type === "categorical" || obj.type === "both")
-                .map(obj => obj.name);
-            var filteringHeaders = json.map(obj => obj.name);
+                .filter(function(obj) { return obj.type === "categorical" || obj.type === "both"; })
+                .map(function(obj) { return obj.name; });
+            var filteringHeaders = json.map(function(obj) { return obj.name});
 
             var $catvar = $("#catvar");
 
@@ -874,7 +874,7 @@ function renderTaxonomicLevel(firstLoad) {
             freeInput: false,
             typeahead: {
                 source: taxasArr,
-                afterSelect: () => {
+                afterSelect: function() {
                     $("#taxonomy-typeahead-filter")
                         .tagsinput("input")
                         .val("");
@@ -884,7 +884,7 @@ function renderTaxonomicLevel(firstLoad) {
 
         // Grab the initial values from the URL, if applicable
         if (firstLoad) {
-            taxonomyFilterVals.forEach(val => {
+            taxonomyFilterVals.forEach(function(val) {
                 $("#taxonomy-typeahead-filter").tagsinput('add', val);
             });
         }
@@ -937,7 +937,7 @@ function setGetParameters(data) {
     var hash = location.hash;
     url = url.replace(hash, '');
 
-    Object.keys(data).forEach(key => {
+    Object.keys(data).forEach(function(key) {
         var paramName = key;
         var paramValue = data[key];
         if (paramValue === null || paramValue === undefined) {
@@ -1037,7 +1037,7 @@ function downloadSVG(name) {
 }
 
 function downloadCSV(table) {
-    var csvContent = "data:text/csv;charset=utf-8," + table.map(e=>e.join(",")).join("\n");
+    var csvContent = "data:text/csv;charset=utf-8," + table.map(function(e) { return e.join(","); }).join("\n");
     var encodedUri = encodeURI(csvContent);
     window.open(encodedUri);
 }

@@ -50,7 +50,7 @@ function renderTableView(table) {
         order: [
             [0, "asc"]
         ],
-        columns: table[0].map(t => {
+        columns: table[0].map(function(t) {
             return {
                 title: t
             }

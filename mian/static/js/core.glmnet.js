@@ -94,8 +94,8 @@ function customLoading() {
 
 function customCatVarCallback(result) {
     $("#expvar").empty();
-    var allHeaders = result.map(obj => obj.name);
-    result.forEach(obj => {
+    var allHeaders = result.map(function(obj) { return obj.name; });
+    result.forEach(function(obj) {
         expVarToType[obj.name] = obj.type;
         $("#expvar").append(
             '<option value="' + obj.name + '">' + obj.name + "</option>"

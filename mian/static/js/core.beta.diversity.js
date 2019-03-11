@@ -152,9 +152,9 @@ function customCatVarCallback(json) {
 
 function updateStrata(result) {
     var categoricalHeaders = [
-        "None",
-        ...result.filter(obj => obj.type === "categorical" || obj.type === "both").map(obj => obj.name)
+        "None"
     ];
+    categoricalHeaders = categoricalHeaders.concat(result.filter(function(obj) { return obj.type === "categorical" || obj.type === "both"; }).map(function (obj) { return obj.name; }));
 
     $("#strata").empty();
 

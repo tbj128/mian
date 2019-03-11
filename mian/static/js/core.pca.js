@@ -503,7 +503,7 @@ function render3dPCA(args) {
             zLine.push([maxRange[0], maxRange[0], x]);
         }
 
-        scatter = args["pca"].map(d => {
+        scatter = args["pca"].map(function(d) {
             return {
                 ...d,
                 x: d.pca1,
@@ -512,13 +512,6 @@ function render3dPCA(args) {
                 id: d.s,
             };
         });
-
-        // Uncomment if you want to filter points outside of the range
-//        scatter = scatter.filter(d => {
-//            return d.pca1 >= maxRange[0] && d.pca1 <= maxRange[1]
-//                && d.pca2 >= maxRange[0] && d.pca2 <= maxRange[1]
-//                && d.pca3 >= maxRange[0] && d.pca3 <= maxRange[1];
-//        });
 
         var data = {
             xGrid: xgrid3d(xg),

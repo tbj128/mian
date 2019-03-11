@@ -137,7 +137,7 @@ function loadOTUTableHeaders(corrvarType) {
                     tagsInput = $("#specific-taxonomy-typeahead-1").tagsinput({
                         typeahead: {
                             source: typeAheadSource,
-                            afterSelect: () => {
+                            afterSelect: function() {
                                 $("#specific-taxonomy-typeahead-1")
                                     .tagsinput("input")
                                     .val("");
@@ -151,7 +151,7 @@ function loadOTUTableHeaders(corrvarType) {
                     );
 
                     if (initialCorrvar1SpecificTaxonomies) {
-                        initialCorrvar1SpecificTaxonomies.forEach(val => {
+                        initialCorrvar1SpecificTaxonomies.forEach(function(val) {
                             $("#specific-taxonomy-typeahead-1").tagsinput('add', val);
                         });
                         initialCorrvar1SpecificTaxonomies = null;
@@ -166,7 +166,7 @@ function loadOTUTableHeaders(corrvarType) {
                     tagsInput = $("#specific-taxonomy-typeahead-2").tagsinput({
                         typeahead: {
                             source: typeAheadSource,
-                            afterSelect: () => {
+                            afterSelect: function() {
                                 $("#specific-taxonomy-typeahead-2")
                                     .tagsinput("input")
                                     .val("");
@@ -180,7 +180,7 @@ function loadOTUTableHeaders(corrvarType) {
                     );
 
                     if (initialCorrvar2SpecificTaxonomies) {
-                        initialCorrvar2SpecificTaxonomies.forEach(val => {
+                        initialCorrvar2SpecificTaxonomies.forEach(function(val) {
                             $("#specific-taxonomy-typeahead-2").tagsinput('add', val);
                         });
                         initialCorrvar2SpecificTaxonomies = null;
@@ -481,15 +481,16 @@ function updateAnalysis() {
 }
 
 function updateCorrVar(result) {
-    var allHeaders = ["None", ...result.map(obj => obj.name)];
+    var allHeaders = ["None"];
+    allHeaders = allHeaders.concat(result.map(function(obj) { return obj.name; }));
     var numericHeaders = [
-        "None",
-        ...result.filter(obj => obj.type === "numeric" || obj.type === "both").map(obj => obj.name)
+        "None"
     ];
+    numericHeaders = numericHeaders.concat(result.filter(function(obj) { return obj.type === "numeric" || obj.type === "both"; }).map(function(obj) { return obj.name; }));
     var categoricalHeaders = [
-        "None",
-        ...result.filter(obj => obj.type === "categorical" || obj.type === "both").map(obj => obj.name)
+        "None"
     ];
+    categoricalHeaders = categoricalHeaders.concat(result.filter(function(obj) { return obj.type === "categorical" || obj.type === "both"; }).map(function(obj) { return obj.name; }));
 
     addCorrGroup("mian-none", "None Selected");
 

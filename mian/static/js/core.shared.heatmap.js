@@ -7,12 +7,12 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax, corrvar1, corrvar2) {
     var showYLabels = $("#showlabels").val() === "all" || $("#showlabels").val() === "y";
 
     var rowHeaders = abundancesObj["row_headers"];
-    var rowHeadersShort = rowHeaders.map(r => {
+    var rowHeadersShort = rowHeaders.map(function(r) {
         var arr = r.split(";");
         return arr[arr.length - 1];
     });
     var colHeaders = abundancesObj["col_headers"];
-    var colHeadersShort = colHeaders.map(r => {
+    var colHeadersShort = colHeaders.map(function(r) {
         var arr = r.split(";");
         return arr[arr.length - 1];
     });

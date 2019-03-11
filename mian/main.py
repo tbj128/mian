@@ -1463,13 +1463,22 @@ def downloadFile():
     type = request.args.get('type', '')
     project_manager = ProjectManager(user)
 
-    def generate():
+    def generate_tsv():
         for row in project_manager.get_file_for_download(currProject, type):
             yield '\t'.join(row) + '\n'
-    return Response(generate(),
-                       mimetype="text/tab-separated-values",
-                       headers={"Content-Disposition":
-                                    "attachment;filename=" + type + ".txt"})
+    def generate_text():
+        return project_manager.get_file_for_download(currProject, type)
+
+    if type == "biom" or type == "phylogenetic":
+        return Response(generate_text(),
+                           mimetype="text/plain",
+                           headers={"Content-Disposition":
+                                        "attachment;filename=" + type + ".txt"})
+    else:
+        return Response(generate_tsv(),
+                           mimetype="text/tab-separated-values",
+                           headers={"Content-Disposition":
+                                        "attachment;filename=" + type + ".txt"})
 
 
 # ------------------

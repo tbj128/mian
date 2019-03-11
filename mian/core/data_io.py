@@ -49,7 +49,7 @@ class DataIO:
         return DataIO.tsv_to_table_from_path(csv_name, sep, accept_empty_headers)
 
     @staticmethod
-    def text_from_path(user_id, pid, filename):
+    def text_from_path(user_id, pid, filename, replace_newlines=True):
         project_dir = os.path.dirname(__file__)
         project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
         project_dir = os.path.join(project_dir, "data")
@@ -60,7 +60,10 @@ class DataIO:
             return ""
         else:
             with open(csv_name, 'r') as fn:
-                return fn.read().replace('\n', '')
+                if replace_newlines:
+                    return fn.read().replace('\n', '')
+                else:
+                    return fn.read()
 
     @staticmethod
     def tsv_to_table_from_path(csv_path, sep="\t", accept_empty_headers=True):

@@ -51,13 +51,13 @@ class ProjectManager(object):
 
     def get_file_for_download(self, project_name, type):
         if type == "phylogenetic":
-            return DataIO.tsv_to_table(self.user_id, project_name, PHYLOGENETIC_FILENAME)
+            return DataIO.text_from_path(self.user_id, project_name, PHYLOGENETIC_FILENAME, replace_newlines=False)
         elif type == "sample_metadata":
             return DataIO.tsv_to_table(self.user_id, project_name, SAMPLE_METADATA_FILENAME)
         elif type == "taxonomy":
             return DataIO.tsv_to_table(self.user_id, project_name, TAXONOMY_FILENAME)
         elif type == "biom":
-            return DataIO.tsv_to_table(self.user_id, project_name, BIOM_FILENAME)
+            return DataIO.text_from_path(self.user_id, project_name, BIOM_FILENAME, replace_newlines=False)
         elif type == "otu":
             table = DataIO.tsv_to_table(self.user_id, project_name, RAW_OTU_TABLE_FILENAME)
             labels = DataIO.tsv_to_table(self.user_id, project_name, RAW_OTU_TABLE_LABELS_FILENAME)

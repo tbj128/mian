@@ -44,8 +44,18 @@ class AlphaDiversity(AnalysisBase):
         alphaDiv = diversity(allOTUs, index = alphaType)
         if (alphaContext == "evenness") {
             S <- specnumber(allOTUs)
-            J <- alphaDiv/log(S)
-            return(J)
+            if (alphaType == "shannon") {
+                J <- alphaDiv/log(S)
+                return(J)
+            } else if (alphaType == "simpson") {
+                # simpson index = 1 - D
+                J <- (1-alphaDiv)/S
+                return(J)
+            } else {
+                # invsimpson index = 1/D
+                J <- (1/alphaDiv)/S
+                return(J)
+            }
         } else if (alphaContext == "speciesnumber") {
             S <- specnumber(allOTUs)
             return(S)

@@ -389,8 +389,9 @@ class ProjectManager(object):
         sample_ids = biom_table.ids('sample')
         sample_ids_from_sample_metadata = {}
 
-        if sample_metadata is not None and len(sample_metadata) > 1 and len(sample_metadata[0]) > 1:
-            # Write out the sample metadata from the biom file (this will overwrite any uploaded sample metadata)
+        if sample_metadata_filename == "" and sample_metadata is not None and len(sample_metadata) > 1 and len(sample_metadata[0]) > 1:
+            # Write out the sample metadata from the biom file
+            # Based on user feedback, we will prefer the uploaded sample metadata over the biom sample metadata
             with open(sample_metadata_path, 'w') as f:
                 output_tsv = csv.writer(f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 sample_index = 0

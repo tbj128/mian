@@ -318,6 +318,12 @@ hr {
   word-wrap: break-word;
 }
 
+.project-no-projects {
+  margin: 64px 64px 64px 424px;
+  color: #999;
+  padding: 20px;
+}
+
 .project-empty {
   margin: 64px 64px 64px 424px;
   color: #999;
@@ -329,7 +335,7 @@ hr {
   text-align: center;
 }
 
-.project-empty i {
+.project-no-projects i, .project-empty i {
   margin-top: 20px;
   margin-bottom: 20px;
 }

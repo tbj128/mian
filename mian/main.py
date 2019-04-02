@@ -297,6 +297,11 @@ def project_not_found():
     return render_template('project_not_found.html')
 
 
+@app.route('/project_empty')
+def project_empty():
+    return render_template('project_empty.html')
+
+
 @app.route('/')
 def home():
     if current_user.is_authenticated:
@@ -320,6 +325,9 @@ def not_found(e):
 def render_normal(html_file, request, show_low_expression_filtering=False):
     projectNames = get_project_ids_to_info(current_user.id)
     currProject = request.args.get('pid', '')
+
+    if len(projectNames) == 0:
+        return redirect(url_for(project_empty))
 
     not_found = True
     for projectName in projectNames:

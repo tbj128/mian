@@ -327,7 +327,7 @@ def render_normal(html_file, request, show_low_expression_filtering=False):
     currProject = request.args.get('pid', '')
 
     if len(projectNames) == 0:
-        return redirect(url_for(project_empty))
+        return redirect(url_for('project_empty'))
 
     not_found = True
     for projectName in projectNames:

@@ -661,7 +661,7 @@ function createGlobalVisualizationListeners() {
                 }
             }
         });
-        $("#sharing-link-input").val(window.location.protocol + window.location.host + "/share" + window.location.pathname + window.location.search);
+        $("#sharing-link-input").val(window.location.protocol + "//" + window.location.host + "/share" + window.location.pathname + window.location.search);
     });
     $("#sharing-link-input").focus(function() {
         this.select();

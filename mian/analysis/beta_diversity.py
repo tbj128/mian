@@ -14,6 +14,7 @@ import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 import time
 
+from scipy import stats, math
 from skbio import TreeNode
 from skbio.diversity import beta_diversity
 from io import StringIO
@@ -102,6 +103,10 @@ class BetaDiversity(AnalysisBase):
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+        if user_request.get_custom_attr("colorvar") != "None":
+            color_metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("colorvar"))
+        else:
+            color_metadata_values = []
 
         strata_values = None
         if user_request.get_custom_attr("strata").lower() != "none":
@@ -112,11 +117,11 @@ class BetaDiversity(AnalysisBase):
         phylogenetic_tree = table.get_phylogenetic_tree()
 
         if user_request.get_custom_attr("api").lower() == "beta":
-            return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_to_metadata_map, phylogenetic_tree)
+            return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree)
         else:
             return self.analyse_permanova(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_to_metadata_map)
 
-    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_from_metadata, phylogenetic_tree):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_from_metadata, phylogenetic_tree):
         if len(metadata_values) == 0:
             raise ValueError("Beta diversity can only be used when there are at least two groups to compare between")
 
@@ -201,6 +206,7 @@ class BetaDiversity(AnalysisBase):
             if vals[i] == float('inf'):
                 raise ValueError("Cannot have infinite values")
             obj["a"] = round(vals[i], 6)
+            obj["color"] = color_metadata_values[i] if len(color_metadata_values) == len(vals) else ""
 
             if metadata_values[i] in statsAbundances:
                 statsAbundances[metadata_values[i]].append(vals[i])

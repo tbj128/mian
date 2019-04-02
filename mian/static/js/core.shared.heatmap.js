@@ -53,16 +53,20 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax, corrvar1, corrvar2) {
         width = xGridSize * colHeaders.length,
         height = yGridSize * rowHeaders.length;
 
-    var coloursRainbow = ["#2c7bb6", "#00a6ca", "#00ccbc", "#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
+    var coloursRainbow = ["#d7191c", "#fffb9e", "#2c7bb6"];
+//    var coloursRainbow = ["#2c7bb6", "#00a6ca", "#00ccbc", "#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
     if ($("#colorscheme").val() === "blue") {
-        coloursRainbow = ["#3182bd", "#9ecae1", "#f3f9ff"];
+        coloursRainbow = ["#3182bd", "#f3f9ff"];
     }
     coloursRainbow.reverse();
-    var colourRangeRainbow = d3.range(rangeMin, rangeMax, (rangeMax - rangeMin) / (coloursRainbow.length - 1));
-    colourRangeRainbow.push(1);
+    var colourRangeRainbow = d3.range(rangeMin, rangeMax);
+//    var colourRangeRainbow = d3.range(rangeMin, rangeMax, (rangeMax - rangeMin) / (coloursRainbow.length - 1));
+//    colourRangeRainbow.push(1);
+
+    var mid = (rangeMax - rangeMin) / 2;
 
     var color = d3.scaleLinear()
-        .domain(colourRangeRainbow)
+        .domain([rangeMin, mid, rangeMax])
         .range(coloursRainbow)
         .interpolate(d3.interpolateHcl);
 
@@ -155,9 +159,9 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax, corrvar1, corrvar2) {
 
     var context = canvas.node().getContext("2d");
 
-    var step = (rangeMax - rangeMin) / (color.range().length - 1);
+//    var step = (rangeMax - rangeMin) / (color.range().length - 1);
 
-    color.domain(d3.range(rangeMin, rangeMax, step));
+//    color.domain(d3.range(rangeMin, rangeMax, step));
 
     data.forEach(function(row, i) {
         row.forEach(function(val, j) {

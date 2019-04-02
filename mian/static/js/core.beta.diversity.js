@@ -17,6 +17,7 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialColorVar = getParameterByName("colorvar");
 var initialStrata = getParameterByName("strata") ? getParameterByName("strata") : "";
 function initializeFields() {
     if (getParameterByName("betaType") !== null) {
@@ -29,6 +30,10 @@ function initializeFields() {
 //
 function createSpecificListeners() {
     $("#catvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#colorvar").change(function() {
         updateAnalysis();
     });
 
@@ -66,6 +71,7 @@ function updateAnalysis() {
     var catvar = $("#catvar").val();
     var strata = $("#strata").val();
     var betaType = $("#betaType").val();
+    var colorvar = $("#colorvar").val();
 
     var data = {
         pid: $("#project").val(),
@@ -80,7 +86,8 @@ function updateAnalysis() {
         level: level,
         catvar: catvar,
         strata: strata,
-        betaType: betaType
+        betaType: betaType,
+        colorvar: colorvar
     };
 
     setGetParameters(data);
@@ -99,7 +106,8 @@ function updateAnalysis() {
                 loadNoResults();
             } else {
                 loadSuccess();
-                renderBoxplots(abundancesObj);
+
+                renderBoxplots(abundancesObj, "", "Beta Diversity (Distance to Centroid)");
                 renderBetadisper(abundancesObj);
                 $("#permanova-container").show();
             }
@@ -124,6 +132,7 @@ function updateAnalysis() {
             console.log(err);
         }
     });
+
 }
 
 function renderPERMANOVA(abundancesObj) {
@@ -146,11 +155,9 @@ function renderBetadisper(abundancesObj) {
 }
 
 
-function customCatVarCallback(json) {
-    updateStrata(json);
-}
+function customCatVarCallback(result) {
+    var allHeaders = ["None"].concat(result.map(function(obj) { return obj.name; }));
 
-function updateStrata(result) {
     var categoricalHeaders = [
         "None"
     ];
@@ -165,5 +172,19 @@ function updateStrata(result) {
         } else {
             $("#strata").append('<option value="' + categoricalHeaders[i] + '">' + categoricalHeaders[i] + '</option>');
         }
+    }
+
+    //
+    // Renders the experimental variable
+    //
+    $("#colorvar").empty();
+    allHeaders.forEach(function(obj) {
+        $("#colorvar").append(
+            '<option value="' + obj + '">' + obj + "</option>"
+        );
+    });
+    if (initialColorVar) {
+        $("#colorvar").val(initialColorVar);
+        initialColorVar = null;
     }
 }

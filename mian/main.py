@@ -773,6 +773,9 @@ def getAlphaDiversityShare():
 
 
 def getAlphaDiversity(user_request, req):
+    user_request.set_custom_attr("expvar", req.form['expvar'])
+    user_request.set_custom_attr("colorvar", req.form['colorvar'])
+    user_request.set_custom_attr("plotType", req.form['plotType'])
     user_request.set_custom_attr("alphaType", req.form['alphaType'])
     user_request.set_custom_attr("alphaContext", req.form['alphaContext'])
     user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
@@ -803,6 +806,7 @@ def getBetaDiversityShare():
 
 
 def getBetaDiversity(user_request, req):
+    user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("betaType", req.form['betaType'])
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "beta")
@@ -833,6 +837,7 @@ def getBetaDiversityPERMANOVAShare():
 
 
 def getBetaDiversityPERMANOVA(user_request, req):
+    user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("betaType", req.form['betaType'])
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "permanova")
@@ -893,6 +898,7 @@ def getBoxplotsShare():
 
 def getBoxplots(user_request, req):
     user_request.set_custom_attr("yvals", req.form['yvals'])
+    user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("yvalsSpecificTaxonomy", req.form['yvalsSpecificTaxonomy'])
     user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
 

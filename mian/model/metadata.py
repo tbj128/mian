@@ -191,7 +191,7 @@ class Metadata(object):
         :return:
         """
         meta_vals = {}
-        if metadata_name.lower() == "none":
+        if metadata_name.lower() == "none" or metadata_name.lower() == "":
             return meta_vals
 
         meta_col = self.get_metadata_column_number(metadata_name)

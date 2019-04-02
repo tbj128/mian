@@ -18,6 +18,7 @@ import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
+from scipy import stats, math
 from skbio import TreeNode
 from skbio.diversity import alpha_diversity
 from io import StringIO
@@ -75,15 +76,21 @@ class AlphaDiversity(AnalysisBase):
         # No OTUs should be excluded for diversity analysis
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
-        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
+        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("expvar"))
+        if user_request.get_custom_attr("colorvar") != "None":
+            color_metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("colorvar"))
+        else:
+            color_metadata_values = []
+
+        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.get_custom_attr("expvar"))
         phylogenetic_tree = table.get_phylogenetic_tree()
 
-        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_to_metadata_map, phylogenetic_tree)
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree)
 
-    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, sample_ids_to_metadata_map, phylogenetic_tree):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree):
         logger.info("Starting Alpha Diversity analysis")
 
+        plotType = user_request.get_custom_attr("plotType")
         alphaType = user_request.get_custom_attr("alphaType")
         alphaContext = user_request.get_custom_attr("alphaContext")
         statisticalTest = user_request.get_custom_attr("statisticalTest")
@@ -135,32 +142,58 @@ class AlphaDiversity(AnalysisBase):
 
             logger.info("After vegan alpha diversity")
 
-        # Calculate the statistical p-value
-        abundances = {}
-        statsAbundances = {}
-        i = 0
-        while i < len(vals):
-            obj = {}
-            obj["s"] = str(sample_labels[i])
-            if vals[i] == float('inf'):
-                raise ValueError("Cannot have infinite values")
-            obj["a"] = round(vals[i], 6)
-            meta = metadata_values[i] if len(metadata_values) > 0 else "All"
 
-            # Group the abundance values under the corresponding metadata values
-            if meta in statsAbundances:
-                statsAbundances[meta].append(vals[i])
-                abundances[meta].append(obj)
-            else:
-                statsAbundances[meta] = [vals[i]]
-                abundances[meta] = [obj]
+        if plotType == "boxplot":
+            # Calculate the statistical p-value
+            abundances = {}
+            statsAbundances = {}
+            i = 0
+            while i < len(vals):
+                obj = {}
+                obj["s"] = str(sample_labels[i])
+                if vals[i] == float('inf'):
+                    raise ValueError("Cannot have infinite values")
+                obj["a"] = round(vals[i], 6)
+                meta = metadata_values[i] if len(metadata_values) > 0 else "All"
 
-            i += 1
-        statistics = Statistics.getTtest(statsAbundances, statisticalTest)
+                # Group the abundance values under the corresponding metadata values
+                if meta in statsAbundances:
+                    statsAbundances[meta].append(vals[i])
+                    abundances[meta].append(obj)
+                else:
+                    statsAbundances[meta] = [vals[i]]
+                    abundances[meta] = [obj]
 
-        logger.info("After T-test")
+                i += 1
+            statistics = Statistics.getTtest(statsAbundances, statisticalTest)
 
-        abundancesObj = {}
-        abundancesObj["abundances"] = abundances
-        abundancesObj["stats"] = statistics
-        return abundancesObj
+            logger.info("After T-test")
+
+            abundancesObj = {}
+            abundancesObj["abundances"] = abundances
+            abundancesObj["stats"] = statistics
+            return abundancesObj
+        else:
+            corrArr = []
+            corrValArr1 = []
+            corrValArr2 = []
+            i = 0
+            while i < len(vals):
+                obj = {}
+                obj["s"] = str(sample_labels[i])
+                obj["c1"] = float(metadata_values[i])
+                obj["c2"] = float(vals[i])
+                obj["color"] = color_metadata_values[i] if len(color_metadata_values) == len(vals) else ""
+                corrArr.append(obj)
+                corrValArr1.append(float(metadata_values[i]))
+                corrValArr2.append(float(vals[i]))
+                i += 1
+
+            coef, pval = stats.pearsonr(corrValArr1, corrValArr2)
+            if math.isnan(coef):
+                coef = 0
+            if math.isnan(pval):
+                pval = 1
+
+            abundances_obj = {"corrArr": corrArr, "coef": coef, "pval": pval}
+            return abundances_obj

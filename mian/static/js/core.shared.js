@@ -68,7 +68,6 @@ if (getParameterByName("sampleFilterRole")) {
     initialSampleFilterRole = null;
 }
 
-
 // Global cache of the "Category Breakdown" values
 var catVars = [];
 var hasCatVar;
@@ -365,7 +364,7 @@ function getSelectedTaxFilterVals() {
     );
     if (taxTypeaheadFilterVisible) {
         var taxTypeaheadFilter = $("#taxonomy-typeahead-filter").val();
-        return JSON.stringify(taxTypeaheadFilter);
+        return JSON.stringify(taxTypeaheadFilter.split(","));
     } else {
         var taxonomy = $("#taxonomy-specific").val();
         if (taxonomy == null) {
@@ -418,7 +417,7 @@ function getSelectedSampleFilterVals() {
     );
     if (sampleTypeaheadFilterVisible) {
         var sampleTypeaheadFilter = $("#sample-typeahead-filter").val();
-        return JSON.stringify(sampleTypeaheadFilter);
+        return JSON.stringify(sampleTypeaheadFilter.split(","));
     } else {
         var samples = $("#filter-sample-specific").val();
         if (samples == null) {
@@ -1040,4 +1039,18 @@ function downloadCSV(table) {
     var csvContent = "data:text/csv;charset=utf-8," + table.map(function(e) { return e.join(","); }).join("\n");
     var encodedUri = encodeURI(csvContent);
     window.open(encodedUri);
+}
+
+// Provides a simple hashing (non-secure)
+String.prototype.hashCode = function() {
+    var hash = 0;
+    if (this.length == 0) {
+        return hash;
+    }
+    for (var i = 0; i < this.length; i++) {
+        var char = this.charCodeAt(i);
+        hash = ((hash<<5)-hash)+char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
 }

@@ -41,9 +41,17 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable. A different beta diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata the beta diversity should be associated with. A different beta diversity boxplot will be created for each unique categorical metadata value. A scatterplot will be created between the alpha diversity and numerical metadata value." data-trigger="hover"></i></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
+
+                <div id="colorvarContainer">
+                    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
+                    <select id="colorvar" name="colorvar" class="form-control">
+                    </select>
+                </div>
+
+                <hr />
 
                 <label class="control-label">Strata Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Strata" data-content="Indicate which metadata should be used as the strata variable. Strata is required for PERMANOVA for nested experiment studies (to control the groups that should be permuted). <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/adonis.html'>See here for more info</a>" data-trigger="hover"></i></label>
                 <select id="strata" name="strata" class="form-control">
@@ -101,6 +109,7 @@
 
 <!-- Include custom JS here -->
 <script src="/static/js/core.shared.boxplots.js"></script>
+<script src="/static/js/core.shared.scatterplot.js"></script>
 <script src="/static/js/core.beta.diversity.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->

@@ -23,6 +23,7 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialColorVar = getParameterByName("colorvar");
 var initialYvalsSpecificTaxonomy = getParameterByName("yvalsSpecificTaxonomy") ? JSON.parse(getParameterByName("yvalsSpecificTaxonomy")) : [];
 function initializeFields() {
     if (getParameterByName("yvals") !== null) {
@@ -38,6 +39,10 @@ function initializeFields() {
 //
 function createSpecificListeners() {
     $("#catvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#colorvar").change(function() {
         updateAnalysis();
     });
 
@@ -112,6 +117,7 @@ function updateAnalysis() {
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
+    var colorvar = $("#colorvar").val();
     var yvals = $("#yvals").val();
     var statisticalTest = $("#statisticalTest").val();
 
@@ -134,6 +140,7 @@ function updateAnalysis() {
         sampleFilterRole: sampleFilterRole,
         sampleFilterVals: sampleFilterVals,
         catvar: catvar,
+        colorvar: colorvar,
         yvals: yvals,
         level: level,
         yvalsSpecificTaxonomy: yvalsSpecificTaxonomy,
@@ -154,7 +161,7 @@ function updateAnalysis() {
                 loadNoResults();
             } else {
                 loadSuccess();
-                renderBoxplots(abundancesObj);
+                renderBoxplots(abundancesObj, "", $("#yvals option:selected").text());
                 renderPvaluesTable(abundancesObj);
             }
         },
@@ -166,16 +173,29 @@ function updateAnalysis() {
 }
 
 function customCatVarCallback(result) {
-    var allHeaders = result.filter(function(obj) { return obj.type === "both" || obj.type === "numeric"; }).map(function(obj) { return obj.name; });
+    var allHeaders = ["None"].concat(result.map(function(obj) { return obj.name; }));
+    var numericHeaders = result.filter(function(obj) { return obj.type === "both" || obj.type === "numeric"; }).map(function(obj) { return obj.name; });
 
     $("#yvals").empty();
     $("#yvals").append(
         '<option value="mian-taxonomy-abundance">Taxonomy Abundance</option><option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>'
     );
-    for (var i = 0; i < allHeaders.length; i++) {
+    for (var i = 0; i < numericHeaders.length; i++) {
         $("#yvals").append(
-            '<option value="' + allHeaders[i] + '">' + allHeaders[i] + "</option>"
+            '<option value="' + numericHeaders[i] + '">' + numericHeaders[i] + "</option>"
         );
+    }
+
+    $("#colorvar").empty();
+    allHeaders.forEach(function(obj) {
+        $("#colorvar").append(
+            '<option value="' + obj + '">' + obj + "</option>"
+        );
+    });
+
+    if (initialColorVar) {
+        $("#colorvar").val(initialColorVar);
+        initialColorVar = null;
     }
 }
 

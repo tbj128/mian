@@ -42,9 +42,23 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Categorical Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A different alpha diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
-                <select id="catvar" name="catvar" class="form-control">
+                <label class="control-label">Experimental Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A different alpha diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
+                <select id="expvar" name="expvar" class="form-control">
                 </select>
+
+                <label class="control-label">Plot Type <i class="fa fa-info-circle" data-toggle="popover" data-title="Plot Type" data-content="Choose the type of plot to render on the page" data-trigger="hover"></i></label>
+                <select id="plotType" name="plotType" class="form-control">
+                    <option value="boxplot">Boxplot</option>
+                    <option value="scatterplot">Scatterplot</option>
+                </select>
+
+                <div id="colorvarContainer">
+                    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
+                    <select id="colorvar" name="colorvar" class="form-control">
+                    </select>
+                </div>
+
+                <hr />
 
                 <label class="control-label">Diversity Context  <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Context" data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>Species Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
                 <select id="alphaContext" name="alphaContext" class="form-control">
@@ -95,6 +109,23 @@
         </table>
     </div>
 
+    <div id="stats-container-scatterplot" class="analysis-container" style="display:none;">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Coefficient</th>
+                    <th>P-Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="stats-coef"></td>
+                    <td id="stats-pval"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div><!-- /.container -->
+
     <div id="push" style="height:42px;"></div>
 </div>
 
@@ -103,6 +134,7 @@
 
 <!-- Include custom JS here -->
 <script src="/static/js/core.shared.boxplots.js"></script>
+<script src="/static/js/core.shared.scatterplot.js"></script>
 <script src="/static/js/core.alpha.diversity.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->

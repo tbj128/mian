@@ -1,7 +1,7 @@
 // ============================================================
 // Boxplot JS Shared Component
 // ============================================================
-function renderBoxplots(abundancesObj) {
+function renderBoxplots(abundancesObj, xAxisText, yAxisText) {
     $("#analysis-container").empty();
 
     var dataObj = abundancesObj["abundances"];
@@ -29,7 +29,7 @@ function renderBoxplots(abundancesObj) {
     var boxplotWidth = 128;
     var margin = {
             top: 36,
-            right: 36,
+            right: ($("#colorvar").length > 0 && $("#colorvar").val() != "" && $("#colorvar").val() != "None") ? 180 : 36,
             bottom: 36,
             left: 72
         },
@@ -39,7 +39,8 @@ function renderBoxplots(abundancesObj) {
 
     // Initialize the y axis scale
     var yScale = d3.scaleLinear().range([height + margin.top, 0 + margin.top]);
-    yScale.domain([minVal * 0.8, maxVal * 1.2]);
+    var pad = (maxVal - minVal) * 0.3;
+    yScale.domain([minVal - pad, maxVal + pad]);
 
     // Initialize the x axis scale
     var xScale = d3.scaleBand()
@@ -72,10 +73,14 @@ function renderBoxplots(abundancesObj) {
         .append("text")
         .attr("class", "label")
         .attr("transform", "rotate(-90)")
+        .attr("x", -1 * margin.top)
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
-        .text($("#yvals option:selected").text());
+        .style("fill", "#333")
+        .style("font-weight", "300")
+        .style("font-size", "11px")
+        .text(yAxisText);
 
     svgContainer
         .append("g")
@@ -84,9 +89,19 @@ function renderBoxplots(abundancesObj) {
             "transform",
             "translate(" + margin.left + ", " + (height + margin.top + 10) + ")"
         )
-        .call(xAxis);
+        .call(xAxis)
+        .append("text")
+        .attr("class", "label")
+        .attr("x", width)
+        .attr("y", -6)
+        .style("text-anchor", "end")
+        .style("fill", "#333")
+        .style("font-weight", "300")
+        .style("font-size", "11px")
+        .text(xAxisText);
 
     var svg = svgContainer.selectAll(".box");
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
 
     for (var i = 0; i < categories.length; i++) {
         var dataCat = dataObj[categories[i]];
@@ -222,7 +237,13 @@ function renderBoxplots(abundancesObj) {
             .attr("cy", function(d) {
                 return yScale(d.a);
             })
-            .style("fill", "#242C70")
+            .style("fill", function(d) {
+                if (!d.hasOwnProperty("color") || d.color === "") {
+                    return "#242C70";
+                } else {
+                    return color(d.color);
+                }
+            })
             .on("mouseover", function(d) {
                 tooltip
                     .transition()
@@ -251,5 +272,36 @@ function renderBoxplots(abundancesObj) {
             else var seed = 10;
             return m + Math.floor(Math.random() * seed + 1);
         }
+    }
+
+    if ($("#colorvar").length > 0 && $("#colorvar").val() != "" && $("#colorvar").val() != "None") {
+        // draw legend
+        var legend = svg
+            .selectAll(".legend")
+            .data(color.domain())
+            .enter()
+            .append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) {
+                return "translate(0," + i * 20 + ")";
+            });
+
+        // draw legend colored rectangles
+        legend
+            .append("rect")
+            .attr("x", (margin.left + width + 28))
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+
+        // draw legend text
+        legend
+            .append("text")
+            .attr("x", (margin.left + width + 52))
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .text(function(d) {
+                return d;
+            });
     }
 }

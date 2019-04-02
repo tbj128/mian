@@ -24,9 +24,13 @@ class Boxplots(AnalysisBase):
         table = OTUTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
         metadata = table.get_sample_metadata().get_as_table()
-        return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata)
+        if user_request.get_custom_attr("colorvar") != "None":
+            color_metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("colorvar"))
+        else:
+            color_metadata_values = []
+        return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata, color_metadata_values)
 
-    def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata):
+    def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata, color_metadata_values):
 
         base = np.array(base)
 
@@ -99,6 +103,7 @@ class Boxplots(AnalysisBase):
                     row["a"] = np.sum(abunArr)
                 else:
                     row["a"] = 0
+            row["color"] = color_metadata_values[i] if len(color_metadata_values) == len(base) else ""
 
             if sample_labels[i] in metadataMap:
                 abundances[metadataMap[sample_labels[i]]].append(row)

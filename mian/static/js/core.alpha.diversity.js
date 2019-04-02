@@ -6,6 +6,7 @@ var statsTypes = {
     ttest: "Welch's T-Test"
 };
 var expectedLoadFactor = 712;
+var expVarToType = {};
 
 //
 // Initialization
@@ -20,6 +21,8 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
+var initialExpVar = getParameterByName("expvar");
+var initialColorVar = getParameterByName("colorvar");
 function initializeFields() {
     if (getParameterByName("alphaContext") !== null) {
         $("#alphaContext").val(getParameterByName("alphaContext"));
@@ -35,13 +38,41 @@ function initializeFields() {
     if (getParameterByName("statisticalTest") !== null) {
         $("#statisticalTest").val(getParameterByName("statisticalTest"));
     }
+    if (getParameterByName("plotType") !== null) {
+        $("#plotType").val(getParameterByName("plotType"));
+        if (getParameterByName("plotType") === "boxplot") {
+            $("#colorvarContainer").hide();
+        } else {
+            $("#colorvarContainer").show();
+        }
+    }
 }
 
 //
 // Component-Specific Sidebar Listeners
 //
 function createSpecificListeners() {
-    $("#catvar").change(function() {
+    $("#expvar").change(function() {
+        if (expVarToType[$("#expvar").val()] === "both" || expVarToType[$("#expvar").val()] === "categorical") {
+            $("#plotType").val("boxplot");
+            $("#colorvar").hide();
+        } else {
+            $("#plotType").val("scatterplot");
+            $("#colorvar").show();
+        }
+        updateAnalysis();
+    });
+
+    $("#colorvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#plotType").change(function() {
+        if ($("#plotType").val() === "boxplot") {
+            $("#colorvarContainer").hide();
+        } else {
+            $("#colorvarContainer").show();
+        }
         updateAnalysis();
     });
 
@@ -57,6 +88,7 @@ function createSpecificListeners() {
     $("#alphaType").change(function() {
         updateAnalysis();
     });
+
     $("#statisticalTest").change(function() {
         $("#stats-type").text(statsTypes[$("#statisticalTest").val()]);
         updateAnalysis();
@@ -65,7 +97,6 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("alpha.diversity." + $("#catvar").val() + "." + $("#alphaType").val() + "." + $("#alphaContext").val() + "." + $("#statisticalTest").val());
     });
-
 
     $("#yvals").change(function() {
         var val = $("#yvals").val();
@@ -101,10 +132,12 @@ function updateAnalysis() {
     var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
-    var catvar = $("#catvar").val();
+    var expvar = $("#expvar").val();
     var alphaType = $("#alphaType").val();
     var alphaContext = $("#alphaContext").val();
     var statisticalTest = $("#statisticalTest").val();
+    var plotType = $("#plotType").val();
+    var colorvar = $("#colorvar").val();
 
     if (alphaType === "faith_pd" && alphaContext === "evenness") {
         loadError("<strong>Evenness cannot be calculated using Faith's Phylogenetic Diversity.</strong>");
@@ -122,10 +155,12 @@ function updateAnalysis() {
         sampleFilterRole: sampleFilterRole,
         sampleFilterVals: sampleFilterVals,
         level: level,
-        catvar: catvar,
+        expvar: expvar,
         alphaType: alphaType,
         alphaContext: alphaContext,
-        statisticalTest: statisticalTest
+        statisticalTest: statisticalTest,
+        plotType: plotType,
+        colorvar: colorvar
     };
 
     setGetParameters(data);
@@ -141,12 +176,22 @@ function updateAnalysis() {
                 loadNoTree();
             } else if (abundancesObj["has_float"]) {
                 loadFloatDataWarning();
-            } else if ($.isEmptyObject(abundancesObj.abundances)) {
+            } else if (($("#plotType").val() === "boxplot" && $.isEmptyObject(abundancesObj.abundances)) || ($("#plotType").val() !== "boxplot" && abundancesObj.corrArr.length === 0)) {
                 loadNoResults();
             } else {
                 loadSuccess();
-                renderBoxplots(abundancesObj);
-                renderPvaluesTable(abundancesObj);
+
+                var yAxisText = $("#alphaType option:selected").text() + " " + $("#alphaContext option:selected").text();
+                if ($("#alphaContext").val() === "speciesnumber") {
+                    yAxisText = $("#alphaContext option:selected").text();
+                }
+                if ($("#plotType").val() === "boxplot") {
+                    renderBoxplots(abundancesObj, "", yAxisText);
+                    renderPvaluesTable(abundancesObj);
+                } else {
+                    renderCorrelations(abundancesObj, "", yAxisText);
+                    renderCorrelationsTable(abundancesObj);
+                }
             }
         },
         error: function(err) {
@@ -165,5 +210,34 @@ function customLoading() {
         $("#yvals").append(
             '<option value="' + catVars[i] + '">' + catVars[i] + "</option>"
         );
+    }
+}
+
+function customCatVarCallback(result) {
+    result.forEach(function(obj) {
+        expVarToType[obj.name] = obj.type;
+    });
+    var allHeaders = ["None"].concat(result.map(function(obj) { return obj.name; }));
+
+    //
+    // Renders the experimental variable
+    //
+    $("#expvar").empty();
+    $("#colorvar").empty();
+    allHeaders.forEach(function(obj) {
+        $("#expvar").append(
+            '<option value="' + obj + '">' + obj + "</option>"
+        );
+        $("#colorvar").append(
+            '<option value="' + obj + '">' + obj + "</option>"
+        );
+    });
+    if (initialExpVar) {
+        $("#expvar").val(initialExpVar);
+        initialExpVar = null;
+    }
+    if (initialColorVar) {
+        $("#colorvar").val(initialColorVar);
+        initialColorVar = null;
     }
 }

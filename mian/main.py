@@ -255,8 +255,6 @@ def create():
         project_manager = ProjectManager(current_user.id)
         project_name = secure_filename(request.form['projectName'])
         project_type = request.form['projectUploadType']
-        project_subsample_type = request.form['projectSubsampleType']
-        project_subsample_to = request.form['projectSubsampleTo']
 
         if project_type == "biom":
             # Biom files are self-contained - they must be split up and subsampled to be compatible with mian
@@ -264,12 +262,10 @@ def create():
             project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
             project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
             try:
-                status, message = project_manager.create_project_from_biom(project_name=project_name,
-                                                                 biom_name=project_biom_name,
-                                                                 sample_metadata_filename=project_sample_id_name,
-                                                                 phylogenetic_filename=project_phylogenetic_name,
-                                                                 subsample_type=project_subsample_type,
-                                                                 subsample_to=project_subsample_to)
+                status, message = project_manager.stage_project_from_biom(project_name=project_name,
+                                                                          biom_name=project_biom_name,
+                                                                          sample_metadata_filename=project_sample_id_name,
+                                                                          phylogenetic_filename=project_phylogenetic_name)
             except:
                 return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
         else:
@@ -279,17 +275,59 @@ def create():
             project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
             project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
             try:
-                status, message = project_manager.create_project_from_tsv(project_name=project_name,
-                                                                otu_filename=project_otu_table_name,
-                                                                taxonomy_filename=project_taxa_map_name,
-                                                                sample_metadata_filename=project_sample_id_name,
-                                                                phylogenetic_filename=project_phylogenetic_name,
-                                                                subsample_type=project_subsample_type,
-                                                                subsample_to=project_subsample_to)
+                status, message = project_manager.stage_project_from_tsv(project_name=project_name,
+                                                                         otu_filename=project_otu_table_name,
+                                                                         taxonomy_filename=project_taxa_map_name,
+                                                                         sample_metadata_filename=project_sample_id_name,
+                                                                         phylogenetic_filename=project_phylogenetic_name)
             except:
                 return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
 
+        if status == OK:
+            return redirect(url_for('createFilter', pid=message))
+        else:
+            return redirect(url_for('projects', status=status, message=message))
+
+
+@app.route('/create_filter', methods=['GET', 'POST'])
+@flask_login.login_required
+def createFilter():
+    if request.method == 'GET':
+        pid = request.args.get('pid', '')
+        return render_template('create-filter.html', pid=pid)
+    else:
+        project_manager = ProjectManager(current_user.id)
+        pid = request.form['project']
+        project_subsample_type = request.form['projectSubsampleType']
+        project_subsample_to = request.form['projectSubsampleTo']
+        sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
+        sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
+        sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
+
+        try:
+            status, message = project_manager.create_project(pid=pid,
+                                                             sampleFilter=sampleFilter,
+                                                             sampleFilterRole=sampleFilterRole,
+                                                             sampleFilterVals=sampleFilterVals,
+                                                             subsample_type=project_subsample_type,
+                                                             subsample_to=project_subsample_to)
+        except:
+            return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
+
         return redirect(url_for('projects', status=status, message=message))
+
+
+@app.route('/get_filtering_info', methods=['POST'])
+@flask_login.login_required
+def getFilterInfo():
+    project_manager = ProjectManager(current_user.id)
+    pid = request.form['pid']
+    sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
+    sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
+    sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
+
+    info = project_manager.get_filtering_info(pid, sampleFilter, sampleFilterRole, sampleFilterVals)
+    return json.dumps(info)
 
 
 @app.route('/project_not_found')
@@ -1777,7 +1815,8 @@ def get_project_ids_to_info(user_id):
                         "shared": project_map.shared
                     }
                 logger.info("Read project info " + str(project_info))
-                if project_map.project_name != "":
+                if project_map.project_name != "" and project_map.subsampled_type != "":
+                    # Note: Projects that are half uploaded will not have a subsampled type
                     project_name_to_info[project_map.pid] = project_info
     return project_name_to_info
 

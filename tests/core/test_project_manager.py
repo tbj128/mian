@@ -25,8 +25,9 @@ class TestProjectManager(unittest.TestCase):
         shutil.copyfile(os.path.join(unit_tests_dir, "sample_metadata.tsv"),
                         os.path.join(test_staging_dir, "sample_metadata.tsv"))
 
-        pid, status = project_manager.create_project_from_tsv("tmp_project", "table.raw.tsv",
-                                                              "taxonomy.tsv", "sample_metadata.tsv", "")
+        status, pid = project_manager.stage_project_from_tsv("tmp_project", "table.raw.tsv",
+                                                             "taxonomy.tsv", "sample_metadata.tsv", "")
+        project_manager.create_project(pid, "", "", [])
 
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))
@@ -57,7 +58,8 @@ class TestProjectManager(unittest.TestCase):
 
         shutil.copyfile(os.path.join(unit_tests_dir, "table.biom"), os.path.join(test_staging_dir, "table.biom"))
 
-        pid, status = project_manager.create_project_from_biom("tmp_project", "table.biom", "", "")
+        status, pid = project_manager.stage_project_from_biom("tmp_project", "table.biom", "", "")
+        project_manager.create_project(pid, "", "", [])
 
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))

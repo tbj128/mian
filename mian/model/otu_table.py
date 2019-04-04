@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class OTUTable(object):
 
-    def __init__(self, user_id, pid, use_raw=False):
+    def __init__(self, user_id, pid, use_raw=False, use_np=True):
         self.user_id = ""
         self.pid = ""
         self.sample_metadata = ""
@@ -26,10 +26,10 @@ class OTUTable(object):
         self.table = []
         self.headers = []
         self.sample_labels = []
-        self.load_otu_table(user_id, pid, use_raw)
+        self.load_otu_table(user_id, pid, use_raw, use_np)
         logger.info(DataIO.tsv_to_table.cache_info())
 
-    def load_otu_table(self, user_id, pid, use_raw):
+    def load_otu_table(self, user_id, pid, use_raw, use_np):
         self.user_id = user_id
         self.pid = pid
         logger.info("Before load")
@@ -39,13 +39,19 @@ class OTUTable(object):
         logger.info("Finished taxonomy loading")
         if use_raw:
             logger.info("Using raw data")
-            self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, RAW_OTU_TABLE_FILENAME)
+            if use_np:
+                self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, RAW_OTU_TABLE_FILENAME)
+            else:
+                self.table = DataIO.tsv_to_table(self.user_id, self.pid, RAW_OTU_TABLE_FILENAME)
             labels = DataIO.tsv_to_table(self.user_id, self.pid, RAW_OTU_TABLE_LABELS_FILENAME)
             self.headers = labels[0]
             self.sample_labels = labels[1]
         else:
             logger.info("Using subsampled data")
-            self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
+            if use_np:
+                self.table = DataIO.tsv_to_np_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
+            else:
+                self.table = DataIO.tsv_to_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_FILENAME)
             labels = DataIO.tsv_to_table(self.user_id, self.pid, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
             self.headers = labels[0]
             self.sample_labels = labels[1]

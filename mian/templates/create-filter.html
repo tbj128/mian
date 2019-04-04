@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'header.html' %}
+    <title>Filtering and Normalization - Mian</title>
+
+    <style>
+        .normalize-container {
+            padding: 0px 0 24px 0;
+        }
+
+        .filter-container {
+            padding: 36px 0 24px 0;
+        }
+
+        .table-container {
+            height: 400px;
+            overflow: scroll;
+        }
+
+        .included {
+            background-color: #f6fff6;
+        }
+
+        .removed {
+            text-decoration: line-through;
+            background-color: #fff6f6 !important;
+        }
+
+        .no-dash {
+            text-decoration: none;
+        }
+    </style>
+  </head>
+
+  <body>
+    {% include 'navigation.html' %}
+    {% include 'loading-bar-processing.html' %}
+
+    <div id="welcome" class="container">
+      <div class="row" style="margin-top:24px;">
+        <div class="help-block with-errors"></div>
+
+        <div class="col-md-5" style="border-right: 1px solid #eee">
+            <div class="alert alert-info" role="alert" id="subsamplingToContainer" style="display:none;">
+                Subsampling To: <strong id="subsamplingTo"></strong>
+            </div>
+            <div class="alert alert-warning" role="alert" id="warningBox" style="display:none;">
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sample ID (<span id="kept"></span> kept)</th>
+                            <th>Total OTU Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="samples">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+
+            <div id="normalize-container" class="row normalize-container">
+              <div>
+                <div class="col-md-12">
+                  <h3 style="margin-top:0px"><i class="fa fa-bars"></i>&nbsp;&nbsp;Normalization</h3>
+                  <p>Normalization is recommended for some visualizations and statistical tests to account for differing library sizes.</p>
+                  <div class="row">
+                    <div class="col-md-6">
+                        <select id="subsampleType" name="subsampleType" class="form-control pad-bottom">
+                          <option value="auto" selected>Auto Subsample</option>
+                          <option value="manual">Manual Subsample</option>
+                          <option value="no">Don't Subsample</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <input type="number" class="form-control" id="subsampleTo" name="subsampleTo" placeholder="Subsample To..." style="display:none;">
+                        <p id="auto-prompt" class="normalize-info" style="font-size:11px;color:#999;">Subsamples each sample in the OTU table to the smallest number of sequences of any sample.</p>
+                        <p id="manual-prompt" class="normalize-info" style="font-size:11px;color:#999;margin-top:6px;display:none;">Subsamples each sample in the OTU table to a specific value.</p>
+                        <p id="no-prompt" class="normalize-info" style="font-size:11px;color:#999;display:none;">Assumes that the uploaded OTU table is normalized already. (eg. you have already applied a normalization method such as rarefaction, DESeq2, or CSS)</p>
+                        <p id="has-float" class="normalize-info" style="font-size:11px;color:#999;display:none;">Subsampling cannot be applied to OTU tables containing non-integer numbers</p>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr />
+
+            <div id="filter-container" class="row filter-container">
+              <div>
+                <div class="col-md-12">
+                  <h3 style="margin-top:0px"><i class="fa fa-filter"></i>&nbsp;&nbsp;Sample Filtering</h3>
+                  <p>Choose which samples to keep for your analysis. Use this to exclude any non-relevant sample groups such as mock communities or sample outliers.</p>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <select id="filter-sample" name="filter-sample" class="form-control pad-bottom">
+                        <option value="none">Don't Filter</option>
+                        <option value="mian-sample-id">Sample ID</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <div id="filter-sample-wrapper" style="position:relative;">
+                        <select style="display:none;" id="filter-sample-specific" name="filter-sample-specific" class="form-control pad-bottom" multiple="multiple">
+                        </select>
+                        <div id="sample-specific-typeahead-wrapper" style="display:none;">
+                            <div class="input-group">
+                                <div id="sample-typeahead-btn" class="input-group-btn" style="vertical-align: top;">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="width:85px;"><span class="typeahead-role">Include</span> <span class="caret"></span></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#" data-intent="Include">Include</a></li>
+                                        <li><a href="#" data-intent="Exclude">Exclude</a></li>
+                                    </ul>
+                                </div>
+                                <input id="sample-typeahead-filter" type="text" data-background="" value="" />
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr />
+            <div class="row" style="text-align:right;margin-top:12px;margin-bottom:12px;">
+                <div class="col-md-12">
+                  <form data-toggle="validator" method="POST" action="/create_filter">
+                    <input type="hidden" id="project" name="project" value="{{pid}}" />
+                    <input type="hidden" id="sampleFilter" name="sampleFilter" value="" />
+                    <input type="hidden" id="sampleFilterRole" name="sampleFilterRole" value="" />
+                    <input type="hidden" id="sampleFilterVals" name="sampleFilterVals" value="" />
+                    <input type="hidden" id="projectSubsampleType" name="projectSubsampleType" value="auto" />
+                    <input type="hidden" id="projectSubsampleTo" name="projectSubsampleTo" value="" />
+                    <button id="upload-submit" type="submit" class="btn btn-primary" style="width:180px;">Create Project</button>
+                  </form>
+                </div>
+            </div>
+        </div>
+
+      </div>
+
+
+    </div><!-- /.container -->
+
+    {% include 'footer-full.html' %}
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/plugins/bootstrap-multiselect.js"></script>
+    <script src="/static/js/plugins/bootstrap3-typeahead.min.js"></script>
+    <script src="/static/js/plugins/bootstrap-tagsinput.js"></script>
+    <script src="/static/js/core.upload.filter.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+  </body>
+</html>

@@ -49,25 +49,6 @@
             </div>
             <div style="clear:both"></div>
           </div>
-          <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #999;">
-            <div>
-              <h4 style="padding-left: 15px;">Additional Normalization</h4>
-                <p style="padding-left: 15px;">Normalization is recommended for some visualizations and statistical tests to account for differing library sizes.</p>
-              <div class="col-md-6">
-                <select id="biomSubsampleType" name="biomSubsampleType" class="form-control pad-bottom">
-                  <option value="auto" selected>Auto Subsample</option>
-                  <option value="manual">Manual Subsample</option>
-                  <option value="no">Don't Subsample</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <input type="number" class="form-control" id="biomSubsampleTo" name="subsampleTo" placeholder="Subsample To..." style="display:none;">
-                <p id="biom-auto-prompt" style="font-size:11px;color:#999;">Subsamples each sample in the OTU table to the smallest number of sequences of any sample.</p>
-                <p id="biom-manual-prompt" style="font-size:11px;color:#999;margin-top:6px;display:none;">Subsamples each sample in the OTU table to a specific value.</p>
-                <p id="biom-no-prompt" style="font-size:11px;color:#999;display:none;">Assumes that the uploaded OTU table is normalized already. (eg. you have already applied a normalization method such as rarefaction, DESeq2, or CSS)</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div id="otu-upload-container" style="display:none;">
@@ -100,25 +81,6 @@
                 </form>
               </div>
               <div style="clear:both"></div>
-            </div>
-            <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #999;">
-              <div>
-                <h4 style="padding-left: 15px;">Additional Normalization</h4>
-                <p style="padding-left: 15px;">Normalization is recommended for some visualizations and statistical tests to account for differing library sizes.</p>
-                <div class="col-md-6">
-                  <select id="subsampleType" name="subsampleType" class="form-control pad-bottom">
-                    <option value="auto" selected>Auto Subsample</option>
-                    <option value="manual">Manual Subsample</option>
-                    <option value="no">Don't Subsample</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <input type="number" class="form-control" id="subsampleTo" name="subsampleTo" placeholder="Subsample To..." style="display:none;">
-                  <p id="auto-prompt" style="font-size:11px;color:#999;">Subsamples each sample in the OTU table to the smallest number of sequences of any sample.</p>
-                  <p id="manual-prompt" style="font-size:11px;color:#999;margin-top:6px;display:none;">Subsamples each sample in the OTU table to a specific value.</p>
-                  <p id="no-prompt" style="font-size:11px;color:#999;display:none;">Assumes that the uploaded OTU table is normalized already. (eg. you have already applied a normalization method such as rarefaction, DESeq2, or CSS)</p>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -211,8 +173,6 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
             <input type="hidden" id="projectTaxaMapName" name="projectTaxaMapName" value="" />
             <input type="hidden" id="projectSampleIDName" name="projectSampleIDName" value="" />
             <input type="hidden" id="projectPhylogeneticName" name="projectPhylogeneticName" value="" />
-            <input type="hidden" id="projectSubsampleType" name="projectSubsampleType" value="auto" />
-            <input type="hidden" id="projectSubsampleTo" name="projectSubsampleTo" value="" />
             <button id="upload-submit" type="submit" class="btn btn-primary" style="width:180px;" disabled>Create</button>
           </form>
         </div>

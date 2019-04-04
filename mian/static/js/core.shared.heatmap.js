@@ -54,16 +54,13 @@ function renderHeatmap(abundancesObj, rangeMin, rangeMax, corrvar1, corrvar2) {
         height = yGridSize * rowHeaders.length;
 
     var coloursRainbow = ["#d7191c", "#fffb9e", "#2c7bb6"];
-//    var coloursRainbow = ["#2c7bb6", "#00a6ca", "#00ccbc", "#90eb9d", "#ffff8c", "#f9d057", "#f29e2e", "#e76818", "#d7191c"];
     if ($("#colorscheme").val() === "blue") {
         coloursRainbow = ["#3182bd", "#f3f9ff"];
     }
     coloursRainbow.reverse();
     var colourRangeRainbow = d3.range(rangeMin, rangeMax);
-//    var colourRangeRainbow = d3.range(rangeMin, rangeMax, (rangeMax - rangeMin) / (coloursRainbow.length - 1));
-//    colourRangeRainbow.push(1);
 
-    var mid = (rangeMax - rangeMin) / 2;
+    var mid = (rangeMax - rangeMin) / 2 + rangeMin;
 
     var color = d3.scaleLinear()
         .domain([rangeMin, mid, rangeMax])

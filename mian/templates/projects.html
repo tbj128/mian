@@ -185,11 +185,7 @@
                           {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
                           <br />
                           <br />
-                          Removed samples:
-                          <b id="subsampleRemoved-{{ projectNames[projectName]['pid'] }}">
-                            {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
-                          </b>
-                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. Try subsampling to a lower depth to capture more samples"></i>
+                          Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" data-html="true" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
                           {% endif %}
                         </td>
                         <td class="col-md-3">BIOM File</td>
@@ -253,15 +249,10 @@
 
                           <a class="download" data-downloadtype="otu_subsampled" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the subsampled OTU table"><i class="fa fa-download"></i></a>
 
-
                           {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
                           <br />
                           <br />
-                          Removed samples:
-                          <b id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">
-                            {{ projectNames[projectName]["subsampled_removed_samples"]|join(', ') }}
-                          </b>
-                          <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" title="Removed Samples" data-content="Samples are removed when their sequence abundance falls below the subsampling thresholds. <br />Try subsampling to a higher depth"></i>
+                          Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
                           {% endif %}
                         </td> 
                         <td class="col-md-3">OTU Table</td>

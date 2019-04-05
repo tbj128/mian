@@ -101,6 +101,7 @@ class ProjectManager(object):
         user_request = UserRequest(self.user_id, pid, "", "", "",
                                    "", [], sampleFilter, sampleFilterRole,
                                    sampleFilterVals, 0, "")
+        map = Map(self.user_id, pid)
 
         table = OTUTable(self.user_id, pid, use_raw=True)
         orig_base = table.get_table()
@@ -109,30 +110,18 @@ class ProjectManager(object):
         base, headers, sample_labels = table.filter_otu_table_by_metadata(orig_base, orig_headers, orig_sample_labels, user_request)
         initial_samples_removed = set(orig_sample_labels) - set(sample_labels)
 
+        has_float = map.matrix_type == "float"
+        base = np.array(base)
+        min_sample_row_sum = base.sum(axis=1).min()
 
-        has_float = False
-        min_sample_row_sum = 0
-        i = 0
-        while i < len(base):
-            row_sum = 0
-            j = 0
-            while j < len(base[i]):
-                if isinstance(base[i][j], float):
-                    has_float = True
-                row_sum += base[i][j]
-                j += 1
-            if min_sample_row_sum == 0 or row_sum < min_sample_row_sum:
-                min_sample_row_sum = row_sum
-            i += 1
+        orig_base = np.array(orig_base)
+        orig_row_sums = orig_base.sum(axis=1)
+
 
         samples = {}
         i = 0
         while i < len(orig_base):
-            row_sum = 0
-            j = 0
-            while j < len(orig_base[i]):
-                row_sum += orig_base[i][j]
-                j += 1
+            row_sum = orig_row_sums[i]
             samples[orig_sample_labels[i]] = {
                 "row_sum": row_sum,
                 "removed": orig_sample_labels[i] in initial_samples_removed

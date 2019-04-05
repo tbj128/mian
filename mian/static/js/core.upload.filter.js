@@ -10,6 +10,14 @@ $(document).ready(function() {
         $("#loading").show();
     });
 
+    $("#subsampleType").change(function() {
+        getFilteringInfo();
+    });
+
+    $("#subsampleTo").change(function() {
+        getFilteringInfo();
+    });
+
     $("#filter-sample").change(function() {
         updateFilterSamplesOptions();
         getFilteringInfo();
@@ -164,6 +172,7 @@ $(document).ready(function() {
     }
 
     function getFilteringInfo() {
+        $("#loading").show();
         var sampleFilter = getSelectedSampleFilter();
         var sampleFilterRole = getSelectedSampleFilterRole();
         var sampleFilterVals = getSelectedSampleFilterVals();
@@ -183,6 +192,7 @@ $(document).ready(function() {
             url: "/get_filtering_info",
             data: data,
             success: function(result) {
+                $("#loading").hide();
                 var obj = JSON.parse(result);
                 var samples = obj["samples"];
                 var minSampleVal = obj["min_sample_val"];
@@ -191,7 +201,13 @@ $(document).ready(function() {
                 $("#samples").empty();
                 Object.keys(samples).forEach(sample => {
                     var classStr = samples[sample]["removed"] ? "removed" : "included";
-                    if (samples[sample]["removed"]) {
+                    if ($("#subsampleType").val() === "manual") {
+                        if (samples[sample]["row_sum"] < parseInt($("#subsampleTo").val())) {
+                            classStr = "removed";
+                        }
+                    }
+
+                    if (classStr === "removed") {
                         numRemoved++;
                     }
 
@@ -212,7 +228,7 @@ $(document).ready(function() {
                     $("#subsamplingToContainer").show();
                     $("#subsampleType").prop('disabled', false);
                 } else if ($("#subsampleType").val() === "manual") {
-                    $("#subsamplingTo").text(subsampleTo);
+                    $("#subsamplingTo").text($("#subsampleTo").val());
                     $("#subsamplingToContainer").show();
                     $("#subsampleType").prop('disabled', false);
                 } else {
@@ -221,6 +237,7 @@ $(document).ready(function() {
                 }
             },
             error: function(err) {
+                $("#loading").hide();
                 console.log(err);
             }
         });

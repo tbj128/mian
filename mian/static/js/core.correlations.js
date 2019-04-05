@@ -82,7 +82,7 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
-    $("#taxonomy-level").change(function() {
+    $("#taxonomy").change(function() {
         if (
             $("#corrvar1").val() === "mian-taxonomy-abundance" ||
             $("#corrvar2").val() === "mian-taxonomy-abundance"
@@ -119,7 +119,7 @@ function loadOTUTableHeaders(corrvarType) {
     ) {
         $("#specific-taxonomy-typeahead-1").empty();
         $("#specific-taxonomy-typeahead-2").empty();
-        var level = taxonomyLevels[$("#taxonomy-level").val()];
+        var level = taxonomyLevels[$("#taxonomy").val()];
         var headersPromise = $.ajax({
             url: getSharedPrefixIfNeeded() + "/otu_table_headers_at_level?pid=" +
                 $("#project").val() +
@@ -196,7 +196,7 @@ function loadOTUTableHeaders(corrvarType) {
 function updateAnalysis() {
     showLoading(expectedLoadFactor);
 
-    var level = taxonomyLevels[$("#taxonomy-level").val()];
+    var level = taxonomyLevels[$("#taxonomy").val()];
 
     var taxonomyFilter = getSelectedTaxFilter();
     var taxonomyFilterRole = getSelectedTaxFilterRole();

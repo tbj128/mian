@@ -47,20 +47,21 @@ class RarefactionCurves(object):
         headers = table.get_headers()
         sample_labels = table.get_sample_labels()
 
-        return self.analyse(base, headers, sample_labels)
+        if user_request.get_custom_attr("colorvar") != "None":
+            color_metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("colorvar"))
+        else:
+            color_metadata_values = []
 
-    def analyse(self, base, headers, sample_labels):
+        return self.analyse(base, headers, sample_labels, color_metadata_values)
+
+    def analyse(self, base, headers, sample_labels, color_metadata_values):
         # Forms an OTU only table (without IDs)
-        sample_ids = []
         all_otus = []
         col = 0
         while col < len(base[0]):
             colVals = []
             row = 0
             while row < len(base):
-                if col == 0:
-                    sample_id = sample_labels[row]
-                    sample_ids.append(sample_id)
                 colVals.append(base[row][col])
                 row += 1
             all_otus.append((headers[col], robjects.FloatVector(colVals)))
@@ -93,7 +94,8 @@ class RarefactionCurves(object):
 
             curve_obj["headers"] = headers
             curve_obj["vals"] = vals
-            curve_obj["sampleID"] = sample_ids[curve_index]
+            curve_obj["sampleID"] = sample_labels[curve_index]
+            curve_obj["color"] = color_metadata_values[curve_index] if len(color_metadata_values) == len(sample_labels) else ""
             abun_obj["results"].append(curve_obj)
 
             curve_index += 1

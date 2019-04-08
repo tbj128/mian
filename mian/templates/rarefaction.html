@@ -41,6 +41,29 @@
     </div>
 
     {% include 'project_list.html' %}
+<hr/>
+
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingAnalysisParameters">
+              <h4 class="panel-title">
+                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
+                  Visualization Parameters
+                </a>
+              </h4>
+            </div>
+            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+              <div class="panel-body">
+
+                <div id="colorvarContainer">
+                    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
+                    <select id="colorvar" name="colorvar" class="form-control">
+                    </select>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
 
     <!-- TODO: Stretch Goals: Have sample filtering and subsampling step adjustments -->
     <!--<label class="control-label">Samples</label>

@@ -106,6 +106,7 @@ login_manager.init_app(app)
 db.initDB(DB_PATH, SCHEMA_PATH)
 
 
+
 #
 # -------------------------------------------
 #
@@ -1263,7 +1264,7 @@ def getRandomForest(user_request, req):
 @flask_login.login_required
 def getRarefactionSecure():
     user_request = __get_user_request(request)
-    return getRarefaction(user_request)
+    return getRarefaction(user_request, request)
 
 
 @app.route('/share/rarefaction', methods=['POST'])
@@ -1271,13 +1272,14 @@ def getRarefactionShare():
     if checkSharedValidity(request):
         uid = request.args.get('uid', '')
         user_request = __get_user_request(request, user=uid)
-        return getRarefaction(user_request)
+        return getRarefaction(user_request, request)
     else:
         abortNotShared()
 
 
-def getRarefaction(user_request):
+def getRarefaction(user_request, req):
     plugin = RarefactionCurves()
+    user_request.set_custom_attr("colorvar", req.form['colorvar'])
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 

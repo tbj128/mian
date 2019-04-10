@@ -93,12 +93,6 @@ class PCA(AnalysisBase):
     def analyse_other(self, user_request, otu_table, headers, sample_labels, metaVals, phylogenetic_tree):
         type = user_request.get_custom_attr("type")
 
-        project_map = Map(user_request.user_id, user_request.pid)
-        if project_map.matrix_type == "float":
-            return {
-                "has_float": True
-            }
-
         otu_table = otu_table.astype(int)
 
         if type == "weighted_unifrac" or type == "unweighted_unifrac":
@@ -162,9 +156,13 @@ class PCA(AnalysisBase):
             pcaRow.append(pcaObj)
             i += 1
 
+        i = 0
         pcaVarRow = []
         for p in pcaVariances:
-            pcaVarRow.append(float(p))
+            pcaVarRow.append(float(p) * 100)
+            if i > 10:
+                break
+            i += 1
 
         abundancesObj = {}
         abundancesObj["pca"] = pcaRow

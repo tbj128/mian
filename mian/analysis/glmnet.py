@@ -175,6 +175,7 @@ class GLMNet(object):
             newRow.append(glmnetResult.rx(i, 2)[0])
             if model == "multinomial" or model == "binomial":
                 newRow.append(round(math.exp(float(glmnetResult.rx(i, 3)[0])), 6))
+                # newRow.append(round(float(glmnetResult.rx(i, 3)[0]), 6))
             else:
                 newRow.append(round(float(glmnetResult.rx(i, 3)[0]), 6))
 

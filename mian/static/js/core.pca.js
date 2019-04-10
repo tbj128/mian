@@ -820,7 +820,7 @@ function renderPCAVar(data) {
 
     xScale.domain(
         d3.extent(data, function(d, i) {
-            return i;
+            return i + 1;
         })
     );
     yScale.domain(
@@ -868,7 +868,7 @@ function renderPCAVar(data) {
     var line = d3
         .line()
         .x(function(d, i) {
-            return xScale(i);
+            return xScale(i + 1);
         })
         .y(function(d) {
             return yScale(d);

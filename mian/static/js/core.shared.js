@@ -146,7 +146,23 @@ function getSharedUserProjectSuffixIfNeeded() {
 }
 
 function shareToBoxplotLink(otu_name) {
-    return "/boxplots?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&catvar=" + getParameterByName("catvar") + "&yvals=mian-taxonomy-abundance&level=" + getParameterByName("level") + "&yvalsSpecificTaxonomy=[\"" + otu_name + "\"]";
+    var specificTaxonomy = getSpecificTaxonomy(otu_name);
+    return "/boxplots?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&catvar=" + (getParameterByName("expvar") ? getParameterByName("expvar") : getParameterByName("catvar")) + "&yvals=mian-taxonomy-abundance&level=" + getParameterByName("level") + "&yvalsSpecificTaxonomy=[\"" + specificTaxonomy + "\"]";
+}
+
+function shareToCorrelationsLink(otu_name1, otu_name2) {
+    var specificTaxonomy1 = getSpecificTaxonomy(otu_name1);
+    var specificTaxonomy2 = otu_name2;
+    return "/correlations?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&catvar=" + (getParameterByName("expvar") ? getParameterByName("expvar") : getParameterByName("catvar")) + "&corrvar1=mian-taxonomy-abundance&corrvar2=" + specificTaxonomy2 + "&level=" + getParameterByName("level") + "&corrvar1SpecificTaxonomies=[\"" + specificTaxonomy1 + "\"]" + "&corrvar2SpecificTaxonomies=[\"" + specificTaxonomy2 + "\"]";
+}
+
+function getSpecificTaxonomy(otu_name) {
+    var otuArr = otu_name.split("; ");
+    if (otuArr.length === 1) {
+        otuArr = otu_name.split("..");
+    }
+    var specificTaxonomy = otuArr[otuArr.length - 1];
+    return specificTaxonomy;
 }
 
 function getNumSamplesCurrentProject() {

@@ -187,7 +187,7 @@ function renderRarefactionCurves(abundancesObj) {
                         d.h +
                         "</strong><br />Number of OTUs: <strong>" +
                         d.v +
-                        "</strong><br />Label: <strong>" + 
+                        "</strong><br />Label: <strong>" +
                         colorMeta +
                         "</strong>"
                     )

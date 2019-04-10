@@ -10,7 +10,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Alpha Diversity <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Alpha Diversity" data-content="Investigate the species richness of the OTU table<br /><br />This analysis uses the diversity measure from the R 'vegan' package <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a>" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Alpha Diversity <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Alpha Diversity" data-content="Investigate the OTU/Taxonomic richness of the OTU table<br /><br />This analysis uses the diversity measure from the R 'vegan' package <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a>" data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -60,11 +60,11 @@
 
                 <hr />
 
-                <label class="control-label">Diversity Context  <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Context" data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>Species Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
+                <label class="control-label">Diversity Context  <i class="fa fa-info-circle" data-toggle="popover" data-title="Diversity Context" data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>OTU/Taxonomic Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
                 <select id="alphaContext" name="alphaContext" class="form-control">
                     <option value="alpha">Diversity Index</option>
                     <option value="evenness">Evenness</option>
-                    <option value="speciesnumber">Species Richness</option>
+                    <option value="speciesnumber">OTU/Taxonomic Richness</option>
                 </select>
 
                 <div id="alphaTypeContainer">

@@ -55,10 +55,10 @@ function createSpecificListeners() {
     $("#expvar").change(function() {
         if (expVarToType[$("#expvar").val()] === "both" || expVarToType[$("#expvar").val()] === "categorical") {
             $("#plotType").val("boxplot");
-            $("#colorvar").hide();
+            $("#colorvarContainer").hide();
         } else {
             $("#plotType").val("scatterplot");
-            $("#colorvar").show();
+            $("#colorvarContainer").show();
         }
         updateAnalysis();
     });
@@ -189,7 +189,7 @@ function updateAnalysis() {
                     renderBoxplots(abundancesObj, "", yAxisText);
                     renderPvaluesTable(abundancesObj);
                 } else {
-                    renderCorrelations(abundancesObj, "", yAxisText);
+                    renderCorrelations(abundancesObj, $("#expvar").val(), yAxisText);
                     renderCorrelationsTable(abundancesObj);
                 }
             }

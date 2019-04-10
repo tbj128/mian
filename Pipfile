@@ -13,7 +13,7 @@ pytest = "*"
 [packages]
 
 biom-format = "==2.1.6"
-flask = "==0.11.1"
+flask = "==0.12.3"
 flask-login = "==0.4.0"
 Flask-Mail = "==0.9.1"
 h5py = "*"

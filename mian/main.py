@@ -1839,3 +1839,4 @@ def checkSharedValidity(req):
 def abortNotShared():
     abort(403)
     abort(Response('This project is not publicly accessible'))
+

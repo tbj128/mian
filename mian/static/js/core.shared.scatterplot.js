@@ -107,7 +107,6 @@ function renderCorrelations(abundancesObj, xAxisText, yAxisText) {
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
     gX.append("text")
-        .attr("class", "label")
         .attr("x", width)
         .attr("y", -6)
         .style("text-anchor", "end")
@@ -120,7 +119,6 @@ function renderCorrelations(abundancesObj, xAxisText, yAxisText) {
         .attr("class", "y axis")
         .call(yAxis);
     gY.append("text")
-        .attr("class", "label")
         .attr("transform", "rotate(-90)")
         .attr("y", 6)
         .attr("dy", ".71em")

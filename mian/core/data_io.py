@@ -59,7 +59,7 @@ class DataIO:
         if not os.path.isfile(csv_name):
             return ""
         else:
-            with open(csv_name, 'r') as fn:
+            with open(csv_name, 'r', encoding='utf-8') as fn:
                 if replace_newlines:
                     return fn.read().replace('\n', '')
                 else:
@@ -68,7 +68,7 @@ class DataIO:
     @staticmethod
     def tsv_to_table_from_path(csv_path, sep="\t", accept_empty_headers=True):
         otu_map = []
-        with open(csv_path, 'r') as csvfile:
+        with open(csv_path, 'r', encoding='utf-8') as csvfile:
             dialect = csv.Sniffer().sniff(csvfile.readline())
             delimiter = dialect.delimiter
             if delimiter != "\t" and delimiter != ",":
@@ -120,7 +120,7 @@ class DataIO:
         project_dir = os.path.join(project_dir, user_id)
         project_dir = os.path.join(project_dir, pid)
         csv_path = os.path.join(project_dir, csv_name)
-        outputCSV = csv.writer(open(csv_path, 'w'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        outputCSV = csv.writer(open(csv_path, 'w', encoding='utf-8'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         for row in base:
             new_row = []
             j = 0

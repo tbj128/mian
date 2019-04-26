@@ -254,7 +254,7 @@ def create():
         return render_template('create.html')
     else:
         project_manager = ProjectManager(current_user.id)
-        project_name = secure_filename(request.form['projectName'])
+        project_name = request.form['projectName']
         project_type = request.form['projectUploadType']
 
         if project_type == "biom":

@@ -149,143 +149,138 @@
               </div>
             {% else %}
               {% for projectName in projectNames %}
-                {% if projectNames[projectName]["project_type"] == "biom" %}
-                  <div class="project-item" id="p-{{ projectNames[projectName]["pid"] }}">
+                <div class="project-item" id="p-{{ projectNames[projectName]['pid'] }}">
                   <h4>{{ projectNames[projectName]["project_name"] }}</h4>
-                  {% if not (demo and projectNames[projectName]["project_name"] == "COPD Example Project") %}
-                  <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]['pid'] }}" data-projectname="{{ projectNames[projectName]['project_name'] }}" class="project-delete"><i class="fa fa-trash"></i></a>
-                  {% endif %}
-                  <table class="table table-hover" style="table-layout:fixed;">
-                    <tbody>
-                      <tr>
-                        <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}&nbsp;<a class="download" data-downloadtype="biom" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the biom file"><i class="fa fa-download"></i></a></th>
-                        <td class="col-md-3 subsampleDisplayContainer">
-                          <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]['pid'] }}">
-                            {% if projectNames[projectName]["subsampled_value"] == 0 %}
-                              {% if projectNames[projectName]["matrix_type"] == "int" %}
-                                Not Subsampled
-                              {% else %}
-                                Not Subsampled (Contains Non-Integer Values)
-                              {% endif %}
-                            {% else %}
-                              Subsampled to
-                              <b id="subsampleDisplayVal-{{ projectNames[projectName]['pid'] }}">
-                                {{ projectNames[projectName]["subsampled_value"] }}
-                                {% if projectNames[projectName]["subsampled_type"] == "auto" %}
-                                  (auto)
-                                {% endif %}
-                              </b>
-                            {% endif %}
-                          </span>
-                          &nbsp;
-                          {% if projectNames[projectName]["matrix_type"] == "int" %}
-                            <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-html="true" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
-                          {% endif %}
 
-                          {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
-                          <br />
-                          <br />
-                          Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" data-html="true" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
-                          {% endif %}
-                        </td>
-                        <td class="col-md-3">BIOM File</td>
-                      </tr>
-                      {% if projectNames[projectName]["orig_sample_metadata_name"] != "" %}
-                        <tr>
-                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
-                          <td class="subsampleDisplayContainer"></td>
-                          <td>Sample Metadata</td>
-                        </tr>
-                      {% endif %}
-                      {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
-                        <tr>
-                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>
-                          <td class="subsampleDisplayContainer"></td>
-                          <td>Phylogenetic Tree</td>
-                        </tr>
-                      {% endif %}
-                    </tbody>
-                  </table>
-                </div>
-                {% else %}
-                  <div class="project-item" id="p-{{ projectNames[projectName]['pid'] }}">
-                  <h4>{{ projectNames[projectName]["project_name"] }}</h4>
                   {% if not demo or (demo and not (projectNames[projectName]["project_name"] == "COPD Example Project" or projectNames[projectName]["project_name"] == "Tortoise Example Project" or projectNames[projectName]["project_name"] == "Butterfly Gut Microbiota Example Project")) %}
                   <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectNames[projectName]["project_name"] }}" class="project-delete"><i class="fa fa-trash"></i></a>
                   {% endif %}
 
                   {% if demo and projectNames[projectName]["project_name"] == "COPD Example Project" %}
                   <p><small class="text-muted">This example uses data from the Sze et al. study <a href="https://www.atsjournals.org/doi/full/10.1164/rccm.201502-0223OC" target="_blank">Host Response to the Lung Microbiome in Chronic Obstructive Pulmonary Disease</a></small></p>
-                  {% endif %}
 
-                  {% if demo and projectNames[projectName]["project_name"] == "Tortoise Example Project" %}
+                  {% elif demo and projectNames[projectName]["project_name"] == "Tortoise Example Project" %}
                   <p><small class="text-muted">This example uses data from the Weitzman et al. study <a href="https://royalsocietypublishing.org/doi/10.1098/rsos.181068" target="_blank">Host species, pathogens, and disease associated with divergent nasal microbial communities in tortoises</a></small></p>
-                  {% endif %}
 
-                  {% if demo and projectNames[projectName]["project_name"] == "Butterfly Gut Microbiota Example Project" %}
+                  {% elif demo and projectNames[projectName]["project_name"] == "Butterfly Gut Microbiota Example Project" %}
                   <p><small class="text-muted">This example uses data from the Ravenscraft et al. study <a href="https://onlinelibrary.wiley.com/doi/pdf/10.1111/mec.15057" target="_blank">No evidence that gut microbiota impose a net cost on their butterfly host</a></small></p>
                   {% endif %}
-                  <table class="table table-hover" style="table-layout:fixed;">
-                    <tbody> 
-                      <tr> 
-                        <th scope="row" class="project-fn col-md-5">
-                          {{ projectNames[projectName]["orig_otu_table_name"] }}&nbsp;<a class="download" data-downloadtype="otu" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the OTU table"><i class="fa fa-download"></i></a>
-                        </th>
-                        <td class="col-md-3 subsampleDisplayContainer">
-                          <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
-                            {% if projectNames[projectName]["subsampled_value"] == 0 %}
-                              {% if projectNames[projectName]["matrix_type"] == "int" %}
-                                Not Subsampled
-                              {% else %}
-                                Not Subsampled (Contains Non-Integer Values)
-                              {% endif %}
-                            {% else %}
-                            Subsampled to 
-                            <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">
-                              {{ projectNames[projectName]["subsampled_value"] }}
-                              {% if projectNames[projectName]["subsampled_type"] == "auto" %}
-                                (auto)
-                              {% endif %}
-                            </b>
-                            {% endif %} 
-                          </span>
-                          &nbsp;
-                          &nbsp;
-                          {% if projectNames[projectName]["matrix_type"] == "int" %}
-                            <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>&nbsp;
-                          {% endif %}
 
-                          <a class="download" data-downloadtype="otu_subsampled" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the subsampled OTU table"><i class="fa fa-download"></i></a>
-
-                          {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
-                          <br />
-                          <br />
-                          Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
-                          {% endif %}
-                        </td> 
-                        <td class="col-md-3">OTU Table</td>
-                      </tr>
-                      <tr> 
-                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_taxonomy_name"] }}&nbsp;<a class="download" data-downloadtype="taxonomy" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the taxonomy file"><i class="fa fa-download"></i></a></th>
-                        <td class="subsampleDisplayContainer"></td> 
-                        <td>Taxonomy Map</td>
-                      </tr>
-                      <tr> 
-                        <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
-                        <td class="subsampleDisplayContainer"></td> 
-                        <td>Sample Metadata</td>
-                      </tr>
-                      {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
+                  {% if projectNames[projectName]["project_type"] == "biom" %}
+                    <table class="table table-hover" style="table-layout:fixed;">
+                      <tbody>
                         <tr>
-                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>
-                          <td class="subsampleDisplayContainer"></td>
-                          <td>Phylogenetic Tree</td>
+                          <th scope="row" class="project-fn col-md-5">{{ projectNames[projectName]["orig_biom_name"] }}&nbsp;<a class="download" data-downloadtype="biom" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the biom file"><i class="fa fa-download"></i></a></th>
+                          <td class="col-md-3 subsampleDisplayContainer">
+                            <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]['pid'] }}">
+                              {% if projectNames[projectName]["subsampled_value"] == 0 %}
+                                {% if projectNames[projectName]["matrix_type"] == "int" %}
+                                  Not Subsampled
+                                {% else %}
+                                  Not Subsampled (Contains Non-Integer Values)
+                                {% endif %}
+                              {% else %}
+                                Subsampled to
+                                <b id="subsampleDisplayVal-{{ projectNames[projectName]['pid'] }}">
+                                  {{ projectNames[projectName]["subsampled_value"] }}
+                                  {% if projectNames[projectName]["subsampled_type"] == "auto" %}
+                                    (auto)
+                                  {% endif %}
+                                </b>
+                              {% endif %}
+                            </span>
+                            &nbsp;
+                            {% if projectNames[projectName]["matrix_type"] == "int" %}
+                              <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-html="true" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>
+                            {% endif %}
+
+                            {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
+                            <br />
+                            <br />
+                            Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" data-html="true" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
+                            {% endif %}
+                          </td>
+                          <td class="col-md-3">BIOM File</td>
                         </tr>
-                      {% endif %}
-                    </tbody> 
-                  </table>
+                        {% if projectNames[projectName]["orig_sample_metadata_name"] != "" %}
+                          <tr>
+                            <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
+                            <td class="subsampleDisplayContainer"></td>
+                            <td>Sample Metadata</td>
+                          </tr>
+                        {% endif %}
+                        {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
+                          <tr>
+                            <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>
+                            <td class="subsampleDisplayContainer"></td>
+                            <td>Phylogenetic Tree</td>
+                          </tr>
+                        {% endif %}
+                      </tbody>
+                    </table>
+                  {% else %}
+                    <table class="table table-hover" style="table-layout:fixed;">
+                      <tbody>
+                        <tr>
+                          <th scope="row" class="project-fn col-md-5">
+                            {{ projectNames[projectName]["orig_otu_table_name"] }}&nbsp;<a class="download" data-downloadtype="otu" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the OTU table"><i class="fa fa-download"></i></a>
+                          </th>
+                          <td class="col-md-3 subsampleDisplayContainer">
+                            <span class="subsampleDisplaySpan" id="subsampleDisplayContainer-{{ projectNames[projectName]["pid"] }}">
+                              {% if projectNames[projectName]["subsampled_value"] == 0 %}
+                                {% if projectNames[projectName]["matrix_type"] == "int" %}
+                                  Not Subsampled
+                                {% else %}
+                                  Not Subsampled (Contains Non-Integer Values)
+                                {% endif %}
+                              {% else %}
+                              Subsampled to
+                              <b id="subsampleDisplayVal-{{ projectNames[projectName]["pid"] }}">
+                                {{ projectNames[projectName]["subsampled_value"] }}
+                                {% if projectNames[projectName]["subsampled_type"] == "auto" %}
+                                  (auto)
+                                {% endif %}
+                              </b>
+                              {% endif %}
+                            </span>
+                            &nbsp;
+                            &nbsp;
+                            {% if projectNames[projectName]["matrix_type"] == "int" %}
+                              <a class="project-change-subsampling" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-subsampleval="{{ projectNames[projectName]['subsampled_value'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Modify the subsampling"><i class="fa fa-pencil-square-o"></i></a>&nbsp;
+                            {% endif %}
+
+                            <a class="download" data-downloadtype="otu_subsampled" data-subsampletype="{{ projectNames[projectName]['subsampled_type'] }}" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the subsampled OTU table"><i class="fa fa-download"></i></a>
+
+                            {% if projectNames[projectName]["subsampled_removed_samples"]|length > 0 %}
+                            <br />
+                            <br />
+                            Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
+                            {% endif %}
+                          </td>
+                          <td class="col-md-3">OTU Table</td>
+                        </tr>
+                        <tr>
+                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_taxonomy_name"] }}&nbsp;<a class="download" data-downloadtype="taxonomy" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the taxonomy file"><i class="fa fa-download"></i></a></th>
+                          <td class="subsampleDisplayContainer"></td>
+                          <td>Taxonomy Map</td>
+                        </tr>
+                        <tr>
+                          <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
+                          <td class="subsampleDisplayContainer"></td>
+                          <td>Sample Metadata</td>
+                        </tr>
+                        {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
+                          <tr>
+                            <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>
+                            <td class="subsampleDisplayContainer"></td>
+                            <td>Phylogenetic Tree</td>
+                          </tr>
+                        {% endif %}
+                      </tbody>
+                    </table>
+
+                  {% endif %}
                 </div>
-                {% endif %}
               {% endfor %}
             {% endif %}
           </div>

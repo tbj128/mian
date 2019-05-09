@@ -82,12 +82,17 @@ class AlphaDiversity(AnalysisBase):
         else:
             color_metadata_values = []
 
+        if user_request.get_custom_attr("sizevar") != "None":
+            size_metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("sizevar"))
+        else:
+            size_metadata_values = []
+
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.get_custom_attr("expvar"))
         phylogenetic_tree = table.get_phylogenetic_tree()
 
-        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree)
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, size_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree)
 
-    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, size_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree):
         logger.info("Starting Alpha Diversity analysis")
 
         plotType = user_request.get_custom_attr("plotType")
@@ -184,6 +189,7 @@ class AlphaDiversity(AnalysisBase):
                 obj["c1"] = float(metadata_values[i])
                 obj["c2"] = float(vals[i])
                 obj["color"] = color_metadata_values[i] if len(color_metadata_values) == len(vals) else ""
+                obj["size"] = float(size_metadata_values[i]) if len(size_metadata_values) == len(vals) else ""
                 corrArr.append(obj)
                 corrValArr1.append(float(metadata_values[i]))
                 corrValArr2.append(float(vals[i]))

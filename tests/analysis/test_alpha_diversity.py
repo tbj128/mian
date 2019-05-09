@@ -15,6 +15,7 @@ class TestAlphaDiversity(unittest.TestCase):
         user_request = AnalysisTestUtils.create_default_user_request()
         user_request.set_custom_attr("expvar", "")
         user_request.set_custom_attr("colorvar", "")
+        user_request.set_custom_attr("sizevar", "")
         user_request.set_custom_attr("plotType", "boxplot")
         user_request.set_custom_attr("alphaType", "shannon")
         user_request.set_custom_attr("alphaContext", "evenness")
@@ -27,7 +28,7 @@ class TestAlphaDiversity(unittest.TestCase):
         sample_ids_from_metadata = AnalysisTestUtils.get_sample_ids_from_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
 
         plugin = AlphaDiversity()
-        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, metadata_values, sample_ids_from_metadata, "")
+        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, metadata_values, metadata_values, sample_ids_from_metadata, "")
         print(json.dumps(actual_output))
 
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,

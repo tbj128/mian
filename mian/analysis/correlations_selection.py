@@ -26,10 +26,19 @@ class CorrelationsSelection(AnalysisBase):
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata = table.get_sample_metadata()
+        taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
-        return self.analyse(user_request, otu_table, headers, sample_labels, metadata)
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata, taxonomy_map)
 
-    def analyse(self, user_request, base, headers, sample_labels, metadata):
+    def analyse(self, user_request, base, headers, sample_labels, metadata, taxonomy_map):
+        otu_to_genus = {}
+        if int(user_request.level) == -1:
+            # We want to display a short hint for the OTU using the genus (column 5)
+            for header in headers:
+                if header in taxonomy_map and len(taxonomy_map[header]) > 5:
+                    otu_to_genus[header] = taxonomy_map[header][5]
+                else:
+                    otu_to_genus[header] = ""
         expvar = user_request.get_custom_attr("expvar")
         metadata_values = metadata.get_metadata_column_table_order(sample_labels, expvar)
         metadata_values = list(map(float, metadata_values))
@@ -52,7 +61,10 @@ class CorrelationsSelection(AnalysisBase):
             if math.isnan(pval):
                 pval = 1
 
-            correlations.append({"otu": otu_name, "coef": coef, "pval": pval})
+            if int(user_request.level) == -1 and otu_name in otu_to_genus:
+                correlations.append({"otu": otu_name, "coef": coef, "pval": pval, "hint": otu_to_genus[otu_name]})
+            else:
+                correlations.append({"otu": otu_name, "coef": coef, "pval": pval})
             pvals.append(pval)
 
             c += 1

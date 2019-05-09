@@ -143,6 +143,7 @@ function renderGlmnetTable(abundancesObj) {
     var familyType = $("#model").val();
 
     var stats = abundancesObj["results"];
+    var hints = abundancesObj["hints"];
     var render = "<div>";
     var emptyTable = true;
     $.each(stats, function(key, value) {
@@ -164,7 +165,11 @@ function renderGlmnetTable(abundancesObj) {
 
             value.forEach(function(val) {
                 if (val[1] !== 1) {
-                    render += "<tr><td><a href='" + shareToBoxplotLink(val[0]) + "' target='_blank'>" + val[0] + "</a></td><td>" + val[1] + "</td></tr>";
+                    var hint = "";
+                    if (hints[val[0]] && hints[val[0]] !== "") {
+                        hint = " <small class='text-muted'>(" + hints[val[0]] + ")</small>";
+                    }
+                    render += "<tr><td><a href='" + shareToBoxplotLink(val[0]) + "' target='_blank'>" + val[0] + "</a>" + hint + "</td><td>" + val[1] + "</td></tr>";
                     tableResults.push([val[0], val[1]]);
                     emptyTable = false;
                 }
@@ -177,7 +182,11 @@ function renderGlmnetTable(abundancesObj) {
 
             value.forEach(function(val) {
                 if (val[1] !== 0) {
-                    render += "<tr><td><a href='" + shareToBoxplotLink(val[0]) + "' target='_blank'>" + val[0] + "</a></td><td>" + val[1] + "</td></tr>";
+                    var hint = "";
+                    if (hints[val[0]] && hints[val[0]] !== "") {
+                        hint = " <small class='text-muted'>(" + hints[val[0]] + ")</small>";
+                    }
+                    render += "<tr><td><a href='" + shareToBoxplotLink(val[0]) + "' target='_blank'>" + val[0] + "</a>" + hint + "</td><td>" + val[1] + "</td></tr>";
                     tableResults.push([val[0], val[1]]);
                     emptyTable = false;
                 }

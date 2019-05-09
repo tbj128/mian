@@ -125,6 +125,7 @@ function renderFisherTable(abundancesObj) {
 
     $("#stats-rows").empty();
     var statsArr = abundancesObj["results"];
+    var hints = abundancesObj["hints"];
     var cat1 = abundancesObj["cat1"];
     var cat2 = abundancesObj["cat2"];
     $("#cat1-present").text(cat1);
@@ -141,7 +142,12 @@ function renderFisherTable(abundancesObj) {
         var r = "<tr>";
         for (var j = 0; j < statsArr[i].length; j++) {
             if (j == 0) {
-                r = r + "<td><a href='" + shareToBoxplotLink(statsArr[i][j]) + "' target='_blank'>" + statsArr[i][j] + "</a></td>";
+                // The last element in the array contains the genus hint
+                if (hints[statsArr[i][j]] && hints[statsArr[i][j]] !== "") {
+                    r = r + "<td><a href='" + shareToBoxplotLink(statsArr[i][j]) + "' target='_blank'>" + statsArr[i][j] + "</a> <small class='text-muted'>(" + hints[statsArr[i][j]] + ")</small></td>";
+                } else {
+                    r = r + "<td><a href='" + shareToBoxplotLink(statsArr[i][j]) + "' target='_blank'>" + statsArr[i][j] + "</a></td>";
+                }
             } else {
                 r = r + "<td>" + statsArr[i][j] + "</td>";
             }

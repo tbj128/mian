@@ -151,7 +151,11 @@ function renderDifferentialTable(abundancesObj) {
             columns: [{
                 data: "otu",
                 fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
-                    $(nTd).html("<a href='"+ shareToBoxplotLink(oData.otu) + "' target='_blank'>" + oData.otu + "</a>");
+                    var toRender = "<a href='"+ shareToBoxplotLink(oData.otu) + "' target='_blank'>" + oData.otu + "</a>";
+                    if (oData.hint && oData.hint !== "") {
+                        toRender += " <small class='text-muted'>(" + oData.hint + ")</small>";
+                    }
+                    $(nTd).html(toRender);
                 }
             }, {
                 data: "pval"

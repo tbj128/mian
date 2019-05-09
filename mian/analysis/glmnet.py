@@ -138,10 +138,19 @@ class GLMNet(object):
 
         expvar = user_request.get_custom_attr("expvar")
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, expvar)
+        taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
-        return self.analyse(user_request, otu_table, headers, metadata_vals)
+        return self.analyse(user_request, otu_table, headers, metadata_vals, taxonomy_map)
 
-    def analyse(self, user_request, otuTable, headers, metadata_vals):
+    def analyse(self, user_request, otuTable, headers, metadata_vals, taxonomy_map):
+        otu_to_genus = {}
+        if int(user_request.level) == -1:
+            # We want to display a short hint for the OTU using the genus (column 5)
+            for header in headers:
+                if header in taxonomy_map and len(taxonomy_map[header]) > 5:
+                    otu_to_genus[header] = taxonomy_map[header][5]
+                else:
+                    otu_to_genus[header] = ""
 
         allOTUs = []
         col = 0
@@ -168,6 +177,7 @@ class GLMNet(object):
         glmnetResult = self.rStats.run_glmnet(dataf, groups, float(alphaVal), model,
                                               lambda_threshold_type)
 
+        hints = {}
         accumResults = {}
         i = 1
         while i <= glmnetResult.nrow:
@@ -184,11 +194,14 @@ class GLMNet(object):
                 accumResults[g].append(newRow)
             else:
                 accumResults[g] = [newRow]
+            if int(user_request.level) == -1:
+                hints[newRow[0]] = otu_to_genus[newRow[0]]
 
             i += 1
 
         abundancesObj = {}
         abundancesObj["results"] = accumResults
+        abundancesObj["hints"] = hints
 
         return abundancesObj
 

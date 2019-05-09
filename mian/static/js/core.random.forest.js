@@ -105,13 +105,18 @@ function renderTable(abundancesObj) {
 
     $("#rf-stats-rows").empty();
     var statsArr = abundancesObj["results"];
+    var hints = abundancesObj["hints"];
 
     tableResults = [];
     tableResults.push(["Taxonomy", "Importance"]);
 
     for (var i = 0; i < statsArr.length; i++) {
+        var hint = "";
+        if (hints[statsArr[i][0]] && hints[statsArr[i][0]] !== "") {
+            hint = " <small class='text-muted'>(" + hints[statsArr[i][0]] + ")</small>";
+        }
         var r =
-            "<tr><td>" + statsArr[i][0] + "</td><td>" + statsArr[i][1] + "</td></tr>";
+            "<tr><td>" + statsArr[i][0] + hint + "</td><td>" + statsArr[i][1] + "</td></tr>";
         $("#rf-stats-rows").append(r);
         tableResults.push([statsArr[i][0], statsArr[i][1]]);
     }
@@ -135,6 +140,7 @@ function renderBorutaTable(abundancesObj) {
     $statsRows.empty();
 
     var stats = abundancesObj["results"];
+    var hints = abundancesObj["hints"];
 
     var confirmedInfo = "These taxonomic groups/OTUs were selected to be important features at the selected p-value threshold."
     var tentativeInfo = "These taxonomic groups/OTUs were unable to be confirmed to be significant at the selected p-value threshold. You can try reducing the p-value threshold or increasing the max runs to further resolve these."
@@ -168,7 +174,11 @@ function renderBorutaTable(abundancesObj) {
                 row.push("");
             } else {
                 var head = stats[keys[k]].shift();
-                newRow += "<td><a href='" + shareToBoxplotLink(head) + "' target='_blank'>" + head + "</a></td>";
+                var hint = "";
+                if (hints[head] && hints[head] !== "") {
+                    hint = " <small class='text-muted'>(" + hints[head] + ")</small>";
+                }
+                newRow += "<td><a href='" + shareToBoxplotLink(head) + "' target='_blank'>" + head + "</a>" + hint + "</td>";
                 empty = false;
                 row.push(head);
             }

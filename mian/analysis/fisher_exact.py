@@ -77,9 +77,19 @@ class FisherExact(object):
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
-        return self.analyse(user_request, otu_table, headers, metadata_vals)
+        taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
+        return self.analyse(user_request, otu_table, headers, metadata_vals, taxonomy_map)
 
-    def analyse(self, user_request, otuTable, headers, metaVals):
+    def analyse(self, user_request, otuTable, headers, metaVals, taxonomy_map):
+        otu_to_genus = {}
+        if int(user_request.level) == -1:
+            # We want to display a short hint for the OTU using the genus (column 5)
+            for header in headers:
+                if header in taxonomy_map and len(taxonomy_map[header]) > 5:
+                    otu_to_genus[header] = taxonomy_map[header][5]
+                else:
+                    otu_to_genus[header] = ""
+
         groups = robjects.FactorVector(robjects.StrVector(metaVals))
         # Forms an OTU only table (without IDs)
         allOTUs = []
@@ -97,6 +107,7 @@ class FisherExact(object):
 
         fisherResults = self.rStats.fisher_exact(dataf, groups, catVar1, catVar2, int(minthreshold))
 
+        hints = {}
         results = []
         i = 1
         while i <= fisherResults.nrow:
@@ -108,6 +119,9 @@ class FisherExact(object):
                 else:
                     newRow.append(str(fisherResults.rx(i, j)[0]))
                 j += 1
+            otu = newRow[0]
+            if int(user_request.level) == -1:
+                hints[otu] = otu_to_genus[otu]
             i += 1
             results.append(newRow)
 
@@ -115,6 +129,7 @@ class FisherExact(object):
         cat2 = catVar2
         abundancesObj = {}
         abundancesObj["results"] = results
+        abundancesObj["hints"] = hints
         abundancesObj["cat1"] = cat1
         abundancesObj["cat2"] = cat2
 

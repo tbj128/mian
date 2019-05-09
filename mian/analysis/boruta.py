@@ -38,10 +38,20 @@ class Boruta(object):
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+        taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
-        return self.analyse(user_request, otu_table, headers, metadata_values)
+        return self.analyse(user_request, otu_table, headers, metadata_values, taxonomy_map)
 
-    def analyse(self, user_request, otuTable, headers, metaVals):
+    def analyse(self, user_request, otuTable, headers, metaVals, taxonomy_map):
+        otu_to_genus = {}
+        if int(user_request.level) == -1:
+            # We want to display a short hint for the OTU using the genus (column 5)
+            for header in headers:
+                if header in taxonomy_map and len(taxonomy_map[header]) > 5:
+                    otu_to_genus[header] = taxonomy_map[header][5]
+                else:
+                    otu_to_genus[header] = ""
+
         groups = robjects.FactorVector(robjects.StrVector(metaVals))
 
         allOTUs = []
@@ -59,6 +69,7 @@ class Boruta(object):
         borutaResults = self.rStats.boruta(dataf, groups, float(pval), int(maxruns))
 
         assignments = {}
+        hints = {}
 
         i = 0
         for lab in borutaResults.iter_labels():
@@ -66,10 +77,13 @@ class Boruta(object):
                 assignments[lab].append(allOTUs[i][0])
             else:
                 assignments[lab] = [allOTUs[i][0]]
+            if int(user_request.level) == -1:
+                hints[allOTUs[i][0]] = otu_to_genus[allOTUs[i][0]]
             i += 1
 
         abundancesObj = {}
         abundancesObj["results"] = assignments
+        abundancesObj["hints"] = hints
 
         return abundancesObj
 

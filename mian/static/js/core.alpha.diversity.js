@@ -23,6 +23,7 @@ createSpecificListeners();
 //
 var initialExpVar = getParameterByName("expvar");
 var initialColorVar = getParameterByName("colorvar");
+var initialSizeVar = getParameterByName("sizevar");
 function initializeFields() {
     if (getParameterByName("alphaContext") !== null) {
         $("#alphaContext").val(getParameterByName("alphaContext"));
@@ -64,6 +65,10 @@ function createSpecificListeners() {
     });
 
     $("#colorvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#sizevar").change(function() {
         updateAnalysis();
     });
 
@@ -138,6 +143,7 @@ function updateAnalysis() {
     var statisticalTest = $("#statisticalTest").val();
     var plotType = $("#plotType").val();
     var colorvar = $("#colorvar").val();
+    var sizevar = $("#sizevar").val();
 
     if (alphaType === "faith_pd" && alphaContext === "evenness") {
         loadError("<strong>Evenness cannot be calculated using Faith's Phylogenetic Diversity.</strong>");
@@ -160,7 +166,8 @@ function updateAnalysis() {
         alphaContext: alphaContext,
         statisticalTest: statisticalTest,
         plotType: plotType,
-        colorvar: colorvar
+        colorvar: colorvar,
+        sizevar: sizevar
     };
 
     setGetParameters(data);
@@ -218,17 +225,24 @@ function customCatVarCallback(result) {
         expVarToType[obj.name] = obj.type;
     });
     var allHeaders = ["None"].concat(result.map(function(obj) { return obj.name; }));
+    var numericHeaders = ["None"].concat(result.filter(function(obj) { return obj.type === "both" || obj.type === "numeric"; }).map(function(obj) { return obj.name; }));
 
     //
     // Renders the experimental variable
     //
     $("#expvar").empty();
     $("#colorvar").empty();
+    $("#sizevar").empty();
     allHeaders.forEach(function(obj) {
         $("#expvar").append(
             '<option value="' + obj + '">' + obj + "</option>"
         );
         $("#colorvar").append(
+            '<option value="' + obj + '">' + obj + "</option>"
+        );
+    });
+    numericHeaders.forEach(function(obj) {
+        $("#sizevar").append(
             '<option value="' + obj + '">' + obj + "</option>"
         );
     });
@@ -239,5 +253,9 @@ function customCatVarCallback(result) {
     if (initialColorVar) {
         $("#colorvar").val(initialColorVar);
         initialColorVar = null;
+    }
+    if (initialSizeVar) {
+        $("#sizevar").val(initialSizeVar);
+        initialSizeVar = null;
     }
 }

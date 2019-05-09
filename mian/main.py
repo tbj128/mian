@@ -822,6 +822,7 @@ def getAlphaDiversityShare():
 def getAlphaDiversity(user_request, req):
     user_request.set_custom_attr("expvar", req.form['expvar'])
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
+    user_request.set_custom_attr("sizevar", req.form['sizevar'])
     user_request.set_custom_attr("plotType", req.form['plotType'])
     user_request.set_custom_attr("alphaType", req.form['alphaType'])
     user_request.set_custom_attr("alphaContext", req.form['alphaContext'])

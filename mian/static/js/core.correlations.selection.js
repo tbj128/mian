@@ -133,7 +133,12 @@ function renderCorrelationsSelection(abundancesObj) {
             columns: [{
                     data: "otu",
                     fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
-                        $(nTd).html("<a href='"+ shareToCorrelationsLink(oData.otu, $("#expvar").val()) + "' target='_blank'>" + oData.otu + "</a>");
+
+                        var toRender = "<a href='"+ shareToCorrelationsLink(oData.otu, $("#expvar").val()) + "' target='_blank'>" + oData.otu + "</a>";
+                        if (oData.hint && oData.hint !== "") {
+                            toRender += " <small class='text-muted'>(" + oData.hint + ")</small>";
+                        }
+                        $(nTd).html(toRender);
                     }
                 },
                 {

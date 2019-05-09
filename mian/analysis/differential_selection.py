@@ -30,14 +30,24 @@ class DifferentialSelection(object):
             user_request)
 
         sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
+        taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
         if differential_type == "ANCOM":
             logger.info("Running ANCOM")
-            return self.analyse_with_ancom(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map)
+            return self.analyse_with_ancom(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map)
         else:
-            return self.analyse(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map)
+            return self.analyse(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map)
 
-    def analyse(self, user_request, base, headers, sample_labels, sample_ids_to_metadata_map):
+    def analyse(self, user_request, base, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map):
+        otu_to_genus = {}
+        if int(user_request.level) == -1:
+            # We want to display a short hint for the OTU using the genus (column 5)
+            for header in headers:
+                if header in taxonomy_map and len(taxonomy_map[header]) > 5:
+                    otu_to_genus[header] = taxonomy_map[header][5]
+                else:
+                    otu_to_genus[header] = ""
+
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
         catVar1 = user_request.get_custom_attr("pwVar1")
         catVar2 = user_request.get_custom_attr("pwVar2")
@@ -82,15 +92,24 @@ class DifferentialSelection(object):
             pval = otu_pvals[j]
             qval = otu_qvals[j]
             if float(pval) < pvalthreshold:
-                otu_results = {}
-                otu_results["pval"] = pval
-                otu_results["qval"] = qval
-                otus.append({"otu": otu_id, "pval": pval, "qval": qval})
+                if int(user_request.level) == -1 and otu_id in otu_to_genus:
+                    otus.append({"otu": otu_id, "pval": pval, "qval": qval, "hint": otu_to_genus[otu_id]})
+                else:
+                    otus.append({"otu": otu_id, "pval": pval, "qval": qval})
             j += 1
 
         return {"differentials": otus}
 
-    def analyse_with_ancom(self, user_request, base, headers, sample_labels, sample_ids_to_metadata_map):
+    def analyse_with_ancom(self, user_request, base, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map):
+        otu_to_genus = {}
+        if int(user_request.level) == -1:
+            # We want to display a short hint for the OTU using the genus (column 5)
+            for header in headers:
+                if header in taxonomy_map and len(taxonomy_map[header]) > 5:
+                    otu_to_genus[header] = taxonomy_map[header][5]
+                else:
+                    otu_to_genus[header] = ""
+
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
         catVar1 = user_request.get_custom_attr("pwVar1")
         catVar2 = user_request.get_custom_attr("pwVar2")
@@ -133,6 +152,9 @@ class DifferentialSelection(object):
         i = 0
         while i < len(headers):
             if results_rejects[i]:
-                otus.append({"otu": headers[i], "pval": "< " + str(pvalthreshold), "qval": "N/A for ANCOM"})
+                if int(user_request.level) == -1 and headers[i] in otu_to_genus:
+                    otus.append({"otu": headers[i], "pval": "< " + str(pvalthreshold), "qval": "N/A for ANCOM", "hint": otu_to_genus[headers[i]]})
+                else:
+                    otus.append({"otu": headers[i], "pval": "< " + str(pvalthreshold), "qval": "N/A for ANCOM"})
             i += 1
         return {"differentials": otus}

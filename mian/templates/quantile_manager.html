@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'header.html' %}
+    <title>Quantiles - Mian</title>
+    <style>
+      .blackout {
+        opacity: .5;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1040;
+        background-color: #000;
+      }
+
+      .change-box {
+        position: fixed;
+        top: 80px;
+        left:50%;
+        width:400px;
+        padding:42px;
+        margin-left:-200px;
+        z-index: 1042;
+        background:#FFF;
+        border-radius: 6px;
+      }
+
+    </style>
+</head>
+
+<body>
+
+{% include 'navigation.html' %}
+{% include 'loading-bar-processing.html' %}
+{% include 'popup-quantile.html' %}
+
+<div class="content-wrapper">
+    <div class="container project-container">
+        <div class="section-heading project-heading">
+            <h2><i class="fa fa-tasks"></i>&nbsp;&nbsp;Quantile Ranges for {{projectName}}</h2>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <label>Numeric Sample Metadata:</label>
+                <select id="quantile-new-select" class="form-control" style="margin-bottom:8px;">
+                    {% for header in metadataHeaders %}
+                        {% if header["type"] != "categorical" %}
+                            <option>{{header["name"]}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <button id="quantile-new" type="button" class="btn btn-primary project-new">Create</button>
+            </div>
+            <div class="col-md-9 project-main">
+                {% if quantiles|length == 0 %}
+                <div class="project-no-projects" style="margin-left: 240px;">
+                    <h3>No quantile ranges yet</h3>
+                    <p>Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots.</p>
+                </div>
+                {% else %}
+                {% for quantile_metadata_name in quantiles %}
+                <div class="project-item">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>{{ quantile_metadata_name }}</h4>
+
+                            <p>
+                                <small>Min: <strong>{{quantiles[quantile_metadata_name]["min"]}}</strong> | Max: <strong>{{quantiles[quantile_metadata_name]["max"]}}</strong>
+                                </small>
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <button data-metadata="{{quantile_metadata_name}}" class="btn btn-default btn-sm quantile-edit" style="margin-top: 6px" type="button"><i class="fa fa-edit"></i> Edit</button>
+                            <button data-metadata="{{quantile_metadata_name}}" class="btn btn-default btn-sm quantile-delete" style="margin-top: 6px" type="button"><i class="fa fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                    <table class="table table-hover" style="table-layout:fixed;">
+                        <tbody>
+                        {% for quantile_range in quantiles[quantile_metadata_name]["quantiles"] %}
+                        <tr>
+                            <th scope="row" class="project-fn col-md-5">
+                                {{ quantile_range["displayName"] }}
+                            </th>
+                            <td class="col-md-3 subsampleDisplayContainer">
+                                Lower Threshold (inc): <strong>{{ quantile_range["min"] }}</strong>
+                            </td>
+                            <td class="col-md-3">
+                                {% if quantile_range["max"] == quantiles[quantile_metadata_name]["max"] %}
+                                    Upper Threshold (inc): <strong>{{ quantile_range["max"] }}</strong>
+                                {% else %}
+                                    Upper Threshold (exc): <strong>{{ quantile_range["max"] }}</strong>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <hr />
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div id="push" style="height:42px;"></div>
+</div>
+
+{% include 'footer-full.html' %}
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/js/plugins/bootbox.min.js"></script>
+<script src="/static/js/core.shared.js"></script>
+<script src="/static/js/core.projects.js"></script>
+
+<script>
+    $("#quantile-new").click(function() {
+        showQuantileForNumeric("{{pid}}", $("#quantile-new-select").val(), false);
+    });
+
+    $(".quantile-edit").click(function() {
+        showQuantileForNumeric("{{pid}}", $(this).data("metadata"), false);
+    });
+
+    $(".quantile-delete").click(function() {
+        deleteQuantileRange("{{pid}}", $(this).data("metadata"));
+    });
+
+    $("#quantile-save").click(function() {
+        saveQuantileRange("{{pid}}");
+    });
+</script>
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+</body>
+</html>

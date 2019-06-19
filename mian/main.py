@@ -34,6 +34,8 @@ import pwd
 
 from mian.core.data_io import DataIO
 from mian.rutils import r_package_install
+from mian.model.quantiles import Quantiles
+
 r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")
@@ -245,6 +247,17 @@ def projects():
     project_names_to_info = get_project_ids_to_info(current_user.id)
     is_demo = current_user.name == "demo@miandata.org"
     return render_template('projects.html', demo=is_demo, newSignup=new_signup, projectNames=project_names_to_info, status=status, message=message)
+
+
+@app.route('/quantile_manager')
+@flask_login.login_required
+def quantile_manager():
+    pid = request.args.get('pid', '')
+    project_names_to_info = get_project_ids_to_info(current_user.id)
+    project_name = project_names_to_info[pid]["project_name"]
+    quantiles = Quantiles(current_user.id, pid)
+    sample_metadata = Metadata(current_user.id, pid)
+    return render_template('quantile_manager.html', pid=pid, projectName=project_name, quantiles=quantiles.quantiles, metadataHeaders=sample_metadata.get_metadata_headers_with_type())
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -678,34 +691,6 @@ def getTaxonomies(user, pid):
     taxonomy = Taxonomy(user, pid)
     abundances = taxonomy.get_taxonomy_map()
     logger.info("Returning taxonomies")
-    return json.dumps(abundances)
-
-# ---
-
-
-@app.route('/metadata_headers')
-@flask_login.login_required
-def getMetadataHeadersSecure():
-    user = current_user.id
-    pid = request.args.get('pid', '')
-    if pid == '':
-        return json.dumps({})
-    return getMetadataHeaders(user, pid)
-
-
-@app.route('/share/metadata_headers')
-def getMetadataHeadersShare():
-    if checkSharedValidity(request):
-        uid = request.args.get('uid', '')
-        pid = request.args.get('pid', '')
-        return getMetadataHeaders(uid, pid)
-    else:
-        abortNotShared()
-
-
-def getMetadataHeaders(user, pid):
-    metadata = Metadata(user, pid)
-    abundances = metadata.get_metadata_headers()
     return json.dumps(abundances)
 
 # ---
@@ -1417,6 +1402,66 @@ def getIsSubsampled():
     #     return json.dumps(0)
 
 
+@app.route('/quantile_metadata_info', methods=['GET'])
+@flask_login.login_required
+def get_quantile_metadata_info():
+    user = current_user.id
+    pid = request.args.get("pid")
+    metadata_name = request.args.get("metadata_name")
+
+    metadata = Metadata(user, pid)
+    return_obj = {
+        "context": metadata.get_numeric_metadata_info(metadata_name)
+    }
+
+    quantiles = Quantiles(user, pid)
+    if quantiles.exists(metadata_name):
+        return_obj["existing_quantile"] = quantiles.get_existing(metadata_name)
+    return json.dumps(return_obj)
+
+
+@app.route('/list_quantiles', methods=['POST'])
+@flask_login.login_required
+def list_quantiles():
+    user = current_user.id
+    pid = request.form['pid']
+    sample_metadata = request.form['sample_metadata'] if 'sample_metadata' in request.form else ""
+
+    quantiles = Quantiles(user, pid)
+    if sample_metadata != "":
+        return json.dumps(quantiles.quantiles)
+    else:
+        if sample_metadata in quantiles.quantiles:
+            return json.dumps(quantiles.quantiles[sample_metadata])
+        else:
+            return json.dumps({})
+
+
+@app.route('/save_quantile', methods=['POST'])
+@flask_login.login_required
+def save_quantile():
+    user = current_user.id
+    pid = request.form['pid']
+    quantile_staging = json.loads(request.form['quantileStaging'])
+
+    quantiles = Quantiles(user, pid)
+    quantiles.update_quantile(quantile_staging["metadata_name"], quantile_staging["min"], quantile_staging["max"], quantile_staging["quantiles"], quantile_staging["type"])
+    quantiles.save()
+    return json.dumps({})
+
+
+@app.route('/remove_quantile', methods=['POST'])
+@flask_login.login_required
+def remove_quantile():
+    user = current_user.id
+    pid = request.form['pid']
+    sample_metadata = request.form['sample_metadata']
+
+    quantiles = Quantiles(user, pid)
+    quantiles.remove_quantile(sample_metadata)
+    quantiles.save()
+    return json.dumps({})
+
 
 # ----- Data processing endpoints -----
 
@@ -1781,6 +1826,8 @@ def get_project_ids_to_info(user_id):
             logger.info("Found project directory " + str(dir) + " for user " + str(user_id))
             if dir != ProjectManager.STAGING_DIRECTORY:
                 pid = dir
+                quantiles = Quantiles(user_id, pid)
+                num_quantiles = len(quantiles.quantiles)
                 project_map = Map(user_id, pid)
                 project_info = {}
                 if project_map.orig_biom_name != "":
@@ -1798,7 +1845,8 @@ def get_project_ids_to_info(user_id):
                         "matrix_type": project_map.matrix_type,
                         "num_samples": project_map.num_samples,
                         "num_otus": project_map.num_otus,
-                        "shared": project_map.shared
+                        "shared": project_map.shared,
+                        "num_quantiles": num_quantiles
                     }
                 else:
                     project_type = "table"
@@ -1816,7 +1864,8 @@ def get_project_ids_to_info(user_id):
                         "matrix_type": project_map.matrix_type,
                         "num_samples": project_map.num_samples,
                         "num_otus": project_map.num_otus,
-                        "shared": project_map.shared
+                        "shared": project_map.shared,
+                        "num_quantiles": num_quantiles
                     }
                 logger.info("Read project info " + str(project_info))
                 if project_map.project_name != "" and project_map.subsampled_type != "":

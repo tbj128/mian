@@ -13,6 +13,7 @@ var statsTypes = {
 //
 // Initialization
 //
+var initialTypeAhead = true; // To prevent the typeahead change from triggering multiple times
 initializeFields();
 initializeComponent({
     hasCatVar: true,
@@ -24,7 +25,7 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 var initialColorVar = getParameterByName("colorvar");
-var initialYvalsSpecificTaxonomy = getParameterByName("yvalsSpecificTaxonomy") ? JSON.parse(getParameterByName("yvalsSpecificTaxonomy")) : [];
+var initialYvalsSpecificTaxonomy = getParameterByName("yvalsSpecificTaxonomy") ? JSON.parse(getParameterByName("yvalsSpecificTaxonomy")) : null;
 function initializeFields() {
     if (getParameterByName("yvals") !== null) {
         $("#yvals").val(getParameterByName("yvals"));
@@ -47,7 +48,10 @@ function createSpecificListeners() {
     });
 
     $("#specific-taxonomy-typeahead").change(function() {
-        updateAnalysis();
+        if (initialYvalsSpecificTaxonomy == null) {
+            // We don't want this to fire multiple times when it first is setting up the page
+            updateAnalysis();
+        }
     });
 
     $("#statisticalTest").change(function() {

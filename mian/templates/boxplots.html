@@ -29,9 +29,8 @@
             </div>
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
-                <label class="control-label">Categorical Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable"></i></label>
-                <select id="catvar" name="catvar" class="form-control">
-                </select>
+                {% include 'catvar-container.html' %}
+                {% include 'quantile-manage-container.html' %}
 
                 <label class="control-label">Y-Axis Values  <i class="fa fa-info-circle" data-toggle="popover" data-title="Y-Axis Values" data-content="The numeric parameter that should be represented on the Y-axis. <br /><br />Note the special parameters below:<ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max/Min/Mean/Median</strong> The max/min/mean/median of all OTUs within a sample</li></ul>"></i></label>
                 <select id="yvals" name="yvals" class="form-control">

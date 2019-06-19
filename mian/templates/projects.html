@@ -205,7 +205,11 @@
                         {% if projectNames[projectName]["orig_sample_metadata_name"] != "" %}
                           <tr>
                             <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
-                            <td class="subsampleDisplayContainer"></td>
+                            {% if projectNames[projectName]["num_quantiles"] == 0 %}
+                              <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}">Add a quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
+                            {% else %}
+                              <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
+                            {% endif %}
                             <td>Sample Metadata</td>
                           </tr>
                         {% endif %}
@@ -266,7 +270,11 @@
                         </tr>
                         <tr>
                           <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
-                          <td class="subsampleDisplayContainer"></td>
+                          {% if projectNames[projectName]["num_quantiles"] == 0 %}
+                              <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}">Add a quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
+                            {% else %}
+                          <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
+                            {% endif %}
                           <td>Sample Metadata</td>
                         </tr>
                         {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}

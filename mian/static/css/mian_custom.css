@@ -510,3 +510,37 @@ hr {
 #progress.waiting dd, #progress.waiting dt {
 	animation:pulse 2s ease-out 0s infinite
 }
+
+/* Popups */
+.popover {
+    z-index: 9999;
+}
+
+.blackout {
+    opacity: .5;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    background-color: #000;
+}
+
+.popup {
+    position: fixed;
+    top: 80px;
+    left:50%;
+    width:800px;
+    max-height: 500px;
+    padding:28px 42px 42px 42px;
+    margin-left:-400px;
+    z-index: 9000;
+    background:#FFF;
+    overflow-y: scroll;
+    border-radius: 6px;
+}
+
+.quantile-manage-container {
+    margin-top: 4px;
+}

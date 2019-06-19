@@ -1,13 +1,17 @@
 from mian.core.constants import SAMPLE_METADATA_FILENAME
 from mian.core.data_io import DataIO
+import numpy as np
+
+from mian.model.quantiles import Quantiles
 
 
 class Metadata(object):
 
-    def __init__(self, user_id, pid, load_samples=True):
+    def __init__(self, user_id, pid, is_categorical_tool=True, load_samples=True):
         self.user_id = user_id
         self.pid = pid
         self.metadata = []
+        self.is_categorical_tool = is_categorical_tool
         if load_samples:
             self.__load_metadata_samples()
 
@@ -55,17 +59,6 @@ class Metadata(object):
             i += 1
         return new_metadata_table
 
-    def get_metadata_headers(self):
-        """
-        Gets the metadata headers in order of the metadata file
-        :return:
-        """
-        headers = []
-        i = 1
-        while i < len(self.metadata[0]):
-            headers.append(self.metadata[0][i])
-            i += 1
-        return headers
 
     def get_metadata_headers_with_type(self):
         """
@@ -73,6 +66,8 @@ class Metadata(object):
         :return: array of objects; each object contains name and type
         """
         headers = []
+
+        quantile = Quantiles(self.user_id, self.pid)
 
         j = 1
         while j < len(self.metadata[0]):
@@ -89,46 +84,62 @@ class Metadata(object):
             # A column is "both" if all the entries are numeric, but there is not many unique values
             is_both = is_numeric and len(numeric_entries) < len(self.metadata) - 1
 
+            quantile_status = quantile.exists(self.metadata[0][j])
+
             if is_both:
                 headers.append({
                     "name": self.metadata[0][j],
-                    "type": "both"
+                    "type": "both",
+                    "quantileStatus": quantile_status
                 })
             elif is_numeric:
                 headers.append({
                     "name": self.metadata[0][j],
-                    "type": "numeric"
+                    "type": "numeric",
+                    "quantileStatus": quantile_status
                 })
             else:
                 headers.append({
                     "name": self.metadata[0][j],
-                    "type": "categorical"
+                    "type": "categorical",
+                    "quantileStatus": quantile_status
                 })
             j += 1
         return headers
 
-    def get_numeric_metadata_headers(self):
-        """
-        Gets the metadata columns that are completely numeric in value
-        :return:
-        """
-        headers = []
+    def get_numeric_metadata_info(self, metadata_name):
+        metadata_col_num = self.get_metadata_column_number(metadata_name)
+        col_arr = []
 
-        j = 1
-        while j < len(self.metadata[0]):
-            # Go through each column
-            is_numeric = True
-            i = 1
-            while i < len(self.metadata):
-                # Go through each row in each column
-                if any(c.isalpha() for c in self.metadata[i][j]):
-                    is_numeric = False
-                    break
-                i += 1
-            if is_numeric:
-                headers.append(self.metadata[0][j])
-            j += 1
-        return headers
+        # Ignoring first row because it is the table header
+        i = 1
+        while i < len(self.metadata):
+            if any(c.isalpha() for c in self.metadata[i][metadata_col_num]):
+                return {
+                    "numeric": False
+                }
+            col_arr.append(float(self.metadata[i][metadata_col_num]))
+            i += 1
+
+        col_arr = np.array(col_arr)
+        q_0 = np.percentile(col_arr, 0)
+        q_25 = np.percentile(col_arr, 25)
+        q_33 = np.percentile(col_arr, 33)
+        q_50 = np.percentile(col_arr, 50)
+        q_66 = np.percentile(col_arr, 66)
+        q_75 = np.percentile(col_arr, 75)
+        q_100 = np.percentile(col_arr, 100)
+
+        return {
+            "numeric": True,
+            "q_0": q_0,
+            "q_25": q_25,
+            "q_33": q_33,
+            "q_50": q_50,
+            "q_66": q_66,
+            "q_75": q_75,
+            "q_100": q_100
+        }
 
     def get_as_filtered_table(self, metadata_name, filter_role, filter_values):
         if metadata_name == "none" or metadata_name == "":
@@ -168,21 +179,42 @@ class Metadata(object):
             j += 1
         return cat_col
 
-    def get_metadata_column_table_order(self, sample_labels, metadata_name):
+    def get_metadata_column_table_order(self, sample_labels, metadata_name, apply_quantile=True):
         """
         Returns an array of the metadata values. The values will correspond directly to the input OTU table order.
         The header of the metadata is ignored.
         :param meta_col:
         :return:
         """
-        metadata_map = self.get_sample_id_to_metadata_map(metadata_name)
+
         meta_vals = []
+
+        metadata_map = self.get_sample_id_to_metadata_map(metadata_name)
+        if len(metadata_map.keys()) == 0:
+            return meta_vals
+
         row = 0
         while row < len(sample_labels):
             if sample_labels[row] in metadata_map:
                 meta_vals.append(metadata_map[sample_labels[row]])
             row += 1
+
+        if apply_quantile:
+            quantile = Quantiles(self.user_id, self.pid)
+
+            if quantile.exists(metadata_name):
+                existing_quantile = quantile.get_existing(metadata_name)
+
+                transformed_meta_vals = []
+                for v in meta_vals:
+                    for quantile in existing_quantile["quantiles"]:
+                        if float(v) >= float(quantile["min"]) and float(v) < float(quantile["max"]):
+                            transformed_meta_vals.append(quantile["displayName"])
+                        elif float(v) == float(quantile["max"]) and float(quantile["max"]) == float(existing_quantile["max"]):
+                            transformed_meta_vals.append(quantile["displayName"])
+                return transformed_meta_vals
         return meta_vals
+
 
     def get_sample_id_to_metadata_map(self, metadata_name):
         """
@@ -195,6 +227,9 @@ class Metadata(object):
             return meta_vals
 
         meta_col = self.get_metadata_column_number(metadata_name)
+        if meta_col < 0:
+            return meta_vals
+
         i = 0
         while i < len(self.metadata):
             # Maps the ID column to metadata column

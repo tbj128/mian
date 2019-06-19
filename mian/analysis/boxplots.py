@@ -23,14 +23,15 @@ class Boxplots(AnalysisBase):
         logger.info("Starting abundance_boxplots")
         table = OTUTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
-        metadata = table.get_sample_metadata().get_as_table()
+        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+        metadata_col = table.get_sample_metadata().get_metadata_column_number(user_request.catvar)
         if user_request.get_custom_attr("colorvar") != "None":
             color_metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("colorvar"))
         else:
             color_metadata_values = []
-        return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata, color_metadata_values)
+        return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata_values, metadata_col, color_metadata_values)
 
-    def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata, color_metadata_values):
+    def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata_values, metadata_col, color_metadata_values):
 
         base = np.array(base)
 
@@ -38,25 +39,17 @@ class Boxplots(AnalysisBase):
         abundances = {}
         metadataMap = {}
 
-        catCol = -1
         i = 0
-        while i < len(metadata):
-            if i == 0:
-                j = 0
-                while j < len(metadata[i]):
-                    if metadata[i][j] == user_request.catvar:
-                        catCol = j
-                    j += 1
+        while i < len(sample_labels):
+            if len(metadata_values) != len(sample_labels):
+                metadataMap[sample_labels[i]] = "All"
+                abundances["All"] = []
+                statsAbundances["All"] = []
             else:
-                if catCol > -1:
-                    metadataMap[metadata[i][0]] = metadata[i][catCol]
-                    if metadata[i][catCol] not in abundances:
-                        abundances[metadata[i][catCol]] = []
-                        statsAbundances[metadata[i][catCol]] = []
-                else:
-                    metadataMap[metadata[i][0]] = "All"
-                    abundances["All"] = []
-                    statsAbundances["All"] = []
+                metadataMap[sample_labels[i]] = metadata_values[i]
+                if metadata_values[i] not in abundances:
+                    abundances[metadata_values[i]] = []
+                    statsAbundances[metadata_values[i]] = []
             i += 1
 
         logger.info("Initialized metadata maps")

@@ -25,6 +25,11 @@ var taxonomyLevelsReverseLookup = {
     "-2": "none"
 };
 var taxonomiesMap = {};
+var headersWithType = {};
+var headersWithQuantileStatus = {};
+var quantiles = {};
+var quantileStaging = {};
+var quantileResultStaging = {};
 var loaded = false;
 
 //
@@ -574,6 +579,7 @@ function updateProject() {
     if (typeof customLoadingCallback === "function") {
         customLoadingCallback(catVars);
     }
+    showOrHideQuantileManageContainer();
     updateAnalysis();
 }
 
@@ -713,13 +719,20 @@ function updateCatVar(isNumeric) {
             getSharedUserSuffixIfNeeded(),
         success: function(result) {
             var json = JSON.parse(result);
+
+            headersWithType = {};
+            json.forEach(header => {
+                headersWithType[header.name] = header.type;
+                headersWithQuantileStatus[header.name] = header.quantileStatus;
+            });
+
             var headers =
                 isNumeric === true ?
                 json
                 .filter(function(obj) { return obj.type === "numeric" || obj.type === "both"; })
                 .map(function(obj) { return obj.name; }) :
                 json
-                .filter(function(obj) { return obj.type === "categorical" || obj.type === "both"; })
+                .filter(function(obj) { return obj.type === "categorical" || obj.type === "both" || obj.quantileStatus; })
                 .map(function(obj) { return obj.name; });
             var filteringHeaders = json.map(function(obj) { return obj.name});
 
@@ -783,6 +796,7 @@ function updateCatVar(isNumeric) {
 
             if (initialCatvar) {
                 $("#catvar").val(initialCatvar);
+                showOrHideQuantileManageContainer();
 
                 // Reset the initial catvar (we only want to load it during the first page load)
                 initialCatvar = null;
@@ -1070,3 +1084,429 @@ String.prototype.hashCode = function() {
     }
     return hash;
 }
+
+//
+// Quantile Box Section
+//
+
+var quantileColors = ["blue", "yellow", "green", "red", "purple"];
+
+$("#catvar").change(function() {
+    showOrHideQuantileManageContainer();
+});
+
+function saveQuantileRange(pid) {
+    $.ajax({
+        url: "/save_quantile",
+        type: "POST",
+        data: {
+            pid: pid,
+            quantileStaging: JSON.stringify(quantileStaging)
+        },
+        success: function(response) {
+            hideQuantileForNumeric();
+            window.location.reload(true);
+        },
+        error: function(xhr) {
+            hideQuantileForNumeric();
+        }
+    });
+}
+
+$("#quantile-cancel").click(function() {
+    hideQuantileForNumeric();
+});
+
+$("#quantile-exit").click(function() {
+    hideQuantileForNumeric();
+});
+
+$(".blackout").click(function() {
+    hideQuantileForNumeric();
+});
+
+function deleteQuantileRange(pid, sample_metadata) {
+    $.ajax({
+        url: "/remove_quantile",
+        type: "POST",
+        data: {
+            pid: pid,
+            sample_metadata: sample_metadata
+        },
+        success: function(response) {
+            delete headersWithQuantileStatus[sample_metadata]
+            hideQuantileForNumeric();
+            window.location.reload(true);
+        },
+        error: function(xhr) {
+            hideQuantileForNumeric();
+        }
+    });
+}
+
+function showOrHideQuantileManageContainer() {
+    if ($('#catvar').length) {
+        if (headersWithType[$("#catvar").val()] === "numeric" || headersWithType[$("#catvar").val()] === "both") {
+            $(".quantile-manage-container").show();
+            if (headersWithQuantileStatus[$("#catvar").val()]) {
+                $(".quantile-using").show();
+            } else {
+                $(".quantile-using").hide();
+            }
+        } else {
+            $(".quantile-manage-container").hide();
+        }
+    }
+}
+
+// Shows a quantile picker box when the user tries to apply the catvar on a numeric variable
+function showQuantileForNumeric(pid, metadata_name, hide_if_possible) {
+//    if (headersWithType[metadata_name] !== "numeric" && headersWithType[metadata_name] !== "both") {
+//        return false;
+//    }
+
+    $.ajax({
+        url: "/quantile_metadata_info",
+        type: "get",
+        data: {
+            pid: pid,
+            metadata_name: metadata_name
+        },
+        success: function(response) {
+            var result = JSON.parse(response);
+            quantileResultStaging = result.context;
+            if (hide_if_possible && result.existing_quantile) {
+                updateAnalysis();
+                return;
+            }
+
+            if (result.existing_quantile) {
+                // Load previous settings
+                quantileStaging = result.existing_quantile;
+                quantileStaging.metadata_name = metadata_name;
+                $("#quantile-min").text(quantileStaging.min);
+                $("#quantile-max").text(quantileStaging.max);
+
+                $(".quantile-type-btn").removeClass("btn-primary");
+                $(".quantile-type-btn").addClass("btn-link");
+                if (quantileStaging.type === "q_2") {
+                    $("#quantile-2").removeClass("btn-link");
+                    $("#quantile-2").addClass("btn-primary");
+                } else if (quantileStaging.type === "q_3") {
+                    $("#quantile-3").removeClass("btn-link");
+                    $("#quantile-3").addClass("btn-primary");
+                } else if (quantileStaging.type === "q_4") {
+                    $("#quantile-4").removeClass("btn-link");
+                    $("#quantile-4").addClass("btn-primary");
+                } else if (quantileStaging.type === "q_custom") {
+                    $("#quantile-custom").removeClass("btn-link");
+                    $("#quantile-custom").addClass("btn-primary");
+                }
+
+                var isNotLocked = quantileStaging.type === "q_custom";
+                renderQuantileRange(metadata_name, !isNotLocked);
+            } else {
+                // Create a new default quantile staging
+                var quantileArray = [
+                    {
+                        min: quantileResultStaging.q_0,
+                        max: quantileResultStaging.q_50,
+                        displayName: "Low Prevalence"
+                    },
+                    {
+                        min: quantileResultStaging.q_50,
+                        max: quantileResultStaging.q_100,
+                        displayName: "High Prevalence"
+                    }
+                ];
+                quantileStaging = {
+                    type: "q_2",
+                    quantiles: quantileArray,
+                    metadata_name: metadata_name,
+                    min: quantileResultStaging.q_0,
+                    max: quantileResultStaging.q_100
+                };
+                $("#quantile-min").text(quantileResultStaging.q_0);
+                $("#quantile-max").text(quantileResultStaging.q_100);
+                renderQuantileRange(metadata_name, true);
+            }
+
+            renderQuantileBar();
+
+            if (quantileStaging.quantiles.length <= 2) {
+                $(".quantile-remove").remove();
+            }
+
+            $("#quantile-add").data("metadata", metadata_name);
+            $("#quantile-metadata").text(metadata_name);
+            $("#quantile-treat-as-categorical").data("metadata", metadata_name);
+            $("#quantile-box").show();
+            $("#blackout").show();
+        },
+        error: function(xhr) {
+            hideQuantileForNumeric();
+        }
+    });
+    return true;
+}
+
+// Hides a quantile picker box
+function hideQuantileForNumeric() {
+    $("#quantile-box").hide();
+    $("#blackout").hide();
+}
+
+$(".quantile-type-btn").click(function() {
+    $(".quantile-type-btn").removeClass("btn-primary");
+    $(".quantile-type-btn").addClass("btn-link");
+    $(this).removeClass("btn-link");
+    $(this).addClass("btn-primary");
+});
+
+$("#quantile-2").click(function() {
+    var quantileArray = [
+        {
+            min: quantileResultStaging.q_0,
+            max: quantileResultStaging.q_50,
+            displayName: "Low Prevalence"
+        },
+        {
+            min: quantileResultStaging.q_50,
+            max: quantileResultStaging.q_100,
+            displayName: "High Prevalence"
+        }
+    ];
+    quantileStaging.quantiles = quantileArray;
+    quantileStaging.type = "q_2";
+    renderQuantileRange(quantileStaging.metadata_name, true);
+    renderQuantileBar();
+});
+
+
+$("#quantile-3").click(function() {
+    var quantileArray = [
+        {
+            min: quantileResultStaging.q_0,
+            max: quantileResultStaging.q_33,
+            displayName: "Low Prevalence"
+        },
+        {
+            min: quantileResultStaging.q_33,
+            max: quantileResultStaging.q_66,
+            displayName: "Mid Prevalence"
+        },
+        {
+            min: quantileResultStaging.q_66,
+            max: quantileResultStaging.q_100,
+            displayName: "High Prevalence"
+        }
+    ];
+    quantileStaging.quantiles = quantileArray;
+    quantileStaging.type = "q_3";
+    renderQuantileRange(quantileStaging.metadata_name, true);
+    renderQuantileBar();
+});
+
+
+$("#quantile-4").click(function() {
+    var quantileArray = [
+        {
+            min: quantileResultStaging.q_0,
+            max: quantileResultStaging.q_25,
+            displayName: "Low Prevalence"
+        },
+        {
+            min: quantileResultStaging.q_25,
+            max: quantileResultStaging.q_50,
+            displayName: "Low-Mid Prevalence"
+        },
+        {
+            min: quantileResultStaging.q_50,
+            max: quantileResultStaging.q_75,
+            displayName: "Mid-High Prevalence"
+        },
+        {
+            min: quantileResultStaging.q_75,
+            max: quantileResultStaging.q_100,
+            displayName: "High Prevalence"
+        }
+    ];
+    quantileStaging.quantiles = quantileArray;
+    quantileStaging.type = "q_4";
+    renderQuantileRange(quantileStaging.metadata_name, true);
+    renderQuantileBar();
+});
+
+$("#quantile-custom").click(function() {
+    var quantileArray = [
+        {
+            min: quantileResultStaging.q_0,
+            max: quantileResultStaging.q_50,
+            displayName: "Low Prevalence"
+        },
+        {
+            min: quantileResultStaging.q_50,
+            max: quantileResultStaging.q_100,
+            displayName: "High Prevalence"
+        }
+    ];
+    quantileStaging.quantiles = quantileArray;
+    quantileStaging.type = "q_custom";
+    renderQuantileRange(quantileStaging.metadata_name, false);
+    renderQuantileBar();
+});
+
+$("#quantile-box #quantile-add").click(function() {
+    var sampleMetadata = $(this).data('metadata');
+    var quantileArray = quantileStaging.quantiles;
+    quantileArray.push({
+        min: "",
+        max: "",
+        displayName: ""
+    });
+    quantileStaging.quantiles = quantileArray;
+    renderQuantileRange(sampleMetadata);
+    renderQuantileBar();
+});
+
+$("#quantile-box").on('click', '.quantile-remove', function() {
+    var sampleMetadata = $(this).data('metadata');
+    var index = parseInt($(this).data('index'));
+    var quantileArray = quantileStaging.quantiles;
+    quantileArray.splice(index, 1);
+    quantileStaging.quantiles = quantileArray;
+
+    renderQuantileRange(sampleMetadata);
+    renderQuantileBar();
+
+    if (quantileArray.length <= 2) {
+        $(".quantile-remove").remove();
+    }
+});
+
+$("#quantile-box").on('#catvar', '.quantile-display-name', function() {
+    var sampleMetadata = $(this).data('metadata');
+    var index = parseInt($(this).data('index'));
+    quantileStaging.quantiles[index].displayName = $(this).val();
+    renderQuantileBar();
+});
+
+$("#quantile-box").on('change', '.quantile-min', function() {
+    var sampleMetadata = $(this).data('metadata');
+    var index = parseInt($(this).data('index'));
+    quantileStaging.quantiles[index].min = $(this).val();
+    renderQuantileBar();
+});
+
+$("#quantile-box").on('change', '.quantile-max', function() {
+    var sampleMetadata = $(this).data('metadata');
+    var index = parseInt($(this).data('index'));
+    quantileStaging.quantiles[index].max = $(this).val();
+    renderQuantileBar();
+});
+
+function renderQuantileRange(sampleMetadata, lock) {
+    $("#quantile-container").empty();
+    var quantileArray = quantileStaging.quantiles;
+
+    for (var i = 0; i < quantileArray.length; i++) {
+        var quantileRange = quantileArray[i];
+        $("#quantile-container").append(getQuantileRangeHTML(sampleMetadata, i, quantileRange.displayName, quantileRange.min, quantileRange.max));
+    }
+
+    if (lock) {
+        $(".quantile-input").attr("disabled", true);
+        $("#quantile-add").hide();
+        $(".quantile-remove").hide();
+    } else {
+        $(".quantile-input").attr("disabled", false);
+        $("#quantile-add").show();
+        $(".quantile-remove").show();
+    }
+
+    if (quantileArray.length >= 5) {
+        $("#quantile-add").attr("disabled", true);
+    } else {
+        $("#quantile-add").attr("disabled", false);
+    }
+
+    if (quantileArray.length <= 2) {
+        $(".quantile-remove").remove();
+    }
+}
+
+function renderQuantileBar() {
+    $("#quantile-progress").empty();
+    var quantileArray = quantileStaging.quantiles;
+    var min = quantileStaging.min;
+    var max = quantileStaging.max;
+    var range = (max - min);
+
+    if (quantileArray[0].min !== "") {
+        var percent = 100 * (parseFloat(quantileArray[0].min) - min) / range;
+        $("#quantile-progress").append(getQuantileBarHTML(percent, "transparent", "Not Assigned to a Quantile", min, quantileArray[0].min));
+    }
+
+    for (var i = 0; i < quantileArray.length; i++) {
+        if (quantileArray[i].min !== "" && quantileArray[i].max !== "") {
+
+            if (i > 0 && (parseFloat(quantileArray[i].min) - parseFloat(quantileArray[i - 1].max)) > 0) {
+                var percent = 100 * (parseFloat(quantileArray[i].min) - parseFloat(quantileArray[i - 1].max)) / range;
+                $("#quantile-progress").append(getQuantileBarHTML(percent, "transparent", "Not Assigned to a Quantile", parseFloat(quantileArray[i - 1].max), parseFloat(quantileArray[i].min)));
+            }
+
+            var percent = 100 * (parseFloat(quantileArray[i].max) - parseFloat(quantileArray[i].min)) / range;
+            $("#quantile-progress").append(getQuantileBarHTML(percent, quantileColors[i], quantileArray[i].displayName, parseFloat(quantileArray[i].min), parseFloat(quantileArray[i].max)));
+        }
+    }
+
+    if (quantileArray[quantileArray.length - 1].max !== "") {
+        var percent = 100 * (max - parseFloat(quantileArray[quantileArray.length - 1].max)) / range;
+        $("#quantile-progress").append(getQuantileBarHTML(percent, "transparent", "Not Assigned to a Quantile", quantileArray[quantileArray.length - 1].min, max));
+    }
+
+    $('[data-toggle="popover"]').popover();
+}
+
+function getQuantileBarHTML(percent, color, title, min, max) {
+    return `<div class="progress-bar" style="width: ${percent}%;background-color:${color}" data-toggle="popover" data-placement="bottom"
+             data-title="${title}" data-content="Range: ${min} - ${max}" data-trigger="hover">
+        </div>`;
+}
+
+function getQuantileRangeHTML(sampleMetadata, index, displayName, min, max) {
+    var placeholderForDisplayName = index == 0 ? "eg. Low Expression" : "eg. High Expression";
+    var placeholderForMin = index == 0 ? "eg. 0" : "eg. 10";
+    var placeholderForMax = index == 0 ? "eg. 10" : "eg. 20";
+
+    return `<div>
+        <div class="row">
+            <div class="col-md-12">
+                <h5>Quantile Range ${index + 1} <a data-metadata="${sampleMetadata}" data-index="${index}" class="quantile-remove" href="#">(remove)</a></h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-addon">Display Name</span>
+                            <input data-metadata="${sampleMetadata}" data-index="${index}" type="text" class="form-control quantile-display-name" placeholder="${placeholderForDisplayName}" value="${displayName}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-addon">Min</span>
+                            <input data-metadata="${sampleMetadata}" data-index="${index}" type="number" class="form-control quantile-input quantile-min" placeholder="${placeholderForMin}" value="${min}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-addon">Max</span>
+                            <input data-metadata="${sampleMetadata}" data-index="${index}" type="number" class="form-control quantile-input quantile-max" placeholder="${placeholderForMax}" value="${max}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+    </div>`;
+}
+

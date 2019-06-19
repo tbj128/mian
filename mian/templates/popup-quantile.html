@@ -1,0 +1,60 @@
+<div id="quantile-box" class="popup" style="display:none">
+    <div id="quantile-loading" style="display:none;width:100%;text-align:center;">
+        <i class="fa fa-circle-o-notch upload-loading"></i> Loading...
+    </div>
+    <div id="quantile-content">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Define Quantile for <span id="quantile-metadata"></span></h3>
+            </div>
+        </div>
+
+        <div id="quantile-progress" class="progress" style="margin-bottom:6px;">
+            <div class="progress-bar" style="width: 34%;background-color:blue" data-toggle="popover"
+                 data-placement="bottom"
+                 data-title="Low Expression" data-content="Range: 12 - 1220" data-trigger="hover">
+            </div>
+            <div class="progress-bar" style="width: 33%;background-color:green">
+            </div>
+            <div class="progress-bar" style="width: 33%;background-color:yellow">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <small>Min: <span id="quantile-min"></span></small>
+            </div>
+            <div class="col-md-6 text-right">
+                <small>Max: <span id="quantile-max"></span></small>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div>
+            <button id="quantile-2" type="button" class="btn btn-primary quantile-type-btn">2-Quantile</button>
+            <button id="quantile-3" type="button" class="btn btn-link quantile-type-btn">3-Quantile</button>
+            <button id="quantile-4" type="button" class="btn btn-link quantile-type-btn">4-Quantile</button>
+            <button id="quantile-custom" type="button" class="btn btn-link quantile-type-btn">Custom Quantile</button>
+        </div>
+
+        <hr/>
+
+        <div id="quantile-container">
+        </div>
+
+        <div class="row" style="margin-top:12px">
+            <div class="col-md-6">
+                <button id="quantile-add" type="button" class="btn btn-primary change-confirm">Add Quantile Range
+                </button>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="btn-group pull-right" role="group" style="margin-top:8px;">
+            <button id="quantile-cancel" type="button" class="btn btn-default">Cancel</button>
+            <button id="quantile-save" type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
+<div id="blackout" class="blackout" style="display:none"></div>

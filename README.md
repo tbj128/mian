@@ -1,7 +1,7 @@
 # Mian
 #### Mian is a platform for 16S rRNA OTU table visualization, data analysis, and feature selection
 
-[miandata.org](miandata.org)
+[miandata.org](https://miandata.org)
 
 [![Build Status](https://travis-ci.org/tbj128/mian.svg?branch=master)](https://travis-ci.org/tbj128/mian)
 

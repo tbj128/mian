@@ -30,6 +30,7 @@
             </div>
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
+
                 <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
@@ -42,9 +43,40 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Numerical Variable to Correlate <i class="fa fa-info-circle" data-toggle="popover" data-title="Numerical Metadata to Correlate" data-content="Indicate which numerical sample metadata variable should be correlated against each taxonomic group/OTU" data-trigger="hover"></i></label>
-                <select id="expvar" name="expvar" class="form-control">
+                <label class="control-label">Select... <i class="fa fa-info-circle" data-toggle="popover" data-title="Numerical Metadata to Correlate" data-content="Indicate which numerical sample metadata variable should be correlated against each taxonomic group/OTU" data-trigger="hover"></i></label>
+                <select id="select" name="select" class="form-control">
+                    <option value="metadata">Sample Metadata</option>
+                    <option value="gene">Gene Expression</option>
+                    <option value="taxonomy">OTU or Taxonomic Group</option>
                 </select>
+
+                <label class="control-label">By Correlating Against... <i class="fa fa-info-circle" data-toggle="popover" data-title="Numerical Metadata to Correlate" data-content="Indicate which numerical sample metadata variable should be correlated against each taxonomic group/OTU" data-trigger="hover"></i></label>
+                <select id="against" name="against" class="form-control">
+                    <option value="metadata">Sample Metadata</option>
+                    <option value="gene">Gene Expression</option>
+                    <option value="alpha">Alpha Diversity</option>
+                    <option value="taxonomy">OTU or Taxonomic Group</option>
+                </select>
+
+                <div id="numerical-variable-container" style="display:none;">
+                    <label class="control-label">Numerical Variable to Correlate <i class="fa fa-info-circle" data-toggle="popover" data-title="Numerical Metadata to Correlate" data-content="Indicate which numerical sample metadata variable should be correlated against each taxonomic group/OTU" data-trigger="hover"></i></label>
+                    <select id="expvar" name="expvar" class="form-control">
+                    </select>
+                </div>
+
+                {% with typeahead_index=1 %}
+                    {% include "container-specific-taxonomy.html" %}
+                {% endwith %}
+
+                {% with typeahead_index=1 %}
+                    {% include "container-gene-input.html" %}
+                {% endwith %}
+
+                {% include 'container-alpha-diversity-options.html' %}
+
+                <label class="control-label">P-Value Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="Only results whose correlational selection p-value was less than this threshold will be displayed"></i></label>
+                <input class="form-control" id="pvalthreshold" name="pvalthreshold" type="number" value="0.05" min="0"
+                       max="1" step="0.01"/>
               </div>
             </div>
         </div>

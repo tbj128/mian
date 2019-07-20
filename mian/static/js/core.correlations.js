@@ -38,26 +38,34 @@ function createSpecificListeners() {
 
     $("#corrvar1").change(function() {
         if ($("#corrvar1").val() === "mian-taxonomy-abundance") {
-            $("#specific-taxonomy-container-1").show();
-            $("#taxonomic-level-container").show();
+            showTaxonomyInput(1);
             $.when(loadOTUTableHeaders("corrvar1")).done(function() {
                 updateAnalysis();
             });
+        } else if ($("#corrvar1").val() === "mian-gene") {
+            showGeneInput(1);
+            $.when(loadGeneSelector(1)).done(function() {
+                updateAnalysis();
+            });
         } else {
-            $("#specific-taxonomy-container-1").hide();
+            hideInput(1);
             updateAnalysis();
         }
     });
 
     $("#corrvar2").change(function() {
         if ($("#corrvar2").val() === "mian-taxonomy-abundance") {
-            $("#specific-taxonomy-container-2").show();
-            $("#taxonomic-level-container").show();
+            showTaxonomyInput(2);
             $.when(loadOTUTableHeaders("corrvar2")).done(function() {
                 updateAnalysis();
             });
+        } else if ($("#corrvar2").val() === "mian-gene") {
+            showGeneInput(2);
+            $.when(loadGeneSelector(2)).done(function() {
+                updateAnalysis();
+            });
         } else {
-            $("#specific-taxonomy-container-2").hide();
+            hideInput(2);
             updateAnalysis();
         }
     });
@@ -82,6 +90,14 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#gene-typeahead-1").change(function() {
+        updateAnalysis();
+    });
+
+    $("#gene-typeahead-2").change(function() {
+        updateAnalysis();
+    });
+
     $("#taxonomy").change(function() {
         if (
             $("#corrvar1").val() === "mian-taxonomy-abundance" ||
@@ -96,7 +112,7 @@ function createSpecificListeners() {
     });
 
     $("#download-svg").click(function() {
-        downloadSVG("corrleations." + $("#corrvar1").val() + "." + $("#corrvar2").val());
+        downloadSVG("correlations." + $("#corrvar1").val() + "." + $("#corrvar2").val());
     });
 }
 
@@ -109,7 +125,33 @@ function customCatVarCallback(json) {
 }
 
 function customCatVarValueLoading() {
-    return loadOTUTableHeaders();
+    return $.when(loadOTUTableHeaders(), loadGeneSelector(1)).then(function() {
+        // To prevent two requests for the gene selector file, we call the second load only after the
+        // genes have been cached
+        loadGeneSelector(2);
+
+        if (initialCorrvar1SpecificTaxonomies) {
+            initialCorrvar1SpecificTaxonomies.forEach(function(val) {
+                if ($("#corrvar1").val() === "mian-taxonomy-abundance") {
+                    $("#specific-taxonomy-typeahead-1").tagsinput('add', val);
+                } else if ($("#corrvar1").val() === "mian-gene") {
+                    $("#gene-typeahead-1").tagsinput('add', val);
+                }
+            });
+            initialCorrvar1SpecificTaxonomies = null;
+        }
+
+        if (initialCorrvar2SpecificTaxonomies) {
+            initialCorrvar2SpecificTaxonomies.forEach(function(val) {
+                if ($("#corrvar2").val() === "mian-taxonomy-abundance") {
+                    $("#specific-taxonomy-typeahead-2").tagsinput('add', val);
+                } else if ($("#corrvar2").val() === "mian-gene") {
+                    $("#gene-typeahead-2").tagsinput('add', val);
+                }
+            });
+            initialCorrvar2SpecificTaxonomies = null;
+        }
+    });
 }
 
 function loadOTUTableHeaders(corrvarType) {
@@ -149,13 +191,6 @@ function loadOTUTableHeaders(corrvarType) {
                         "width",
                         "320px"
                     );
-
-                    if (initialCorrvar1SpecificTaxonomies) {
-                        initialCorrvar1SpecificTaxonomies.forEach(function(val) {
-                            $("#specific-taxonomy-typeahead-1").tagsinput('add', val);
-                        });
-                        initialCorrvar1SpecificTaxonomies = null;
-                    }
                 }
                 if (!corrvarType || corrvarType === "corrvar2") {
                     if (tagsInput) {
@@ -178,13 +213,6 @@ function loadOTUTableHeaders(corrvarType) {
                         "width",
                         "320px"
                     );
-
-                    if (initialCorrvar2SpecificTaxonomies) {
-                        initialCorrvar2SpecificTaxonomies.forEach(function(val) {
-                            $("#specific-taxonomy-typeahead-2").tagsinput('add', val);
-                        });
-                        initialCorrvar2SpecificTaxonomies = null;
-                    }
                 }
             }
         });
@@ -211,8 +239,22 @@ function updateAnalysis() {
     var colorvar = $("#colorvar").val();
     var sizevar = $("#sizevar").val();
     var samplestoshow = $("#samplestoshow").val();
-    var corrvar1SpecificTaxonomies = $("#specific-taxonomy-typeahead-1").val();
-    var corrvar2SpecificTaxonomies = $("#specific-taxonomy-typeahead-2").val();
+
+    var corrvar1SpecificTaxonomies = "";
+    if (corrvar1 === "mian-gene") {
+        corrvar1SpecificTaxonomies = $("#gene-typeahead-1").val();
+    } else if (corrvar1 === "mian-taxonomy-abundance") {
+        corrvar1SpecificTaxonomies = $("#specific-taxonomy-typeahead-1").val();
+    }
+
+    var corrvar2SpecificTaxonomies = "";
+    if (corrvar2 === "mian-gene") {
+        corrvar2SpecificTaxonomies = $("#gene-typeahead-2").val();
+    } else if (corrvar2 === "mian-taxonomy-abundance") {
+        corrvar2SpecificTaxonomies = $("#specific-taxonomy-typeahead-2").val();
+    }
+
+
 
     if (corrvar1SpecificTaxonomies === "") {
         corrvar1SpecificTaxonomies = JSON.stringify([]);
@@ -260,7 +302,8 @@ function updateAnalysis() {
             abundancesObj = JSON.parse(result);
             if (abundancesObj["corrArr"] && abundancesObj["corrArr"].length > 0) {
                 loadSuccess();
-                renderCorrelations(abundancesObj, $("#corrvar1").val(), $("#corrvar2").val());
+
+                renderCorrelations(abundancesObj, getInputValsAsFormattedString(1), getInputValsAsFormattedString(2));
                 renderCorrelationsTable(abundancesObj);
             } else {
                 loadNoResults();
@@ -295,6 +338,9 @@ function updateCorrVar(result) {
     addCorrOption("corrvar1", "mian-taxonomy-abundance", "Taxonomy Abundance");
     addCorrOption("corrvar2", "mian-taxonomy-abundance", "Taxonomy Abundance");
 
+    addCorrOption("corrvar1", "mian-gene", "Gene Expression");
+    addCorrOption("corrvar2", "mian-gene", "Gene Expression");
+
     for (var i = 0; i < numericHeaders.length; i++) {
         if (i != 0) {
             addCorrOption("corrvar1", numericHeaders[i], numericHeaders[i]);
@@ -312,12 +358,26 @@ function updateCorrVar(result) {
 
     if (initialCorrvar1) {
         $("#corrvar1").val(initialCorrvar1);
-        initialCorrvar1 = null;
+        if ($("#corrvar1").val() === "mian-taxonomy-abundance") {
+            showTaxonomyInput(1);
+        } else if ($("#corrvar1").val() === "mian-gene") {
+            showGeneInput(1);
+        } else {
+            hideInput(1);
+        }
     }
+
     if (initialCorrvar2) {
         $("#corrvar2").val(initialCorrvar2);
-        initialCorrvar2 = null;
+        if ($("#corrvar2").val() === "mian-taxonomy-abundance") {
+            showTaxonomyInput(2);
+        } else if ($("#corrvar2").val() === "mian-gene") {
+            showGeneInput(2);
+        } else {
+            hideInput(2);
+        }
     }
+
     if (initialColorVar) {
         $("#colorvar").val(initialColorVar);
         initialColorVar = null;
@@ -345,4 +405,36 @@ function addCorrOption(elemID, val, text) {
     }
     o.appendChild(t);
     document.getElementById(elemID).appendChild(o);
+}
+
+function showTaxonomyInput(index) {
+    $("#specific-taxonomy-container-" + index).show();
+    $("#gene-input-container-" + index).hide();
+    $("#taxonomic-level-container").show();
+}
+
+function showGeneInput(index) {
+    $("#specific-taxonomy-container-" + index).hide();
+    $("#gene-input-container-" + index).show();
+    $("#taxonomic-level-container").hide();
+}
+
+function hideInput(index) {
+    $("#specific-taxonomy-container-" + index).hide();
+    $("#gene-input-container-" + index).hide();
+    $("#taxonomic-level-container").hide();
+}
+
+function getInputValsAsFormattedString(index) {
+    var val = $("#corrvar" + index).val();
+    if ($("#corrvar" + index).val() === "mian-taxonomy-abundance") {
+        val = $("#specific-taxonomy-typeahead-" + index).val();
+    } else if ($("#corrvar" + index).val() === "mian-gene") {
+        val = $("#gene-typeahead-" + index).val()
+    }
+    if (val.length > 36) {
+        return val.substring(0, 36) + "...";
+    } else {
+        return val;
+    }
 }

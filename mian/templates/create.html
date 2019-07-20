@@ -145,6 +145,24 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
               </form>
             </div>
           </div>
+          <div id="gene-upload-container" class="row upload-item" >
+            <div class="col-md-10">
+              <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Gene Expression Matrix (Optional)</h3>
+                <p>Include a gene expression matrix file where the rows are the genes and each column is a sample. Every sample in the OTU file must be present in this file as well.</p>
+            </div>
+            <div class="col-md-2 upload-status">
+              <form id="geneForm" action="/upload" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="category" value="gene" />
+                <span id="geneOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
+                <span id="geneLoading" style="display:none;">
+                  <i class="fa fa-spinner upload-loading"></i>
+                </span>
+                <span id="geneWrapper" class="btn btn-default btn-file">
+                    <span id="geneText">Upload</span> <input type="file" name="upload" id="gene" accept=".txt" />
+                </span>
+              </form>
+            </div>
+          </div>
           <div id="phylogenetic-upload-container" class="row upload-item" >
             <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Phylogenetic Tree (Optional)</h3>
@@ -173,6 +191,7 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
             <input type="hidden" id="projectTaxaMapName" name="projectTaxaMapName" value="" />
             <input type="hidden" id="projectSampleIDName" name="projectSampleIDName" value="" />
             <input type="hidden" id="projectPhylogeneticName" name="projectPhylogeneticName" value="" />
+            <input type="hidden" id="projectGeneName" name="projectGeneName" value="" />
             <button id="upload-submit" type="submit" class="btn btn-primary" style="width:180px;" disabled>Create</button>
           </form>
         </div>

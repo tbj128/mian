@@ -1,0 +1,54 @@
+<div id="gene-box" class="popup" style="display:none">
+    <div id="gene-loading" style="display:none;width:100%;text-align:center;">
+        <i class="fa fa-circle-o-notch upload-loading"></i> Loading...
+    </div>
+    <div id="gene-content">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Select Gene(s)</h3>
+            </div>
+        </div>
+
+        <hr />
+
+        <div id="gene-box-categorical" class="row" style="margin-top:16px;">
+            <div class="alert alert-warning" role="alert"><strong>Warning!</strong> This tool can only display categorical variables. You should define a quantile range on a <strong>gene here</strong> prior to using this tool.</div>
+
+            <div class="col-md-4">
+                <label class="control-label">Aggregation Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="" data-content=""></i></label>
+                <select id="gene-type" name="gene-type" class="form-control">
+                    <option value="Gene">Individual Genes</option>
+                    <option value="FunctionalAnnotation">Functional Annotation Group</option>
+                </select>
+
+            </div>
+        </div>
+
+        <div id="gene-box-numerical" class="row" style="margin-top:16px;">
+            <div class="col-md-4">
+                <label class="control-label">Aggregation Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="" data-content=""></i></label>
+                <select id="gene-type" name="gene-type" class="form-control">
+                    <option value="Gene">Individual Genes</option>
+                    <option value="FunctionalAnnotation">Functional Annotation Group</option>
+                </select>
+
+            </div>
+            <div class="col-md-8">
+
+                <label id="specific-taxonomy-label" class="control-label">Gene(s) to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select Gene(s)" data-content="Choose the genes whose summed abundances should be displayed on the boxplots." data-trigger="hover"></i></label>
+
+                <div id="gene-typeahead-wrapper">
+                    <input id="gene-typeahead" type="text" data-background="" value="" />
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="pull-right" role="group" style="margin-top:8px;">
+            <button id="gene-cancel" type="button" class="btn btn-default">Cancel</button>
+            <button id="gene-save" type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
+<div id="blackout" class="blackout" style="display:none"></div>

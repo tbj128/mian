@@ -27,10 +27,15 @@
                 </a>
               </h4>
             </div>
-            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters" style="margin-bottom: 100px;">
               <div class="panel-body">
-                {% include 'catvar-container.html' %}
-                {% include 'quantile-manage-container.html' %}
+                <label class="control-label">Categorical Variable
+                    <i
+                        class="fa fa-info-circle" data-toggle="popover" data-html="true"
+                        data-title="Categorical Variable"
+                        data-content="<p>Indicate which sample metadata should be used as the grouping variable.</p><p>A numerical sample metadata variable can be treated as a categorical variable by <a href='/quantile_manager?pid={{currProject}}'>adding a quantile range.</a></p>"></i></label>
+                <select id="catvar" name="catvar" class="form-control">
+                </select>
 
                 <label class="control-label">Y-Axis Values  <i class="fa fa-info-circle" data-toggle="popover" data-title="Y-Axis Values" data-content="The numeric parameter that should be represented on the Y-axis. <br /><br />Note the special parameters below:<ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max/Min/Mean/Median</strong> The max/min/mean/median of all OTUs within a sample</li></ul>"></i></label>
                 <select id="yvals" name="yvals" class="form-control">
@@ -50,21 +55,24 @@
                     </select>
                 </div>
 
-                <div id="specific-taxonomy-container" style="margin-bottom: 200px;">
+                <div id="specific-taxonomy-container">
                     <label id="specific-taxonomy-label" class="control-label">OTUs or Taxonomic Groups to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select OTUs or Taxonomic Groups" data-content="Choose the OTUs or taxonomic groups whose summed abundances should be displayed on the boxplots." data-trigger="hover"></i></label>
 
                     <div id="taxonomy-specific-typeahead-wrapper">
                         <input id="specific-taxonomy-typeahead" type="text" data-background="" value="" />
                     </div>
-
-                    <div id="colorvarContainer">
-                        <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
-                        <select id="colorvar" name="colorvar" class="form-control">
-                        </select>
-                    </div>
-                    
-                    {% include 'filtering_options_statistical_test.html' %}
                 </div>
+                {% with typeahead_index=1 %}
+                    {% include "container-gene-input.html" %}
+                {% endwith %}
+
+                <div id="colorvarContainer">
+                    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
+                    <select id="colorvar" name="colorvar" class="form-control">
+                    </select>
+                </div>
+
+                {% include 'filtering_options_statistical_test.html' %}
               </div>
             </div>
         </div>
@@ -79,9 +87,9 @@
                 <i class="fa fa-asterisk fa-4x"></i>
             </div>
             <div class="col-md-9">
-                <h3>Add a Taxonomic Group or OTU To Display</h3>
+                <h3>Add a Taxonomic Group, OTU, or Gene To Display</h3>
                 <p>
-                    No results were returned. This can happen if you have not added a taxonomic group or OTU (if the y-axis should display taxonomic abundance) or if you have applied a too strict filter.
+                    No results were returned. This can happen if you have not added a taxonomic group, OTU, or gene on the left sidebar or if you have applied an overly strict filter.
                 </p>
             </div>
         </div>

@@ -1,3 +1,30 @@
-<label class="control-label"><a href="">Categorical Variable</a>  |  <a href="" style="color:#999;font-weight:normal;">Gene Expression</a>  <i class="fa fa-info-circle" data-toggle="popover" data-html="true" data-title="Categorical Variable" data-content="<p>Indicate which sample metadata should be used as the grouping variable.</p><p>A numerical sample metadata variable can be treated as a categorical variable by <a href='/quantile_manager?pid={{currProject}}'>adding a quantile range.</a></p>"></i></label>
-<select id="catvar" name="catvar" class="form-control">
-</select>
+<style>
+    .catvar-container a {
+        cursor:pointer;
+    }
+
+    .catvar-not-selected {
+        color:#999;
+        font-weight:normal;
+    }
+
+</style>
+
+<div class="catvar-container">
+    <input type="hidden" id="catvar-is-categorical" value="true" />
+
+    <label class="control-label"><a id="catvar-type-catvar" class="">Categorical Variable</a> | <a id="catvar-type-gene" class="catvar-not-selected" onClick="showGeneBox()">Gene Expression</a>
+        <i
+            class="fa fa-info-circle" data-toggle="popover" data-html="true"
+            data-title="Categorical Variable or Gene Expression"
+            data-content="<p>Indicate which sample metadata or gene should be used as the grouping variable.</p><p>A numerical sample metadata variable can be treated as a categorical variable by <a href='/quantile_manager?pid={{currProject}}'>adding a quantile range.</a></p>"></i></label>
+    <select id="catvar" name="catvar" class="form-control">
+    </select>
+
+    <div class="input-group" id="catvar-gene-container" style="display:none;">
+        <input id="catvar-genes" value="" class="form-control catvar-always-disabled" type="text" disabled />
+        <div class="input-group-btn">
+            <button class="btn btn-default" type="button" onClick="showGeneBox()">Change</button>
+        </div>
+    </div>
+</div>

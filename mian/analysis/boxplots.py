@@ -6,6 +6,8 @@ from mian.model.otu_table import OTUTable
 import logging
 import json
 
+from mian.model.genes import Genes
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -21,18 +23,24 @@ class Boxplots(AnalysisBase):
 
     def abundance_boxplots(self, user_request, yvals):
         logger.info("Starting abundance_boxplots")
+
         table = OTUTable(user_request.user_id, user_request.pid)
-        base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
+        if yvals == "mian-gene":
+            genes = Genes(user_request.user_id, user_request.pid)
+            gene_list = user_request.get_custom_attr("yvalsSpecificTaxonomy")
+            gene_list = json.loads(gene_list) if gene_list != "" else []
+            base, headers, sample_labels = genes.get_as_table(gene_list=gene_list)
+        else:
+            base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
         metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
-        metadata_col = table.get_sample_metadata().get_metadata_column_number(user_request.catvar)
+
         if user_request.get_custom_attr("colorvar") != "None":
             color_metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("colorvar"))
         else:
             color_metadata_values = []
-        return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata_values, metadata_col, color_metadata_values)
+        return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata_values, color_metadata_values)
 
-    def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata_values, metadata_col, color_metadata_values):
-
+    def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata_values, color_metadata_values):
         base = np.array(base)
 
         statsAbundances = {}
@@ -68,6 +76,14 @@ class Boxplots(AnalysisBase):
                 i += 1
             if len(colsOfInterest) == 0:
                 return {"abundances": {}, "stats": []}
+        elif yvals == "mian-gene":
+            i = 0
+            while i < len(headers):
+                colsOfInterest.append(i)
+                i += 1
+            if len(colsOfInterest) == 0:
+                return {"abundances": {}, "stats": []}
+
 
         i = 0
         while i < len(base):
@@ -77,6 +93,8 @@ class Boxplots(AnalysisBase):
             abunArr = []
 
             if yvals == "mian-taxonomy-abundance":
+                row["a"] = float(np.sum(base[i][colsOfInterest]))
+            elif yvals == "mian-gene":
                 row["a"] = float(np.sum(base[i][colsOfInterest]))
             else:
                 j = 0

@@ -62,6 +62,10 @@
                     </div>
                 </div>
 
+                {% with typeahead_index=1 %}
+                    {% include "container-gene-input.html" %}
+                {% endwith %}
+
                 <hr />
 
                 <label class="control-label">Correlation Variable 2 (Y-Axis)  <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which correlation variable should be used on the Y-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
@@ -75,6 +79,10 @@
                         <input id="specific-taxonomy-typeahead-2" type="text" data-background="" value="" />
                     </div>
                 </div>
+
+                {% with typeahead_index=2 %}
+                    {% include "container-gene-input.html" %}
+                {% endwith %}
 
                 <hr />
 

@@ -36,6 +36,8 @@
 {% include 'loading-bar-processing.html' %}
 {% include 'popup-quantile.html' %}
 
+<input type="hidden" id="pid" value="{{pid}}" />
+
 <div class="content-wrapper">
     <div class="container project-container">
         <div class="section-heading project-heading">
@@ -43,28 +45,44 @@
         </div>
         <div class="row">
             <div class="col-md-3">
-                <label>Numeric Sample Metadata:</label>
-                <select id="quantile-new-select" class="form-control" style="margin-bottom:8px;">
-                    {% for header in metadataHeaders %}
-                        {% if header["type"] != "categorical" %}
-                            <option>{{header["name"]}}</option>
-                        {% endif %}
-                    {% endfor %}
+                <label>Type of Quantile Range To Create:</label>
+                <select id="quantile-type-selector" class="form-control" style="margin-bottom:8px;">
+                    <option value="">Select...</option>
+                    <option value="numeric">Numeric Sample Metadata</option>
+                    <option value="gene">Gene Expression</option>
                 </select>
+
+                <div id="quantile-type-selector-numeric" style="display:none;">
+                    <label>Numeric Sample Metadata:</label>
+                    <select id="quantile-new-select" class="form-control" style="margin-bottom:8px;">
+                        {% for header in metadataHeaders %}
+                            {% if header["type"] != "categorical" %}
+                                <option>{{header["name"]}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="quantile-type-selector-gene" style="display:none;">
+                    <label>Gene:</label>
+                    <div class="input-group gene-typeahead-wrapper" style="margin-bottom:8px;">
+                        <input id="gene-typeahead" value="" class="form-control" type="text" />
+                    </div>
+                </div>
                 <button id="quantile-new" type="button" class="btn btn-primary project-new">Create</button>
             </div>
             <div class="col-md-9 project-main">
                 {% if quantiles|length == 0 %}
                 <div class="project-no-projects" style="margin-left: 240px;">
                     <h3>No quantile ranges yet</h3>
-                    <p>Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots.</p>
+                    <p>Divide numeric sample metadata or gene expression into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots.</p>
                 </div>
                 {% else %}
                 {% for quantile_metadata_name in quantiles %}
                 <div class="project-item">
                     <div class="row">
                         <div class="col-md-6">
-                            <h4>{{ quantile_metadata_name }}</h4>
+                            <h4>{{ quantile_metadata_name }} ({{quantiles[quantile_metadata_name]["quantile_type"]}})</h4>
 
                             <p>
                                 <small>Min: <strong>{{quantiles[quantile_metadata_name]["min"]}}</strong> | Max: <strong>{{quantiles[quantile_metadata_name]["max"]}}</strong>
@@ -72,8 +90,8 @@
                             </p>
                         </div>
                         <div class="col-md-6 text-right">
-                            <button data-metadata="{{quantile_metadata_name}}" class="btn btn-default btn-sm quantile-edit" style="margin-top: 6px" type="button"><i class="fa fa-edit"></i> Edit</button>
-                            <button data-metadata="{{quantile_metadata_name}}" class="btn btn-default btn-sm quantile-delete" style="margin-top: 6px" type="button"><i class="fa fa-trash"></i> Delete</button>
+                            <button data-type="{{quantiles[quantile_metadata_name]['quantile_type']}}" data-metadata="{{quantile_metadata_name}}" class="btn btn-default btn-sm quantile-edit" style="margin-top: 6px" type="button"><i class="fa fa-edit"></i> Edit</button>
+                            <button data-type="{{quantiles[quantile_metadata_name]['quantile_type']}}" data-metadata="{{quantile_metadata_name}}" class="btn btn-default btn-sm quantile-delete" style="margin-top: 6px" type="button"><i class="fa fa-trash"></i> Delete</button>
                         </div>
                     </div>
                     <table class="table table-hover" style="table-layout:fixed;">
@@ -116,26 +134,11 @@
 <script src="/static/js/jquery.min.js"></script>
 <script src="/static/js/bootstrap.min.js"></script>
 <script src="/static/js/plugins/bootbox.min.js"></script>
+<script src="/static/js/plugins/bootstrap3-typeahead.min.js"></script>
+<script src="/static/js/plugins/bootstrap-tagsinput.js"></script>
 <script src="/static/js/core.shared.js"></script>
 <script src="/static/js/core.projects.js"></script>
-
-<script>
-    $("#quantile-new").click(function() {
-        showQuantileForNumeric("{{pid}}", $("#quantile-new-select").val(), false);
-    });
-
-    $(".quantile-edit").click(function() {
-        showQuantileForNumeric("{{pid}}", $(this).data("metadata"), false);
-    });
-
-    $(".quantile-delete").click(function() {
-        deleteQuantileRange("{{pid}}", $(this).data("metadata"));
-    });
-
-    $("#quantile-save").click(function() {
-        saveQuantileRange("{{pid}}");
-    });
-</script>
+<script src="/static/js/core.quantilemanager.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->

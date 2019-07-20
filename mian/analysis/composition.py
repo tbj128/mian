@@ -14,20 +14,19 @@ class Composition(AnalysisBase):
         table = OTUTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
-        metadata = table.get_sample_metadata().get_as_table()
+        metadata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
 
-        return self.analyse(user_request, base, headers, sample_labels, metadata)
+        return self.analyse(user_request, base, headers, sample_labels, metadata_values)
 
-    def analyse(self, user_request, base, headers, sample_labels, metadata):
+    def analyse(self, user_request, base, headers, sample_labels, metadata_values):
         plotType = user_request.get_custom_attr("plotType")
         xaxis = user_request.get_custom_attr("xaxis")
         if xaxis == "Taxonomic":
-            return self.analyse_taxonomic_groups(user_request, base, headers, sample_labels, metadata)
+            return self.analyse_taxonomic_groups(user_request, base, headers, sample_labels, metadata_values)
         else:
-            return self.analyse_metadata(user_request, base, headers, sample_labels, metadata)
+            return self.analyse_metadata(user_request, base, headers, sample_labels, metadata_values)
 
-
-    def analyse_metadata(self, user_request, base, headers, sample_labels, metadata):
+    def analyse_metadata(self, user_request, base, headers, sample_labels, metadata_values):
         """
         Return the composition such that the selected metadata or sample ID are on the X-axis
         """
@@ -42,18 +41,13 @@ class Composition(AnalysisBase):
             for s in sample_labels:
                 xAxisVals[s] = [s]
         else:
-            j = 0
-            while j < len(metadata[0]):
-                if metadata[0][j] == user_request.catvar:
-                    # Found the column that contains the catvar so add all the values from this column
-                    i = 1
-                    while i < len(metadata):
-                        if metadata[i][j] not in xAxisVals:
-                            xAxisVals[metadata[i][j]] = []
-                        xAxisVals[metadata[i][j]].append(metadata[i][0])
-                        i += 1
-                    break
-                j += 1
+            # Column 0 in metadata is the desired column
+            i = 0
+            while i < len(metadata_values):
+                if metadata[i] not in xAxisVals:
+                    xAxisVals[metadata[i]] = []
+                xAxisVals[metadata[i]].append(sample_labels[i])
+                i += 1
 
         # Make a sample ID to OTU table row
         sampleIDToRowIndex = {}
@@ -122,7 +116,7 @@ class Composition(AnalysisBase):
         return abundancesObj
 
 
-    def analyse_taxonomic_groups(self, user_request, base, headers, sample_labels, metadata):
+    def analyse_taxonomic_groups(self, user_request, base, headers, sample_labels, metadata_values):
         """
         Return the composition such that the taxonomic groups are on the X-axis
         """
@@ -132,29 +126,19 @@ class Composition(AnalysisBase):
         metadataToId = {}
 
         # Extracts the unique metadata values
-        catCol = -1
         i = 0
-        while i < len(metadata):
-            if i == 0:
-                if user_request.catvar == "SampleID":
-                    catCol = 0
-                else:
-                    j = 0
-                    while j < len(metadata[i]):
-                        if metadata[i][j] == user_request.catvar:
-                            catCol = j
-                        j += 1
+        while i < len(sample_labels):
+            sample = sample_labels[i]
+            if len(metadata_values) == 0:
+                metadataMap[sample] = "All"
+                uniqueMetadataVals["All"] = True
+                metadataToId["All"] = 0
             else:
-                # Process the core metadata file contents after locating the right cat col
-                if catCol == -1:
-                    metadataMap[metadata[i][0]] = "All"
-                    uniqueMetadataVals["All"] = True
-                    metadataToId["All"] = 0
-                else:
-                    metadataMap[metadata[i][0]] = metadata[i][catCol]
-                    uniqueMetadataVals[metadata[i][catCol]] = True
-                    if metadata[i][catCol] not in metadataToId:
-                        metadataToId[metadata[i][catCol]] = len(metadataToId.keys())
+                metadata_val = metadata_values[i]
+                metadataMap[sample] = metadata_val
+                uniqueMetadataVals[metadata_val] = True
+                if metadata_val not in metadataToId:
+                    metadataToId[metadata_val] = len(metadataToId.keys())
 
             i += 1
 

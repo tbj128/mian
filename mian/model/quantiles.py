@@ -11,18 +11,19 @@ class Quantiles(object):
         self.load()
 
     def load(self):
-        if os.path.exists(self.__get_map_path()):
-            with open(self.__get_map_path()) as f:
-                map_from_json = json.load(f)
+        if len(self.quantiles) == 0:
+            if os.path.exists(self.__get_map_path()):
+                with open(self.__get_map_path()) as f:
+                    map_from_json = json.load(f)
+                    self.quantiles = map_from_json["quantiles"]
 
-                self.quantiles = map_from_json["quantiles"]
-
-    def update_quantile(self, sample_metadata_name, min, max, quantiles, quantile_type):
+    def update_quantile(self, sample_metadata_name, min, max, quantiles, type, quantile_type):
         quantile = {
             "min": min,
             "max": max,
             "quantiles": quantiles,
-            "type": quantile_type
+            "type": type, # eg. q_50
+            "quantile_type": quantile_type # gene or metadata
         }
         self.quantiles[sample_metadata_name] = quantile
 

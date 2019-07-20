@@ -22,12 +22,14 @@ class Heatmap(object):
 
         return self.analyse(user_request, base, headers, sample_labels, metadata)
 
-    def get_numeric_metadata_table(self, metadata):
+    def get_numeric_metadata_table(self, metadata, metadata_headers):
+        metadata = np.array(metadata)
+        metadata_headers = np.array(metadata_headers)
         cols_to_keep = []
-        j = 1
-        while j < len(metadata[0]):
+        j = 0
+        while j < len(metadata_headers):
             all_are_numeric = True
-            i = 1
+            i = 0
             while i < len(metadata):
                 if not metadata[i][j].isnumeric():
                     all_are_numeric = False
@@ -36,8 +38,8 @@ class Heatmap(object):
                 cols_to_keep.append(j)
             j += 1
 
-        new_metadata = metadata[1:, cols_to_keep]
-        new_metadata_headers = metadata[0, cols_to_keep]
+        new_metadata = metadata[:, cols_to_keep]
+        new_metadata_headers = metadata_headers[cols_to_keep]
         return new_metadata, new_metadata_headers
 
     def analyse(self, user_request, base, headers, sample_labels, metadata):
@@ -46,8 +48,8 @@ class Heatmap(object):
         cluster = user_request.get_custom_attr("cluster")
         minSamplesPresent = int(user_request.get_custom_attr("minSamplesPresent"))
 
-        metadata_otu_order = metadata.get_as_table_in_table_order(sample_labels)
-        numeric_metadata, numeric_metadata_headers = self.get_numeric_metadata_table(np.array(metadata_otu_order))
+        metadata_otu_order, metadata_headers, _ = metadata.get_as_table_in_table_order(sample_labels)
+        numeric_metadata, numeric_metadata_headers = self.get_numeric_metadata_table(metadata_otu_order, metadata_headers)
         numeric_metadata = numeric_metadata.astype(float)
 
         if corrvar1 == 'Taxonomy' and corrvar2 == 'Metadata':

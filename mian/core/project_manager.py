@@ -18,7 +18,8 @@ from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, \
     SUBSAMPLED_OTU_TABLE_FILENAME, BIOM_FILENAME, TAXONOMY_FILENAME, SAMPLE_METADATA_FILENAME, \
-    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, SUBSAMPLE_TYPE_DISABLED, PHYLOGENETIC_FILENAME
+    RAW_OTU_TABLE_LABELS_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, SUBSAMPLE_TYPE_DISABLED, PHYLOGENETIC_FILENAME, \
+    GENE_FILENAME, GENE_LABELS_FILENAME
 import csv
 import os
 import re
@@ -54,6 +55,8 @@ class ProjectManager(object):
     def get_file_for_download(self, project_name, type):
         if type == "phylogenetic":
             return DataIO.text_from_path(self.user_id, project_name, PHYLOGENETIC_FILENAME, replace_newlines=False)
+        if type == "gene":
+            return DataIO.text_from_path(self.user_id, project_name, GENE_FILENAME, replace_newlines=False)
         elif type == "sample_metadata":
             return DataIO.tsv_to_table(self.user_id, project_name, SAMPLE_METADATA_FILENAME)
         elif type == "taxonomy":
@@ -136,7 +139,7 @@ class ProjectManager(object):
 
 
     def stage_project_from_tsv(self, project_name, otu_filename, taxonomy_filename, sample_metadata_filename,
-                                phylogenetic_filename):
+                                gene_filename, phylogenetic_filename):
         # Creates a directory for this project
         pid = str(uuid.uuid4())
         project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
@@ -185,6 +188,11 @@ class ProjectManager(object):
             shutil.rmtree(project_dir, ignore_errors=True)
             return OTU_ERROR, ""
 
+        # Processes the gene file (if necessary) by extracting the gene labels, transposing, and validating that the
+        # correct number of sample labels are present
+        if gene_filename != "":
+            self.__process_gene_expression(self.user_id, pid, sample_labels, os.path.join(user_staging_dir, gene_filename))
+
         # Processes the taxonomy file by decomposing string-based taxonomies into tab separated format (if applicable)
         try:
             logger.info("Beginning to process the taxonomy file")
@@ -215,6 +223,7 @@ class ProjectManager(object):
         map_file.orig_sample_metadata_name = sample_metadata_filename
         map_file.orig_taxonomy_name = taxonomy_filename
         map_file.orig_phylogenetic_name = phylogenetic_filename
+        map_file.orig_gene_name = gene_filename
         map_file.matrix_type = matrix_type
         map_file.num_samples = len(sample_labels)
         map_file.num_otus = len(headers)
@@ -286,6 +295,59 @@ class ProjectManager(object):
 
         return base, headers, sample_labels, matrix_type
 
+
+    def __process_gene_expression(self, user_id, pid, sample_labels, raw_gene_file_path):
+        gene_table = DataIO.tsv_to_table_from_path(raw_gene_file_path)
+
+        # Validate that the gene table has all the samples
+        # Samples are in the first row of the raw input
+        #
+        actual_sample_labels = {}
+        for actual_sample_label in gene_table[0]:
+            actual_sample_labels[actual_sample_label] = True
+        for sample_label in sample_labels:
+            if sample_label not in actual_sample_labels:
+                raise AssertionError("The gene expression file is missing a sample label")
+
+        # Extract the sample labels and genes and transpose the table
+        base = []
+        sample_labels = gene_table[0][1:]
+        headers = []
+        i = 0
+        for row in gene_table:
+            if i > 0:
+                headers.append(row[0])
+                new_row = []
+                j = 0
+                for col in row:
+                    if j > 0:
+                        new_row.append(float(col))
+                    j += 1
+                base.append(new_row)
+            i += 1
+
+        base = np.array(base).transpose().tolist()
+
+        sample_id_to_row = {}
+        i = 0
+        while i < len(sample_labels):
+            sample_id_to_row[sample_labels[i]] = i
+            i += 1
+        new_base = []
+        for orig_sample_label in sample_labels:
+            new_base.append(base[sample_id_to_row[orig_sample_label]])
+
+        labels = [headers, sample_labels]
+
+        project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
+        project_dir = os.path.join(project_dir, pid)
+        gene_table_path = os.path.join(project_dir, GENE_FILENAME)
+        gene_labels_path = os.path.join(project_dir, GENE_LABELS_FILENAME)
+
+        DataIO.table_to_tsv(new_base, user_id, pid, gene_table_path)
+        DataIO.table_to_tsv(labels, user_id, pid, gene_labels_path)
+
+
     def __process_taxonomy_file(self, user_id, pid):
         taxonomy_table = DataIO.tsv_to_table(user_id, pid, TAXONOMY_FILENAME)
 
@@ -327,8 +389,8 @@ class ProjectManager(object):
 
         return otus_from_taxonomy_file
 
-
-    def stage_project_from_biom(self, project_name, biom_name, sample_metadata_filename, phylogenetic_filename):
+    def stage_project_from_biom(self, project_name, biom_name, sample_metadata_filename, gene_filename,
+                                phylogenetic_filename):
         # Creates a directory for this project
         pid = str(uuid.uuid4())
         project_dir = os.path.join(ProjectManager.DATA_DIRECTORY, self.user_id)
@@ -449,6 +511,12 @@ class ProjectManager(object):
             if len(missing_labels) > 0:
                 return OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR, ", ".join(missing_labels)
 
+            # Generates BIOM File
+            # Processes the gene file (if necessary) by extracting the gene labels, transposing, and validating that the
+            # correct number of sample labels are present
+            if gene_filename != "":
+                self.__process_gene_expression(self.user_id, pid, sample_labels,
+                                               os.path.join(biom_base_staging_dir, gene_filename))
 
             # Generates Taxonomy File
             logger.info("Creating taxonomy file")
@@ -527,6 +595,7 @@ class ProjectManager(object):
             map_file.orig_biom_name = biom_name
             map_file.orig_sample_metadata_name = sample_metadata_filename
             map_file.orig_phylogenetic_name = phylogenetic_filename
+            map_file.orig_gene_name = gene_filename
             map_file.matrix_type = matrix_type
             map_file.num_samples = len(sample_labels)
             map_file.num_otus = len(headers)

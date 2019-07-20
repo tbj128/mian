@@ -205,12 +205,23 @@
                         {% if projectNames[projectName]["orig_sample_metadata_name"] != "" %}
                           <tr>
                             <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
-                            {% if projectNames[projectName]["num_quantiles"] == 0 %}
-                              <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}">Add a quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
+                            {% if projectNames[projectName]["num_metadata_quantiles"] == 0 %}
+                              <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}">Add a metadata quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
                             {% else %}
-                              <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
+                              <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_metadata_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
                             {% endif %}
                             <td>Sample Metadata</td>
+                          </tr>
+                        {% endif %}
+                        {% if projectNames[projectName]["orig_gene_name"] != "" %}
+                          <tr>
+                            <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_gene_name"] }}&nbsp;<a class="download" data-downloadtype="gene" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the gene expression file"><i class="fa fa-download"></i></a></th>
+                            {% if projectNames[projectName]["num_gene_quantiles"] == 0 %}
+                              <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}&quantileType=gene">Add a gene quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide gene expression into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
+                            {% else %}
+                              <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_gene_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
+                            {% endif %}
+                            <td>Gene Expression</td>
                           </tr>
                         {% endif %}
                         {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
@@ -270,13 +281,24 @@
                         </tr>
                         <tr>
                           <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_sample_metadata_name"] }}&nbsp;<a class="download" data-downloadtype="sample_metadata" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the sample metadata file"><i class="fa fa-download"></i></a></th>
-                          {% if projectNames[projectName]["num_quantiles"] == 0 %}
-                              <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}">Add a quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
-                            {% else %}
-                          <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
-                            {% endif %}
+                          {% if projectNames[projectName]["num_metadata_quantiles"] == 0 %}
+                            <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}&quantileType=numeric">Add a metadata quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide numeric sample metadata into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
+                          {% else %}
+                            <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_metadata_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
+                          {% endif %}
                           <td>Sample Metadata</td>
                         </tr>
+                        {% if projectNames[projectName]["orig_gene_name"] != "" %}
+                          <tr>
+                            <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_gene_name"] }}&nbsp;<a class="download" data-downloadtype="gene" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the gene expression file"><i class="fa fa-download"></i></a></th>
+                            {% if projectNames[projectName]["num_gene_quantiles"] == 0 %}
+                              <td class="subsampleDisplayContainer"><a href="/quantile_manager?pid={{projectName}}&quantileType=gene">Add a gene quantile range</a> <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Quantile Range" data-content="Divide gene expression into discrete quantile ranges to use them in categorical visualization and feature selection tools such as boxplots." /></td>
+                            {% else %}
+                              <td class="subsampleDisplayContainer"><strong>{{ projectNames[projectName]["num_gene_quantiles"] }}</strong> quantile ranges (<a href="/quantile_manager?pid={{projectName}}">manage</a>)</td>
+                            {% endif %}
+                            <td>Gene Expression</td>
+                          </tr>
+                        {% endif %}
                         {% if projectNames[projectName]["orig_phylogenetic_name"] != "" %}
                           <tr>
                             <th scope="row" class="project-fn">{{ projectNames[projectName]["orig_phylogenetic_name"] }}&nbsp;<a class="download" data-downloadtype="phylogenetic" data-project="{{ projectNames[projectName]["pid"] }}" href="#" title="Download the phylogenetic tree"><i class="fa fa-download"></i></a></th>

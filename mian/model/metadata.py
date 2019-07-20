@@ -3,6 +3,7 @@ from mian.core.data_io import DataIO
 import numpy as np
 
 from mian.model.quantiles import Quantiles
+from mian.model.genes import Genes
 
 
 class Metadata(object):
@@ -17,10 +18,11 @@ class Metadata(object):
 
     def __load_metadata_samples(self):
         """
-        Loads a metadata file into memory
+        Loads a metadata file into memory if needed
         :return:
         """
-        self.metadata = DataIO.tsv_to_table(self.user_id, self.pid, SAMPLE_METADATA_FILENAME)
+        if len(self.metadata) == 0:
+            self.metadata = DataIO.tsv_to_table(self.user_id, self.pid, SAMPLE_METADATA_FILENAME)
 
     def set_table(self, metadata):
         """
@@ -30,34 +32,52 @@ class Metadata(object):
         """
         self.metadata = metadata
 
-    def get_as_table(self):
-        """
-        Loads the metadata as a table
-        :return:
-        """
-        return self.metadata
-
-    def get_as_table_in_table_order(self, sample_labels):
+    def get_as_table_in_table_order(self, sample_labels, metadata_names=None):
         """
         Returns the metadata of the metadata values. The values will correspond directly to the input OTU table order.
-        The header of the metadata is ignored.
         :param meta_col:
         :return:
         """
-        sample_id_to_metadata_table_row = {}
-        i = 1
-        while i < len(self.metadata):
-            sample_id_to_metadata_table_row[self.metadata[i][0]] = i
-            i += 1
 
         new_metadata_table = []
-        new_metadata_table.append(self.metadata[0])
-        i = 0
-        while i < len(sample_labels):
-            row_index = sample_id_to_metadata_table_row[sample_labels[i]]
-            new_metadata_table.append(self.metadata[row_index])
-            i += 1
-        return new_metadata_table
+
+        if metadata_names is not None and len(metadata_names) > 0:
+            genes = Genes(self.user_id, self.pid)
+            quantile = Quantiles(self.user_id, self.pid)
+
+            new_headers = ["Samples"]
+            new_headers.extend(metadata_names)
+
+            for _ in sample_labels:
+                new_metadata_table.append([])
+
+            j = 0
+            while j < len(metadata_names):
+                col = self.get_metadata_column_table_order(sample_labels, metadata_names[j], genes=genes, quantile=quantile)
+                i = 0
+                while i < len(sample_labels):
+                    if len(col) > 0:
+                        new_metadata_table[i].append(col[i])
+                    else:
+                        new_metadata_table[i].append("")
+                    i += 1
+                j += 1
+        else:
+            # Return the entire metadata table
+            # TODO: Below doesn't include the genes as part of the table output. Let's try to deprecate this code block
+            sample_id_to_metadata_table_row = {}
+            i = 1
+            while i < len(self.metadata):
+                sample_id_to_metadata_table_row[self.metadata[i][0]] = i
+                i += 1
+
+            new_headers = self.metadata[0][1:]
+            i = 0
+            while i < len(sample_labels):
+                row_index = sample_id_to_metadata_table_row[sample_labels[i]]
+                new_metadata_table.append(self.metadata[row_index][1:])
+                i += 1
+        return new_metadata_table, new_headers, sample_labels
 
 
     def get_metadata_headers_with_type(self):
@@ -66,6 +86,7 @@ class Metadata(object):
         :return: array of objects; each object contains name and type
         """
         headers = []
+        added_headers = {}
 
         quantile = Quantiles(self.user_id, self.pid)
 
@@ -84,6 +105,7 @@ class Metadata(object):
             # A column is "both" if all the entries are numeric, but there is not many unique values
             is_both = is_numeric and len(numeric_entries) < len(self.metadata) - 1
 
+            added_headers[self.metadata[0][j]] = True
             quantile_status = quantile.exists(self.metadata[0][j])
 
             if is_both:
@@ -105,6 +127,15 @@ class Metadata(object):
                     "quantileStatus": quantile_status
                 })
             j += 1
+
+        for quantile_range_name, quantile_obj in quantile.quantiles.items():
+            if quantile_range_name not in added_headers:
+                headers.append({
+                    "name": quantile_range_name + " (Quantile Range)",
+                    "type": "numeric",
+                    "quantileStatus": True
+                })
+
         return headers
 
     def get_numeric_metadata_info(self, metadata_name):
@@ -179,31 +210,45 @@ class Metadata(object):
             j += 1
         return cat_col
 
-    def get_metadata_column_table_order(self, sample_labels, metadata_name, apply_quantile=True):
+    def get_metadata_column_table_order(self, sample_labels, metadata_name, genes: Genes=None, quantile: Quantiles=None):
         """
         Returns an array of the metadata values. The values will correspond directly to the input OTU table order.
         The header of the metadata is ignored.
-        :param meta_col:
+        :param sample_labels:
+        :param metadata_name:
+        :param genes:
+        :param quantile:
         :return:
         """
 
-        meta_vals = []
+        if genes is None:
+            genes = Genes(self.user_id, self.pid)
 
-        metadata_map = self.get_sample_id_to_metadata_map(metadata_name)
-        if len(metadata_map.keys()) == 0:
-            return meta_vals
-
-        row = 0
-        while row < len(sample_labels):
-            if sample_labels[row] in metadata_map:
-                meta_vals.append(metadata_map[sample_labels[row]])
-            row += 1
-
-        if apply_quantile:
+        if quantile is None:
             quantile = Quantiles(self.user_id, self.pid)
 
-            if quantile.exists(metadata_name):
-                existing_quantile = quantile.get_existing(metadata_name)
+        meta_vals = []
+
+        if " (Quantile Range)" in metadata_name:
+            # Can be either sample metadata or gene expression quantile range
+            actual_metadata_name = metadata_name.split(" (Quantile Range)")[0]
+
+            metadata_map = self.get_sample_id_to_metadata_map(actual_metadata_name)
+            if len(metadata_map.keys()) == 0:
+                # Check that maybe this quantile range is a gene
+                meta_vals = genes.get_multi_gene_values([actual_metadata_name])
+                if len(meta_vals) == 0:
+                    # No matching gene found
+                    return meta_vals
+            else:
+                row = 0
+                while row < len(sample_labels):
+                    if sample_labels[row] in metadata_map:
+                        meta_vals.append(metadata_map[sample_labels[row]])
+                    row += 1
+
+            if quantile.exists(actual_metadata_name):
+                existing_quantile = quantile.get_existing(actual_metadata_name)
 
                 transformed_meta_vals = []
                 for v in meta_vals:
@@ -213,6 +258,18 @@ class Metadata(object):
                         elif float(v) == float(quantile["max"]) and float(quantile["max"]) == float(existing_quantile["max"]):
                             transformed_meta_vals.append(quantile["displayName"])
                 return transformed_meta_vals
+        else:
+            metadata_map = self.get_sample_id_to_metadata_map(metadata_name)
+            if len(metadata_map.keys()) == 0:
+                # Check that maybe this requested variable is a gene
+                meta_vals = genes.get_multi_gene_values([metadata_name])
+                return meta_vals
+
+            row = 0
+            while row < len(sample_labels):
+                if sample_labels[row] in metadata_map:
+                    meta_vals.append(metadata_map[sample_labels[row]])
+                row += 1
         return meta_vals
 
 

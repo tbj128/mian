@@ -15,6 +15,7 @@ class Map(object):
         self.orig_otu_table_name = ""
         self.orig_taxonomy_name = ""
         self.orig_sample_metadata_name = ""
+        self.orig_gene_name = ""
         self.orig_phylogenetic_name = ""
         self.taxonomy_type = ""
         self.matrix_type = "int"
@@ -36,6 +37,7 @@ class Map(object):
                 self.orig_taxonomy_name = map_from_json["orig_taxonomy_name"]
                 self.orig_sample_metadata_name = map_from_json["orig_sample_metadata_name"]
                 self.orig_phylogenetic_name = map_from_json["orig_phylogenetic_name"] if "orig_phylogenetic_name" in map_from_json else ""
+                self.orig_gene_name = map_from_json["orig_gene_name"] if "orig_gene_name" in map_from_json else ""
                 self.taxonomy_type = map_from_json["taxonomy_type"]
                 self.matrix_type = map_from_json["matrix_type"] if "matrix_type" in map_from_json else "int"
                 self.num_samples = map_from_json["num_samples"] if "num_samples" in map_from_json else 0
@@ -53,6 +55,7 @@ class Map(object):
             "orig_taxonomy_name": self.orig_taxonomy_name,
             "orig_sample_metadata_name": self.orig_sample_metadata_name,
             "orig_phylogenetic_name": self.orig_phylogenetic_name,
+            "orig_gene_name": self.orig_gene_name,
             "taxonomy_type": self.taxonomy_type,
             "matrix_type": self.matrix_type,
             "num_samples": self.num_samples,

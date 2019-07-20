@@ -46,7 +46,7 @@ class DataIO:
 
         logger.info("Opening file with name " + csv_name)
 
-        return DataIO.tsv_to_table_from_path(csv_name, sep, accept_empty_headers)
+        return DataIO.tsv_to_table_from_path(csv_name, accept_empty_headers)
 
     @staticmethod
     @lru_cache(maxsize=128)
@@ -98,7 +98,7 @@ class DataIO:
                     return fn.read()
 
     @staticmethod
-    def tsv_to_table_from_path(csv_path, sep="\t", accept_empty_headers=True):
+    def tsv_to_table_from_path(csv_path, accept_empty_headers=True):
         otu_map = []
         with open(csv_path, 'r', encoding='utf-8') as csvfile:
             dialect = csv.Sniffer().sniff(csvfile.readline())

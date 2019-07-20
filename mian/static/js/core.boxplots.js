@@ -25,11 +25,9 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 var initialColorVar = getParameterByName("colorvar");
+var initialYvals = getParameterByName("yvals");
 var initialYvalsSpecificTaxonomy = getParameterByName("yvalsSpecificTaxonomy") ? JSON.parse(getParameterByName("yvalsSpecificTaxonomy")) : null;
 function initializeFields() {
-    if (getParameterByName("yvals") !== null) {
-        $("#yvals").val(getParameterByName("yvals"));
-    }
     if (getParameterByName("statisticalTest") !== null) {
         $("#statisticalTest").val(getParameterByName("statisticalTest"));
     }
@@ -60,31 +58,7 @@ function createSpecificListeners() {
     });
 
     $("#yvals").change(function() {
-        var val = $("#yvals").val();
-        if (val === "mian-taxonomy-abundance") {
-            $("#specific-taxonomy-container").show();
-            $("#taxonomic-level-label").text("Taxonomic Level");
-            $("#taxonomic-level-container").show();
-            $.when(loadOTUTableHeaders()).done(function() {
-                updateAnalysis();
-            });
-        } else {
-            $("#specific-taxonomy-container").hide();
-            $("#taxonomic-level-container").hide();
-
-            if (val === "mian-max" || val === "mian-min") {
-                if (val === "mian-max") {
-                    $("#taxonomic-level-label").text("Max Abundance Taxonomic Level");
-                } else if (val === "mian-min") {
-                    $("#taxonomic-level-label").text("Min Abundance Taxonomic Level");
-                }
-
-                $("#taxonomic-level-container").show();
-            } else {
-                $("#taxonomic-level-container").hide();
-            }
-            updateAnalysis();
-        }
+        updateYvals(true);
     });
 
     $("#taxonomy").change(function() {
@@ -96,9 +70,58 @@ function createSpecificListeners() {
         }
     });
 
+    $("#gene-typeahead").change(function() {
+        if (initialYvalsSpecificTaxonomy == null) {
+            updateAnalysis();
+        }
+    });
+
     $("#download-svg").click(function() {
         downloadSVG("boxplots." + $("#catvar").val() + "." + $("#yvals").val());
     });
+}
+
+function updateYvals(shouldUpdateAnalysis) {
+    var val = $("#yvals").val();
+    if (val === "mian-taxonomy-abundance") {
+        $("#specific-taxonomy-container").show();
+        $("#gene-input-container-1").hide();
+        $("#taxonomic-level-label").text("Taxonomic Level");
+        $("#taxonomic-level-container").show();
+        if (shouldUpdateAnalysis) {
+            $.when(loadOTUTableHeaders()).done(function() {
+                updateAnalysis();
+            });
+        }
+    } else if (val === "mian-gene") {
+        $("#specific-taxonomy-container").hide();
+        $("#gene-input-container-1").show();
+        $("#taxonomic-level-container").hide();
+        if (shouldUpdateAnalysis) {
+            $.when(loadGeneSelector(1)).done(function() {
+                updateAnalysis();
+            });
+        }
+    } else {
+        $("#specific-taxonomy-container").hide();
+        $("#gene-input-container-1").hide();
+        $("#taxonomic-level-container").hide();
+
+        if (val === "mian-max" || val === "mian-min") {
+            if (val === "mian-max") {
+                $("#taxonomic-level-label").text("Max Abundance Taxonomic Level");
+            } else if (val === "mian-min") {
+                $("#taxonomic-level-label").text("Min Abundance Taxonomic Level");
+            }
+
+            $("#taxonomic-level-container").show();
+        } else {
+            $("#taxonomic-level-container").hide();
+        }
+        if (shouldUpdateAnalysis) {
+            updateAnalysis();
+        }
+    }
 }
 
 //
@@ -125,7 +148,13 @@ function updateAnalysis() {
     var yvals = $("#yvals").val();
     var statisticalTest = $("#statisticalTest").val();
 
-    var yvalsSpecificTaxonomy = $("#specific-taxonomy-typeahead").val();
+    var yvalsSpecificTaxonomy = "";
+    if (yvals === "mian-gene") {
+        yvalsSpecificTaxonomy = $("#gene-typeahead-1").val();
+    } else if (yvals === "mian-taxonomy-abundance") {
+        yvalsSpecificTaxonomy = $("#specific-taxonomy-typeahead").val();
+    }
+
     if (yvalsSpecificTaxonomy === "") {
         yvalsSpecificTaxonomy = JSON.stringify([]);
     } else {
@@ -182,7 +211,7 @@ function customCatVarCallback(result) {
 
     $("#yvals").empty();
     $("#yvals").append(
-        '<option value="mian-taxonomy-abundance">Taxonomy Abundance</option><option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>'
+        '<option value="mian-taxonomy-abundance">Taxonomy Abundance</option><option value="mian-gene">Gene Expression</option><option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>'
     );
     for (var i = 0; i < numericHeaders.length; i++) {
         $("#yvals").append(
@@ -203,8 +232,25 @@ function customCatVarCallback(result) {
     }
 }
 
+// Blocks initial loading until this is completed
 function customCatVarValueLoading() {
-    return loadOTUTableHeaders();
+    return $.when(loadOTUTableHeaders(), loadGeneSelector(1)).then(function() {
+        if (initialYvals) {
+            $("#yvals").val(initialYvals);
+            updateYvals(false);
+            initialYvals = null;
+        }
+        if (initialYvalsSpecificTaxonomy) {
+            initialYvalsSpecificTaxonomy.forEach(function(val) {
+                if ($("#yvals").val() === "mian-taxonomy-abundance") {
+                    $("#specific-taxonomy-typeahead").tagsinput('add', val);
+                } else if ($("#yvals").val() === "mian-gene") {
+                    $("#gene-typeahead-1").tagsinput('add', val);
+                }
+            });
+            initialYvalsSpecificTaxonomy = null;
+        }
+    });
 }
 
 function loadOTUTableHeaders() {
@@ -239,16 +285,10 @@ function loadOTUTableHeaders() {
                     "width",
                     "320px"
                 );
-
-                if (initialYvalsSpecificTaxonomy) {
-                    initialYvalsSpecificTaxonomy.forEach(function(val) {
-                        $("#specific-taxonomy-typeahead").tagsinput('add', val);
-                    });
-                    initialYvalsSpecificTaxonomy = null;
-                }
             }
         });
         return headersPromise;
     }
     return null;
 }
+

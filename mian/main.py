@@ -35,6 +35,7 @@ import pwd
 from mian.core.data_io import DataIO
 from mian.rutils import r_package_install
 from mian.model.quantiles import Quantiles
+from mian.model.genes import Genes
 
 r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
@@ -274,11 +275,13 @@ def create():
             # Biom files are self-contained - they must be split up and subsampled to be compatible with mian
             project_biom_name = secure_filename(request.form['projectBiomName'])
             project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
+            project_gene_name = secure_filename(request.form['projectGeneName'])
             project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
             try:
                 status, message = project_manager.stage_project_from_biom(project_name=project_name,
                                                                           biom_name=project_biom_name,
                                                                           sample_metadata_filename=project_sample_id_name,
+                                                                          gene_filename=project_gene_name,
                                                                           phylogenetic_filename=project_phylogenetic_name)
             except:
                 return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
@@ -288,11 +291,13 @@ def create():
             project_taxa_map_name = secure_filename(request.form['projectTaxaMapName'])
             project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
             project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
+            project_gene_name = secure_filename(request.form['projectGeneName'])
             try:
                 status, message = project_manager.stage_project_from_tsv(project_name=project_name,
                                                                          otu_filename=project_otu_table_name,
                                                                          taxonomy_filename=project_taxa_map_name,
                                                                          sample_metadata_filename=project_sample_id_name,
+                                                                         gene_filename=project_gene_name,
                                                                          phylogenetic_filename=project_phylogenetic_name)
             except:
                 return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
@@ -724,6 +729,36 @@ def getMetadataHeadersWithType(user, pid):
 # ---
 
 
+@app.route('/genes')
+@flask_login.login_required
+def getGenesSecure():
+    user = current_user.id
+    pid = request.args.get('pid', '')
+    type = request.args.get('type', '')
+    if pid == '':
+        return json.dumps({})
+    return getGenes(user, pid, type)
+
+
+@app.route('/share/genes')
+def getGenesShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        pid = request.args.get('pid', '')
+        type = request.args.get('type', '')
+        return getGenes(uid, pid, type)
+    else:
+        abortNotShared()
+
+
+def getGenes(user, pid, type):
+    metadata = Genes(user, pid)
+    abundances = metadata.get_gene_headers(type)
+    return json.dumps(abundances)
+
+# ---
+
+
 @app.route('/otu_table_headers_at_level')
 @flask_login.login_required
 def getOTUTableHeadersAtLevelSecure():
@@ -1084,7 +1119,10 @@ def getCorrelationsSelectionShare():
 
 
 def getCorrelationsSelection(user_request, req):
+    user_request.set_custom_attr("select", req.form['select'])
+    user_request.set_custom_attr("against", req.form['against'])
     user_request.set_custom_attr("expvar", req.form['expvar'])
+    user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
 
     plugin = CorrelationsSelection()
     abundances = plugin.run(user_request)
@@ -1408,11 +1446,17 @@ def get_quantile_metadata_info():
     user = current_user.id
     pid = request.args.get("pid")
     metadata_name = request.args.get("metadata_name")
-
-    metadata = Metadata(user, pid)
-    return_obj = {
-        "context": metadata.get_numeric_metadata_info(metadata_name)
-    }
+    quantile_type = request.args.get("quantile_type") # gene or numeric
+    if quantile_type == "gene":
+        genes = Genes(user, pid)
+        return_obj = {
+            "context": genes.get_gene_info(metadata_name)
+        }
+    else:
+        metadata = Metadata(user, pid)
+        return_obj = {
+            "context": metadata.get_numeric_metadata_info(metadata_name)
+        }
 
     quantiles = Quantiles(user, pid)
     if quantiles.exists(metadata_name):
@@ -1445,7 +1489,7 @@ def save_quantile():
     quantile_staging = json.loads(request.form['quantileStaging'])
 
     quantiles = Quantiles(user, pid)
-    quantiles.update_quantile(quantile_staging["metadata_name"], quantile_staging["min"], quantile_staging["max"], quantile_staging["quantiles"], quantile_staging["type"])
+    quantiles.update_quantile(quantile_staging["metadata_name"], quantile_staging["min"], quantile_staging["max"], quantile_staging["quantiles"], quantile_staging["type"], quantile_staging["quantile_type"])
     quantiles.save()
     return json.dumps({})
 
@@ -1827,9 +1871,14 @@ def get_project_ids_to_info(user_id):
             if dir != ProjectManager.STAGING_DIRECTORY:
                 pid = dir
                 quantiles = Quantiles(user_id, pid)
-                num_quantiles = len(quantiles.quantiles)
+                num_gene_quantiles = 0
+                num_metadata_quantiles = 0
+                for quantile_name, q in quantiles.quantiles.items():
+                    if q["quantile_type"] == "gene":
+                        num_gene_quantiles += 1
+                    else:
+                        num_metadata_quantiles += 1
                 project_map = Map(user_id, pid)
-                project_info = {}
                 if project_map.orig_biom_name != "":
                     project_type = "biom"
                     project_info = {
@@ -1838,6 +1887,7 @@ def get_project_ids_to_info(user_id):
                         "project_type": project_type,
                         "orig_biom_name": project_map.orig_biom_name,
                         "orig_sample_metadata_name": project_map.orig_sample_metadata_name,
+                        "orig_gene_name": project_map.orig_gene_name,
                         "orig_phylogenetic_name": project_map.orig_phylogenetic_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
@@ -1846,7 +1896,8 @@ def get_project_ids_to_info(user_id):
                         "num_samples": project_map.num_samples,
                         "num_otus": project_map.num_otus,
                         "shared": project_map.shared,
-                        "num_quantiles": num_quantiles
+                        "num_gene_quantiles": num_gene_quantiles,
+                        "num_metadata_quantiles": num_metadata_quantiles
                     }
                 else:
                     project_type = "table"
@@ -1857,6 +1908,7 @@ def get_project_ids_to_info(user_id):
                         "orig_otu_table_name": project_map.orig_otu_table_name,
                         "orig_sample_metadata_name": project_map.orig_sample_metadata_name,
                         "orig_taxonomy_name": project_map.orig_taxonomy_name,
+                        "orig_gene_name": project_map.orig_gene_name,
                         "orig_phylogenetic_name": project_map.orig_phylogenetic_name,
                         "subsampled_value": project_map.subsampled_value,
                         "subsampled_type": project_map.subsampled_type,
@@ -1865,7 +1917,8 @@ def get_project_ids_to_info(user_id):
                         "num_samples": project_map.num_samples,
                         "num_otus": project_map.num_otus,
                         "shared": project_map.shared,
-                        "num_quantiles": num_quantiles
+                        "num_gene_quantiles": num_gene_quantiles,
+                        "num_metadata_quantiles": num_metadata_quantiles
                     }
                 logger.info("Read project info " + str(project_info))
                 if project_map.project_name != "" and project_map.subsampled_type != "":

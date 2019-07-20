@@ -59,6 +59,9 @@ $(document).ready(function() {
     document
         .getElementById("phylogenetic")
         .addEventListener("change", uploadPhylogenetic, false);
+    document
+        .getElementById("gene")
+        .addEventListener("change", uploadGene, false);
 
     function nameChange() {
         $("#projectName").val($("#inputName").val());
@@ -103,6 +106,10 @@ $(document).ready(function() {
         upload("phylogeneticForm");
     }
 
+    function uploadGene() {
+        upload("geneForm");
+    }
+
     // Catch the form submit and upload the files
     function upload(formID) {
         var form = $("#" + formID)[0];
@@ -128,6 +135,10 @@ $(document).ready(function() {
         if (formID == "phylogeneticForm") {
             $("#phylogeneticLoading").show();
             filename = $("#phylogenetic").val();
+        }
+        if (formID == "geneForm") {
+            $("#geneLoading").show();
+            filename = $("#gene").val();
         }
 
         filename = filename.split(/(\\|\/)/g).pop();
@@ -174,6 +185,12 @@ $(document).ready(function() {
                     $("#phylogeneticOK").show();
                     $("#phylogeneticText").text("Replace");
                     $("#projectPhylogeneticName").val(filename);
+                }
+                if (formID == "geneForm") {
+                    $("#geneLoading").hide();
+                    $("#geneOK").show();
+                    $("#geneText").text("Replace");
+                    $("#projectGeneName").val(filename);
                 }
 
                 checkComplete();

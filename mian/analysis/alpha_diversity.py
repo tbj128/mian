@@ -100,7 +100,6 @@ class AlphaDiversity(AnalysisBase):
         alphaContext = user_request.get_custom_attr("alphaContext")
         statisticalTest = user_request.get_custom_attr("statisticalTest")
 
-        vals = []
         if alphaType == "faith_pd":
             if phylogenetic_tree == "":
                 return {
@@ -112,40 +111,7 @@ class AlphaDiversity(AnalysisBase):
                 return {
                     "has_float": True
                 }
-
-            otu_table = otu_table.astype(int)
-
-            tree = TreeNode.read(StringIO(phylogenetic_tree))
-            if len(tree.root().children) > 2:
-                # Ensure that the tree is rooted if it is not already rooted
-                tree = tree.root_at_midpoint()
-            vals = alpha_diversity(alphaType, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
-
-        else:
-            # Creates an R-compatible dictionary of columns to vectors of column values WITHOUT headers
-            allOTUs = []
-            col = 0
-            while col < len(otu_table[0]):
-                colVals = []
-                row = 0
-                while row < len(otu_table):
-                    sampleID = sample_labels[row]
-                    if len(metadata_values) == 0 or sampleID in sample_ids_to_metadata_map:
-                        colVals.append(otu_table[row][col])
-                    row += 1
-                allOTUs.append((headers[col], robjects.FloatVector(colVals)))
-                col += 1
-
-            logger.info("After creating an R-compatible dictionary")
-
-            od = rlc.OrdDict(allOTUs)
-            dataf = robjects.DataFrame(od)
-
-            logger.info("Before vegan alpha diversity")
-
-            vals = self.veganR.alphaDiversity(dataf, alphaType, alphaContext)
-
-            logger.info("After vegan alpha diversity")
+        vals = self.calculate_alpha_diversity(otu_table, sample_labels, headers, phylogenetic_tree, alphaType, alphaContext)
 
 
         if plotType == "boxplot":
@@ -203,3 +169,29 @@ class AlphaDiversity(AnalysisBase):
 
             abundances_obj = {"corrArr": corrArr, "coef": coef, "pval": pval}
             return abundances_obj
+
+    def calculate_alpha_diversity(self, otu_table, sample_labels, headers, phylogenetic_tree, alpha_type, alpha_context):
+        if alpha_type == "faith_pd":
+            otu_table = otu_table.astype(int)
+
+            tree = TreeNode.read(StringIO(phylogenetic_tree))
+            if len(tree.root().children) > 2:
+                # Ensure that the tree is rooted if it is not already rooted
+                tree = tree.root_at_midpoint()
+            return alpha_diversity(alpha_type, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
+        else:
+            allOTUs = []
+            col = 0
+            while col < len(otu_table[0]):
+                colVals = []
+                row = 0
+                while row < len(otu_table):
+                    colVals.append(otu_table[row][col])
+                    row += 1
+                allOTUs.append((headers[col], robjects.FloatVector(colVals)))
+                col += 1
+
+            od = rlc.OrdDict(allOTUs)
+            dataf = robjects.DataFrame(od)
+
+            return self.veganR.alphaDiversity(dataf, alpha_type, alpha_context)

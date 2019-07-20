@@ -29,6 +29,14 @@ TAXONOMY_FILENAME = "taxonomy.tsv"
 # The sample metadata file
 SAMPLE_METADATA_FILENAME = "sample_metadata.tsv"
 
+# The gene expression file ordered in the same order as the OTU table (optional)
+# Rows are samples, columns are genes
+GENE_FILENAME = "gene.txt"
+
+# The gene expression labels file containing the genes (optional)
+# First row is the headers (genes), second row is the sample labels
+GENE_LABELS_FILENAME = "gene.labels.txt"
+
 # The phylogenetic tree file (optional)
 PHYLOGENETIC_FILENAME = "phylogenetic.tre"
 

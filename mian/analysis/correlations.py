@@ -17,6 +17,8 @@ from mian.model.metadata import Metadata
 import numpy as np
 import json
 
+from mian.model.genes import Genes
+
 
 class Correlations(AnalysisBase):
     """
@@ -35,8 +37,6 @@ class Correlations(AnalysisBase):
     def analyse(self, user_request, base, headers, sample_labels, metadata):
         base = np.array(base, dtype=float)
 
-        otuMetadata = metadata.get_as_table()
-
         level = int(user_request.level)
         corrvar1 = user_request.get_custom_attr("corrvar1")
         corrvar2 = user_request.get_custom_attr("corrvar2")
@@ -46,6 +46,7 @@ class Correlations(AnalysisBase):
         taxonomiesOfInterest1 = json.loads(user_request.get_custom_attr("corrvar1SpecificTaxonomies"))
         taxonomiesOfInterest2 = json.loads(user_request.get_custom_attr("corrvar2SpecificTaxonomies"))
 
+        otuMetadata, _, _ = metadata.get_as_table_in_table_order(sample_labels, [corrvar1, corrvar2, colorvar, sizevar])
 
         colsOfInterest1 = []
         if corrvar1 == "mian-taxonomy-abundance":
@@ -71,32 +72,15 @@ class Correlations(AnalysisBase):
             if len(colsOfInterest2) == 0:
                 return {"corrArr": [], "coef": 0, "pval": 0}
 
-
-
-
-
-        sampleIDToMetadataRow = {}
-        i = 0
-        while i < len(otuMetadata):
-            sampleID = otuMetadata[i][0]
-            sampleIDToMetadataRow[sampleID] = i
-            i += 1
-
-        corrcol1 = -1
-        if corrvar1 != "mian-taxonomy-abundance" and corrvar1 != "mian-abundance" and corrvar1 != "mian-max":
-            corrcol1 = metadata.get_metadata_column_number(corrvar1)
-
-        corrcol2 = -1
-        if corrvar2 != "mian-taxonomy-abundance" and corrvar2 != "mian-abundance" and corrvar2 != "mian-max":
-            corrcol2 = metadata.get_metadata_column_number(corrvar2)
-
-        colorcol = -1
-        if colorvar != "mian-abundance" and colorvar != "mian-max":
-            colorcol = metadata.get_metadata_column_number(colorvar)
-
-        sizecol = -1
-        if sizevar != "mian-abundance" and sizevar != "mian-max":
-            sizecol = metadata.get_metadata_column_number(sizevar)
+        # Retrieves the gene values (if applicable)
+        gene_vals_1 = []
+        gene_vals_2 = []
+        if corrvar1 == "mian-gene" or corrvar2 == "mian-gene":
+            genes = Genes(user_request.user_id, user_request.pid)
+            if corrvar1 == "mian-gene":
+                gene_vals_1 = genes.get_multi_gene_values(taxonomiesOfInterest1)
+            if corrvar2 == "mian-gene":
+                gene_vals_2 = genes.get_multi_gene_values(taxonomiesOfInterest2)
 
         corrArr = []
         corrValArr1 = []
@@ -105,61 +89,63 @@ class Correlations(AnalysisBase):
         i = 0
         while i < len(base):
 
-            maxAbundance = np.max(base[i, :])
-            totalAbundance = np.sum(base[i, :])
+            maxAbundance = np.max(base[i, :]) if corrvar1 == "mian-max" or corrvar2 == "mian-max" else 0
+            totalAbundance = np.sum(base[i, :]) if corrvar1 == "mian-abundance" or corrvar2 == "mian-abundance" else 0
 
             if (samplestoshow == "nonzero" and totalAbundance > 0) or (
                     samplestoshow == "zero" and totalAbundance == 0) or samplestoshow == "both":
                 corrObj = {}
                 sampleID = sample_labels[i]
-                if sampleID in sampleIDToMetadataRow:
-                    metadataRow = sampleIDToMetadataRow[sampleID]
 
-                    corrVal1 = 0
-                    if corrvar1 == "mian-taxonomy-abundance":
-                        corrVal1 = np.sum(base[i, colsOfInterest1])
-                    elif corrvar1 == "mian-abundance":
-                        corrVal1 = totalAbundance
-                    elif corrvar1 == "mian-max":
-                        corrVal1 = maxAbundance
-                    else:
-                        corrVal1 = otuMetadata[metadataRow][corrcol1]
+                if corrvar1 == "mian-taxonomy-abundance":
+                    corrVal1 = np.sum(base[i, colsOfInterest1])
+                elif corrvar1 == "mian-abundance":
+                    corrVal1 = totalAbundance
+                elif corrvar1 == "mian-max":
+                    corrVal1 = maxAbundance
+                elif corrvar1 == "mian-gene":
+                    corrVal1 = gene_vals_1[i]
+                else:
+                    corrVal1 = otuMetadata[i][0]
 
-                    corrVal2 = 0
-                    if corrvar2 == "mian-taxonomy-abundance":
-                        corrVal2 = np.sum(base[i, colsOfInterest2])
-                    elif corrvar2 == "mian-abundance":
-                        corrVal2 = totalAbundance
-                    elif corrvar2 == "mian-max":
-                        corrVal2 = maxAbundance
-                    else:
-                        corrVal2 = otuMetadata[metadataRow][corrcol2]
+                if corrvar2 == "mian-taxonomy-abundance":
+                    corrVal2 = np.sum(base[i, colsOfInterest2])
+                elif corrvar2 == "mian-abundance":
+                    corrVal2 = totalAbundance
+                elif corrvar2 == "mian-max":
+                    corrVal2 = maxAbundance
+                elif corrvar2 == "mian-gene":
+                    corrVal2 = gene_vals_2[i]
+                else:
+                    corrVal2 = otuMetadata[i][1]
 
-                    corrObj["s"] = sampleID
-                    corrObj["c1"] = float(corrVal1)
-                    corrObj["c2"] = float(corrVal2)
-                    corrValArr1.append(float(corrVal1))
-                    corrValArr2.append(float(corrVal2))
+                corrObj["s"] = sampleID
+                corrObj["c1"] = float(corrVal1)
+                corrObj["c2"] = float(corrVal2)
+                corrValArr1.append(float(corrVal1))
+                corrValArr2.append(float(corrVal2))
 
-                    colorVal = otuMetadata[metadataRow][colorcol]
-                    if colorvar == "mian-abundance":
-                        colorVal = totalAbundance
-                    elif colorvar == "mian-max":
-                        colorVal = maxAbundance
-                    elif colorvar == "None":
-                        colorVal = 1
-                    corrObj["color"] = colorVal
+                if colorvar == "mian-abundance":
+                    colorVal = totalAbundance
+                elif colorvar == "mian-max":
+                    colorVal = maxAbundance
+                elif colorvar == "None":
+                    colorVal = 1
+                else:
+                    colorVal = otuMetadata[i][2]
+                corrObj["color"] = colorVal
 
-                    sizeVal = otuMetadata[metadataRow][sizecol]
-                    if sizevar == "mian-abundance":
-                        sizeVal = totalAbundance
-                    elif sizevar == "mian-max":
-                        sizeVal = maxAbundance
-                    elif sizevar == "None":
-                        sizeVal = 1
-                    corrObj["size"] = sizeVal
+                if sizevar == "mian-abundance":
+                    sizeVal = totalAbundance
+                elif sizevar == "mian-max":
+                    sizeVal = maxAbundance
+                elif sizevar == "None":
+                    sizeVal = 1
+                else:
+                    sizeVal = otuMetadata[i][3]
+                corrObj["size"] = sizeVal
 
-                    corrArr.append(corrObj)
+                corrArr.append(corrObj)
 
             i += 1
 

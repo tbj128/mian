@@ -30,6 +30,11 @@ var headersWithQuantileStatus = {};
 var quantiles = {};
 var quantileStaging = {};
 var quantileResultStaging = {};
+
+var taxonomyRenderedTypeahead = {};
+var genes = [];
+var geneRenderedTypeahead = {};
+
 var loaded = false;
 
 //
@@ -61,9 +66,11 @@ if (getParameterByName("taxonomyFilterPrevalence")) {
 if (getParameterByName("level") !== null) {
     $("#taxonomy").val(taxonomyLevelsReverseLookup[getParameterByName("level")]);
 }
+
 if (getParameterByName("pid") !== null) {
     $("#project").val(getParameterByName("pid"));
 }
+
 
 var initialCatvar = getParameterByName("catvar");
 var initialSampleFilter = getParameterByName("sampleFilter");
@@ -155,10 +162,24 @@ function shareToBoxplotLink(otu_name) {
     return "/boxplots?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&catvar=" + (getParameterByName("expvar") ? getParameterByName("expvar") : getParameterByName("catvar")) + "&yvals=mian-taxonomy-abundance&level=" + getParameterByName("level") + "&yvalsSpecificTaxonomy=[\"" + specificTaxonomy + "\"]";
 }
 
-function shareToCorrelationsLink(otu_name1, otu_name2) {
-    var specificTaxonomy1 = getSpecificTaxonomy(otu_name1);
-    var specificTaxonomy2 = otu_name2;
-    return "/correlations?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&catvar=" + (getParameterByName("expvar") ? getParameterByName("expvar") : getParameterByName("catvar")) + "&corrvar1=mian-taxonomy-abundance&corrvar2=" + specificTaxonomy2 + "&level=" + getParameterByName("level") + "&corrvar1SpecificTaxonomies=[\"" + specificTaxonomy1 + "\"]" + "&corrvar2SpecificTaxonomies=[\"" + specificTaxonomy2 + "\"]";
+function shareToCorrelationsLink(selectType, selectedItem, againstType, againstItem) {
+    var corrvar1 = "mian-taxonomy-abundance";
+    if (selectType === "metadata") {
+        corrvar1 = "mian-metadata";
+    } else if (selectType === "gene") {
+        corrvar1 = "mian-gene";
+    }
+
+    var corrvar2 = "mian-taxonomy-abundance";
+    if (againstType === "metadata") {
+        corrvar2 = "mian-metadata";
+    } else if (againstType === "gene") {
+        corrvar2 = "mian-gene";
+    }
+
+    var corrvar1Val = corrvar1 === "mian-taxonomy-abundance" ? getSpecificTaxonomy(selectedItem) : selectedItem;
+    var corrvar2Val = corrvar2 === "mian-taxonomy-abundance" ? getSpecificTaxonomy(againstItem) : againstItem;
+    return "/correlations?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&corrvar1=" + corrvar1 + "&corrvar2=" + corrvar2 + "&level=" + getParameterByName("level") + "&corrvar1SpecificTaxonomies=[\"" + corrvar1Val + "\"]" + "&corrvar2SpecificTaxonomies=[\"" + corrvar2Val + "\"]";
 }
 
 function getSpecificTaxonomy(otu_name) {
@@ -209,13 +230,13 @@ function showLoading(expectedLoadFactor, useTaxonomicOnly) {
     }
 
     $("#loading").show();
-    $("#editor :input").prop("disabled", true);
+    $("#editor :input").not('.catvar-always-disabled').prop("disabled", true);
 }
 
 function hideLoading() {
     loaded = true;
     $("#loading").hide();
-    $("#editor :input").prop("disabled", false);
+    $("#editor :input").not('.catvar-always-disabled').prop("disabled", false);
 
     var currentProgress = ($("#progress").width() / $('#progress').parent().width()) * 100;
     $({property: currentProgress}).animate({property: 105}, {
@@ -563,15 +584,22 @@ function resetProject() {
             updateProject();
         });
     } else if (typeof customLoading === "function") {
-        $.when(updateTaxonomicLevel(true, function() {}), customLoading()).done(
+        $.when(
+            updateTaxonomicLevel(true, function() {}),
+            customLoading()
+        ).done(
             function(a1, a2, a3) {
                 updateProject();
             }
         );
     } else {
-        updateTaxonomicLevel(true, function() {
-            updateProject();
-        });
+        $.when(
+            updateTaxonomicLevel(true, function() {})
+        ).done(
+            function(a1, a2) {
+                updateProject();
+            }
+        );
     }
 }
 
@@ -976,8 +1004,8 @@ function setGetParameters(data) {
         }
 
         if (url.indexOf(paramName + "=") >= 0) {
-            var prefix = url.substring(0, url.indexOf(paramName));
-            var suffix = url.substring(url.indexOf(paramName));
+            var prefix = url.substring(0, url.indexOf(paramName + "="));
+            var suffix = url.substring(url.indexOf(paramName + "="));
             suffix = suffix.substring(suffix.indexOf("=") + 1);
             suffix = (suffix.indexOf("&") >= 0) ? suffix.substring(suffix.indexOf("&")) : "";
             url = prefix + paramName + "=" + paramValue + suffix;
@@ -1096,6 +1124,7 @@ $("#catvar").change(function() {
 });
 
 function saveQuantileRange(pid) {
+    quantileStaging["quantile_type"] = getParameterByName("quantileType");
     $.ajax({
         url: "/save_quantile",
         type: "POST",
@@ -1157,97 +1186,6 @@ function showOrHideQuantileManageContainer() {
             $(".quantile-manage-container").hide();
         }
     }
-}
-
-// Shows a quantile picker box when the user tries to apply the catvar on a numeric variable
-function showQuantileForNumeric(pid, metadata_name, hide_if_possible) {
-//    if (headersWithType[metadata_name] !== "numeric" && headersWithType[metadata_name] !== "both") {
-//        return false;
-//    }
-
-    $.ajax({
-        url: "/quantile_metadata_info",
-        type: "get",
-        data: {
-            pid: pid,
-            metadata_name: metadata_name
-        },
-        success: function(response) {
-            var result = JSON.parse(response);
-            quantileResultStaging = result.context;
-            if (hide_if_possible && result.existing_quantile) {
-                updateAnalysis();
-                return;
-            }
-
-            if (result.existing_quantile) {
-                // Load previous settings
-                quantileStaging = result.existing_quantile;
-                quantileStaging.metadata_name = metadata_name;
-                $("#quantile-min").text(quantileStaging.min);
-                $("#quantile-max").text(quantileStaging.max);
-
-                $(".quantile-type-btn").removeClass("btn-primary");
-                $(".quantile-type-btn").addClass("btn-link");
-                if (quantileStaging.type === "q_2") {
-                    $("#quantile-2").removeClass("btn-link");
-                    $("#quantile-2").addClass("btn-primary");
-                } else if (quantileStaging.type === "q_3") {
-                    $("#quantile-3").removeClass("btn-link");
-                    $("#quantile-3").addClass("btn-primary");
-                } else if (quantileStaging.type === "q_4") {
-                    $("#quantile-4").removeClass("btn-link");
-                    $("#quantile-4").addClass("btn-primary");
-                } else if (quantileStaging.type === "q_custom") {
-                    $("#quantile-custom").removeClass("btn-link");
-                    $("#quantile-custom").addClass("btn-primary");
-                }
-
-                var isNotLocked = quantileStaging.type === "q_custom";
-                renderQuantileRange(metadata_name, !isNotLocked);
-            } else {
-                // Create a new default quantile staging
-                var quantileArray = [
-                    {
-                        min: quantileResultStaging.q_0,
-                        max: quantileResultStaging.q_50,
-                        displayName: "Low Prevalence"
-                    },
-                    {
-                        min: quantileResultStaging.q_50,
-                        max: quantileResultStaging.q_100,
-                        displayName: "High Prevalence"
-                    }
-                ];
-                quantileStaging = {
-                    type: "q_2",
-                    quantiles: quantileArray,
-                    metadata_name: metadata_name,
-                    min: quantileResultStaging.q_0,
-                    max: quantileResultStaging.q_100
-                };
-                $("#quantile-min").text(quantileResultStaging.q_0);
-                $("#quantile-max").text(quantileResultStaging.q_100);
-                renderQuantileRange(metadata_name, true);
-            }
-
-            renderQuantileBar();
-
-            if (quantileStaging.quantiles.length <= 2) {
-                $(".quantile-remove").remove();
-            }
-
-            $("#quantile-add").data("metadata", metadata_name);
-            $("#quantile-metadata").text(metadata_name);
-            $("#quantile-treat-as-categorical").data("metadata", metadata_name);
-            $("#quantile-box").show();
-            $("#blackout").show();
-        },
-        error: function(xhr) {
-            hideQuantileForNumeric();
-        }
-    });
-    return true;
 }
 
 // Hides a quantile picker box
@@ -1510,3 +1448,164 @@ function getQuantileRangeHTML(sampleMetadata, index, displayName, min, max) {
     </div>`;
 }
 
+
+// ----
+
+$("#catvar-type-catvar").click(function() {
+    $("#catvar-type-catvar").removeClass("catvar-not-selected");
+    $("#catvar-type-gene").addClass("catvar-not-selected");
+    $("#catvar-gene-container").hide();
+    $("#catvar").show();
+});
+$("#catvar-type-gene").click(function() {
+    $("#catvar-type-catvar").addClass("catvar-not-selected");
+    $("#catvar-type-gene").removeClass("catvar-not-selected");
+    $("#catvar-gene-container").show();
+    $("#catvar").hide();
+    $("#gene-box").show();
+    $("#blackout").show();
+});
+
+$("#gene-save").click(function() {
+    $("#gene-box").hide();
+    $("#blackout").hide();
+    $("#catvar-genes").val($("#gene-typeahead").val());
+    updateAnalysis();
+});
+
+$("#gene-cancel").click(function() {
+    $("#gene-box").hide();
+    $("#blackout").hide();
+});
+
+$(".blackout").click(function() {
+    $("#gene-box").hide();
+    $("#blackout").hide();
+});
+
+$("#gene-type").change(function() {
+    showGeneBox();
+});
+
+function showGeneBox() {
+    showLoading();
+    $.ajax({
+        url: "/genes",
+        type: "get",
+        data: {
+            pid: $("#project").val(),
+            type: $("#gene-type").val(),
+            categorical: $("#catvar-is-categorical").val()
+        },
+        success: function(response) {
+            var result = JSON.parse(response);
+            genes = result;
+
+            if (geneRenderedTypeahead["genebox"]) {
+                $("#gene-typeahead").tagsinput("destroy");
+            }
+
+            $("#gene-typeahead").tagsinput({
+                freeInput: false,
+                placeholderText: "Enter",
+                typeahead: {
+                    source: genes,
+                    afterSelect: function() {
+                        $("#gene-typeahead")
+                            .tagsinput("input")
+                            .val("");
+                    }
+                }
+            });
+
+            var existingVals = $("#catvar-genes").val().split(",");
+            existingVals.forEach(function(val) {
+                $("#gene-typeahead").tagsinput('add', val);
+            });
+
+            // Workaround for typeahead bug where the destroy call can prevent the
+            // tagsinput from displaying properly on the first load
+            geneRenderedTypeahead["genebox"] = true;
+
+            $("#gene-box").show();
+            $(".blackout").show();
+            hideLoading();
+
+            $("#gene-box .bootstrap-tagsinput").width("500px");
+        },
+        error: function(xhr) {
+            hideQuantileForNumeric();
+        }
+    });
+    return true;
+}
+
+function loadGeneSelector(typeaheadIndex) {
+    showLoading();
+    if (genes.length > 0) {
+        if (geneRenderedTypeahead[typeaheadIndex]) {
+            $("#gene-typeahead-" + typeaheadIndex).tagsinput("destroy");
+        }
+
+        $("#gene-typeahead-" + typeaheadIndex).tagsinput({
+            freeInput: false,
+            placeholderText: "Enter",
+            typeahead: {
+                source: genes,
+                afterSelect: function() {
+                    $("#gene-typeahead-" + typeaheadIndex)
+                        .tagsinput("input")
+                        .val("");
+                }
+            }
+        });
+        $(".gene-typeahead-wrapper .bootstrap-tagsinput").css(
+            "width",
+            "320px"
+        );
+        geneRenderedTypeahead[typeaheadIndex] = true;
+        hideLoading();
+        return null;
+    }
+    return $.ajax({
+        url: "/genes",
+        type: "get",
+        data: {
+            pid: $("#project").val(),
+            type: $("#gene-type").val()
+        },
+        success: function(response) {
+            var result = JSON.parse(response);
+            genes = result;
+
+            if (geneRenderedTypeahead[typeaheadIndex]) {
+                $("#gene-typeahead-" + typeaheadIndex).tagsinput("destroy");
+            }
+
+            $("#gene-typeahead-" + typeaheadIndex).tagsinput({
+                freeInput: false,
+                placeholderText: "Enter",
+                typeahead: {
+                    source: genes,
+                    afterSelect: function() {
+                        $("#gene-typeahead-" + typeaheadIndex)
+                            .tagsinput("input")
+                            .val("");
+                    }
+                }
+            });
+            $(".gene-typeahead-wrapper .bootstrap-tagsinput").css(
+                "width",
+                "320px"
+            );
+
+            // Workaround for typeahead bug where the destroy call can prevent the
+            // tagsinput from displaying properly on the first load
+            geneRenderedTypeahead[typeaheadIndex] = true;
+
+            hideLoading();
+        },
+        error: function(xhr) {
+        }
+    });
+}

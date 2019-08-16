@@ -98,7 +98,6 @@ function customCatVarCallback(result) {
             $("#expvar").append(
                 '<option value="' + obj.name + '">' + obj.name + "</option>"
             );
-            numNumerical++;
         } else {
             $("#strata").append(
                 '<option value="' + obj.name + '">' + obj.name + "</option>"

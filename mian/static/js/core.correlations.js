@@ -83,19 +83,31 @@ function createSpecificListeners() {
     });
 
     $("#specific-taxonomy-typeahead-1").change(function() {
-        updateAnalysis();
+        if (initialCorrvar1SpecificTaxonomies == null) {
+            // Avoids unnecessary updateAnalysis calls during the initial set-up
+            updateAnalysis();
+        }
     });
 
     $("#specific-taxonomy-typeahead-2").change(function() {
-        updateAnalysis();
+        if (initialCorrvar2SpecificTaxonomies == null) {
+            // Avoids unnecessary updateAnalysis calls during the initial set-up
+            updateAnalysis();
+        }
     });
 
     $("#gene-typeahead-1").change(function() {
-        updateAnalysis();
+        if (initialCorrvar1SpecificTaxonomies == null) {
+            // Avoids unnecessary updateAnalysis calls during the initial set-up
+            updateAnalysis();
+        }
     });
 
     $("#gene-typeahead-2").change(function() {
-        updateAnalysis();
+        if (initialCorrvar2SpecificTaxonomies == null) {
+            // Avoids unnecessary updateAnalysis calls during the initial set-up
+            updateAnalysis();
+        }
     });
 
     $("#taxonomy").change(function() {

@@ -29,16 +29,16 @@ class DifferentialSelection(object):
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(
             user_request)
 
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
         taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
         if differential_type == "ANCOM":
             logger.info("Running ANCOM")
-            return self.analyse_with_ancom(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map)
+            return self.analyse_with_ancom(user_request, otu_table, headers, sample_labels, metadata_vals, taxonomy_map)
         else:
-            return self.analyse(user_request, otu_table, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map)
+            return self.analyse(user_request, otu_table, headers, sample_labels, metadata_vals, taxonomy_map)
 
-    def analyse(self, user_request, base, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map):
+    def analyse(self, user_request, base, headers, sample_labels, metadata_vals, taxonomy_map):
         otu_to_genus = {}
         if int(user_request.level) == -1:
             # We want to display a short hint for the OTU using the genus (column 5)
@@ -67,8 +67,7 @@ class DifferentialSelection(object):
             # Go through each sample for this OTU
             i = 0
             while i < len(base):
-                sample_id = sample_labels[i]
-                metadata_val = sample_ids_to_metadata_map[sample_id]
+                metadata_val = metadata_vals[i]
                 if metadata_val == catVar1:
                     group1_arr.append(float(base[i][j]))
                 if metadata_val == catVar2:
@@ -100,7 +99,7 @@ class DifferentialSelection(object):
 
         return {"differentials": otus}
 
-    def analyse_with_ancom(self, user_request, base, headers, sample_labels, sample_ids_to_metadata_map, taxonomy_map):
+    def analyse_with_ancom(self, user_request, base, headers, sample_labels, metadata_vals, taxonomy_map):
         otu_to_genus = {}
         if int(user_request.level) == -1:
             # We want to display a short hint for the OTU using the genus (column 5)
@@ -121,10 +120,10 @@ class DifferentialSelection(object):
         i = 0
         while i < len(sample_labels):
             sample_id = sample_labels[i]
-            if sample_ids_to_metadata_map[sample_id] == catVar1 or sample_ids_to_metadata_map[sample_id] == catVar2:
+            if metadata_vals[i] == catVar1 or metadata_vals[i] == catVar2:
                 relevant_rows[i] = True
                 new_sample_labels.append(sample_id)
-                row_groups.append(sample_ids_to_metadata_map[sample_id])
+                row_groups.append(metadata_vals[i])
             i += 1
 
         new_base = []

@@ -132,7 +132,7 @@ class Metadata(object):
             if quantile_range_name not in added_headers:
                 headers.append({
                     "name": quantile_range_name + " (Quantile Range)",
-                    "type": "numeric",
+                    "type": "categorical",
                     "quantileStatus": True
                 })
 
@@ -294,24 +294,44 @@ class Metadata(object):
             i += 1
         return meta_vals
 
-    def get_metadata_unique_vals(self, catvar):
+    def get_metadata_unique_vals(self, metadata_name, genes: Genes=None, quantile: Quantiles=None):
         """
-        Gets the unique metadata values for a particular metadata column
-        :param catvar:
+        Gets the unique metadata values for a particular metadata column.
+        SHOULD NOT GET NUMERICAL VALUES FROM THIS
+        :param metadata_name:
         :return:
         """
+
         unique_vals = {}
-        if catvar == "none":
-            return unique_vals
+        if metadata_name == "none":
+            return list(unique_vals.keys())
 
-        catvar_col = self.get_metadata_column_number(catvar)
+        if quantile is None:
+            quantile = Quantiles(self.user_id, self.pid)
 
-        i = 1
-        while i < len(self.metadata):
-            if self.metadata[i][catvar_col] not in unique_vals:
-                unique_vals[self.metadata[i][catvar_col]] = 1
-            i += 1
+        if " (Quantile Range)" in metadata_name:
+            # Can be either sample metadata or gene expression quantile range
+            actual_metadata_name = metadata_name.split(" (Quantile Range)")[0]
+            if quantile.exists(actual_metadata_name):
+                existing_quantile = quantile.get_existing(actual_metadata_name)
+                quantile_display_names = []
+
+                for quantile in existing_quantile["quantiles"]:
+                    quantile_display_names.append(quantile["displayName"])
+                return quantile_display_names
+        else:
+            catvar_col = self.get_metadata_column_number(metadata_name)
+
+            if catvar_col == -1:
+                return list(unique_vals.keys())
+
+            i = 1
+            while i < len(self.metadata):
+                if self.metadata[i][catvar_col] not in unique_vals:
+                    unique_vals[self.metadata[i][catvar_col]] = True
+                i += 1
         return list(unique_vals.keys())
+
 
 
     #########

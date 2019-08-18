@@ -347,8 +347,8 @@ function updateCorrVar(result) {
     $("#sizevar").empty();
     $("#colorvar").empty();
 
-    addCorrOption("corrvar1", "mian-taxonomy-abundance", "Taxonomy Abundance");
-    addCorrOption("corrvar2", "mian-taxonomy-abundance", "Taxonomy Abundance");
+    addCorrOption("corrvar1", "mian-taxonomy-abundance", "OTU or Taxonomic Group Abundance");
+    addCorrOption("corrvar2", "mian-taxonomy-abundance", "OTU or Taxonomic Group Abundance");
 
     addCorrOption("corrvar1", "mian-gene", "Gene Expression");
     addCorrOption("corrvar2", "mian-gene", "Gene Expression");
@@ -365,8 +365,8 @@ function updateCorrVar(result) {
         addCorrOption("colorvar", allHeaders[i], allHeaders[i]);
     }
 
-    addCorrGroup("mian-abundance", "Aggregate Abundance");
-    addCorrGroup("mian-max", "Max Abundance");
+    addCorrGroup("mian-abundance", "Aggregate OTU or Taxonomic Group Abundance");
+    addCorrGroup("mian-max", "Max OTU or Taxonomic Group Abundance");
 
     if (initialCorrvar1) {
         $("#corrvar1").val(initialCorrvar1);

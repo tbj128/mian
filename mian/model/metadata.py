@@ -32,7 +32,7 @@ class Metadata(object):
         """
         self.metadata = metadata
 
-    def get_as_table_in_table_order(self, sample_labels, metadata_names=None):
+    def get_as_table_in_table_order(self, sample_labels, metadata_names=None, genes=None):
         """
         Returns the metadata of the metadata values. The values will correspond directly to the input OTU table order.
         :param meta_col:
@@ -42,7 +42,8 @@ class Metadata(object):
         new_metadata_table = []
 
         if metadata_names is not None and len(metadata_names) > 0:
-            genes = Genes(self.user_id, self.pid)
+            if genes is None:
+                genes = Genes(self.user_id, self.pid)
             quantile = Quantiles(self.user_id, self.pid)
 
             new_headers = ["Samples"]
@@ -53,14 +54,15 @@ class Metadata(object):
 
             j = 0
             while j < len(metadata_names):
-                col = self.get_metadata_column_table_order(sample_labels, metadata_names[j], genes=genes, quantile=quantile)
-                i = 0
-                while i < len(sample_labels):
-                    if len(col) > 0:
-                        new_metadata_table[i].append(col[i])
-                    else:
-                        new_metadata_table[i].append("")
-                    i += 1
+                if metadata_names[j] != "":
+                    col = self.get_metadata_column_table_order(sample_labels, metadata_names[j], genes=genes, quantile=quantile)
+                    i = 0
+                    while i < len(sample_labels):
+                        if len(col) > 0:
+                            new_metadata_table[i].append(col[i])
+                        else:
+                            new_metadata_table[i].append("")
+                        i += 1
                 j += 1
         else:
             # Return the entire metadata table
@@ -228,6 +230,8 @@ class Metadata(object):
             quantile = Quantiles(self.user_id, self.pid)
 
         meta_vals = []
+        if metadata_name == "":
+            return meta_vals
 
         if " (Quantile Range)" in metadata_name:
             # Can be either sample metadata or gene expression quantile range

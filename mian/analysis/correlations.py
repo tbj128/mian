@@ -46,8 +46,6 @@ class Correlations(AnalysisBase):
         taxonomiesOfInterest1 = json.loads(user_request.get_custom_attr("corrvar1SpecificTaxonomies"))
         taxonomiesOfInterest2 = json.loads(user_request.get_custom_attr("corrvar2SpecificTaxonomies"))
 
-        otuMetadata, _, _ = metadata.get_as_table_in_table_order(sample_labels, [corrvar1, corrvar2, colorvar, sizevar])
-
         colsOfInterest1 = []
         if corrvar1 == "mian-taxonomy-abundance":
             i = 0
@@ -72,15 +70,32 @@ class Correlations(AnalysisBase):
             if len(colsOfInterest2) == 0:
                 return {"corrArr": [], "coef": 0, "pval": 0}
 
-        # Retrieves the gene values (if applicable)
+        # # Retrieves the gene values (if applicable)
         gene_vals_1 = []
         gene_vals_2 = []
+        genes = None
         if corrvar1 == "mian-gene" or corrvar2 == "mian-gene":
             genes = Genes(user_request.user_id, user_request.pid)
             if corrvar1 == "mian-gene":
                 gene_vals_1 = genes.get_multi_gene_values(taxonomiesOfInterest1, sample_labels=sample_labels)
             if corrvar2 == "mian-gene":
                 gene_vals_2 = genes.get_multi_gene_values(taxonomiesOfInterest2, sample_labels=sample_labels)
+
+
+        metadata_request_arr = ["", "", "", ""]
+        if not (corrvar1 == "None" or corrvar1 == "mian-taxonomy-abundance" or corrvar1 == "mian-abundance" or corrvar1 == "mian-max" or corrvar1 == "mian-gene"):
+            metadata_request_arr[0] = corrvar1
+
+        if not (corrvar2 == "None" or corrvar2 == "mian-taxonomy-abundance" or corrvar2 == "mian-abundance" or corrvar2 == "mian-max" or corrvar2 == "mian-gene"):
+            metadata_request_arr[1] = corrvar2
+
+        if not (colorvar == "None" or colorvar == "mian-taxonomy-abundance" or colorvar == "mian-abundance" or colorvar == "mian-max" or colorvar == "mian-gene"):
+            metadata_request_arr[2] = colorvar
+
+        if not (sizevar == "None" or sizevar == "mian-taxonomy-abundance" or sizevar == "mian-abundance" or sizevar == "mian-max" or sizevar == "mian-gene"):
+            metadata_request_arr[2] = sizevar
+        otuMetadata, _, _ = metadata.get_as_table_in_table_order(sample_labels, metadata_request_arr, genes=genes)
+
 
         corrArr = []
         corrValArr1 = []

@@ -1,7 +1,6 @@
 // ============================================================
 // Composition JS Component
 // ============================================================
-
 var expectedLoadFactor = 3000;
 
 // Global variables storing the data
@@ -138,6 +137,8 @@ function updateAnalysis() {
                 loadSuccess();
                 if ($("#plotType").val() === "stackedbar") {
                     renderStackedBarplot(abundancesObj);
+                } else if ($("#plotType").val() === "sidebyside") {
+                    renderSideBySideBarplot(abundancesObj);
                 } else if ($("#plotType").val() === "heatmap") {
                     renderHeatmap(abundancesObj, abundancesObj["min"], abundancesObj["max"]);
                 } else {
@@ -152,12 +153,99 @@ function updateAnalysis() {
     });
 }
 
+function renderLegend(svg, idMap, uniqueGroupVals, color, width, legendMargin) {
+    var legend = svg
+        .selectAll(".legend")
+        .data(uniqueGroupVals.slice(0, 10).map(function(v) {
+            return idMap[v];
+        }))
+        .enter()
+        .append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) {
+            return "translate(0," + i * 20 + ")";
+        });
+
+    legend
+        .append("rect")
+        .attr("x", width + legendMargin)
+        .attr("width", 18)
+        .attr("height", 18)
+        .style("fill", color);
+
+    legend
+        .append("text")
+        .attr("x", width + legendMargin + 24)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .text(function(d) {
+            return d;
+        });
+
+    svg
+        .append("text")
+        .attr("x", width + legendMargin)
+        .attr("y", -6)
+        .style("text-anchor", "start")
+        .style("font-weight", "bold")
+        .text("Top 10 Colors:");
+}
+
+function tooltipMouseover(tooltip, idMap, d) {
+    var meta = idMap[d.name];
+    tooltip
+        .transition()
+        .duration(100)
+        .style("opacity", 1);
+
+    var message = "";
+    if ($("#xaxis").val() === "Categorical") {
+        if ($("#catvar").val() === "SampleID") {
+            message = "<strong>" +
+                idMap[d.name] +
+                "</strong><br />Total Count: <strong>" +
+                d.value.avgVal +
+                "</strong><br />";
+        } else {
+            message = "<strong>" +
+                idMap[d.name] +
+                "</strong><br />Average Total Count (across all samples in category): <strong>" +
+                d.value.avgVal +
+                "</strong><br />";
+        }
+    } else {
+        if ($("#catvar").val() === "SampleID") {
+            message = "<strong>" +
+                idMap[d.name] +
+                "</strong><br />Relative Abundance (within this sample): <strong>" +
+                d.value.avgVal +
+                "</strong><br />Count: <strong>" +
+                d.value.sum +
+                "</strong><br />Total Count: <strong>" +
+                d.value.tot +
+                "</strong><br />";
+        } else {
+            message = "<strong>" +
+                idMap[d.name] +
+                "</strong><br />Relative Abundance (across all samples within this category): <strong>" +
+                d.value.avgVal +
+                "</strong><br />";
+        }
+    }
+
+    tooltip
+        .html(message)
+        .style("left", d3.event.pageX - 128 + "px")
+        .style("top", d3.event.pageY + 12 + "px");
+}
 
 function renderStackedBarplot(abundancesObj) {
     $("#analysis-container").empty();
 
     var data = abundancesObj["abundances"];
-    uniqueGroupVals = abundancesObj["uniqueVals"].map(function(tuple) { return tuple[0]; });
+    uniqueGroupVals = abundancesObj["uniqueVals"].map(function(tuple) {
+        return tuple[0];
+    });
     idMap = abundancesObj["idMap"];
 
     var uniqueTaxas = data.map(function(d) {
@@ -171,11 +259,11 @@ function renderStackedBarplot(abundancesObj) {
     var margin = {
             top: 20,
             right: 20,
-            bottom: 160,
+            bottom: getMarginBottom(uniqueTaxas),
             left: 56
         },
         legendMargin = 80,
-        legendWidth = 160,
+        legendWidth = getLegendWidth(idMap),
         width = 20 * uniqueTaxas.length,
         height = 500 - margin.top - margin.bottom,
         barWidth = 12;
@@ -223,7 +311,6 @@ function renderStackedBarplot(abundancesObj) {
 
     var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-    // add the graph canvas to the body of the webpage
     var svg = d3
         .select("#analysis-container")
         .append("svg")
@@ -286,51 +373,7 @@ function renderStackedBarplot(abundancesObj) {
         })
         .attr("class", "bar")
         .on("mouseover", function(d) {
-            var meta = idMap[d.name];
-            tooltip
-                .transition()
-                .duration(100)
-                .style("opacity", 1);
-
-            var message = "";
-            if ($("#xaxis").val() === "Categorical") {
-                if ($("#catvar").val() === "SampleID") {
-                    message = "<strong>" +
-                        idMap[d.name] +
-                        "</strong><br />Total Count: <strong>" +
-                        d.value.avgVal +
-                        "</strong><br />";
-                } else {
-                    message = "<strong>" +
-                        idMap[d.name] +
-                        "</strong><br />Average Total Count (across all samples in category): <strong>" +
-                        d.value.avgVal +
-                        "</strong><br />";
-                }
-            } else {
-                if ($("#catvar").val() === "SampleID") {
-                    message = "<strong>" +
-                        idMap[d.name] +
-                        "</strong><br />Relative Abundance (within this sample): <strong>" +
-                        d.value.avgVal +
-                        "</strong><br />Count: <strong>" +
-                        d.value.sum +
-                        "</strong><br />Total Count: <strong>" +
-                        d.value.tot +
-                        "</strong><br />";
-                } else {
-                    message = "<strong>" +
-                        idMap[d.name] +
-                        "</strong><br />Relative Abundance (across all samples within this category): <strong>" +
-                        d.value.avgVal +
-                        "</strong><br />";
-                }
-            }
-
-            tooltip
-                .html(message)
-                .style("left", d3.event.pageX - 128 + "px")
-                .style("top", d3.event.pageY + 12 + "px");
+            tooltipMouseover(tooltip, idMap, d);
         })
         .on("mouseout", function(d) {
             tooltip
@@ -339,46 +382,169 @@ function renderStackedBarplot(abundancesObj) {
                 .style("opacity", 0);
         });
 
-    var legend = svg
-        .selectAll(".legend")
-        .data(uniqueGroupVals.slice(0, 10).map(function(v) { return idMap[v]; }))
-        .enter()
+
+    renderLegend(svg, idMap, uniqueGroupVals, color, width, legendMargin);
+}
+
+
+
+
+function renderSideBySideBarplot(abundancesObj) {
+    $("#analysis-container").empty();
+
+    var data = abundancesObj["abundances"];
+    uniqueGroupVals = abundancesObj["uniqueVals"].map(function(tuple) {
+        return tuple[0];
+    });
+    idMap = abundancesObj["idMap"];
+
+    var uniqueTaxas = data.map(function(d) {
+        return d.t;
+    });
+    var uniqueTaxasForLabels = data.map(function(d) {
+        var dArr = d.t.split(";");
+        return dArr[dArr.length - 1];
+    });
+
+    var margin = {
+            top: 20,
+            right: 20,
+            bottom: getMarginBottom(uniqueTaxas),
+            left: 56
+        },
+        legendMargin = 80,
+        legendWidth = getLegendWidth(idMap),
+        width = 12 * uniqueTaxas.length * uniqueGroupVals.length + 20 * (uniqueTaxas.length - 1),
+        height = 500 - margin.top - margin.bottom,
+        barWidth = 12;
+
+    var xScaleTax = d3.scaleBand()
+        .domain(uniqueTaxas)
+        .rangeRound([0, width], 0),
+        xAxis = d3.axisBottom(xScaleTax);
+
+    // We don't want the labels to display the fully quantified version of the taxonomic group
+    var xScaleTaxForLabels = d3.scaleBand()
+        .domain(uniqueTaxasForLabels)
+        .rangeRound([0, width]),
+        xAxisForLabels = d3.axisBottom(xScaleTaxForLabels);
+    var xScaleCatvar = d3.scaleBand()
+        .domain(uniqueGroupVals)
+        .rangeRound([10, xScaleTax.bandwidth() - 10]);
+
+    data.forEach(function(d) {
+        var sumSoFar = 0;
+        d.cv = uniqueGroupVals.map(function(name, i) {
+            var val = d.o[name];
+            var obj = {
+                name: name,
+                offset: sumSoFar,
+                value: val
+            };
+            sumSoFar += val.avgVal;
+            return obj;
+        });
+    });
+
+    var yScale = d3.scaleLinear().range([height, 0]),
+        yAxis = d3.axisLeft(yScale);
+    yScale.domain([
+        0,
+        d3.max(data, function(d) {
+            var max = 0;
+            d.cv.forEach(function(cv) {
+                if (cv.value.avgVal > max) {
+                    max = cv.value.avgVal;
+                }
+            });
+            return max;
+        })
+    ]);
+
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+    var svg = d3
+        .select("#analysis-container")
+        .append("svg")
+        .attr("width", legendMargin + legendWidth + width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
         .append("g")
-        .attr("class", "legend")
-        .attr("transform", function(d, i) {
-            return "translate(0," + i * 20 + ")";
-        });
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    legend
-        .append("rect")
-        .attr("x", width + legendMargin)
-        .attr("width", 18)
-        .attr("height", 18)
-        .style("fill", color);
-
-    legend
-        .append("text")
-        .attr("x", width + legendMargin + 24)
-        .attr("y", 9)
-        .attr("dy", ".35em")
-        .text(function(d) {
-            return d;
-        });
+    var tooltip = d3
+        .select("#analysis-container")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
     svg
-        .append("text")
-        .attr("x", width + legendMargin)
-        .attr("y", -6)
-        .style("text-anchor", "start")
-        .style("font-weight", "bold")
-        .text("Top 10 Colors:");
+        .append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+        .attr("x", -9)
+        .attr("y", 0)
+        .attr("transform", "rotate(-90)")
+        .style("text-anchor", "end");
+
+    svg
+        .append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    var tax = svg
+        .selectAll(".tax")
+        .data(data)
+        .enter()
+        .append("g")
+        .attr("class", "tax")
+        .attr("transform", function(d, i) {
+            return "translate(" + xScaleTax(d.t) + ",0)";
+        });
+
+    tax
+        .selectAll("rect")
+        .data(function(d) {
+            return d.cv;
+        })
+        .enter()
+        .append("rect")
+        .attr("width", barWidth)
+        .attr("x", function(d) {
+            return xScaleCatvar(d.name);
+        })
+        .attr("y", function(d, i) {
+            return yScale(d.value.avgVal);
+        })
+        .attr("height", function(d) {
+            return height - yScale(d.value.avgVal);
+        })
+        .style("fill", function(d) {
+            return color(idMap[d.name]);
+        })
+        .attr("class", "bar")
+        .on("mouseover", function(d) {
+            tooltipMouseover(tooltip, idMap, d);
+        })
+        .on("mouseout", function(d) {
+            tooltip
+                .transition()
+                .duration(100)
+                .style("opacity", 0);
+        });
+
+
+    renderLegend(svg, idMap, uniqueGroupVals, color, width, legendMargin);
 }
 
 function renderDonut(abundancesObj) {
     $("#analysis-container").empty();
 
     var data = abundancesObj["abundances"];
-    uniqueGroupVals = abundancesObj["uniqueVals"].map(function(tuple) { return tuple[0]; });
+    uniqueGroupVals = abundancesObj["uniqueVals"].map(function(tuple) {
+        return tuple[0];
+    });
     idMap = abundancesObj["idMap"];
 
     var uniqueSubGroupVals = data.map(function(d) {
@@ -387,7 +553,7 @@ function renderDonut(abundancesObj) {
 
     var containerWidth = 800;
     var legendMargin = 60;
-    var legendWidth = 180;
+    var legendWidth = getLegendWidth(idMap);
     var donutDiameter = 200;
     var donutsPerRow = containerWidth / donutDiameter;
     var color = d3.scaleOrdinal(d3.schemeCategory20);
@@ -541,20 +707,41 @@ function renderDonut(abundancesObj) {
             });
 
         // Uncomment to display text on the pie segments
-//        g
-//            .append("text")
-//            .attr("transform", function(d) {
-//                return "translate(" + arc.centroid(d) + ")";
-//            })
-//            .attr("dy", ".35em")
-//            .attr("text-anchor", "middle")
-//            .attr("fill", "#333")
-//            .text(function(d) {
-//                if (d.data.o[cat] >= 0.05) {
-//                    var dArr = d.data.t.split(";");
-//                    return dArr[dArr.length - 1];
-//                }
-//            });
+        //        g
+        //            .append("text")
+        //            .attr("transform", function(d) {
+        //                return "translate(" + arc.centroid(d) + ")";
+        //            })
+        //            .attr("dy", ".35em")
+        //            .attr("text-anchor", "middle")
+        //            .attr("fill", "#333")
+        //            .text(function(d) {
+        //                if (d.data.o[cat] >= 0.05) {
+        //                    var dArr = d.data.t.split(";");
+        //                    return dArr[dArr.length - 1];
+        //                }
+        //            });
     });
 }
 
+function getLegendWidth(idMap) {
+    // Dynamically set the width by resizing to the longest legend entry
+    var maxLength = 0;
+    for (var key in idMap) {
+        if (idMap[key].length > maxLength) {
+            maxLength = idMap[key].length;
+        }
+    }
+    return 75 + 5 * maxLength;
+}
+
+function getMarginBottom(uniqueTaxas) {
+    // Dynamically set the space for the bottom axis labels by resizing to the longest label
+    var maxLength = 0;
+    uniqueTaxas.forEach(function (key) {
+        if (key.length > maxLength) {
+            maxLength = key.length;
+        }
+    });
+    return 15 + 7 * maxLength;
+}

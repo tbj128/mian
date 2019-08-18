@@ -44,9 +44,9 @@ class Composition(AnalysisBase):
             # Column 0 in metadata is the desired column
             i = 0
             while i < len(metadata_values):
-                if metadata[i] not in xAxisVals:
-                    xAxisVals[metadata[i]] = []
-                xAxisVals[metadata[i]].append(sample_labels[i])
+                if metadata_values[i] not in xAxisVals:
+                    xAxisVals[metadata_values[i]] = []
+                xAxisVals[metadata_values[i]].append(sample_labels[i])
                 i += 1
 
         # Make a sample ID to OTU table row

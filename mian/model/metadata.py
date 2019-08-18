@@ -236,7 +236,7 @@ class Metadata(object):
             metadata_map = self.get_sample_id_to_metadata_map(actual_metadata_name)
             if len(metadata_map.keys()) == 0:
                 # Check that maybe this quantile range is a gene
-                meta_vals = genes.get_multi_gene_values([actual_metadata_name])
+                meta_vals = genes.get_multi_gene_values([actual_metadata_name], sample_labels=sample_labels)
                 if len(meta_vals) == 0:
                     # No matching gene found
                     return meta_vals
@@ -262,7 +262,7 @@ class Metadata(object):
             metadata_map = self.get_sample_id_to_metadata_map(metadata_name)
             if len(metadata_map.keys()) == 0:
                 # Check that maybe this requested variable is a gene
-                meta_vals = genes.get_multi_gene_values([metadata_name])
+                meta_vals = genes.get_multi_gene_values([metadata_name], sample_labels=sample_labels)
                 return meta_vals
 
             row = 0

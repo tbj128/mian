@@ -79,7 +79,11 @@
                     <option value="Taxonomic">Taxonomic Groups</option>
                 </select>
 
-                <input type="hidden" id="plotType" value="stackedbar" />
+                <label class="control-label">Bar Chart Type <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate the type of bar chart to render, whether it's a stacked bar chart (for easy comparisons between groups) or side-by-side (for intra-group comparison)" data-trigger="hover"></i></label>
+                <select id="plotType" name="plotType" class="form-control">
+                    <option value="stackedbar">Stacked Bar</option>
+                    <option value="sidebyside">Side-by-Side</option>
+                </select>
               </div>
             </div>
         </div>

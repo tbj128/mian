@@ -81,7 +81,7 @@ class Genes(object):
 
         return base, new_headers, new_sample_labels
 
-    def get_multi_gene_values(self, gene_list):
+    def get_multi_gene_values(self, gene_list, sample_labels=None):
         """
         Gets the summed values of the gene list in the order of the sample labels
         :param gene_list:
@@ -95,6 +95,7 @@ class Genes(object):
         if len(self.gene_labels) == 0:
             self.gene_labels = DataIO.tsv_to_table(self.user_id, self.pid, GENE_LABELS_FILENAME)
         headers = self.gene_labels[0]
+        gene_sample_labels = self.gene_labels[1]
         cols_of_interest = {}
         j = 0
         while j < len(headers):
@@ -104,15 +105,26 @@ class Genes(object):
         if len(cols_of_interest) == 0:
             return []
 
-        vals = []
+        vals = {}
 
+        i = 0
         for row in self.gene_table:
             tot = 0
             for c in cols_of_interest.keys():
                 tot += float(row[c])
-            vals.append(tot)
+            vals[gene_sample_labels[i]] = tot
+            i += 1
 
-        return vals
+        if sample_labels is not None:
+            output_vals = []
+            for sample_label in sample_labels:
+                if sample_label in vals:
+                    output_vals.append(vals[sample_label])
+                else:
+                    output_vals.append(0)
+        else:
+            output_vals = list(vals.keys())
+        return output_vals
 
 
     def get_genes_of_interest(self, labels_of_interest):

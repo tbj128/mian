@@ -35,7 +35,7 @@ class CorrelationsSelection(AnalysisBase):
         if against == "gene":
             genes = Genes(user_request.user_id, user_request.pid)
             gene_list = expvar.split(",")
-            against_vals = genes.get_multi_gene_values(gene_list)
+            against_vals = genes.get_multi_gene_values(gene_list, sample_labels=sample_labels)
         elif against == "metadata":
             metadata = table.get_sample_metadata()
             metadata_values = metadata.get_metadata_column_table_order(sample_labels, expvar)

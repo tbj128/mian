@@ -78,9 +78,9 @@ class Correlations(AnalysisBase):
         if corrvar1 == "mian-gene" or corrvar2 == "mian-gene":
             genes = Genes(user_request.user_id, user_request.pid)
             if corrvar1 == "mian-gene":
-                gene_vals_1 = genes.get_multi_gene_values(taxonomiesOfInterest1)
+                gene_vals_1 = genes.get_multi_gene_values(taxonomiesOfInterest1, sample_labels=sample_labels)
             if corrvar2 == "mian-gene":
-                gene_vals_2 = genes.get_multi_gene_values(taxonomiesOfInterest2)
+                gene_vals_2 = genes.get_multi_gene_values(taxonomiesOfInterest2, sample_labels=sample_labels)
 
         corrArr = []
         corrValArr1 = []

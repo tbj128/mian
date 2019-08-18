@@ -135,34 +135,17 @@ class OTUTable(object):
             logger.info("Sample filtering not enabled or all samples are selected")
             return base, headers, sample_labels
 
-        metadata_map = self.sample_metadata.get_sample_id_to_metadata_map(catvar)
-
-        samples = {}
-
-        row = 0
-        while row < len(base):
-            sample_id = sample_labels[row]
-            if sample_id in metadata_map:
-                if role == "Include":
-                    if metadata_map[sample_id] in values:
-                        samples[sample_id] = 1
-                else:
-                    if metadata_map[sample_id] not in values:
-                        samples[sample_id] = 1
-
-            row += 1
-
-        if samples is None or samples == "":
-            samples = []
+        metadata_vals = self.sample_metadata.get_metadata_column_table_order(sample_labels, catvar)
 
         new_otu_table = []
         new_sample_labels = []
 
+        values = set(values)
         num_filtered_samples = 0
         i = 0
         while i < len(base):
             sample_id = sample_labels[i]
-            if sample_id in samples:
+            if (metadata_vals[i] in values and role == "Include") or (metadata_vals[i] not in values and role == "Exclude"):
                 new_otu_table.append(base[i])
                 new_sample_labels.append(sample_id)
             else:
@@ -271,7 +254,6 @@ class OTUTable(object):
             func = partial(process_row_aggregate_otu_table_at_taxonomic_level, taxonomies, taxonomy_to_cols)
             aggregated_base = pool.map(func, base)
             aggregated_headers = taxonomies
-            logger.info("Agg Table cols = " + str(len(aggregated_base[0])) + " header cols = " + str(len(aggregated_headers)))
             return aggregated_base, aggregated_headers, sample_labels
 
     def aggregate_otu_table_at_taxonomic_level_np(self, base, headers, sample_labels, user_request):

@@ -12,6 +12,7 @@
 from scipy import stats, math
 from mian.analysis.analysis_base import AnalysisBase
 
+from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.model.otu_table import OTUTable
 from mian.model.metadata import Metadata
 import numpy as np
@@ -31,10 +32,11 @@ class Correlations(AnalysisBase):
         base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
         metadata = table.get_sample_metadata()
+        phylogenetic_tree = table.get_phylogenetic_tree()
 
-        return self.analyse(user_request, base, headers, sample_labels, metadata)
+        return self.analyse(user_request, base, headers, sample_labels, metadata, phylogenetic_tree)
 
-    def analyse(self, user_request, base, headers, sample_labels, metadata):
+    def analyse(self, user_request, base, headers, sample_labels, metadata, phylogenetic_tree):
         base = np.array(base, dtype=float)
 
         level = int(user_request.level)
@@ -45,6 +47,7 @@ class Correlations(AnalysisBase):
         samplestoshow = user_request.get_custom_attr("samplestoshow")
         taxonomiesOfInterest1 = json.loads(user_request.get_custom_attr("corrvar1SpecificTaxonomies"))
         taxonomiesOfInterest2 = json.loads(user_request.get_custom_attr("corrvar2SpecificTaxonomies"))
+        taxonomiesOfInterest3 = json.loads(user_request.get_custom_attr("sizevarSpecificTaxonomies")) # Currently limited to only alpha diversity
 
         colsOfInterest1 = []
         if corrvar1 == "mian-taxonomy-abundance":
@@ -82,6 +85,7 @@ class Correlations(AnalysisBase):
                 gene_vals_2 = genes.get_multi_gene_values(taxonomiesOfInterest2, sample_labels=sample_labels)
 
 
+        # Get out any metadata that might be required later on
         metadata_request_arr = ["", "", "", ""]
         if not (corrvar1 == "None" or corrvar1 == "mian-taxonomy-abundance" or corrvar1 == "mian-abundance" or corrvar1 == "mian-max" or corrvar1 == "mian-gene"):
             metadata_request_arr[0] = corrvar1
@@ -93,9 +97,25 @@ class Correlations(AnalysisBase):
             metadata_request_arr[2] = colorvar
 
         if not (sizevar == "None" or sizevar == "mian-taxonomy-abundance" or sizevar == "mian-abundance" or sizevar == "mian-max" or sizevar == "mian-gene"):
-            metadata_request_arr[2] = sizevar
+            metadata_request_arr[3] = sizevar
         otuMetadata, _, _ = metadata.get_as_table_in_table_order(sample_labels, metadata_request_arr, genes=genes)
 
+
+        alpha_params = []
+        alpha_vals = []
+        if corrvar1 == "mian-alpha":
+            alpha_params.append(taxonomiesOfInterest1[0])
+            alpha_params.append(taxonomiesOfInterest1[1])
+        if corrvar2 == "mian-alpha":
+            alpha_params.append(taxonomiesOfInterest2[0])
+            alpha_params.append(taxonomiesOfInterest2[1])
+        if sizevar == "mian-alpha":
+            alpha_params.append(taxonomiesOfInterest3[0])
+            alpha_params.append(taxonomiesOfInterest3[1])
+
+        if corrvar1 == "mian-alpha" or corrvar2 == "mian-alpha" or sizevar == "mian-alpha":
+            alpha = AlphaDiversity()
+            alpha_vals = alpha.calculate_alpha_diversity(base, sample_labels, headers, phylogenetic_tree, alpha_params[1], alpha_params[0])
 
         corrArr = []
         corrValArr1 = []
@@ -103,7 +123,6 @@ class Correlations(AnalysisBase):
 
         i = 0
         while i < len(base):
-
             maxAbundance = np.max(base[i, :]) if corrvar1 == "mian-max" or corrvar2 == "mian-max" else 0
             totalAbundance = np.sum(base[i, :]) if corrvar1 == "mian-abundance" or corrvar2 == "mian-abundance" else 0
 
@@ -120,6 +139,8 @@ class Correlations(AnalysisBase):
                     corrVal1 = maxAbundance
                 elif corrvar1 == "mian-gene":
                     corrVal1 = gene_vals_1[i]
+                elif corrvar1 == "mian-alpha":
+                    corrVal1 = alpha_vals[i]
                 else:
                     corrVal1 = otuMetadata[i][0]
 
@@ -131,6 +152,8 @@ class Correlations(AnalysisBase):
                     corrVal2 = maxAbundance
                 elif corrvar2 == "mian-gene":
                     corrVal2 = gene_vals_2[i]
+                elif corrvar2 == "mian-alpha":
+                    corrVal2 = alpha_vals[i]
                 else:
                     corrVal2 = otuMetadata[i][1]
 
@@ -154,6 +177,8 @@ class Correlations(AnalysisBase):
                     sizeVal = totalAbundance
                 elif sizevar == "mian-max":
                     sizeVal = maxAbundance
+                elif sizevar == "mian-alpha":
+                    sizeVal = alpha_vals[i]
                 elif sizevar == "None":
                     sizeVal = 1
                 else:

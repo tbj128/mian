@@ -14,7 +14,10 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlations" data-content="Draws a correlation graph between two metadata values and/or taxonomic abundances. Correlations use the Pearson correlation coefficient." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <i
+            class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlations"
+            data-content="Draws a correlation graph between two metadata values and/or taxonomic abundances. Correlations use the Pearson correlation coefficient."
+            data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -25,82 +28,176 @@
 
         <div class="panel panel-default">
             <div class="panel-heading" role="tab" id="headingAnalysisParameters">
-              <h4 class="panel-title">
-                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
-                  Visualization Parameters
-                </a>
-              </h4>
+                <h4 class="panel-title">
+                    <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters"
+                       aria-expanded="true" aria-controls="analysisParameters">
+                        Visualization Parameters
+                    </a>
+                </h4>
             </div>
-            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
-              <div class="panel-body">
+            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel"
+                 aria-labelledby="headingAnalysisParameters">
+                <div class="panel-body">
 
-                <div id="taxonomic-level">
-                    <label id="taxonomic-level-label" class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
-                    <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-                        <option value="Kingdom">Kingdom</option>
-                        <option value="Phylum">Phylum</option>
-                        <option value="Class">Class</option>
-                        <option value="Order">Order</option>
-                        <option value="Family">Family</option>
-                        <option value="Genus">Genus</option>
-                        <option value="Species">Species</option>
-                        <option value="OTU" selected>OTU</option>
+                    <div id="taxonomic-level">
+                        <label id="taxonomic-level-label" class="control-label">Taxonomic Level <i
+                                class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level"
+                                data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied."
+                                data-trigger="hover"></i></label>
+                        <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+                            <option value="Kingdom">Kingdom</option>
+                            <option value="Phylum">Phylum</option>
+                            <option value="Class">Class</option>
+                            <option value="Order">Order</option>
+                            <option value="Family">Family</option>
+                            <option value="Genus">Genus</option>
+                            <option value="Species">Species</option>
+                            <option value="OTU" selected>OTU</option>
+                        </select>
+                    </div>
+
+                    <hr/>
+
+                    <label class="control-label">Correlation Variable 1 (X-Axis) <i class="fa fa-info-circle"
+                                                                                    data-toggle="popover"
+                                                                                    data-title="Correlation Variable 1"
+                                                                                    data-content="Determines which correlation variable should be used on the X-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
+                    <select id="corrvar1" name="corrvar1" class="form-control">
+                    </select>
+
+                    <div id="specific-taxonomy-container-1">
+                        <label id="specific-taxonomy-label-1" class="control-label">OTUs and Taxonomic Groups to Show <i
+                                class="fa fa-info-circle" data-toggle="popover"
+                                data-title="Select OTUs and Taxonomic Groups"
+                                data-content="Choose the OTUs or taxonomic groups whose abundance should be used in the correlation."
+                                data-trigger="hover"></i></label>
+
+                        <div id="taxonomy-specific-typeahead-wrapper-1">
+                            <input id="specific-taxonomy-typeahead-1" type="text" data-background="" value=""/>
+                        </div>
+                    </div>
+
+                    {% with typeahead_index=1 %}
+                    {% include "container-gene-input.html" %}
+                    {% endwith %}
+
+                    <div id="alpha-diversity-container-1" style="display:none;">
+                        <label class="control-label">Diversity Context <i class="fa fa-info-circle"
+                                                                          data-toggle="popover"
+                                                                          data-title="Diversity Context"
+                                                                          data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>OTU/Taxonomic Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
+                        <select id="alphaContext1" name="alphaContext1" class="form-control alpha-context">
+                            <option value="alpha">Diversity Index</option>
+                            <option value="evenness">Evenness</option>
+                            <option value="speciesnumber">OTU/Taxonomic Richness</option>
+                        </select>
+
+                        <label class="control-label">Diversity Index <i class="fa fa-info-circle"
+                                                                        data-toggle="popover"
+                                                                        data-title="Diversity Index"
+                                                                        data-content="Indicate the method by which the alpha diversity should be calculated. More information on the different diversity types can be found <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a><br /><br />Faith's Phylogenetic Diversity is a taxonomic richness analogue based on the phylogenetic tree"></i></label>
+                        <select id="alphaType1" name="alphaType1" class="form-control alpha-type">
+                            <option value="shannon">Shannon</option>
+                            <option value="simpson">Simpson</option>
+                            <option value="invsimpson">Inverse Simpson</option>
+                            <option value="faith_pd">Faith's Phylogenetic Diversity</option>
+                        </select>
+                    </div>
+
+                    <hr/>
+
+                    <label class="control-label">Correlation Variable 2 (Y-Axis) <i class="fa fa-info-circle"
+                                                                                    data-toggle="popover"
+                                                                                    data-title="Correlation Variable 2"
+                                                                                    data-content="Determines which correlation variable should be used on the Y-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
+                    <select id="corrvar2" name="corrvar2" class="form-control">
+                    </select>
+
+                    <div id="specific-taxonomy-container-2">
+                        <label id="specific-taxonomy-label-2" class="control-label">OTUs and Taxonomic Groups to Show <i
+                                class="fa fa-info-circle" data-toggle="popover"
+                                data-title="Select OTUs and Taxonomic Groups"
+                                data-content="Choose the OTUs or taxonomic groups whose abundance should be used in the correlation."
+                                data-trigger="hover"></i></label>
+
+                        <div id="taxonomy-specific-typeahead-wrapper-2">
+                            <input id="specific-taxonomy-typeahead-2" type="text" data-background="" value=""/>
+                        </div>
+                    </div>
+
+                    {% with typeahead_index=2 %}
+                    {% include "container-gene-input.html" %}
+                    {% endwith %}
+
+                    <div id="alpha-diversity-container-2" style="display:none;">
+                        <label class="control-label">Diversity Context <i class="fa fa-info-circle"
+                                                                          data-toggle="popover"
+                                                                          data-title="Diversity Context"
+                                                                          data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>OTU/Taxonomic Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
+                        <select id="alphaContext2" name="alphaContext2" class="form-control alpha-context">
+                            <option value="alpha">Diversity Index</option>
+                            <option value="evenness">Evenness</option>
+                            <option value="speciesnumber">OTU/Taxonomic Richness</option>
+                        </select>
+
+                        <label class="control-label">Diversity Index <i class="fa fa-info-circle"
+                                                                        data-toggle="popover"
+                                                                        data-title="Diversity Index"
+                                                                        data-content="Indicate the method by which the alpha diversity should be calculated. More information on the different diversity types can be found <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a><br /><br />Faith's Phylogenetic Diversity is a taxonomic richness analogue based on the phylogenetic tree"></i></label>
+                        <select id="alphaType2" name="alphaType2" class="form-control alpha-type">
+                            <option value="shannon">Shannon</option>
+                            <option value="simpson">Simpson</option>
+                            <option value="invsimpson">Inverse Simpson</option>
+                            <option value="faith_pd">Faith's Phylogenetic Diversity</option>
+                        </select>
+                    </div>
+
+                    <hr/>
+
+                    <label class="control-label">Color Variable <i class="fa fa-info-circle" data-toggle="popover"
+                                                                   data-title="Color Variable"
+                                                                   data-content="Determines which metadata parameter should control the color of the dots in the correlation"></i></label>
+                    <select id="colorvar" name="colorvar" class="form-control">
+                    </select>
+
+                    <label class="control-label">Size Variable <i class="fa fa-info-circle" data-toggle="popover"
+                                                                  data-title="Size Variable"
+                                                                  data-content="Determines which metadata parameter should control the size of the dots in the correlation"></i></label>
+                    <select id="sizevar" name="sizevar" class="form-control">
+                    </select>
+
+                    <div id="alpha-diversity-container-3" style="display:none;">
+                        <label class="control-label">Diversity Context (Size Variable) <i class="fa fa-info-circle"
+                                                                          data-toggle="popover"
+                                                                          data-title="Diversity Context"
+                                                                          data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>OTU/Taxonomic Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
+                        <select id="alphaContext3" name="alphaContext3" class="form-control alpha-context">
+                            <option value="alpha">Diversity Index</option>
+                            <option value="evenness">Evenness</option>
+                            <option value="speciesnumber">OTU/Taxonomic Richness</option>
+                        </select>
+
+                        <label class="control-label">Diversity Index (Size Variable) <i class="fa fa-info-circle"
+                                                                        data-toggle="popover"
+                                                                        data-title="Diversity Index"
+                                                                        data-content="Indicate the method by which the alpha diversity should be calculated. More information on the different diversity types can be found <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a><br /><br />Faith's Phylogenetic Diversity is a taxonomic richness analogue based on the phylogenetic tree"></i></label>
+                        <select id="alphaType3" name="alphaType3" class="form-control alpha-type">
+                            <option value="shannon">Shannon</option>
+                            <option value="simpson">Simpson</option>
+                            <option value="invsimpson">Inverse Simpson</option>
+                            <option value="faith_pd">Faith's Phylogenetic Diversity</option>
+                        </select>
+                    </div>
+
+                    <label class="control-label">Samples to Show <i class="fa fa-info-circle" data-toggle="popover"
+                                                                    data-title="Samples to Show"
+                                                                    data-content="Determines which sample types should be displayed in the correlation graph"></i></label>
+                    <select id="samplestoshow" name="samplestoshow" class="form-control">
+                        <option value="both">All Samples</option>
+                        <option value="nonzero">Non-Zero Value Samples</option>
+                        <option value="zero">Zero Value Samples</option>
                     </select>
                 </div>
-
-                <hr />
-
-                <label class="control-label">Correlation Variable 1 (X-Axis) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which correlation variable should be used on the X-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
-                <select id="corrvar1" name="corrvar1" class="form-control">
-                </select>
-
-                <div id="specific-taxonomy-container-1">
-                    <label id="specific-taxonomy-label-1" class="control-label">OTUs and Taxonomic Groups to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select OTUs and Taxonomic Groups" data-content="Choose the OTUs or taxonomic groups whose abundance should be used in the correlation." data-trigger="hover"></i></label>
-
-                    <div id="taxonomy-specific-typeahead-wrapper-1">
-                        <input id="specific-taxonomy-typeahead-1" type="text" data-background="" value="" />
-                    </div>
-                </div>
-
-                {% with typeahead_index=1 %}
-                    {% include "container-gene-input.html" %}
-                {% endwith %}
-
-                <hr />
-
-                <label class="control-label">Correlation Variable 2 (Y-Axis)  <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which correlation variable should be used on the Y-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
-                <select id="corrvar2" name="corrvar2" class="form-control">
-                </select>
-
-                <div id="specific-taxonomy-container-2">
-                    <label id="specific-taxonomy-label-2" class="control-label">OTUs and Taxonomic Groups to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select OTUs and Taxonomic Groups" data-content="Choose the OTUs or taxonomic groups whose abundance should be used in the correlation." data-trigger="hover"></i></label>
-
-                    <div id="taxonomy-specific-typeahead-wrapper-2">
-                        <input id="specific-taxonomy-typeahead-2" type="text" data-background="" value="" />
-                    </div>
-                </div>
-
-                {% with typeahead_index=2 %}
-                    {% include "container-gene-input.html" %}
-                {% endwith %}
-
-                <hr />
-
-                <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the correlation"></i></label>
-                <select id="colorvar" name="colorvar" class="form-control">
-                </select>
-
-                <label class="control-label">Size Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Size Variable" data-content="Determines which metadata parameter should control the size of the dots in the correlation"></i></label>
-                <select id="sizevar" name="sizevar" class="form-control">
-                </select>
-
-                <label class="control-label">Samples to Show  <i class="fa fa-info-circle" data-toggle="popover" data-title="Samples to Show" data-content="Determines which sample types should be displayed in the correlation graph"></i></label>
-                <select id="samplestoshow" name="samplestoshow" class="form-control">
-                    <option value="both">All Samples</option>
-                    <option value="nonzero">Non-Zero Value Samples</option>
-                    <option value="zero">Zero Value Samples</option>
-                </select>
-              </div>
             </div>
         </div>
     </div>
@@ -116,7 +213,8 @@
             <div class="col-md-9">
                 <h3>Add a Taxonomic Group or OTU To Display</h3>
                 <p>
-                    No results were returned. This can happen if you have not added a taxonomic group or OTU (if the correlation variable is set to taxonomic abundance) or if you have applied a too strict filter.
+                    No results were returned. This can happen if you have not added a taxonomic group or OTU (if the
+                    correlation variable is set to taxonomic abundance) or if you have applied a too strict filter.
                 </p>
             </div>
         </div>

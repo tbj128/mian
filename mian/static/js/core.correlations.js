@@ -22,6 +22,7 @@ var initialCorrvar1 = getParameterByName("corrvar1");
 var initialCorrvar2 = getParameterByName("corrvar2");
 var initialCorrvar1SpecificTaxonomies = getParameterByName("corrvar1SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar1SpecificTaxonomies")) : [];
 var initialCorrvar2SpecificTaxonomies = getParameterByName("corrvar2SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar2SpecificTaxonomies")) : [];
+var initialSizeVarSpecificTaxonomies = getParameterByName("sizevarSpecificTaxonomies") ? JSON.parse(getParameterByName("sizevarSpecificTaxonomies")) : [];
 var initialColorVar = getParameterByName("colorvar");
 var initialSizeVar = getParameterByName("sizevar");
 function initializeFields() {
@@ -47,6 +48,9 @@ function createSpecificListeners() {
             $.when(loadGeneSelector(1)).done(function() {
                 updateAnalysis();
             });
+        } else if ($("#corrvar1").val() === "mian-alpha") {
+            showAlphaInput(1);
+            updateAnalysis();
         } else {
             hideInput(1);
             updateAnalysis();
@@ -64,6 +68,9 @@ function createSpecificListeners() {
             $.when(loadGeneSelector(2)).done(function() {
                 updateAnalysis();
             });
+        } else if ($("#corrvar2").val() === "mian-alpha") {
+            showAlphaInput(2);
+            updateAnalysis();
         } else {
             hideInput(2);
             updateAnalysis();
@@ -75,10 +82,23 @@ function createSpecificListeners() {
     });
 
     $("#sizevar").change(function() {
+        if ($("#sizevar").val() === "mian-alpha") {
+            $("#alpha-diversity-container-3").show();
+        } else {
+            $("#alpha-diversity-container-3").hide();
+        }
         updateAnalysis();
     });
 
     $("#samplestoshow").change(function() {
+        updateAnalysis();
+    });
+
+    $(".alpha-context").change(function() {
+        updateAnalysis();
+    });
+
+    $(".alpha-type").change(function() {
         updateAnalysis();
     });
 
@@ -143,25 +163,50 @@ function customCatVarValueLoading() {
         loadGeneSelector(2);
 
         if (initialCorrvar1SpecificTaxonomies) {
-            initialCorrvar1SpecificTaxonomies.forEach(function(val) {
+            initialCorrvar1SpecificTaxonomies.forEach(function(val, i) {
                 if ($("#corrvar1").val() === "mian-taxonomy-abundance") {
                     $("#specific-taxonomy-typeahead-1").tagsinput('add', val);
                 } else if ($("#corrvar1").val() === "mian-gene") {
                     $("#gene-typeahead-1").tagsinput('add', val);
+                } else if ($("#corrvar1").val() === "mian-alpha") {
+                    if (i == 0) {
+                        $("#alphaContext1").val(val);
+                    } else {
+                        $("#alphaType1").val(val);
+                    }
                 }
             });
             initialCorrvar1SpecificTaxonomies = null;
         }
 
         if (initialCorrvar2SpecificTaxonomies) {
-            initialCorrvar2SpecificTaxonomies.forEach(function(val) {
+            initialCorrvar2SpecificTaxonomies.forEach(function(val, i) {
                 if ($("#corrvar2").val() === "mian-taxonomy-abundance") {
                     $("#specific-taxonomy-typeahead-2").tagsinput('add', val);
                 } else if ($("#corrvar2").val() === "mian-gene") {
                     $("#gene-typeahead-2").tagsinput('add', val);
+                } else if ($("#corrvar2").val() === "mian-alpha") {
+                    if (i == 0) {
+                        $("#alphaContext2").val(val);
+                    } else {
+                        $("#alphaType2").val(val);
+                    }
                 }
             });
             initialCorrvar2SpecificTaxonomies = null;
+        }
+
+        if (initialSizeVarSpecificTaxonomies) {
+            initialSizeVarSpecificTaxonomies.forEach(function(val, i) {
+                if ($("#sizevar").val() === "mian-alpha") {
+                    if (i == 0) {
+                        $("#alphaContext3").val(val);
+                    } else {
+                        $("#alphaType3").val(val);
+                    }
+                }
+            });
+            initialSizeVarSpecificTaxonomies = null;
         }
     });
 }
@@ -257,6 +302,8 @@ function updateAnalysis() {
         corrvar1SpecificTaxonomies = $("#gene-typeahead-1").val();
     } else if (corrvar1 === "mian-taxonomy-abundance") {
         corrvar1SpecificTaxonomies = $("#specific-taxonomy-typeahead-1").val();
+    } else if (corrvar1 === "mian-alpha") {
+        corrvar1SpecificTaxonomies = $("#alphaContext1").val() + "," + $("#alphaType1").val();
     }
 
     var corrvar2SpecificTaxonomies = "";
@@ -264,8 +311,14 @@ function updateAnalysis() {
         corrvar2SpecificTaxonomies = $("#gene-typeahead-2").val();
     } else if (corrvar2 === "mian-taxonomy-abundance") {
         corrvar2SpecificTaxonomies = $("#specific-taxonomy-typeahead-2").val();
+    } else if (corrvar2 === "mian-alpha") {
+        corrvar2SpecificTaxonomies = $("#alphaContext2").val() + "," + $("#alphaType2").val();
     }
 
+    var sizevarSpecificTaxonomies = "";
+    if (sizevar === "mian-alpha") {
+        sizevarSpecificTaxonomies = $("#alphaContext3").val() + "," + $("#alphaType3").val();
+    }
 
 
     if (corrvar1SpecificTaxonomies === "") {
@@ -284,6 +337,15 @@ function updateAnalysis() {
         );
     }
 
+    if (sizevarSpecificTaxonomies === "") {
+        sizevarSpecificTaxonomies = JSON.stringify([]);
+    } else {
+        sizevarSpecificTaxonomies = JSON.stringify(
+            sizevarSpecificTaxonomies.split(",")
+        );
+    }
+
+
     var data = {
         pid: $("#project").val(),
         taxonomyFilterCount: getLowCountThreshold(),
@@ -301,7 +363,8 @@ function updateAnalysis() {
         sizevar: sizevar,
         samplestoshow: samplestoshow,
         corrvar1SpecificTaxonomies: corrvar1SpecificTaxonomies,
-        corrvar2SpecificTaxonomies: corrvar2SpecificTaxonomies
+        corrvar2SpecificTaxonomies: corrvar2SpecificTaxonomies,
+        sizevarSpecificTaxonomies: sizevarSpecificTaxonomies
     };
 
     setGetParameters(data);
@@ -353,6 +416,9 @@ function updateCorrVar(result) {
     addCorrOption("corrvar1", "mian-gene", "Gene Expression");
     addCorrOption("corrvar2", "mian-gene", "Gene Expression");
 
+    addCorrOption("corrvar1", "mian-alpha", "Alpha Diversity");
+    addCorrOption("corrvar2", "mian-alpha", "Alpha Diversity");
+
     for (var i = 0; i < numericHeaders.length; i++) {
         if (i != 0) {
             addCorrOption("corrvar1", numericHeaders[i], numericHeaders[i]);
@@ -360,6 +426,7 @@ function updateCorrVar(result) {
         }
         addCorrOption("sizevar", numericHeaders[i], numericHeaders[i]); // Optional field so includes the "None"
     }
+    addCorrOption("sizevar", "mian-alpha", "Alpha Diversity");
 
     for (var i = 0; i < allHeaders.length; i++) {
         addCorrOption("colorvar", allHeaders[i], allHeaders[i]);
@@ -374,9 +441,12 @@ function updateCorrVar(result) {
             showTaxonomyInput(1);
         } else if ($("#corrvar1").val() === "mian-gene") {
             showGeneInput(1);
+        } else if ($("#corrvar1").val() === "mian-alpha") {
+            showAlphaInput(1);
         } else {
             hideInput(1);
         }
+        initialCorrvar1 = null;
     }
 
     if (initialCorrvar2) {
@@ -385,9 +455,12 @@ function updateCorrVar(result) {
             showTaxonomyInput(2);
         } else if ($("#corrvar2").val() === "mian-gene") {
             showGeneInput(2);
+        } else if ($("#corrvar2").val() === "mian-alpha") {
+            showAlphaInput(2);
         } else {
             hideInput(2);
         }
+        initialCorrvar2 = null;
     }
 
     if (initialColorVar) {
@@ -397,6 +470,9 @@ function updateCorrVar(result) {
 
     if (initialSizeVar) {
         $("#sizevar").val(initialSizeVar);
+        if ($("#sizevar").val() === "mian-alpha") {
+            $("#alpha-diversity-container-3").show();
+        }
         initialSizeVar = null;
     }
 }
@@ -423,18 +499,28 @@ function showTaxonomyInput(index) {
     $("#specific-taxonomy-container-" + index).show();
     $("#gene-input-container-" + index).hide();
     $("#taxonomic-level-container").show();
+    $("#alpha-diversity-container-" + index).hide();
 }
 
 function showGeneInput(index) {
     $("#specific-taxonomy-container-" + index).hide();
     $("#gene-input-container-" + index).show();
     $("#taxonomic-level-container").hide();
+    $("#alpha-diversity-container-" + index).hide();
+}
+
+function showAlphaInput(index) {
+    $("#specific-taxonomy-container-" + index).hide();
+    $("#gene-input-container-" + index).hide();
+    $("#taxonomic-level-container").hide();
+    $("#alpha-diversity-container-" + index).show();
 }
 
 function hideInput(index) {
     $("#specific-taxonomy-container-" + index).hide();
     $("#gene-input-container-" + index).hide();
     $("#taxonomic-level-container").hide();
+    $("#alpha-diversity-container-" + index).hide();
 }
 
 function getInputValsAsFormattedString(index) {
@@ -442,7 +528,9 @@ function getInputValsAsFormattedString(index) {
     if ($("#corrvar" + index).val() === "mian-taxonomy-abundance") {
         val = $("#specific-taxonomy-typeahead-" + index).val();
     } else if ($("#corrvar" + index).val() === "mian-gene") {
-        val = $("#gene-typeahead-" + index).val()
+        val = $("#gene-typeahead-" + index).val();
+    } else if ($("#corrvar" + index).val() === "mian-alpha") {
+        val = $("#corrvar" + index + " option:selected").text();
     }
     if (val.length > 36) {
         return val.substring(0, 36) + "...";

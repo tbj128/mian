@@ -1063,6 +1063,7 @@ def getCorrelations(user_request, req):
     user_request.set_custom_attr("samplestoshow", req.form['samplestoshow'])
     user_request.set_custom_attr("corrvar1SpecificTaxonomies", req.form['corrvar1SpecificTaxonomies'])
     user_request.set_custom_attr("corrvar2SpecificTaxonomies", req.form['corrvar2SpecificTaxonomies'])
+    user_request.set_custom_attr("sizevarSpecificTaxonomies", req.form['sizevarSpecificTaxonomies'])
 
     plugin = Correlations()
     abundances = plugin.run(user_request)

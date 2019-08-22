@@ -54,15 +54,14 @@ class Metadata(object):
 
             j = 0
             while j < len(metadata_names):
-                if metadata_names[j] != "":
-                    col = self.get_metadata_column_table_order(sample_labels, metadata_names[j], genes=genes, quantile=quantile)
-                    i = 0
-                    while i < len(sample_labels):
-                        if len(col) > 0:
-                            new_metadata_table[i].append(col[i])
-                        else:
-                            new_metadata_table[i].append("")
-                        i += 1
+                col = self.get_metadata_column_table_order(sample_labels, metadata_names[j], genes=genes, quantile=quantile)
+                i = 0
+                while i < len(sample_labels):
+                    if metadata_names[j] != "" and len(col) > 0:
+                        new_metadata_table[i].append(col[i])
+                    else:
+                        new_metadata_table[i].append("")
+                    i += 1
                 j += 1
         else:
             # Return the entire metadata table

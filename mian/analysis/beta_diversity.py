@@ -112,16 +112,14 @@ class BetaDiversity(AnalysisBase):
         if user_request.get_custom_attr("strata").lower() != "none":
             strata_values = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.get_custom_attr("strata"))
 
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
-
         phylogenetic_tree = table.get_phylogenetic_tree()
 
         if user_request.get_custom_attr("api").lower() == "beta":
-            return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree)
+            return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, phylogenetic_tree)
         else:
-            return self.analyse_permanova(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_to_metadata_map)
+            return self.analyse_permanova(user_request, otu_table, headers, sample_labels, metadata_values, strata_values)
 
-    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, sample_ids_from_metadata, phylogenetic_tree):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, phylogenetic_tree):
         if len(metadata_values) == 0:
             raise ValueError("Beta diversity can only be used when there are at least two groups to compare between")
 
@@ -138,9 +136,7 @@ class BetaDiversity(AnalysisBase):
             colVals = []
             row = 0
             while row < len(otu_table):
-                sampleID = sample_labels[row]
-                if sampleID in sample_ids_from_metadata:
-                    colVals.append(otu_table[row][col])
+                colVals.append(otu_table[row][col])
                 row += 1
             allOTUs.append((headers[col], robjects.FloatVector(colVals)))
             col += 1
@@ -226,7 +222,7 @@ class BetaDiversity(AnalysisBase):
             abundancesObj["dispersions"] = ""
         return abundancesObj
 
-    def analyse_permanova(self, user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_from_metadata):
+    def analyse_permanova(self, user_request, otu_table, headers, sample_labels, metadata_values, strata_values):
 
         print("Starting PERMANOVA")
         groups = robjects.FactorVector(robjects.StrVector(metadata_values))
@@ -238,9 +234,7 @@ class BetaDiversity(AnalysisBase):
             colVals = []
             row = 0
             while row < len(otu_table):
-                sampleID = sample_labels[row]
-                if sampleID in sample_ids_from_metadata:
-                    colVals.append(otu_table[row][col])
+                colVals.append(otu_table[row][col])
                 row += 1
             allOTUs.append((headers[col], robjects.FloatVector(colVals)))
             col += 1

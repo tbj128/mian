@@ -1,6 +1,5 @@
 import json
 
-from mian.core.constants import SAMPLE_METADATA_FILENAME
 from mian.analysis.composition_heatmap import CompositionHeatmap
 from tests.analysis.analysis_test_utils import AnalysisTestUtils
 import unittest

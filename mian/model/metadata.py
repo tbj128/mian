@@ -236,7 +236,7 @@ class Metadata(object):
             # Can be either sample metadata or gene expression quantile range
             actual_metadata_name = metadata_name.split(" (Quantile Range)")[0]
 
-            metadata_map = self.get_sample_id_to_metadata_map(actual_metadata_name)
+            metadata_map = self.__get_sample_id_to_metadata_map(actual_metadata_name)
             if len(metadata_map.keys()) == 0:
                 # Check that maybe this quantile range is a gene
                 meta_vals = genes.get_multi_gene_values([actual_metadata_name], sample_labels=sample_labels)
@@ -262,7 +262,7 @@ class Metadata(object):
                             transformed_meta_vals.append(quantile["displayName"])
                 return transformed_meta_vals
         else:
-            metadata_map = self.get_sample_id_to_metadata_map(metadata_name)
+            metadata_map = self.__get_sample_id_to_metadata_map(metadata_name)
             if len(metadata_map.keys()) == 0:
                 # Check that maybe this requested variable is a gene
                 meta_vals = genes.get_multi_gene_values([metadata_name], sample_labels=sample_labels)
@@ -276,7 +276,7 @@ class Metadata(object):
         return meta_vals
 
 
-    def get_sample_id_to_metadata_map(self, metadata_name):
+    def __get_sample_id_to_metadata_map(self, metadata_name):
         """
         Returns a map of sample IDs to metadata values
         :param meta_col:
@@ -335,71 +335,3 @@ class Metadata(object):
                 i += 1
         return list(unique_vals.keys())
 
-
-
-    #########
-
-
-
-
-    def get_metadata_samples(self):
-        """
-        Gets the sample names that are in the metadata file in order of the metadata file
-        :return:
-        """
-        samples = []
-        samplesUnique = {}
-        i = 1
-        while i < len(self.metadata):
-            if self.metadata[i][0] not in samplesUnique:
-                samplesUnique[self.metadata[i][0]] = 1
-                samples.append(self.metadata[i][0])
-            i += 1
-        return samples
-
-
-    def get_metadata_headers_with_metadata(self):
-        """
-        Gets the metadata headers with the metadata file itself
-        :return:
-        """
-        headers = []
-        i = 1
-        while i < len(self.metadata[0]):
-            headers.append(self.metadata[0][i])
-            i += 1
-        return headers, self.metadata
-
-
-
-
-    def map_id_to_metadata(self, meta_col):
-        """
-        Returns a map of sample IDs to metadata values
-        :param meta_col:
-        :return:
-        """
-        meta_vals = {}
-        i = 1
-        while i < len(self.metadata):
-            # Maps the ID column to metadata column
-            meta_vals[self.metadata[i][0]] = self.metadata[i][meta_col]
-            i += 1
-        return meta_vals
-
-
-
-    def get_unique_metadata_cat_vals(self, meta_col):
-        """
-        Gets the unique values for a particular metadata columns
-        :param meta_col:
-        :return:
-        """
-        unique_vals = []
-        i = 1
-        while i < len(self.metadata):
-            # Maps the ID column to metadata column
-            if self.metadata[i][meta_col] not in unique_vals:
-                unique_vals.append(self.metadata[i][meta_col])
-            i += 1
-        return unique_vals

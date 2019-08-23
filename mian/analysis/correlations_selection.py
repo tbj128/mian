@@ -20,9 +20,13 @@ class CorrelationsSelection(AnalysisBase):
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
         table.load_phylogenetic_tree_if_exists()
+        metadata = table.get_sample_metadata()
+        otu_metadata = table.get_otu_metadata()
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
         phylogenetic_tree = table.get_phylogenetic_tree()
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata, otu_metadata, phylogenetic_tree)
 
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata, otu_metadata, phylogenetic_tree):
         select = user_request.get_custom_attr("select")
         against = user_request.get_custom_attr("against")
         expvar = user_request.get_custom_attr("expvar")
@@ -37,7 +41,6 @@ class CorrelationsSelection(AnalysisBase):
             gene_list = expvar.split(",")
             against_vals = genes.get_multi_gene_values(gene_list, sample_labels=sample_labels)
         elif against == "metadata":
-            metadata = table.get_sample_metadata()
             metadata_values = metadata.get_metadata_column_table_order(sample_labels, expvar)
             against_vals = list(map(float, metadata_values))
         elif against == "alpha":
@@ -60,7 +63,7 @@ class CorrelationsSelection(AnalysisBase):
                 against_vals.append(total_row_sum)
                 r += 1
 
-        taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
+        taxonomy_map = otu_metadata.get_taxonomy_map()
 
         if select == "gene":
             return self.analyse_select_gene(user_request, sample_labels, against_vals, pvalthreshold)

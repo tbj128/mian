@@ -28,8 +28,13 @@ class TreeView(AnalysisBase):
 
         taxonomy_map = table.get_otu_metadata().get_taxonomy_map()
 
-        unique_meta_vals = table.get_sample_metadata().get_metadata_unique_vals(user_request.catvar)
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.catvar)
+        metadata_vals = table.get_sample_metadata().get_metadata_column_table_order(sample_labels, user_request.catvar)
+        unique_meta_vals = list(set(metadata_vals))
+        sample_ids_to_metadata_map = {}
+        i = 0
+        while i < len(metadata_vals):
+            sample_ids_to_metadata_map[sample_labels[i]] = metadata_vals[i]
+            i += 1
 
         # If the sample_ids_to_metadata_map is empty, the user has not chosen to break down the visualization by
         # any particular category. We will assume that there is just one "default" column

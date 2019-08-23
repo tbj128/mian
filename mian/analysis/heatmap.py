@@ -11,6 +11,7 @@
 
 from mian.model.otu_table import OTUTable
 import numpy as np
+from mian.analysis.alpha_diversity import AlphaDiversity
 
 
 class Heatmap(object):
@@ -19,8 +20,9 @@ class Heatmap(object):
         table = OTUTable(user_request.user_id, user_request.pid)
         base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
         metadata = table.get_sample_metadata()
+        phylogenetic_tree = table.get_phylogenetic_tree()
 
-        return self.analyse(user_request, base, headers, sample_labels, metadata)
+        return self.analyse(user_request, base, headers, sample_labels, metadata, phylogenetic_tree)
 
     def get_numeric_metadata_table(self, metadata, metadata_headers):
         metadata = np.array(metadata)
@@ -42,7 +44,7 @@ class Heatmap(object):
         new_metadata_headers = metadata_headers[cols_to_keep]
         return new_metadata, new_metadata_headers
 
-    def analyse(self, user_request, base, headers, sample_labels, metadata):
+    def analyse(self, user_request, base, headers, sample_labels, metadata, phylogenetic_tree):
         corrvar1 = user_request.get_custom_attr("corrvar1")
         corrvar2 = user_request.get_custom_attr("corrvar2")
         cluster = user_request.get_custom_attr("cluster")
@@ -52,53 +54,66 @@ class Heatmap(object):
         numeric_metadata, numeric_metadata_headers = self.get_numeric_metadata_table(metadata_otu_order, metadata_headers)
         numeric_metadata = numeric_metadata.astype(float)
 
-        if corrvar1 == 'Taxonomy' and corrvar2 == 'Metadata':
-            X = np.array(base)
+        alpha = AlphaDiversity()
+        corrvar1Base = []
+        corrvar1Headers = []
+        if corrvar1 == "Taxonomy":
+            corrvar1Base = base
+            corrvar1Headers = headers
+        elif corrvar1 == "Metadata":
+            corrvar1Base = numeric_metadata
+            corrvar1Headers = numeric_metadata_headers.tolist()
+        elif corrvar1 == "Alpha":
+            alpha_params = user_request.get_custom_attr("corrvar1Alpha")
+            alpha_vals = alpha.calculate_alpha_diversity(base, sample_labels, headers, phylogenetic_tree, alpha_params[1],
+                                                         alpha_params[0])
+            corrvar1Base = []
+            i = 0
+            while i < len(alpha_vals):
+                corrvar1Base.append([alpha_vals[i]])
+                i += 1
+            corrvar1Headers = ["Alpha Diversity"]
+
+        corrvar2Base = []
+        corrvar2Headers = []
+        if corrvar2 == "Taxonomy":
+            corrvar2Base = base
+            corrvar2Headers = headers
+        elif corrvar2 == "Metadata":
+            corrvar2Base = numeric_metadata
+            corrvar2Headers = numeric_metadata_headers.tolist()
+        elif corrvar2 == "Alpha":
+            alpha_params = user_request.get_custom_attr("corrvar2Alpha")
+            alpha_vals = alpha.calculate_alpha_diversity(base, sample_labels, headers, phylogenetic_tree, alpha_params[1],
+                                                         alpha_params[0])
+            corrvar2Base = []
+            i = 0
+            while i < len(alpha_vals):
+                corrvar2Base.append([alpha_vals[i]])
+                i += 1
+            corrvar2Headers = ["Alpha Diversity"]
+
+        if corrvar1 != corrvar2:
+            X = np.array(corrvar1Base)
             non_zero = np.count_nonzero(X, axis=0)
             X = X[:, non_zero >= minSamplesPresent]
-            headers = np.array(headers)
+            headers = np.array(corrvar1Headers)
             headers = headers[non_zero >= minSamplesPresent]
 
-            non_zero = np.count_nonzero(numeric_metadata, axis=0)
-            numeric_metadata = numeric_metadata[:, non_zero >= minSamplesPresent]
-            numeric_metadata_headers = numeric_metadata_headers[non_zero >= minSamplesPresent]
+            Y = np.array(corrvar2Base)
+            non_zero = np.count_nonzero(Y, axis=0)
+            Y = Y[:, non_zero >= minSamplesPresent]
+            y_headers = np.array(corrvar2Headers)
+            y_headers = y_headers[non_zero >= minSamplesPresent]
 
-            X = np.concatenate((X, numeric_metadata), axis=1)
+            X = np.concatenate((X, Y), axis=1)
 
             correlations = np.corrcoef(X, rowvar=False)
-            correlations = correlations[len(headers):len(headers) + len(numeric_metadata_headers), 0:len(headers)]
-            row_headers = numeric_metadata_headers.tolist()
+            correlations = correlations[len(headers):len(headers) + len(y_headers), 0:len(headers)]
+            row_headers = y_headers.tolist()
             col_headers = headers.tolist()
-
-        elif corrvar2 == 'Taxonomy' and corrvar1 == 'Metadata':
-            X = np.array(base)
-            non_zero = np.count_nonzero(X, axis=0)
-            X = X[:, non_zero >= minSamplesPresent]
-            headers = np.array(headers)
-            headers = headers[non_zero >= minSamplesPresent]
-
-            non_zero = np.count_nonzero(numeric_metadata, axis=0)
-            numeric_metadata = numeric_metadata[:, non_zero >= minSamplesPresent]
-            numeric_metadata_headers = numeric_metadata_headers[non_zero >= minSamplesPresent]
-
-            X = np.concatenate((numeric_metadata, X), axis=1)
-
-            correlations = np.corrcoef(X, rowvar=False)
-            correlations = correlations[len(numeric_metadata_headers):len(numeric_metadata_headers) + len(headers), 0:len(numeric_metadata_headers)]
-            row_headers = headers.tolist()
-            col_headers = numeric_metadata_headers.tolist()
-
-        elif corrvar2 == 'Metadata' and corrvar1 == 'Metadata':
-            X = np.array(numeric_metadata)
-            non_zero = np.count_nonzero(X, axis=0)
-            X = X[:, non_zero >= minSamplesPresent]
-
-            correlations = np.corrcoef(X, rowvar=False)
-            row_headers = numeric_metadata_headers.tolist()
-            col_headers = numeric_metadata_headers.tolist()
-
         else:
-            X = np.array(base)
+            X = np.array(corrvar1Base)
             non_zero = np.count_nonzero(X, axis=0)
             X = X[:, non_zero >= minSamplesPresent]
             correlations = np.corrcoef(X, rowvar=False)

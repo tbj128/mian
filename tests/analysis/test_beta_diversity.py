@@ -20,10 +20,9 @@ class TestBetaDiversity(unittest.TestCase):
         headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         metadata_values = AnalysisTestUtils.get_disease_metadata_values(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         strata_values = AnalysisTestUtils.get_non_statistically_relevant_metadata_values(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
-        sample_ids_from_metadata = AnalysisTestUtils.get_sample_ids_from_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
 
         plugin = BetaDiversity()
-        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, sample_ids_from_metadata, "")
+        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, "")
         print(json.dumps(actual_output))
 
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,

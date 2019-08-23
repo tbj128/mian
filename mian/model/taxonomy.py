@@ -8,11 +8,12 @@ class Taxonomy(object):
     OTU_COL = 0
     TAXONOMY_COL = 1
 
-    def __init__(self, user_id, pid):
+    def __init__(self, user_id, pid, load_taxonomy_map=True):
         self.user_id = user_id
         self.pid = pid
         self.taxonomy_map = {}
-        self.__load_taxonomy()
+        if load_taxonomy_map:
+            self.__load_taxonomy()
 
     def __load_taxonomy(self):
         tax = DataIO.tsv_to_table(self.user_id, self.pid, TAXONOMY_FILENAME)
@@ -20,6 +21,9 @@ class Taxonomy(object):
 
     def get_taxonomy_map(self):
         return self.taxonomy_map
+
+    def set_taxonomy_map(self, taxonomy_map):
+        self.taxonomy_map = taxonomy_map
 
     def __get_taxonomy_mapping_from_dict(self, taxonomyMapping):
         taxonomyMap = {}

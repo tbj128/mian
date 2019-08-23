@@ -62,17 +62,67 @@
                         <option value="OTU" selected>OTU</option>
                     </select>
 
-                    <label class="control-label">Correlation Variable 1 (Columns) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which variable should be used for correlations (on the X-axis)<br /><br /><strong>Taxonomy</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
+                    <label class="control-label">Correlation Variable 1 (Columns) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which variable should be used for correlations (on the X-axis)<br /><br /><strong>Taxonomic Group or OTU</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
                     <select id="corrvar1" name="corrvar1" class="form-control">
-                        <option value="Taxonomy">Taxonomy</option>
+                        <option value="Taxonomy">Taxonomic Group or OTU</option>
                         <option value="Metadata">Sample Metadata</option>
+                        <option value="Alpha">Alpha Diversity</option>
                     </select>
 
-                    <label class="control-label">Correlation Variable 2 (Rows) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which variable should be used for correlations (on the Y-axis)<br /><br /><strong>Taxonomy</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
+                    <div id="alpha-diversity-container-1" style="display:none;">
+                        <label class="control-label">Diversity Context <i class="fa fa-info-circle"
+                                                                          data-toggle="popover"
+                                                                          data-title="Diversity Context"
+                                                                          data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>OTU/Taxonomic Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
+                        <select id="alphaContext1" name="alphaContext1" class="form-control alpha-context">
+                            <option value="alpha">Diversity Index</option>
+                            <option value="evenness">Evenness</option>
+                            <option value="speciesnumber">OTU/Taxonomic Richness</option>
+                        </select>
+
+                        <label class="control-label">Diversity Index <i class="fa fa-info-circle"
+                                                                        data-toggle="popover"
+                                                                        data-title="Diversity Index"
+                                                                        data-content="Indicate the method by which the alpha diversity should be calculated. More information on the different diversity types can be found <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a><br /><br />Faith's Phylogenetic Diversity is a taxonomic richness analogue based on the phylogenetic tree"></i></label>
+                        <select id="alphaType1" name="alphaType1" class="form-control alpha-type">
+                            <option value="shannon">Shannon</option>
+                            <option value="simpson">Simpson</option>
+                            <option value="invsimpson">Inverse Simpson</option>
+                            <option value="faith_pd">Faith's Phylogenetic Diversity</option>
+                        </select>
+                    </div>
+
+
+                    <label class="control-label">Correlation Variable 2 (Rows) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which variable should be used for correlations (on the Y-axis)<br /><br /><strong>Taxonomic Group or OTU</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
                     <select id="corrvar2" name="corrvar2" class="form-control">
-                        <option value="Taxonomy">Taxonomy</option>
+                        <option value="Taxonomy">Taxonomic Group or OTU</option>
                         <option value="Metadata">Sample Metadata</option>
+                        <option value="Alpha">Alpha Diversity</option>
                     </select>
+
+                    <div id="alpha-diversity-container-2" style="display:none;">
+                        <label class="control-label">Diversity Context <i class="fa fa-info-circle"
+                                                                          data-toggle="popover"
+                                                                          data-title="Diversity Context"
+                                                                          data-content="<ul><li><strong>Alpha Diversity</strong> The diversity measure based on the diversity index above</li><li><strong>Evenness</strong> Pielou's evenness measure as calculated <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a></li><li><strong>OTU/Taxonomic Richness</strong> The number of unique species within each sample</li></ul>"></i></label>
+                        <select id="alphaContext2" name="alphaContext2" class="form-control alpha-context">
+                            <option value="alpha">Diversity Index</option>
+                            <option value="evenness">Evenness</option>
+                            <option value="speciesnumber">OTU/Taxonomic Richness</option>
+                        </select>
+
+                        <label class="control-label">Diversity Index <i class="fa fa-info-circle"
+                                                                        data-toggle="popover"
+                                                                        data-title="Diversity Index"
+                                                                        data-content="Indicate the method by which the alpha diversity should be calculated. More information on the different diversity types can be found <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a><br /><br />Faith's Phylogenetic Diversity is a taxonomic richness analogue based on the phylogenetic tree"></i></label>
+                        <select id="alphaType2" name="alphaType2" class="form-control alpha-type">
+                            <option value="shannon">Shannon</option>
+                            <option value="simpson">Simpson</option>
+                            <option value="invsimpson">Inverse Simpson</option>
+                            <option value="faith_pd">Faith's Phylogenetic Diversity</option>
+                        </select>
+                    </div>
+
 
                     <label class="control-label">Cluster <i class="fa fa-info-circle" data-toggle="popover" data-title="Apply Clustering?" data-content="Determines whether columns and rows that are highly correlated should be grouped close together in the heatmap"></i></label>
                     <select id="cluster" name="cluster" class="form-control">

@@ -87,12 +87,11 @@ class AlphaDiversity(AnalysisBase):
         else:
             size_metadata_values = []
 
-        sample_ids_to_metadata_map = table.get_sample_metadata().get_sample_id_to_metadata_map(user_request.get_custom_attr("expvar"))
         phylogenetic_tree = table.get_phylogenetic_tree()
 
-        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, size_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree)
+        return self.analyse(user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, size_metadata_values, phylogenetic_tree)
 
-    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, size_metadata_values, sample_ids_to_metadata_map, phylogenetic_tree):
+    def analyse(self, user_request, otu_table, headers, sample_labels, metadata_values, color_metadata_values, size_metadata_values, phylogenetic_tree):
         logger.info("Starting Alpha Diversity analysis")
 
         plotType = user_request.get_custom_attr("plotType")

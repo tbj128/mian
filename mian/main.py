@@ -1247,6 +1247,8 @@ def getHeatmap(user_request, req):
     user_request.set_custom_attr("corrvar2", req.form['corrvar2'])
     user_request.set_custom_attr("cluster", req.form['cluster'])
     user_request.set_custom_attr("minSamplesPresent", req.form['minSamplesPresent'])
+    user_request.set_custom_attr("corrvar1Alpha", json.loads(req.form['corrvar1Alpha']))
+    user_request.set_custom_attr("corrvar2Alpha", json.loads(req.form['corrvar2Alpha']))
 
     plugin = Heatmap()
     abundances = plugin.run(user_request)

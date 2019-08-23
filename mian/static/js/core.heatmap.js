@@ -20,9 +20,29 @@ createSpecificListeners();
 function initializeFields() {
     if (getParameterByName("corrvar1") !== null) {
         $("#corrvar1").val(getParameterByName("corrvar1"));
+        if ($("#corrvar1").val() === "Alpha") {
+            $("#alpha-diversity-container-1").show();
+        } else {
+            $("#alpha-diversity-container-1").hide();
+        }
     }
     if (getParameterByName("corrvar2") !== null) {
         $("#corrvar2").val(getParameterByName("corrvar2"));
+        if ($("#corrvar2").val() === "Alpha") {
+            $("#alpha-diversity-container-2").show();
+        } else {
+            $("#alpha-diversity-container-2").hide();
+        }
+    }
+    if (getParameterByName("corrvar1Alpha") !== null) {
+        var alphaParams = JSON.parse(getParameterByName("corrvar1Alpha"));
+        $("#alphaContext1").val(alphaParams[0]);
+        $("#alphaType1").val(alphaParams[1]);
+    }
+    if (getParameterByName("corrvar2Alpha") !== null) {
+        var alphaParams = JSON.parse(getParameterByName("corrvar2Alpha"));
+        $("#alphaContext2").val(alphaParams[0]);
+        $("#alphaType2").val(alphaParams[1]);
     }
     if (getParameterByName("cluster") !== null) {
         $("#cluster").val(getParameterByName("cluster"));
@@ -33,6 +53,9 @@ function initializeFields() {
     if (getParameterByName("minSamplesPresent") !== null) {
         $("#minSamplesPresent").val(getParameterByName("minSamplesPresent"));
     }
+    if (getParameterByName("colorscheme") !== null) {
+        $("#colorscheme").val(getParameterByName("colorscheme"));
+    }
 }
 
 //
@@ -40,9 +63,20 @@ function initializeFields() {
 //
 function createSpecificListeners() {
     $("#corrvar1").change(function() {
+        if ($("#corrvar1").val() === "Alpha") {
+            $("#alpha-diversity-container-1").show();
+        } else {
+            $("#alpha-diversity-container-1").hide();
+        }
         updateAnalysis();
+
     });
     $("#corrvar2").change(function() {
+        if ($("#corrvar2").val() === "Alpha") {
+            $("#alpha-diversity-container-2").show();
+        } else {
+            $("#alpha-diversity-container-2").hide();
+        }
         updateAnalysis();
     });
     $("#cluster").change(function() {
@@ -54,6 +88,10 @@ function createSpecificListeners() {
     $("#minSamplesPresent").change(function() {
         updateAnalysis();
     });
+    $("#colorscheme").change(function() {
+        updateAnalysis();
+    });
+
     $("#download-svg").click(function() {
         downloadSVG("heatmap." + $("#corrvar1").val() + "." + $("#corrvar2").val());
     });
@@ -117,9 +155,13 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         level: level,
         corrvar1: corrvar1,
+        corrvar1Alpha: JSON.stringify([$("#alphaContext1").val(), $("#alphaType1").val()]),
         corrvar2: corrvar2,
+        corrvar2Alpha: JSON.stringify([$("#alphaContext2").val(), $("#alphaType2").val()]),
         cluster: cluster,
-        minSamplesPresent: minSamplesPresent
+        minSamplesPresent: minSamplesPresent,
+        showlabels: $("#showlabels").val(),
+        colorscheme: $("#colorscheme").val()
     };
 
     setGetParameters(data);

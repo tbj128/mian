@@ -168,6 +168,8 @@ function shareToCorrelationsLink(selectType, selectedItem, againstType, againstI
         corrvar1 = "mian-metadata";
     } else if (selectType === "gene") {
         corrvar1 = "mian-gene";
+    } else if (selectType === "alpha") {
+        corrvar1 = "mian-alpha";
     }
 
     var corrvar2 = "mian-taxonomy-abundance";
@@ -175,11 +177,13 @@ function shareToCorrelationsLink(selectType, selectedItem, againstType, againstI
         corrvar2 = "mian-metadata";
     } else if (againstType === "gene") {
         corrvar2 = "mian-gene";
+    } else if (againstType === "alpha") {
+        corrvar2 = "mian-alpha";
     }
 
     var corrvar1Val = corrvar1 === "mian-taxonomy-abundance" ? getSpecificTaxonomy(selectedItem) : selectedItem;
     var corrvar2Val = corrvar2 === "mian-taxonomy-abundance" ? getSpecificTaxonomy(againstItem) : againstItem;
-    return "/correlations?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&corrvar1=" + corrvar1 + "&corrvar2=" + corrvar2 + "&level=" + getParameterByName("level") + "&corrvar1SpecificTaxonomies=[\"" + corrvar1Val + "\"]" + "&corrvar2SpecificTaxonomies=[\"" + corrvar2Val + "\"]";
+    return "/correlations?pid=" + getParameterByName("pid") + "&taxonomyFilter=" + getParameterByName("taxonomyFilter") + "&taxonomyFilterRole=" + getParameterByName("taxonomyFilterRole") + "&taxonomyFilterVals=" + getParameterByName("taxonomyFilterVals") + "&sampleFilter=" + getParameterByName("sampleFilter") + "&sampleFilterRole=" + getParameterByName("sampleFilterRole") + "&sampleFilterVals=" + getParameterByName("sampleFilterVals") + "&corrvar1=" + corrvar1 + "&corrvar2=" + corrvar2 + "&level=" + getParameterByName("level") + "&corrvar1SpecificTaxonomies=" + JSON.stringify(corrvar1Val.split(",")) + "&corrvar2SpecificTaxonomies=" + JSON.stringify(corrvar2Val.split(","));
 }
 
 function getSpecificTaxonomy(otu_name) {

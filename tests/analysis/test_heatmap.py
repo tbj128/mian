@@ -20,7 +20,7 @@ class TestHeatmap(unittest.TestCase):
         metadata = AnalysisTestUtils.get_metadata_obj(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
 
         plugin = Heatmap()
-        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata)
+        actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata, "")
         print(json.dumps(actual_output))
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
                                                                 "heatmap.json")

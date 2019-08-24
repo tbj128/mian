@@ -12,7 +12,7 @@ from mian.model.metadata import Metadata
 
 from mian.rutils import r_package_install
 
-r_package_install.importr_custom("vegan")
+r_package_install.importr_custom("vegan", version="2.5.4")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")

@@ -12,6 +12,8 @@ from mian.model.metadata import Metadata
 
 from mian.rutils import r_package_install
 
+r_package_install.importr_custom("permute")
+r_package_install.importr_custom("lattice")
 r_package_install.importr_custom("vegan", version="2.5-4")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")

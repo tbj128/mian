@@ -5,6 +5,9 @@ from tests.analysis.analysis_test_utils import AnalysisTestUtils
 import unittest
 
 from mian.rutils import r_package_install
+
+r_package_install.importr_custom("permute")
+r_package_install.importr_custom("lattice")
 r_package_install.importr_custom("vegan", version="2.5-4")
 
 

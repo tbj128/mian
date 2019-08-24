@@ -5,7 +5,10 @@ from mian.analysis.correlations import Correlations
 from mian.model.metadata import Metadata
 from tests.analysis.analysis_test_utils import AnalysisTestUtils
 import unittest
+import logging
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+logger = logging.getLogger(__name__)
 
 class TestCorrelations(unittest.TestCase):
 
@@ -33,12 +36,12 @@ class TestCorrelations(unittest.TestCase):
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
                                                                 "correlation_sign_nonsign_sign_nonsign.json")
         comparison_output = AnalysisTestUtils.compare_two_objects(expected_output, actual_output)
-        print(json.dumps(actual_output))
+        logger.info(json.dumps(actual_output))
         if not comparison_output:
-            print("Expected: ")
-            print(expected_output)
-            print("Actual: ")
-            print(actual_output)
+            logger.info("Expected: ")
+            logger.info(expected_output)
+            logger.info("Actual: ")
+            logger.info(actual_output)
         self.assertTrue(comparison_output)
 
 

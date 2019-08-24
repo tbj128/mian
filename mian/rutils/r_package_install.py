@@ -11,9 +11,8 @@ def importr_custom(package_name, version=None):
     except RRuntimeError:
         utils.chooseCRANmirror(ind=1)
         if version is not None:
-            versions = (version)
-            versions_vec = StrVector(versions)
-            package_name_vec = StrVector(package_name)
+            versions_vec = StrVector((version,))
+            package_name_vec = StrVector((package_name,))
             utils.install_packages(package_name_vec, versions=versions_vec)
         else:
             utils.install_packages(package_name)

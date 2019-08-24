@@ -16,4 +16,5 @@ def importr_custom(package_name, version=None):
             utils.install_packages(package_name_vec, versions=versions_vec)
         else:
             utils.install_packages(package_name)
+        importr(package_name)
         print(package_name + ' has been installed')

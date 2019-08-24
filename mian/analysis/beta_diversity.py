@@ -33,7 +33,6 @@ class BetaDiversity(AnalysisBase):
     #
 
     rcode = """
-    
     betaDiversityFromDistanceMatrix <- function(Habc, groups) {
         dm <- as.dist(Habc)
         mod <- betadisper(dm, groups)

@@ -5,7 +5,7 @@ from tests.analysis.analysis_test_utils import AnalysisTestUtils
 import unittest
 
 from mian.rutils import r_package_install
-r_package_install.importr_custom("vegan", version="2.5.4")
+r_package_install.importr_custom("vegan", version="2.5-4")
 
 
 class TestAlphaDiversity(unittest.TestCase):

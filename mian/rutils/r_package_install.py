@@ -1,6 +1,5 @@
 from rpy2.rinterface import RRuntimeError
 from rpy2.robjects.packages import importr
-from rpy2.robjects.vectors import StrVector
 utils = importr('utils')
 
 
@@ -11,9 +10,9 @@ def importr_custom(package_name, version=None):
     except RRuntimeError:
         utils.chooseCRANmirror(ind=1)
         if version is not None:
-            versions_vec = StrVector((version,))
-            package_name_vec = StrVector((package_name,))
-            utils.install_packages(package_name_vec, versions=versions_vec)
+            archive_url = "https://cran.r-project.org/src/contrib/Archive/" + package_name + "/" + package_name + "_" + version + ".tar.gz"
+            print("Trying to install from " + archive_url)
+            utils.install_packages(archive_url, repos=None, method="libcurl")
         else:
             utils.install_packages(package_name)
         importr(package_name)

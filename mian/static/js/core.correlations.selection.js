@@ -149,6 +149,13 @@ function updateAnalysis() {
     var sampleFilterRole = getSelectedSampleFilterRole();
     var sampleFilterVals = getSelectedSampleFilterVals();
 
+    var select = $("#select").val();
+    var against = $("#against").val();
+    if ((select === "gene" || against === "gene") && !hasGenes) {
+        loadNoGenesWarning();
+        return;
+    }
+
     if (expvar === "none") {
         loadNoCatvar();
         return;
@@ -164,8 +171,8 @@ function updateAnalysis() {
         sampleFilter: sampleFilter,
         sampleFilterRole: sampleFilterRole,
         sampleFilterVals: sampleFilterVals,
-        select: $("#select").val(),
-        against: $("#against").val(),
+        select: select,
+        against: against,
         pvalthreshold: $("#pvalthreshold").val(),
         expvar: expvar,
         level: level

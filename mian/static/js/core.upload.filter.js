@@ -146,7 +146,8 @@ $(document).ready(function() {
         $.ajax({
             url: "/metadata_headers_with_type?pid=" + $("#project").val(),
             success: function(result) {
-                var json = JSON.parse(result);
+                var jsonBody = JSON.parse(result);
+                var json = jsonBody["headers"];
                 var filteringHeaders = json.map(function(obj) { return obj.name; });
 
                 var $filterSample = $("#filter-sample");

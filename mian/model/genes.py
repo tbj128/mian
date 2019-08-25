@@ -23,11 +23,15 @@ class Genes(object):
         self.gene_labels = []
 
     def get_gene_headers(self, type):
+        if not DataIO.does_file_exist(self.user_id, self.pid, GENE_FILENAME):
+            return []
+
         if type == "Group":
             headers = []
             with open(GO_HEADERS_PATH, 'r') as f:
                 for line in f:
                     headers.append(line)
+            return headers
         else:
             if len(self.gene_labels) == 0:
                 self.gene_labels = DataIO.tsv_to_table(self.user_id, self.pid, GENE_LABELS_FILENAME)
@@ -40,6 +44,9 @@ class Genes(object):
         :param orig_sample_labels: if not empty, return table with rows reordered to the sample label order
         :return:
         """
+        if not DataIO.does_file_exist(self.user_id, self.pid, GENE_FILENAME):
+            return [], [], []
+
         if len(self.gene_table) == 0:
             self.gene_table = DataIO.tsv_to_table(self.user_id, self.pid, GENE_FILENAME)
 
@@ -88,6 +95,9 @@ class Genes(object):
         :param sample_labels:
         :return:
         """
+        if not DataIO.does_file_exist(self.user_id, self.pid, GENE_FILENAME):
+            return []
+
         if len(self.gene_table) == 0:
             # Gene table is already in the order of the samples
             self.gene_table = DataIO.tsv_to_table(self.user_id, self.pid, GENE_FILENAME)

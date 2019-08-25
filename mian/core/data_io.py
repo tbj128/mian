@@ -14,6 +14,16 @@ logger = logging.getLogger(__name__)
 class DataIO:
 
     @staticmethod
+    def does_file_exist(user_id, pid, csv_name):
+        project_dir = os.path.dirname(__file__)
+        project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
+        project_dir = os.path.join(project_dir, "data")
+        project_dir = os.path.join(project_dir, user_id)
+        project_dir = os.path.join(project_dir, pid)
+        csv_name = os.path.join(project_dir, csv_name)
+        return os.path.exists(csv_name)
+
+    @staticmethod
     @lru_cache(maxsize=128)
     def tsv_to_np_table(user_id, pid, csv_name, sep="\t"):
         return np.array(DataIO.tsv_to_table(user_id, pid, csv_name, sep), dtype=float)
@@ -47,38 +57,6 @@ class DataIO:
         logger.info("Opening file with name " + csv_name)
 
         return DataIO.tsv_to_table_from_path(csv_name, accept_empty_headers)
-
-    @staticmethod
-    @lru_cache(maxsize=128)
-    def tsv_to_header_row(user_id, pid, csv_name):
-        project_dir = os.path.dirname(__file__)
-        project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
-        project_dir = os.path.join(project_dir, "data")
-        project_dir = os.path.join(project_dir, user_id)
-        project_dir = os.path.join(project_dir, pid)
-        csv_name = os.path.join(project_dir, csv_name)
-
-        logger.info("Opening file with name " + csv_name)
-
-        empty_header_cols = []
-        with open(csv_name, 'r', encoding='utf-8') as csvfile:
-            dialect = csv.Sniffer().sniff(csvfile.readline())
-            delimiter = dialect.delimiter
-            if delimiter != "\t" and delimiter != ",":
-                delimiter = "\t"
-
-            csvfile.seek(0)
-
-            base_csv = csv.reader(csvfile, delimiter=delimiter)
-            for o in base_csv:
-                if len(o) > 0:
-                    j = 0
-                    while j < len(o):
-                        if o[j].strip() == "":
-                            empty_header_cols.append(o[j])
-                        j += 1
-
-        return empty_header_cols
 
     @staticmethod
     def text_from_path(user_id, pid, filename, replace_newlines=True):

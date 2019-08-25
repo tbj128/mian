@@ -27,6 +27,7 @@ var taxonomyLevelsReverseLookup = {
 var taxonomiesMap = {};
 var headersWithType = {};
 var headersWithQuantileStatus = {};
+var hasGenes = false;
 var quantiles = {};
 var quantileStaging = {};
 var quantileResultStaging = {};
@@ -284,6 +285,7 @@ function loadError(details) {
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
     $("#display-float-data").hide();
+    $("#display-no-genes").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -300,6 +302,7 @@ function loadNoResults() {
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
     $("#display-float-data").hide();
+    $("#display-no-genes").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -312,6 +315,7 @@ function loadSuccess() {
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
     $("#display-float-data").hide();
+    $("#display-no-genes").hide();
     $("#download-container").show();
     $("#analysis-container").show();
     $("#stats-container").show();
@@ -324,6 +328,7 @@ function loadNoCatvar() {
     $("#display-no-catvar").show();
     $("#display-no-tree").hide();
     $("#display-float-data").hide();
+    $("#display-no-genes").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -336,6 +341,7 @@ function loadNoTree() {
     $("#display-no-catvar").hide();
     $("#display-no-tree").show();
     $("#display-float-data").hide();
+    $("#display-no-genes").hide();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -348,6 +354,20 @@ function loadFloatDataWarning() {
     $("#display-no-catvar").hide();
     $("#display-no-tree").hide();
     $("#display-float-data").show();
+    $("#display-no-genes").hide();
+    $("#download-container").hide();
+    $("#analysis-container").hide();
+    $("#stats-container").hide();
+}
+
+function loadNoGenesWarning() {
+    hideLoading();
+    $("#display-error").hide();
+    $("#display-no-results").hide();
+    $("#display-no-catvar").hide();
+    $("#display-no-tree").hide();
+    $("#display-float-data").hide();
+    $("#display-no-genes").show();
     $("#download-container").hide();
     $("#analysis-container").hide();
     $("#stats-container").hide();
@@ -750,7 +770,9 @@ function updateCatVar(isNumeric) {
         url: getSharedPrefixIfNeeded() + "/metadata_headers_with_type?pid=" + $("#project").val() +
             getSharedUserSuffixIfNeeded(),
         success: function(result) {
-            var json = JSON.parse(result);
+            var jsonBody = JSON.parse(result);
+            var json = jsonBody["headers"];
+            hasGenes = jsonBody["hasGenes"]
 
             headersWithType = {};
             json.forEach(header => {
@@ -1542,6 +1564,14 @@ function showGeneBox() {
         }
     });
     return true;
+}
+
+function destroyGeneSelector(typeaheadIndex) {
+    if (genes.length > 0) {
+        if (geneRenderedTypeahead[typeaheadIndex]) {
+            $("#gene-typeahead-" + typeaheadIndex).tagsinput("destroy");
+        }
+    }
 }
 
 function loadGeneSelector(typeaheadIndex) {

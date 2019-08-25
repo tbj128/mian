@@ -106,7 +106,6 @@ function updateYvals(shouldUpdateAnalysis) {
         $("#specific-taxonomy-container").hide();
         $("#gene-input-container-1").hide();
         $("#taxonomic-level-container").hide();
-
         if (val === "mian-max" || val === "mian-min") {
             if (val === "mian-max") {
                 $("#taxonomic-level-label").text("Max Abundance Taxonomic Level");
@@ -153,6 +152,11 @@ function updateAnalysis() {
         yvalsSpecificTaxonomy = $("#gene-typeahead-1").val();
     } else if (yvals === "mian-taxonomy-abundance") {
         yvalsSpecificTaxonomy = $("#specific-taxonomy-typeahead").val();
+    }
+
+    if (yvals === "mian-gene" && !hasGenes) {
+        loadNoGenesWarning();
+        return;
     }
 
     if (yvalsSpecificTaxonomy === "") {
@@ -211,7 +215,7 @@ function customCatVarCallback(result) {
 
     $("#yvals").empty();
     $("#yvals").append(
-        '<option value="mian-taxonomy-abundance">Taxonomy Abundance</option><option value="mian-gene">Gene Expression</option><option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>'
+        '<option value="mian-taxonomy-abundance">Taxonomic Group or OTU Abundance</option><option value="mian-gene">Gene Expression</option><option value="mian-abundance">Aggregate Abundance</option><option value="mian-max">Max Abundance</option><option value="mian-min">Min Abundance</option><option value="mian-mean">Mean Abundance</option><option value="mian-median">Median Abundance</option>'
     );
     for (var i = 0; i < numericHeaders.length; i++) {
         $("#yvals").append(

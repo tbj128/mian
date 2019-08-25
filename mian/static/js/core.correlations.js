@@ -315,6 +315,11 @@ function updateAnalysis() {
         corrvar2SpecificTaxonomies = $("#alphaContext2").val() + "," + $("#alphaType2").val();
     }
 
+    if ((corrvar1 === "mian-gene" || corrvar2 === "mian-gene") && !hasGenes) {
+        loadNoGenesWarning();
+        return;
+    }
+
     var sizevarSpecificTaxonomies = "";
     if (sizevar === "mian-alpha") {
         sizevarSpecificTaxonomies = $("#alphaContext3").val() + "," + $("#alphaType3").val();

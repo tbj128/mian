@@ -32,6 +32,7 @@ import logging
 import os
 import pwd
 
+from mian.core.constants import GENE_FILENAME
 from mian.core.data_io import DataIO
 from mian.rutils import r_package_install
 from mian.model.quantiles import Quantiles
@@ -260,7 +261,8 @@ def quantile_manager():
     project_name = project_names_to_info[pid]["project_name"]
     quantiles = Quantiles(current_user.id, pid)
     sample_metadata = Metadata(current_user.id, pid)
-    return render_template('quantile_manager.html', pid=pid, projectName=project_name, quantiles=quantiles.quantiles, metadataHeaders=sample_metadata.get_metadata_headers_with_type())
+    headers = sample_metadata.get_metadata_headers_with_type()
+    return render_template('quantile_manager.html', pid=pid, projectName=project_name, quantiles=quantiles.quantiles, metadataHeaders=headers["headers"])
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -725,8 +727,11 @@ def getMetadataHeadersWithTypeShare():
 
 def getMetadataHeadersWithType(user, pid):
     metadata = Metadata(user, pid)
-    abundances = metadata.get_metadata_headers_with_type()
-    return json.dumps(abundances)
+    headers = metadata.get_metadata_headers_with_type()
+    return json.dumps({
+        "headers": headers,
+        "hasGenes": DataIO.does_file_exist(user, pid, GENE_FILENAME)
+    })
 
 # ---
 

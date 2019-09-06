@@ -1,4 +1,4 @@
-from rpy2.rinterface import RRuntimeError
+from rpy2.rinterface_lib.embedded import RRuntimeError
 from rpy2.robjects.packages import importr
 import rpy2.robjects as robj
 utils = importr('utils')

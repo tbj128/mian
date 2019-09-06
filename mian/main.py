@@ -14,7 +14,7 @@ from flask import Flask, request, render_template, redirect, url_for, Response, 
 from flask_mail import Mail, Message
 import flask_login
 from flask_login import current_user
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from sqlite3 import dbapi2 as sqlite3
 from urllib.parse import unquote
 import random
@@ -40,7 +40,7 @@ from mian.model.genes import Genes
 
 r_package_install.importr_custom("permute")
 r_package_install.importr_custom("lattice")
-r_package_install.importr_custom("vegan", version="2.5-4")
+r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")

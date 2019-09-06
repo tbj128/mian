@@ -29,5 +29,5 @@ app.config['DEBUG'] = True
 print("App Startup")
 # app.run(debug=True, port=8080)
 # app.run(host='0.0.0.0', debug=True, port=8080)
-app.run(processes=3)
+app.run(threaded=False, processes=3)
 

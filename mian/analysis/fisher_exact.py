@@ -109,15 +109,15 @@ class FisherExact(object):
 
         hints = {}
         results = []
-        i = 1
-        while i <= fisherResults.nrow:
+        i = 0
+        while i < fisherResults.size:
             newRow = []
-            j = 1
-            while j <= fisherResults.ncol:
-                if j > 1:
-                    newRow.append(round(float(fisherResults.rx(i, j)[0]), 6))
+            j = 0
+            while j < len(fisherResults[i]):
+                if j > 0:
+                    newRow.append(round(float(fisherResults[i][j]), 6))
                 else:
-                    newRow.append(str(fisherResults.rx(i, j)[0]))
+                    newRow.append(str(fisherResults[i][j]))
                 j += 1
             otu = newRow[0]
             if int(user_request.level) == -1:

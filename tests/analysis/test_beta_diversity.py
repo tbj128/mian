@@ -26,7 +26,7 @@ class TestBetaDiversity(unittest.TestCase):
 
         plugin = BetaDiversity()
         actual_output = plugin.analyse(user_request, otu_table, headers, sample_labels, metadata_values, strata_values, "")
-        print(json.dumps(actual_output))
+        print(json.dumps(actual_output["abundances"]))
 
         expected_output = AnalysisTestUtils.get_expected_output(AnalysisTestUtils.SIMPLE_TEST_CASE_OUTPUT_ROOT,
                                                                 "beta_diversity_bray.json")
@@ -35,7 +35,7 @@ class TestBetaDiversity(unittest.TestCase):
             print("Expected: ")
             print(expected_output)
             print("Actual: ")
-            print(actual_output)
+            print(actual_output["abundances"])
         self.assertTrue(comparison_output)
 
 

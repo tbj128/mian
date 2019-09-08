@@ -262,7 +262,7 @@ def quantile_manager():
     quantiles = Quantiles(current_user.id, pid)
     sample_metadata = Metadata(current_user.id, pid)
     headers = sample_metadata.get_metadata_headers_with_type()
-    return render_template('quantile_manager.html', pid=pid, projectName=project_name, quantiles=quantiles.quantiles, metadataHeaders=headers["headers"])
+    return render_template('quantile_manager.html', pid=pid, projectName=project_name, quantiles=quantiles.quantiles, metadataHeaders=headers)
 
 
 @app.route('/create', methods=['GET', 'POST'])

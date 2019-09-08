@@ -133,7 +133,7 @@ class Genes(object):
                 else:
                     output_vals.append(0)
         else:
-            output_vals = list(vals.keys())
+            output_vals = list(vals.values())
         return output_vals
 
 

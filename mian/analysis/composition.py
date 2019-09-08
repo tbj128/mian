@@ -109,11 +109,7 @@ class Composition(AnalysisBase):
             sortedVals[i] = list(sortedVals[i])
             i += 1
 
-        abundancesObj = {}
-        abundancesObj["abundances"] = output
-        abundancesObj["uniqueVals"] = sortedVals
-        abundancesObj["idMap"] = reverse_map(headerToId)
-        return abundancesObj
+        return create_abundance_obj(output, sortedVals, headerToId)
 
 
     def analyse_taxonomic_groups(self, user_request, base, headers, sample_labels, metadata_values):
@@ -177,16 +173,17 @@ class Composition(AnalysisBase):
                     relativeAbun = round(otuSumsByGroup[k] / float(totalByGroup[k]), 3)
                 else:
                     relativeAbun = 0
-                relativeAbunObj[id] = {
-                    "sum": otuSumsByGroup[k],
-                    "tot": totalByGroup[k],
-                    "avgVal": relativeAbun
-                }
 
                 # Calculate the total val for each metadata (just so we can return the top metadata in each category)
                 if k not in metadataToTotalVal:
                     metadataToTotalVal[id] = 0
                 metadataToTotalVal[id] += relativeAbun
+
+                relativeAbunObj[id] = {
+                    "sum": otuSumsByGroup[k],
+                    "tot": totalByGroup[k],
+                    "avgVal": relativeAbun
+                }
 
             newObj = {"t": otu, "o": relativeAbunObj}
             formattedCompositionAbun.append(newObj)
@@ -197,11 +194,57 @@ class Composition(AnalysisBase):
             sortedVals[i] = list(sortedVals[i])
             i += 1
 
-        abundancesObj = {}
-        abundancesObj["abundances"] = formattedCompositionAbun
-        abundancesObj["uniqueVals"] = sortedVals
-        abundancesObj["idMap"] = reverse_map(metadataToId)
-        return abundancesObj
+        return create_abundance_obj(formattedCompositionAbun, sortedVals, metadataToId)
+
+
+def create_abundance_obj(abundances, unique_vals, metadata_to_id):
+    ids_to_remove = {}
+    # First assume we will remove all of the IDs.
+    for id, v in metadata_to_id.items():
+        ids_to_remove[v] = True
+
+    # Remove any IDs from the above 'to-remove' map if it has a non-zero value
+    for abundance in abundances:
+        for id, val in abundance["o"].items():
+            if val["avgVal"] > 0 and id in ids_to_remove:
+                del ids_to_remove[id]
+
+    # Apply the 'to-remove' map to remove noise from the ids that do not contribute meaningfully to the actual bar graph
+
+    i = len(abundances) - 1
+    while i >= 0:
+        abundance = abundances[i]
+        keys = list(abundance["o"].keys())
+        total_val = 0
+        j = 0
+        while j < len(keys):
+            id = keys[j]
+            if id in ids_to_remove:
+                del abundance["o"][id]
+            total_val += abundance["o"][id]["avgVal"]
+            j += 1
+        if total_val == 0:
+            del abundances[i]
+
+        i -= 1
+
+    i = len(unique_vals) - 1
+    while i >= 0:
+        if unique_vals[i][0] in ids_to_remove:
+            del unique_vals[i]
+        i -= 1
+
+    id_to_metadata = reverse_map(metadata_to_id)
+    for id,v in ids_to_remove.items():
+        del id_to_metadata[id]
+
+    abundances_obj = {
+        "abundances": abundances,
+        "uniqueVals": unique_vals,
+        "idMap": id_to_metadata
+    }
+    return abundances_obj
+
 
 def reverse_map(map):
     new_map = {}

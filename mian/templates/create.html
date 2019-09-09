@@ -56,7 +56,7 @@
             <div>
               <div class="col-md-10">
                 <h3 style="margin-top:0px"><i class="fa fa-table"></i>&nbsp;&nbsp;OTU Table</h3>
-                <p>Tab-delimited or comma-delimited file with OTUs across the top header and sample/group IDs as rows. Accepted formats shown below.</p>
+                <p>Tab-delimited (TSV) or comma-delimited (CSV) file with OTUs across the top header and sample/group IDs as rows. Accepted formats shown below.</p>
 <p>Example <a href="https://www.mothur.org/wiki/Shared_file" target="_blank">mothur shared file</a>: </p>
 <pre><code>label	Group	numOtus	Otu01	Otu02	Otu03	Otu04	Otu05	...
 0.03	1a	35	0	5	2	3	3	...
@@ -87,7 +87,7 @@
           <div id="otu-metadata-upload-container" class="row upload-item">
             <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-map-o"></i>&nbsp;&nbsp;OTU Taxonomy Mapping</h3>
-              <p>Tab-delimited or comma-delimited taxonomy file with each row representing an OTU and its corresponding taxonomy information. Accepted file formats shown below:</p>
+              <p>Tab-delimited (TSV) or comma-delimited (CSV) taxonomy file with each row representing an OTU and its corresponding taxonomy information. Accepted file formats shown below:</p>
 <p>Example <a href="https://www.mothur.org/wiki/Constaxonomy_file" target="_blank">mothur constaxonomy file</a>: </p>
 <pre><code>OTU	Size	Taxonomy
 Otu01	35	k__Bacteria;p__Firmicutes;c__Clostridia;o__Halbiales;f__Halbiaceae;g__Halbium;s__conlense
@@ -125,11 +125,12 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
           <div id="sample-metadata-upload-container" class="row upload-item" >
             <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Sample Metadata<span class="biom-only"> (Optional)</span></h3>
-              <p><span class="biom-only">Mian automatically uses the sample metadata in the biom file, if available. </span>Tab-delimited or comma-delimited file with each row representing an sample/group ID and its corresponding metadata. Example metadata:</p>
+              <p><span class="biom-only">Mian automatically uses the sample metadata in the biom file, if available. </span>Tab-delimited (TSV) or comma-delimited (CSV) file with each row representing an sample/group ID and its corresponding metadata. Example metadata:</p>
 
 <pre><code>Sample	body_site	disease	...
 1a	gut		Disease	...
 1b	skin		Control	...
+...
 </code></pre>
             </div>
             <div class="col-md-2 upload-status">
@@ -148,7 +149,14 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
           <div id="gene-upload-container" class="row upload-item" >
             <div class="col-md-10">
               <h3 style="margin-top:0px"><i class="fa fa-info"></i>&nbsp;&nbsp;Gene Expression Matrix (Optional)</h3>
-                <p>Include a gene expression matrix file where the rows are the genes and each column is a sample. Every sample in the OTU file must be present in this file as well.</p>
+                <p>Include a Tab-delimited (TSV) or comma-delimited (CSV) gene expression matrix file where the rows are the genes and each column is a sample. Every sample in the OTU file must be present in this file.</p>
+
+<pre><code>Sample	1a	1b	1c	...
+TLR1	1.2891	2.3992	1.2293	...
+TLR2	6.2894	9.5196	9.0199	...
+IL8R	3.7991	4.1968	2.3449	...
+...
+</code></pre>
             </div>
             <div class="col-md-2 upload-status">
               <form id="geneForm" action="/upload" method="post" enctype="multipart/form-data">

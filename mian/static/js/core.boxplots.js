@@ -70,7 +70,7 @@ function createSpecificListeners() {
         }
     });
 
-    $("#gene-typeahead").change(function() {
+    $("#gene-typeahead-1").change(function() {
         if (initialYvalsSpecificTaxonomy == null) {
             updateAnalysis();
         }
@@ -198,7 +198,14 @@ function updateAnalysis() {
                 loadNoResults();
             } else {
                 loadSuccess();
-                renderBoxplots(abundancesObj, "", $("#yvals option:selected").text());
+                var yvalSelectedOption = $("#yvals").val();
+                var yAxisLabel = $("#yvals option:selected").text();
+                if (yvalSelectedOption === "mian-taxonomy-abundance") {
+                    yAxisLabel = $("#specific-taxonomy-typeahead").val();
+                } else if (yvalSelectedOption === "mian-gene") {
+                    yAxisLabel = $("#gene-typeahead-1").val();
+                }
+                renderBoxplots(abundancesObj, "", yAxisLabel);
                 renderPvaluesTable(abundancesObj);
             }
         },

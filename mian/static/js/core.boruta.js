@@ -83,6 +83,10 @@ function createSpecificListeners() {
         downloadCSV(tableResults);
     });
 
+    $("#save-to-notebook").click(function() {
+        saveTableToNotebook("Boruta (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
+    });
+
     $("#send-to-rf").click(function() {
         if (cachedTrainingIndexes != null) {
             window.open('/random_forest?pid=' + $("#project").val() + '&ref=boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures), '_blank');

@@ -100,7 +100,11 @@ function createSpecificListeners() {
     });
 
     $("#download-svg").click(function() {
-        downloadSVG("alpha.diversity." + $("#catvar").val() + "." + $("#alphaType").val() + "." + $("#alphaContext").val() + "." + $("#statisticalTest").val());
+        downloadSVG("alpha.diversity." + $("#expvar").val() + "." + $("#alphaType").val() + "." + $("#alphaContext").val() + "." + $("#statisticalTest").val());
+    });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Alpha Diversity (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "Diversity Context: " + $("#alphaContext option:selected").text() + "\n" + "Diversity Index: " + $("#alphaType option:selected").text() + "\n");
     });
 
     $("#yvals").change(function() {

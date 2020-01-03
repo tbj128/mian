@@ -152,6 +152,8 @@
                 <div class="project-item" id="p-{{ projectNames[projectName]['pid'] }}">
                   <h4>{{ projectNames[projectName]["project_name"] }}</h4>
 
+                  <a title="View notebook for this project" href="/notebook?pid={{projectNames[projectName]["pid"]}}" target="_blank" class="project-notebook"><i class="fa fa-book"></i> View Notebook</a>
+
                   {% if not demo or (demo and not (projectNames[projectName]["project_name"] == "COPD Example Project" or projectNames[projectName]["project_name"] == "Tortoise Example Project" or projectNames[projectName]["project_name"] == "Butterfly Gut Microbiota Example Project")) %}
                   <a title="Delete this project" href="javascript:void(0);" data-project="{{ projectNames[projectName]["pid"] }}" data-projectname="{{ projectNames[projectName]["project_name"] }}" class="project-delete"><i class="fa fa-trash"></i></a>
                   {% endif %}

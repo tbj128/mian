@@ -52,6 +52,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("tree." + $("#catvar").val() + "." + $("#taxonomy_display_level").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveTableToNotebook("Tree (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
+    });
 }
 
 //

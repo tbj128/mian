@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'header.html' %}
+    <title>Notebook - Mian</title>
+    <style>
+      .blackout {
+        opacity: .5;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1040;
+        background-color: #000;
+      }
+
+      .notebook-section {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #EEE;
+      }
+
+      .captured-on {
+        color: #AAA;
+      }
+
+      .editable {
+        white-space: pre;
+      }
+
+      .editable:focus{
+        box-shadow: 0 0 6px lightblue;
+        padding: 4px;
+      }
+
+      .editable:hover{
+        background: #EFEFEF;
+      }
+
+
+    </style>
+  </head>
+
+  <body>
+
+    {% include 'navigation.html' %}
+
+    <div id="blackout" class="blackout" style="display:none;"></div>
+
+    <div class="content-wrapper notebook">
+      <div class="container project-container">
+        <div class="section-heading project-heading">
+            <h2><i class="fa fa-book"></i>&nbsp;&nbsp;Notebook: <strong>{{projectName}}</strong></h2>
+        </div>
+        {% if sections | length == 0 %}
+          <div style="text-align:center;color:#AAA;">
+            <i class="fa fa-rocket fa-4x"></i>
+            <h3>Empty Notebook</h3>
+            <p>In any visualization, feature selection, or machine learning module, click save to add to your notebook</p>
+          </div>
+        {% endif %}
+        {% for i in range(sections | length) %}
+        <div id="section-{{sections[i]['key']}}" class="notebook-section">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="row">
+                <div class="col-md-9"><h4 class="editable editable-title" contenteditable="true" data-pid={{pid}} data-key="{{sections[i]['key']}}">{{sections[i]["title"]}}</h4></div>
+              </div>
+              <div class="row">
+                <div class="col-md-12"><p class="captured-on">Captured on {{sections[i]["date"]}}</p></div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  {% if sections[i]["description"] == "" %}
+                  <p class="editable editable-description" contenteditable="true" data-pid={{pid}} data-key="{{sections[i]['key']}}">
+                    No description yet...
+                  </p>
+                  {% else %}
+                  <p class="editable editable-description" contenteditable="true" data-pid={{pid}} data-key="{{sections[i]['key']}}">{{sections[i]["description"]}}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="row">
+                <div class="col-md-12 text-right">
+                  <p>
+                    <a class="btn btn-primary" href="{{sections[i]['link']}}" target="_blank"><i class="fa fa-external-link"></i>&nbsp;&nbsp;View Original Source</a>&nbsp;
+                    <a class="btn btn-default section-delete" href="javascript:void(0);" data-pid={{pid}} data-key="{{sections[i]['key']}}">Delete</a>
+                  </p>
+                </div>
+              </div>
+              {% if sections[i]["type"] == "image" %}
+                <img src={{sections[i]['content']}} width="640" />
+              {% else %}
+                <table class="table">
+                  <thead>
+                      <tr>
+                        {% for c in range(sections[i]["content"][0] | length) %}
+                          <th scope="col">{{sections[i]["content"][0][c]}}</th>
+                        {% endfor %}
+                      </tr>
+                  </thead>
+                  <tbody id="auc-rows">
+                    {% for r in range(sections[i]["content"] | length) %}
+                      {% if r > 0 %}
+                        <tr>
+                          {% for c in range(sections[i]["content"][r] | length) %}
+                            <td>{{sections[i]["content"][r][c]}}</td>
+                          {% endfor %}
+                        </tr>
+                      {% endif %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div id="push" style="height:42px;"></div>
+    </div>
+
+    {% include 'footer-full.html' %}
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/plugins/bootbox.min.js"></script>
+    <script src="/static/js/core.shared.js"></script>
+    <script src="/static/js/core.notebook.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
+
+  </body>
+</html>

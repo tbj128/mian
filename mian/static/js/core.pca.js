@@ -81,7 +81,11 @@ function createSpecificListeners() {
     });
 
     $("#download-svg").click(function() {
-        downloadSVG("pca." + $("#catvar").val());
+        downloadSVG("pcoa." + $("#catvar").val());
+    });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("PCoA (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n");
     });
 }
 

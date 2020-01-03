@@ -71,6 +71,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("nmds." + $("#catvar").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("NMDS (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n");
+    });
 }
 
 //

@@ -73,10 +73,32 @@
       margin-bottom: 6px;
     }
 
+
+    #saved-to-notebook {
+      position: fixed;
+      top:50px;
+      left:50%;
+      margin-left: -160px;
+      width:320px;
+      text-align: center;
+      padding:12px 24px;
+      color: #3c763d;
+      background-color: #dff0d8;
+      border-color: #d6e9c6;
+      border-radius:0 0 6px 6px;
+      z-index:9999;
+    }
+
 </style>
+
+<div id="saved-to-notebook" style="display:none;">
+    <strong>Saved To Notebook</strong>&nbsp;&nbsp;|&nbsp;&nbsp;<a id="open-notebook" href="javascript:void(0);"><i class="fa fa-book"></i> Notebook</a>
+</div>
 
 <canvas id="donwload-canvas" width="1000px" height="600px" style="display:none;"></canvas>
 <div id="download-container">
+    <button id="save-to-notebook" class="btn btn-xs btn-default" type="button">Save Snapshot to Notebook</button>
+
     <button id="download-svg" class="btn btn-xs btn-default" type="button">Download</button>
 
     {% if share != True %}

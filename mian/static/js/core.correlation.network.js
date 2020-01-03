@@ -50,6 +50,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("corrleation.network." + $("#maxFeatures").val() + "." + $("#cutoff").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Correlation Network (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n");
+    });
 }
 
 //

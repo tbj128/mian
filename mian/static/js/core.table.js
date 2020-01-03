@@ -33,6 +33,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadCSV(tableResults);
     });
+
+    $("#save-to-notebook").click(function() {
+        saveTableToNotebook("Table", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
+    });
 }
 
 //

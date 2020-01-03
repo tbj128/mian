@@ -1064,6 +1064,23 @@ function getParameterByName(name, url) {
 }
 
 function downloadSVG(name) {
+    performActionOnSVG(name, "download");
+}
+
+function downloadCanvas(name, canvasID) {
+    var canvas = document.getElementById(canvasID);
+    canvas.toBlob(function(blob) {
+        saveAs(blob, name + ".png");
+    }, "image/png");
+}
+
+function downloadCSV(table) {
+    var csvContent = "data:text/csv;charset=utf-8," + table.map(function(e) { return e.join(","); }).join("\n");
+    var encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+}
+
+function performActionOnSVG(name, action, description = "") {
     $("#donwload-canvas").empty();
     var svgsElems = $("#analysis-container").children();
     var svgElemWidth = $("#analysis-container svg").width();
@@ -1108,10 +1125,13 @@ function downloadSVG(name) {
                 ctx.drawImage(document.getElementById('canvas'), 0, 0, $("#canvas").width(), $("#canvas").height(), $("#canvas").position().left * pixelRatio - outerPaddingX, $("#canvas").position().top * pixelRatio - outerPaddingY, $("#canvas").width() * pixelRatio, $("#canvas").height() * pixelRatio);
             }
 
-            var filename = name + ".png";
-
             $tmpCanvas[0].toBlob(function(blob) {
-                saveAs(blob, filename);
+                if (action === "download") {
+                    var filename = name + ".png";
+                    saveAs(blob, filename);
+                } else if (action === "save"){
+                    saveImageToNotebook(name, description, blob);
+                }
             });
 
             $tmpCanvas.empty();
@@ -1119,18 +1139,88 @@ function downloadSVG(name) {
     });
 }
 
-function downloadCanvas(name, canvasID) {
+//
+// Save to Notebook common functions
+//
+
+$("#open-notebook").click(function() {
+    window.open("/notebook?pid=" + $("#project").val(), "_blank");
+});
+
+function saveImageToNotebook(title, description, image) {
+    var reader = new FileReader();
+    reader.readAsDataURL(image);
+    reader.onloadend = function() {
+        var base64data = reader.result;
+
+        var data = {
+            pid: $("#project").val(),
+            image: base64data,
+            title: title,
+            description: description,
+            link: window.location.pathname + window.location.search,
+        };
+
+        $.ajax({
+            type: "POST",
+            url: getSharedPrefixIfNeeded() + "/save_image_to_notebook",
+            data: data,
+            success: function(result) {
+                $("#saved-to-notebook").show();
+                var timeout = window.setTimeout(function(){
+                    $("#saved-to-notebook").hide();
+                }, 5000);
+            },
+            error: function(err) {
+                console.log(err);
+            }
+        });
+    }
+}
+
+function saveSVGToNotebook(title, description) {
+    performActionOnSVG(title, "save", description);
+}
+
+function saveCanvasToNotebook(title, description, canvasID) {
     var canvas = document.getElementById(canvasID);
     canvas.toBlob(function(blob) {
-        saveAs(blob, name + ".png");
+        saveImageToNotebook(title, description, blob);
     }, "image/png");
 }
 
-function downloadCSV(table) {
-    var csvContent = "data:text/csv;charset=utf-8," + table.map(function(e) { return e.join(","); }).join("\n");
-    var encodedUri = encodeURI(csvContent);
-    window.open(encodedUri);
+function saveTableToNotebook(title, description, table) {
+    var data = {
+        pid: $("#project").val(),
+        table: JSON.stringify(table),
+        title: title,
+        description: description,
+        link: window.location.pathname + window.location.search,
+    };
+
+    $.ajax({
+        type: "POST",
+        url: getSharedPrefixIfNeeded() + "/save_table_to_notebook",
+        data: data,
+        success: function(result) {
+            $("#saved-to-notebook").show();
+            var timeout = window.setTimeout(function(){
+                $("#saved-to-notebook").hide();
+            }, 5000);
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    });
 }
+
+$("#").on('change', '.quantile-max', function() {
+    var sampleMetadata = $(this).data('metadata');
+    var index = parseInt($(this).data('index'));
+    quantileStaging.quantiles[index].max = $(this).val();
+    renderQuantileBar();
+});
+
 
 // Provides a simple hashing (non-secure)
 String.prototype.hashCode = function() {

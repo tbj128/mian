@@ -141,7 +141,11 @@ function createSpecificListeners() {
     });
 
     $("#download-svg").click(function() {
-        downloadCanvas("random_forest", "canvas");
+        downloadCanvas("linear_classifier", "canvas");
+    });
+
+    $("#save-to-notebook").click(function() {
+        saveCanvasToNotebook("Linear Classifier (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "Loss Function: " + $("#lossFunction option:selected").text() + "\n" + "L1 Regularization Ratio: " + $("#mixingRatio option:selected").text() + "\n", "canvas");
     });
 }
 

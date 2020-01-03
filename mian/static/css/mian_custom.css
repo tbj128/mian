@@ -306,6 +306,12 @@ hr.with-padding {
   margin-right: 2px;
 }
 
+.project-notebook {
+  float: right;
+  margin-top: -32px;
+  margin-right: 36px;
+}
+
 .project-item {
   width:100%;
   padding:24px;

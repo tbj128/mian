@@ -146,6 +146,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("correlations." + $("#corrvar1").val() + "." + $("#corrvar2").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Correlation Scatterplot", "X-Axis: " + $("#corrvar1").val() + "\n" + "Y-Axis: " + $("#corrvar2").val() + "\n" + "Size Variable: " + $("#sizevar").val() + "\n" + "Color Variable: " + $("#colorvar").val() + "\n");
+    });
 }
 
 //

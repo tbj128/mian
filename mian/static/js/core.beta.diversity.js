@@ -48,6 +48,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("beta.diversity." + $("#catvar").val() + "." + $("#strata").val() + "." + $("#betaType").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Beta Diversity (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "Strata Variable: " + $("#strata").val() + "\n" + "Diversity Type: " + $("#betaType option:selected").text() + "\n");
+    });
 }
 
 //

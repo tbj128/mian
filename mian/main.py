@@ -37,6 +37,8 @@ from mian.core.data_io import DataIO
 from mian.rutils import r_package_install
 from mian.model.quantiles import Quantiles
 from mian.model.genes import Genes
+from mian.model.notebook import Notebook
+from mian.model.notebook_section import NotebookSection
 
 r_package_install.importr_custom("permute")
 r_package_install.importr_custom("lattice")
@@ -241,6 +243,19 @@ def logout():
         return redirect(url_for('signup'))
     else:
         return redirect(url_for('login'))
+
+
+@app.route('/notebook')
+@flask_login.login_required
+def notebook():
+    pid = request.args.get('pid', '')
+    project_names_to_info = get_project_ids_to_info(current_user.id)
+    if pid not in project_names_to_info:
+        # User note authorized to view this project
+        return redirect(url_for('projects'))
+    nb = Notebook(current_user.id, pid)
+    sections = nb.sections
+    return render_template('notebook.html', uid=current_user.id, pid=pid, projectName=project_names_to_info[pid]["project_name"], sections=sections)
 
 
 @app.route('/projects')
@@ -1605,6 +1620,78 @@ def getIsSubsampled():
     #     return json.dumps(1)
     # else:
     #     return json.dumps(0)
+
+
+@app.route('/update_notebook_section_title', methods=['POST'])
+@flask_login.login_required
+def update_notebook_section_title():
+    user = current_user.id
+    pid = request.form['pid']
+    key = request.form['key']
+    title = request.form['title']
+    if title == "":
+        title = "   "
+
+    notebook = Notebook(user, pid)
+    notebook.update_section_title(key, title)
+    return json.dumps({})
+
+
+@app.route('/update_notebook_section_description', methods=['POST'])
+@flask_login.login_required
+def update_notebook_section_description():
+    user = current_user.id
+    pid = request.form['pid']
+    key = request.form['key']
+    description = request.form['description']
+
+    notebook = Notebook(user, pid)
+    notebook.update_section_description(key, description)
+    return json.dumps({})
+
+
+@app.route('/delete_notebook_section', methods=['POST'])
+@flask_login.login_required
+def delete_notebook_section():
+    user = current_user.id
+    pid = request.form['pid']
+    key = request.form['key']
+
+    notebook = Notebook(user, pid)
+    notebook.remove_section(key)
+    return json.dumps({})
+
+
+@app.route('/save_image_to_notebook', methods=['POST'])
+@flask_login.login_required
+def save_image_to_notebook():
+    user = current_user.id
+    pid = request.form['pid']
+    title = request.form['title']
+    description = request.form['description']
+    image = request.form['image']
+    link = request.form['link']
+
+    notebook = Notebook(user, pid)
+    notebook_section = NotebookSection(title=title, description=description, type="image", content=image, link=link)
+    notebook.add_section(notebook_section)
+    return json.dumps({})
+
+
+@app.route('/save_table_to_notebook', methods=['POST'])
+@flask_login.login_required
+def save_table_to_notebook():
+    user = current_user.id
+    pid = request.form['pid']
+    title = request.form['title']
+    description = request.form['description']
+    table = request.form['table']
+    link = request.form['link']
+
+    notebook = Notebook(user, pid)
+    notebook_section = NotebookSection(title=title, description=description, type="table", content=table, link=link)
+    notebook.add_section(notebook_section)
+    return json.dumps({})
 
 
 @app.route('/quantile_metadata_info', methods=['GET'])

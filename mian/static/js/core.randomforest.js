@@ -134,6 +134,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadCanvas("random_forest", "canvas");
     });
+
+    $("#save-to-notebook").click(function() {
+        saveCanvasToNotebook("Random Forest (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", "canvas");
+    });
 }
 
 function renderTrainingPlot() {

@@ -82,6 +82,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadCSV(tableResults);
     });
+
+    $("#save-to-notebook").click(function() {
+        saveTableToNotebook("Generalized Linear Model Feature Selection (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
+    });
 }
 
 //

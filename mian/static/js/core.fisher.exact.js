@@ -61,6 +61,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadCSV(tableResults);
     });
+
+    $("#save-to-notebook").click(function() {
+        saveTableToNotebook("Fisher Exact (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
+    });
 }
 
 //

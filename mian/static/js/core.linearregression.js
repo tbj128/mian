@@ -94,6 +94,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadCanvas("random_forest", "canvas");
     });
+
+    $("#save-to-notebook").click(function() {
+        saveCanvasToNotebook("Linear Regression (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "L1 Regularization Ratio: " + $("#mixingRatio option:selected").text() + "\n", "canvas");
+    });
 }
 
 //

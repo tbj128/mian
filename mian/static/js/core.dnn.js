@@ -248,6 +248,10 @@ function createSpecificListeners() {
         downloadCanvas("deep_learning", "canvas");
     });
 
+    $("#save-to-notebook").click(function() {
+        saveCanvasToNotebook("Deep Learning (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", "canvas");
+    });
+
     //
     // DNN Model Designer
     //

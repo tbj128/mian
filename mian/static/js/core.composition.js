@@ -69,6 +69,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("composition." + $("#catvar").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Composition (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "X-Axis Variable: " + $("#xaxis").val() + "\n");
+    });
 }
 
 //

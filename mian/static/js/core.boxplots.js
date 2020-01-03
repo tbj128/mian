@@ -79,6 +79,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("boxplots." + $("#catvar").val() + "." + $("#yvals").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Boxplot (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "Y-Axis Values: " + $("#yvals option:selected").text() + "\n");
+    });
 }
 
 function updateYvals(shouldUpdateAnalysis) {

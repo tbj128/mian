@@ -46,6 +46,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("rarefaction." + $("#maxsubsample").val() + "." + $("#subsamplestep").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveCanvasToNotebook("Rarefaction", "Color Variable: " + $("#colorvar option:selected").text() + "\n");
+    });
 }
 
 //

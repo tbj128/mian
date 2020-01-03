@@ -87,6 +87,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("composition.heatmap." + $("#catvar").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Composition Heatmap (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n");
+    });
 }
 
 //

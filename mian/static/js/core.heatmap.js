@@ -95,6 +95,10 @@ function createSpecificListeners() {
     $("#download-svg").click(function() {
         downloadSVG("heatmap." + $("#corrvar1").val() + "." + $("#corrvar2").val());
     });
+
+    $("#save-to-notebook").click(function() {
+        saveSVGToNotebook("Correlation Heatmap", "Columns: " + $("#corrvar1").val() + "\n" + "Rows: " + $("#corrvar2").val() + "\n");
+    });
 }
 
 //

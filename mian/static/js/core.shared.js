@@ -1119,6 +1119,13 @@ function downloadSVG(name) {
     });
 }
 
+function downloadCanvas(name, canvasID) {
+    var canvas = document.getElementById(canvasID);
+    canvas.toBlob(function(blob) {
+        saveAs(blob, name + ".png");
+    }, "image/png");
+}
+
 function downloadCSV(table) {
     var csvContent = "data:text/csv;charset=utf-8," + table.map(function(e) { return e.join(","); }).join("\n");
     var encodedUri = encodeURI(csvContent);

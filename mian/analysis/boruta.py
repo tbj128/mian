@@ -9,6 +9,7 @@
 # Imports
 #
 
+import numpy as np
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
@@ -43,6 +44,21 @@ class Boruta(object):
         return self.analyse(user_request, otu_table, headers, metadata_values, taxonomy_map)
 
     def analyse(self, user_request, otuTable, headers, metaVals, taxonomy_map):
+        # Subsample the input to match the training proportion
+        # We do this because we want to generate the microbial fingerprint on the training set and
+        # later independently test on a test set
+        #
+        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
+        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        training_proportion = float(user_request.get_custom_attr("trainingProportion"))
+        if fix_training and len(existing_training_indexes) > 0:
+            existing_training_indexes = [int(i) for i in existing_training_indexes]
+            training_indexes = np.array(existing_training_indexes)
+        else:
+            training_indexes = np.random.randint(len(metaVals), size=int(training_proportion * len(metaVals)))
+        otuTable = otuTable[training_indexes, :]
+        metaVals = [metaVals[i] for i in training_indexes]
+
         otu_to_genus = {}
         if int(user_request.level) == -1:
             # We want to display a short hint for the OTU using the genus (column 5)
@@ -84,6 +100,6 @@ class Boruta(object):
         abundancesObj = {}
         abundancesObj["results"] = assignments
         abundancesObj["hints"] = hints
+        abundancesObj["training_indexes"] = training_indexes.tolist()
 
         return abundancesObj
-

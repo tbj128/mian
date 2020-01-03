@@ -56,10 +56,13 @@ from mian.analysis.composition_heatmap import CompositionHeatmap
 from mian.analysis.correlations import Correlations
 from mian.analysis.correlation_network import CorrelationNetwork
 from mian.analysis.correlations_selection import CorrelationsSelection
+from mian.analysis.deep_neural_network import DeepNeuralNetwork
 from mian.analysis.differential_selection import DifferentialSelection
 from mian.analysis.fisher_exact import FisherExact
 from mian.analysis.glmnet import GLMNet
 from mian.analysis.heatmap import Heatmap
+from mian.analysis.linear_regression import LinearRegression
+from mian.analysis.linear_classifier import LinearClassifier
 from mian.analysis.nmds import NMDS
 from mian.analysis.pca import PCA
 from mian.analysis.random_forest import RandomForest
@@ -444,6 +447,17 @@ def beta_diversity_share():
     return render_sharing('beta_diversity.html', request)
 
 
+@app.route('/boruta')
+@flask_login.login_required
+def boruta():
+    return render_normal('boruta.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/boruta')
+def boruta_share():
+    return render_sharing('boruta.html', request, show_low_expression_filtering=True)
+
+
 @app.route('/boxplots')
 @flask_login.login_required
 def boxplots():
@@ -521,6 +535,17 @@ def correlations_selection_share():
     return render_sharing('correlations_selection.html', request, show_low_expression_filtering=True)
 
 
+@app.route('/deep_neural_network')
+@flask_login.login_required
+def deep_neural_network():
+    return render_normal('deep_neural_network.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/deep_neural_network')
+def deep_neural_network_share():
+    return render_sharing('deep_neural_network.html', request, show_low_expression_filtering=True)
+
+
 @app.route('/differential_selection')
 @flask_login.login_required
 def differential_selection():
@@ -563,6 +588,28 @@ def heatmap():
 @app.route('/share/heatmap')
 def heatmap_share():
     return render_sharing('heatmap.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/linear_classifier')
+@flask_login.login_required
+def linear_classifier():
+    return render_normal('linear_classifier.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/linear_classifier')
+def linear_classifier_share():
+    return render_sharing('linear_classifier.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/linear_regression')
+@flask_login.login_required
+def linear_regression():
+    return render_normal('linear_regression.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/linear_regression')
+def linear_regression_share():
+    return render_sharing('linear_regression.html', request, show_low_expression_filtering=True)
 
 
 @app.route('/nmds')
@@ -945,6 +992,9 @@ def getBorutaShare():
 def getBoruta(user_request, req):
     user_request.set_custom_attr("pval", req.form['pval'])
     user_request.set_custom_attr("maxruns", req.form['maxruns'])
+    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
 
     plugin = Boruta()
     abundances = plugin.run(user_request)
@@ -1140,6 +1190,41 @@ def getCorrelationsSelection(user_request, req):
 # ---
 
 
+@app.route('/deep_neural_network', methods=['POST'])
+@flask_login.login_required
+def getDeepNeuralNetworkSecure():
+    user_request = __get_user_request(request)
+    return getDeepNeuralNetwork(user_request, request)
+
+
+@app.route('/share/deep_neural_network', methods=['POST'])
+def getDeepNeuralNetworkShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getDeepNeuralNetwork(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getDeepNeuralNetwork(user_request, req):
+    user_request.set_custom_attr("epochs", int(req.form['epochs']))
+    user_request.set_custom_attr("dnnModel", json.loads(req.form['dnnModel']))
+    user_request.set_custom_attr("expvar", req.form['expvar'])
+    user_request.set_custom_attr("problemType", req.form['problemType'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr("validationProportion", float(req.form['validationProportion']))
+    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+
+    plugin = DeepNeuralNetwork()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
+# ---
+
+
 @app.route('/differential_selection', methods=['POST'])
 @flask_login.login_required
 def getDifferentialSelectionSecure():
@@ -1265,6 +1350,75 @@ def getHeatmap(user_request, req):
 # ---
 
 
+@app.route('/linear_classifier', methods=['POST'])
+@flask_login.login_required
+def getLinearClassifierSecure():
+    user_request = __get_user_request(request)
+    return getLinearClassifier(user_request, request)
+
+
+@app.route('/share/linear_classifier', methods=['POST'])
+def getLinearClassifierShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getLinearClassifier(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getLinearClassifier(user_request, req):
+    user_request.set_custom_attr("lossFunction", req.form['lossFunction'])
+    user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
+    user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+
+    plugin = LinearClassifier()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
+
+
+# ---
+
+
+@app.route('/linear_regression', methods=['POST'])
+@flask_login.login_required
+def getLinearRegressionSecure():
+    user_request = __get_user_request(request)
+    return getLinearRegression(user_request, request)
+
+
+@app.route('/share/linear_regression', methods=['POST'])
+def getLinearRegressionShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getLinearRegression(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getLinearRegression(user_request, req):
+    user_request.set_custom_attr("expvar", req.form['expvar'])
+    user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
+    user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+
+    plugin = LinearRegression()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
+
+# ---
+
+
 @app.route('/random_forest', methods=['POST'])
 @flask_login.login_required
 def getRandomForestSecure():
@@ -1285,6 +1439,9 @@ def getRandomForestShare():
 def getRandomForest(user_request, req):
     user_request.set_custom_attr("numTrees", req.form['numTrees'])
     user_request.set_custom_attr("maxDepth", req.form['maxDepth'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
 
     plugin = RandomForest()
     abundances = plugin.run(user_request)

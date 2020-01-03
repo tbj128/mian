@@ -1,5 +1,6 @@
- // ============================================================
-// Random Forest JS Component
+// ============================================================
+// Boruta Feature Selection JS Component
+// Feature Selection flow chart: http://proceedings.mlr.press/v10/liu10b/liu10b.pdf
 // ============================================================
 
 //
@@ -7,6 +8,8 @@
 //
 var tableResults = [];
 var expectedLoadFactor = 500;
+var cachedTrainingIndexes = null;
+var cachedSelectedFeatures = null;
 
 //
 // Initialization
@@ -22,32 +25,26 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 function initializeFields() {
-
-    if (getParameterByName("method") !== null) {
-        if (getParameterByName("method") === "boruta") {
-            $("#boruta-params").show();
-            $("#rf-params").hide();
-        } else {
-            $("#boruta-params").hide();
-            $("#rf-params").show();
-        }
-    } else {
-        $("#boruta-params").show();
-        $("#rf-params").hide();
-    }
-
-    if (getParameterByName("numTrees") !== null) {
-        $("#numTrees").val(getParameterByName("numTrees"));
-    }
-    if (getParameterByName("maxDepth") !== null) {
-        $("#maxDepth").val(getParameterByName("maxDepth"));
-    }
-
     if (getParameterByName("maxruns") !== null) {
         $("#maxruns").val(getParameterByName("maxruns"));
     }
     if (getParameterByName("pval") !== null) {
         $("#pval").val(getParameterByName("pval"));
+    }
+    if (getParameterByName("trainingProportion") !== null) {
+        $("#trainingProportion").val(getParameterByName("trainingProportion"));
+    }
+    if (getParameterByName("fixTraining") !== null) {
+        $("#fixTraining").val(getParameterByName("fixTraining"));
+
+        if ($("#fixTraining").val() === "yes") {
+            $("#trainingProportion").prop("readonly", true);
+        } else {
+            $("#trainingProportion").prop("readonly", false);
+        }
+    }
+    if (getParameterByName("trainingIndexes") !== null) {
+        cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
     }
 }
 
@@ -59,34 +56,43 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
-    $("#method").change(function() {
-        updateAnalysis();
-
-        if ($("#method").val() === "boruta") {
-            $("#boruta-params").show();
-            $("#rf-params").hide();
-        } else {
-            $("#boruta-params").hide();
-            $("#rf-params").show();
-        }
-    });
-
-    $("#numTrees").change(function() {
-        updateAnalysis();
-    });
-    $("#maxDepth").change(function() {
-        updateAnalysis();
-    });
-
     $("#maxruns").change(function() {
         updateAnalysis();
     });
+
     $("#pval").change(function() {
+        updateAnalysis();
+    });
+
+    $("#trainingProportion").change(function() {
+        updateAnalysis();
+    });
+
+    $("#fixTraining").change(function() {
+
+        if ($("#fixTraining").val() === "yes") {
+            $("#trainingProportion").prop("readonly", true);
+        } else {
+            $("#trainingProportion").prop("readonly", false);
+        }
+
         updateAnalysis();
     });
 
     $("#download-svg").click(function() {
         downloadCSV(tableResults);
+    });
+
+    $("#send-to-rf").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/random_forest?pid=' + $("#project").val() + '&ref=boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures), '_blank');
+        }
+    });
+
+    $("#send-to-dnn").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures) + '&expvar=' + $("#catvar").val(), '_blank');
+        }
     });
 }
 
@@ -95,39 +101,7 @@ function createSpecificListeners() {
 //
 function customLoading() {}
 
-function renderTable(abundancesObj) {
-    $("#boruta-container").hide();
-    $("#rf-container").show();
-
-    if ($.isEmptyObject(abundancesObj)) {
-        return;
-    }
-
-    $("#rf-stats-rows").empty();
-    var statsArr = abundancesObj["results"];
-    var hints = abundancesObj["hints"];
-
-    tableResults = [];
-    tableResults.push(["Taxonomy", "Importance"]);
-
-    for (var i = 0; i < statsArr.length; i++) {
-        var hint = "";
-        if (hints[statsArr[i][0]] && hints[statsArr[i][0]] !== "") {
-            hint = " <small class='text-muted'>(" + hints[statsArr[i][0]] + ")</small>";
-        }
-        var r =
-            "<tr><td>" + statsArr[i][0] + hint + "</td><td>" + statsArr[i][1] + "</td></tr>";
-        $("#rf-stats-rows").append(r);
-        tableResults.push([statsArr[i][0], statsArr[i][1]]);
-    }
-
-    $("#cmd-run").text(abundancesObj["cmd"]);
-}
-
 function renderBorutaTable(abundancesObj) {
-    $("#boruta-container").show();
-    $("#rf-container").hide();
-
     if ($.isEmptyObject(abundancesObj)) {
         return;
     }
@@ -211,8 +185,8 @@ function updateAnalysis() {
     var method = $("#method").val();
     var pval = $("#pval").val();
     var maxruns = $("#maxruns").val();
-    var numTrees = $("#numTrees").val();
-    var maxDepth = $("#maxDepth").val();
+    var trainingProportion = $("#trainingProportion").val();
+    var fixTraining = $("#fixTraining").val();
 
     if (catvar === "none") {
         loadNoCatvar();
@@ -231,55 +205,45 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         level: level,
         catvar: catvar,
-        method: method
+        trainingProportion: trainingProportion,
+        fixTraining: fixTraining,
+        pval: pval,
+        maxruns: maxruns,
+        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
     };
 
-    if (method === "boruta") {
-        data["pval"] = pval;
-        data["maxruns"] = maxruns;
-
-        $.ajax({
-            type: "POST",
-            url: getSharedPrefixIfNeeded() + "/boruta" + getSharedUserProjectSuffixIfNeeded(),
-            data: data,
-            success: function(result) {
-                var abundancesObj = JSON.parse(result);
-                if (!$.isEmptyObject(abundancesObj["results"])) {
-                    loadSuccess()
-                    renderBorutaTable(abundancesObj);
+    $.ajax({
+        type: "POST",
+        url: getSharedPrefixIfNeeded() + "/boruta" + getSharedUserProjectSuffixIfNeeded(),
+        data: data,
+        success: function(result) {
+            var abundancesObj = JSON.parse(result);
+            if (!$.isEmptyObject(abundancesObj["results"])) {
+                cachedTrainingIndexes = [...abundancesObj["training_indexes"]];
+                if (abundancesObj["results"]["Confirmed"]) {
+                    cachedSelectedFeatures = [...abundancesObj["results"]["Confirmed"]];
                 } else {
-                    loadNoResults();
+                    cachedSelectedFeatures = [];
                 }
-            },
-            error: function(err) {
-                loadError();
-                console.log(err);
-            }
-        });
-    } else {
-        data["numTrees"] = numTrees;
-        data["maxDepth"] = maxDepth;
 
-        $.ajax({
-            type: "POST",
-            url: getSharedPrefixIfNeeded() + "/random_forest" + getSharedUserProjectSuffixIfNeeded(),
-            data: data,
-            success: function(result) {
-                var abundancesObj = JSON.parse(result);
-                if (!$.isEmptyObject(abundancesObj["results"])) {
-                    loadSuccess();
-                    renderTable(abundancesObj);
-                } else {
-                    loadNoResults();
-                }
-            },
-            error: function(err) {
-                loadError();
-                console.log(err);
+                loadSuccess();
+                $("#send-to-container").show();
+                renderBorutaTable(abundancesObj);
+
+                // Hack to update the URL with the training indexes
+                data["trainingIndexes"] = cachedTrainingIndexes;
+                setGetParameters(data);
+            } else {
+                loadNoResults();
+                $("#send-to-container").hide();
             }
-        });
-    }
+        },
+        error: function(err) {
+            loadError();
+            console.log(err);
+            $("#send-to-container").hide();
+        }
+    });
 
     setGetParameters(data);
-
 }

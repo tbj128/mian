@@ -8,18 +8,21 @@
 #
 # Imports
 #
+from sklearn import svm
+
 import pandas as pd
-from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.linear_model import ElasticNet, SGDClassifier
+from sklearn.metrics import mean_absolute_error, mean_squared_error, roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.utils import shuffle
 
 from mian.model.otu_table import OTUTable
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
 import numpy as np
 
 
-class RandomForest(object):
+class LinearClassifier(object):
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
@@ -30,11 +33,12 @@ class RandomForest(object):
         return self.analyse(user_request, otu_table, headers, metadata_vals)
 
     def analyse(self, user_request, otu_table, headers, metadata_vals):
+        loss_function = user_request.get_custom_attr("lossFunction")
         fix_training = user_request.get_custom_attr("fixTraining")
         training_proportion = user_request.get_custom_attr("trainingProportion")
         existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
-        num_trees = int(user_request.get_custom_attr("numTrees"))
-        max_depth = int(user_request.get_custom_attr("maxDepth")) if user_request.get_custom_attr("maxDepth") != "" else None
+        mixing_ratio = float(user_request.get_custom_attr("mixingRatio"))
+        max_iterations = int(user_request.get_custom_attr("maxIterations"))
 
         # NORMALIZE THE DATASET
         df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
@@ -46,9 +50,9 @@ class RandomForest(object):
 
         X = norm(df)
 
-        le = LabelEncoder()
-        le.fit(metadata_vals)
-        Y = le.transform(metadata_vals)
+        mlb = MultiLabelBinarizer()
+        Y = mlb.fit_transform([(a,) for a in metadata_vals])
+        print(Y)
 
         if fix_training == "yes" and len(existing_training_indexes) > 0:
             existing_training_indexes = np.array([int(i) for i in existing_training_indexes])
@@ -64,22 +68,18 @@ class RandomForest(object):
             X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices,
                                                                                      train_size=training_proportion)
 
-        rf = RandomForestClassifier(n_estimators=num_trees, max_depth=max_depth, oob_score=True)
-        rf.fit(X_train, y_train)
+        classifier = OneVsRestClassifier(SGDClassifier(loss=loss_function, l1_ratio=mixing_ratio, max_iter=max_iterations))
+        classifier.fit(X_train, y_train)
+        test_probs = classifier.decision_function(X_test)
+        train_accuracy = classifier.score(X_train, y_train)
+        test_accuracy = classifier.score(X_test, y_test)
 
-        accuracy = rf.score(X_test, y_test)
-        probs = np.array(rf.predict_proba(X_test))
         class_to_roc = {}
-        classes = rf.classes_
-        i = 0
-        for c in classes:
-            orig_c = list(le.inverse_transform([c]))[0]
-            y_test_mask = []
-            for y in y_test:
-                y_test_mask.append(1 if y == c else 0)
-            fpr, tpr, thresholds = roc_curve(y_test_mask, probs[:, i])
-            auc = roc_auc_score(y_test_mask, probs[:, i])
-            class_to_roc[orig_c] = {
+        for i in range(len(mlb.classes_)):
+            fpr, tpr, _ = roc_curve(y_test[:, i], test_probs[:, i])
+            auc = roc_auc_score(y_test[:, i], test_probs[:, i])
+
+            class_to_roc[mlb.classes_[i]] = {
                 "fpr": [a.item() for a in fpr],
                 "tpr": [a.item() for a in tpr],
                 "auc": auc.item()
@@ -87,8 +87,8 @@ class RandomForest(object):
             i += 1
 
         abundances_obj = {
-            "oob_error": 1 - rf.oob_score_,
-            "accuracy": accuracy,
+            "train_accuracy": train_accuracy,
+            "test_accuracy": test_accuracy,
             "class_to_roc": class_to_roc,
             "training_indexes": ind_train.tolist()
         }

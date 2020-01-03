@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Random Forest Classifier - Machine Learning - Mian</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css" rel="stylesheet">
+    <title>Boruta - Feature Selection - Mian</title>
 </head>
 
 <body>
@@ -11,7 +10,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Random Forest Classifier <i class="fa fa-info-circle" data-toggle="popover" data-title="Random Forest" data-content="Selects the important taxonomic items (features) that are used to select for the metadata value in a random forest<br /><br />This test relies on the RandomForestRegressor module in the Python 'scikit-learn' library <a href='http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html'>here</a>"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Boruta with Random Forest <i class="fa fa-info-circle" data-toggle="popover" data-title="Random Forest" data-content="Selects the important taxonomic items (features) that are used to select for the metadata value in a random forest<br /><br />This test relies on the RandomForestRegressor module in the Python 'scikit-learn' library <a href='http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html'>here</a>"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -56,17 +55,11 @@
                 <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
                 <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
 
-                <label class="control-label">Training Validation Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="validationProportion" name="validationProportion" type="number" value="0.3"/>
+                <label class="control-label">Max Epochs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
+                <input class="form-control" id="maxruns" name="maxruns" type="number" value="100"/>
 
-                <label class="control-label">Training Epochs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
-                <input class="form-control" id="epochs" name="epochs" type="number" value="100"/>
-
-                <label class="control-label">Number of Trees  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
-                <input class="form-control" id="numTrees" name="numTrees" type="number" value="10"/>
-
-                <label class="control-label">Max Tree Depth  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="maxDepth" name="maxDepth" type="number" value="" />
+                <label class="control-label">P-Value Threshold  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <input class="form-control" id="pval" name="pval" type="number" value="0.01"/>
               </div>
             </div>
         </div>
@@ -91,34 +84,28 @@
     {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-        <div id="referral-alert" class="alert alert-success" role="alert" style="display:none;">
-            <strong>Feature Selection </strong>A random forest classifier is being built using features selected by the <strong><span id="referer-name"></span></strong> feature selection module
+        <div id="send-to-container" style="display:none;">
+            <div id="machine-learning-alert" class="alert alert-success" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) technique. ML will use the same training set as the feature selection</div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h4>Train and test selected features with...</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <button class="btn btn-default" type="button" id="send-to-rf">Random Forest</button>
+                    <button class="btn btn-default" type="button" id="send-to-dnn">Deep Learning</button>
+                </div>
+            </div>
+            <hr style="margin-bottom: 12px" />
         </div>
-        <table class="table">
+
+        <table class="table table-hover">
             <thead>
-                <tr>
-                  <th scope="col">Out-of-Bag Training Error</th>
-                  <th scope="col">Test Accuracy</th>
-                </tr>
+            <tr id="boruta-stats-headers">
+            </tr>
             </thead>
-            <tbody>
-                <tr>
-                  <td id="oob-error"></td>
-                  <td id="accuracy"></td>
-                </tr>
-            </tbody>
-        </table>
-        <hr />
-        <h4>ROC Curve (Test Data)</h4>
-		<canvas id="canvas"></canvas>
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col">Label</th>
-                  <th scope="col">Area Under the Curve (AUC)</th>
-                </tr>
-            </thead>
-            <tbody id="auc-rows">
+            <tbody id="boruta-stats-rows">
             </tbody>
         </table>
     </div><!-- /.container -->
@@ -130,9 +117,7 @@
 
 
 <!-- Include custom JS here -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-<script src="/static/js/palette.js"></script>
-<script src="/static/js/core.randomforest.js"></script>
+<script src="/static/js/core.boruta.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->

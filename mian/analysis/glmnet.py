@@ -83,6 +83,7 @@ class GLMNet(object):
         }
         
         # Use the lambda to get the actual model
+        # Note: x is standardized by default but coefficients are returned on original scale
         glmnet.model <- glmnet(x,y,alpha=alphaVal,family=familyType,lambda=lambda)
         scAll = coef(glmnet.model)
         

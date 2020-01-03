@@ -17,7 +17,8 @@ setup(
         'scipy',
         'werkzeug>=0.15.3',
         'scikit-bio',
-        'pandas'
+        'pandas',
+        'Keras==2.3.1'
     ],
     license='MIT',
     author='Tom Jin',

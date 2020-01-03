@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Random Forest Classifier - Machine Learning - Mian</title>
+    <title>Deep Neural Network - Machine Learning - Mian</title>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css" rel="stylesheet">
 </head>
 
@@ -10,8 +11,36 @@
 {% include 'navigation.html' %}
 {% include 'loading-bar.html' %}
 
+<div id="dnn-box" class="popup" style="display:none">
+    <div id="dnn-content">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Define Neural Network</h3>
+            </div>
+        </div>
+        <hr class="with-padding" />
+
+        <div id="dnn-layers"></div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <button id="dnn-add-layer" type="button" class="btn btn-default">+ Add Layer</button>
+            </div>
+        </div>
+
+        <hr class="with-padding" />
+
+        <div class="pull-right" role="group" style="margin-top:8px;">
+            <button id="dnn-cancel" type="button" class="btn btn-default">Cancel</button>
+            <button id="dnn-save" type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
+<div id="blackout" class="blackout" style="display:none"></div>
+
+
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Random Forest Classifier <i class="fa fa-info-circle" data-toggle="popover" data-title="Random Forest" data-content="Selects the important taxonomic items (features) that are used to select for the metadata value in a random forest<br /><br />This test relies on the RandomForestRegressor module in the Python 'scikit-learn' library <a href='http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html'>here</a>"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Deep Neural Network <i class="fa fa-info-circle" data-toggle="popover" data-title="Random Forest" data-content="Selects the important taxonomic items (features) that are used to select for the metadata value in a random forest<br /><br />This test relies on the RandomForestRegressor module in the Python 'scikit-learn' library <a href='http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html'>here</a>"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -43,8 +72,8 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
-                <select id="catvar" name="catvar" class="form-control">
+                <label class="control-label">Experimental Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <select id="expvar" name="expvar" class="form-control">
                 </select>
 
                 <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
@@ -62,11 +91,34 @@
                 <label class="control-label">Training Epochs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
                 <input class="form-control" id="epochs" name="epochs" type="number" value="100"/>
 
-                <label class="control-label">Number of Trees  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
-                <input class="form-control" id="numTrees" name="numTrees" type="number" value="10"/>
+                <label class="control-label">Problem Type <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <select id="problemType" name="problemType" class="form-control pad-bottom">
+                    <option value="classification">Classification</option>
+                    <option value="regression">Regression</option>
+                </select>
 
-                <label class="control-label">Max Tree Depth  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="maxDepth" name="maxDepth" type="number" value="" />
+                <div id="regressionMeasureContainer" style="display:none">
+                    <label class="control-label">Measure <i class="fa fa-info-circle" data-toggle="popover" data-title="Measure" data-content="The measure used to assess the training and test performance of regression problems" data-trigger="hover"></i></label>
+                    <select id="regressionMeasure" name="regressionMeasure" class="form-control pad-bottom">
+                        <option value="mae">Mean Absolute Error</option>
+                        <option value="mse">Mean Squared Error</option>
+                    </select>
+                </div>
+
+                <div id="classificationMeasureContainer" style="display:none">
+                    <label class="control-label">Measure <i class="fa fa-info-circle" data-toggle="popover" data-title="Measure" data-content="The measure used to assess the training and test performance of classification problems" data-trigger="hover"></i></label>
+                    <select id="classificationMeasure" name="classificationMeasure" class="form-control pad-bottom">
+                        <option value="accuracy">Accuracy</option>
+                        <option value="loss">Cross-Entropy Loss</option>
+                    </select>
+                </div>
+
+                <label class="control-label">
+                    Layers: <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i>
+                    <a id="dnn-edit" href="javascript:void(0)">(Edit)</a>
+                </label>
+                <ul id="editor-layers">
+                </ul>
               </div>
             </div>
         </div>
@@ -75,6 +127,9 @@
 
 <div class="content-wrapper">
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
+
+        <div class="alert alert-warning" role="alert"><strong>Head's Up</strong> Deep learning methods are easy to overfit and are best suited when there are a lot of samples (> 100 samples).</div>
+
         <div class="row">
             <div class="col-md-3">
                 <i class="fa fa-exclamation-circle fa-4x"></i>
@@ -91,36 +146,26 @@
     {% include 'download_container.html' %}
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-        <div id="referral-alert" class="alert alert-success" role="alert" style="display:none;">
-            <strong>Feature Selection </strong>A random forest classifier is being built using features selected by the <strong><span id="referer-name"></span></strong> feature selection module
+        <div class="row">
+            <div class="col-md-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th id="test-error-measure"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="test-error-measure-val"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-9">
+                <div id="low-sample-warning" class="alert alert-warning" role="alert" style="display:none;"><strong>Not Enough Samples Warning </strong>Results here may be susceptible to overfitting and show high variation between runs</div>
+            </div>
         </div>
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col">Out-of-Bag Training Error</th>
-                  <th scope="col">Test Accuracy</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                  <td id="oob-error"></td>
-                  <td id="accuracy"></td>
-                </tr>
-            </tbody>
-        </table>
-        <hr />
-        <h4>ROC Curve (Test Data)</h4>
 		<canvas id="canvas"></canvas>
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col">Label</th>
-                  <th scope="col">Area Under the Curve (AUC)</th>
-                </tr>
-            </thead>
-            <tbody id="auc-rows">
-            </tbody>
-        </table>
     </div><!-- /.container -->
 
     <div id="push" style="height:42px;"></div>
@@ -131,8 +176,7 @@
 
 <!-- Include custom JS here -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-<script src="/static/js/palette.js"></script>
-<script src="/static/js/core.randomforest.js"></script>
+<script src="/static/js/core.dnn.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->

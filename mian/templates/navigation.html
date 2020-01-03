@@ -63,17 +63,35 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Feature Selection <span class="caret"></span></a>
           <ul class="dropdown-menu">
             {% if share %}
-            <li><a class="nav-link" href="/share/random_forest">Random Forest</a></li>
+            <li><a class="nav-link" href="/share/random_forest">Boruta</a></li>
             <li><a class="nav-link" href="/share/glmnet">Generalized Linear Model</a></li>
             <li><a class="nav-link" href="/share/fisher_exact">Fisher Exact Test</a></li>
             <li><a class="nav-link" href="/share/differential_selection">Differential Selection</a></li>
             <li><a class="nav-link" href="/share/correlations_selection">Correlations Selection</a></li>
             {% else %}
-            <li><a class="nav-link" href="/random_forest">Random Forest</a></li>
+            <li><a class="nav-link" href="/boruta">Boruta</a></li>
             <li><a class="nav-link" href="/glmnet">Generalized Linear Model</a></li>
             <li><a class="nav-link" href="/fisher_exact">Fisher Exact Test</a></li>
             <li><a class="nav-link" href="/differential_selection">Differential Selection</a></li>
             <li><a class="nav-link" href="/correlations_selection">Correlations Selection</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Machine Learning <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            {% if share %}
+            <li><a class="nav-link" href="/share/linear_regression">Linear Regressor</a></li>
+            <li><a class="nav-link" href="/share/linear_classifier">Linear Classifier</a></li>
+            <li><a class="nav-link" href="/share/random_forest">Random Forest Classifier</a></li>
+            <li><a class="nav-link" href="/share/deep_neural_network">Deep Learning</a></li>
+            {% else %}
+            <li><a class="nav-link" href="/linear_regression">Linear Regressor</a></li>
+            <li><a class="nav-link" href="/linear_classifier">Linear Classifier</a></li>
+            <li><a class="nav-link" href="/random_forest">Random Forest Classifier</a></li>
+            <li><a class="nav-link" href="/deep_neural_network">Deep Learning</a></li>
             {% endif %}
           </ul>
         </li>

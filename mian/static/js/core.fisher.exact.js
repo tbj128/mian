@@ -7,6 +7,8 @@
 //
 var tableResults = [];
 var expectedLoadFactor = 500;
+var cachedTrainingIndexes = null;
+var cachedSelectedFeatures = null;
 
 //
 // Initialization
@@ -28,8 +30,26 @@ function initializeFields() {
     if (getParameterByName("pwVar2") !== null) {
         $("#pwVar2").val(getParameterByName("pwVar2"));
     }
+    if (getParameterByName("pvalthreshold") !== null) {
+        $("#pvalthreshold").val(getParameterByName("pvalthreshold"));
+    }
     if (getParameterByName("minthreshold") !== null) {
         $("#minthreshold").val(getParameterByName("minthreshold"));
+    }
+    if (getParameterByName("trainingProportion") !== null) {
+        $("#trainingProportion").val(getParameterByName("trainingProportion"));
+    }
+    if (getParameterByName("fixTraining") !== null) {
+        $("#fixTraining").val(getParameterByName("fixTraining"));
+
+        if ($("#fixTraining").val() === "yes") {
+            $("#trainingProportion").prop("readonly", true);
+        } else {
+            $("#trainingProportion").prop("readonly", false);
+        }
+    }
+    if (getParameterByName("trainingIndexes") !== null) {
+        cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
     }
 }
 
@@ -58,12 +78,49 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#pvalthreshold").change(function() {
+        updateAnalysis();
+    });
+
+    $("#trainingProportion").change(function() {
+        updateAnalysis();
+    });
+
+    $("#fixTraining").change(function() {
+
+        if ($("#fixTraining").val() === "yes") {
+            $("#trainingProportion").prop("readonly", true);
+        } else {
+            $("#trainingProportion").prop("readonly", false);
+        }
+
+        updateAnalysis();
+    });
+
     $("#download-svg").click(function() {
         downloadCSV(tableResults);
     });
 
     $("#save-to-notebook").click(function() {
         saveTableToNotebook("Fisher Exact (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
+    });
+
+    $("#send-to-lc").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/linear_classifier?pid=' + $("#project").val() + '&ref=Fisher+Exact&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
+        }
+    });
+
+    $("#send-to-rf").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/random_forest?pid=' + $("#project").val() + '&ref=Fisher+Exact&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
+        }
+    });
+
+    $("#send-to-dnn").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=Fisher+Exact&problemType=classification&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#catvar").val(), '_blank');
+        }
     });
 }
 
@@ -165,6 +222,9 @@ function renderFisherTable(abundancesObj) {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
@@ -187,6 +247,10 @@ function updateAnalysis() {
         return;
     }
 
+    var trainingProportion = $("#trainingProportion").val();
+    var fixTraining = $("#fixTraining").val();
+    var pvalthreshold = $("#pvalthreshold").val();
+
     var data = {
         pid: $("#project").val(),
         taxonomyFilterCount: getLowCountThreshold(),
@@ -201,7 +265,11 @@ function updateAnalysis() {
         catvar: catvar,
         minthreshold: minthreshold,
         pwVar1: pwVar1,
-        pwVar2: pwVar2
+        pwVar2: pwVar2,
+        pvalthreshold: pvalthreshold,
+        trainingProportion: trainingProportion,
+        fixTraining: fixTraining,
+        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
     };
 
     setGetParameters(data);
@@ -215,13 +283,18 @@ function updateAnalysis() {
             if (!$.isEmptyObject(abundancesObj["results"])) {
                 loadSuccess();
                 renderFisherTable(abundancesObj);
+                $("#send-to-container").show();
+                cachedTrainingIndexes = [...abundancesObj["training_indexes"]];
+                cachedSelectedFeatures = abundancesObj["results"].map(d => d[0]);
             } else {
                 loadNoResults();
+                $("#send-to-container").hide();
             }
         },
         error: function(err) {
             loadError();
             console.log(err);
+            $("#send-to-container").hide();
         }
     });
 }

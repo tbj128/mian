@@ -89,6 +89,9 @@ function getTaxonomicLevel() {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
     $("#stats-container").fadeIn(250);
 

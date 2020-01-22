@@ -130,6 +130,9 @@ function uncompress(base64data) {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];

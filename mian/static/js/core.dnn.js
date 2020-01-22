@@ -123,10 +123,10 @@ function initializeFields() {
         dnnModel = JSON.parse(getParameterByName("dnnModel"));
     } else {
         dnnModel = [
-            {type: "dense", units: 10, dropoutfrac: 0},
-            {type: "dropout", units: 0, dropoutfrac: 0.5},
-            {type: "dense", units: 10, dropoutfrac: 0},
-            {type: "dropout", units: 0, dropoutfrac: 0.5},
+            {type: "dense", units: 10, dropoutfrac: 0, key: 1},
+            {type: "dropout", units: 0, dropoutfrac: 0.5, key: 2},
+            {type: "dense", units: 10, dropoutfrac: 0, key: 3},
+            {type: "dropout", units: 0, dropoutfrac: 0.5, key: 4},
         ];
     }
 
@@ -240,8 +240,10 @@ function createSpecificListeners() {
     });
 
     $("#blackout").click(function() {
+        renderDnnSidebar(dnnModel);
         $("#dnn-box").hide();
         $("#blackout").hide();
+        updateAnalysis();
     });
 
     $("#download-svg").click(function() {
@@ -256,17 +258,24 @@ function createSpecificListeners() {
     // DNN Model Designer
     //
     $("#dnn-add-layer").click(function() {
+        var now = Date.now();
         var newLayer = {
             type: "dense",
             units: 0,
-            dropoutfrac: 0
+            dropoutfrac: 0,
+            key: now,
         };
-        addDnnLayer(newLayer, dnnModel.length);
+        addDnnLayer(newLayer, now);
         dnnModel.push(newLayer);
     });
     $(document).on('click', '.dnn-remove-layer', function() {
-        $("#dnn-layer-" + $(this).data("layer")).remove();
-        dnnModel = dnnModel.splice($(this).data("layer"), 1);
+        var spliceKey = $(this).data("layer");
+        $("#dnn-layer-" + spliceKey).remove();
+        dnnModel.forEach(function(item, index, object) {
+            if (item["key"] === spliceKey) {
+                object.splice(index, 1);
+            }
+        });
     });
     $(document).on('change', '.dnn-layer-type', function() {
         if ($(this).val() === "dense") {
@@ -310,8 +319,8 @@ function renderDnnSidebar(dnnModel) {
 }
 
 function renderDnnDesigner(dnnModel) {
-    dnnModel.map((layer, i) => {
-        addDnnLayer(layer, i);
+    dnnModel.map((layer) => {
+        addDnnLayer(layer, layer["key"]);
     });
 }
 
@@ -321,8 +330,8 @@ function addDnnLayer(layer, i) {
             <div class="col-md-3">
                 <label class="control-label">Layer Type</label>
                 <select id="dnn-layer-type-${i}" class="form-control dnn-layer-type" data-layer="${i}">
-                    <option value="dense">Dense</option>
-                    <option value="dropout">Dropout</option>
+                    ${layer.type === "dense" ? '<option value="dense" selected>Dense</option>' : '<option value="dense">Dense</option>'}
+                    ${layer.type === "dropout" ? '<option value="dropout" selected>Dropout</option>' : '<option value="dropout">Dropout</option>'}
                 </select>
             </div>
             <div id="dnn-layer-type-dense-${i}" class="col-md-3" style="${layer.type !== 'dense' && 'display: none;'}">
@@ -385,6 +394,9 @@ function renderTrainingPlot() {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];

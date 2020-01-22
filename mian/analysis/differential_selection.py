@@ -14,6 +14,7 @@ from mian.core.statistics import Statistics
 import logging
 from skbio.stats.composition import ancom
 import pandas as pd
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -47,6 +48,17 @@ class DifferentialSelection(object):
                     otu_to_genus[header] = taxonomy_map[header][5]
                 else:
                     otu_to_genus[header] = ""
+
+        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
+        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        training_proportion = float(user_request.get_custom_attr("trainingProportion"))
+        if fix_training and len(existing_training_indexes) > 0:
+            existing_training_indexes = [int(i) for i in existing_training_indexes]
+            training_indexes = np.array(existing_training_indexes)
+        else:
+            training_indexes = np.random.randint(len(metadata_vals), size=int(training_proportion * len(metadata_vals)))
+        base = base[training_indexes, :]
+        metadata_vals = [metadata_vals[i] for i in training_indexes]
 
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
         catVar1 = user_request.get_custom_attr("pwVar1")
@@ -97,7 +109,10 @@ class DifferentialSelection(object):
                     otus.append({"otu": otu_id, "pval": pval, "qval": qval})
             j += 1
 
-        return {"differentials": otus}
+        return {
+            "differentials": otus,
+            "training_indexes": training_indexes.tolist()
+        }
 
     def analyse_with_ancom(self, user_request, base, headers, sample_labels, metadata_vals, taxonomy_map):
         otu_to_genus = {}
@@ -108,6 +123,17 @@ class DifferentialSelection(object):
                     otu_to_genus[header] = taxonomy_map[header][5]
                 else:
                     otu_to_genus[header] = ""
+
+        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
+        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        training_proportion = float(user_request.get_custom_attr("trainingProportion"))
+        if fix_training and len(existing_training_indexes) > 0:
+            existing_training_indexes = [int(i) for i in existing_training_indexes]
+            training_indexes = np.array(existing_training_indexes)
+        else:
+            training_indexes = np.random.randint(len(metadata_vals), size=int(training_proportion * len(metadata_vals)))
+        base = base[training_indexes, :]
+        metadata_vals = [metadata_vals[i] for i in training_indexes]
 
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
         catVar1 = user_request.get_custom_attr("pwVar1")
@@ -156,4 +182,8 @@ class DifferentialSelection(object):
                 else:
                     otus.append({"otu": headers[i], "pval": "< " + str(pvalthreshold), "qval": "N/A for ANCOM"})
             i += 1
-        return {"differentials": otus}
+
+        return {
+            "differentials": otus,
+            "training_indexes": training_indexes.tolist()
+        }

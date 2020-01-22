@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Boruta - Feature Selection - Mian</title>
+    <title>Elastic Net Selection Classification - Feature Selection - Mian</title>
 </head>
 
 <body>
@@ -10,7 +10,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Boruta with Random Forest <i class="fa fa-info-circle" data-toggle="popover" data-title="Random Forest" data-content="Selects the important taxonomic items (features) that are used to select for the metadata value in a random forest<br />"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;Elastic Net Selection Regression <i class="fa fa-info-circle" data-toggle="popover" data-title="Glmnet" data-content="Selects the relevant features that predict the grouping metadata using Generalized Linear Models.<br /><br />This test relies on the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf' target='_blank'>here</a>" data-trigger="hover"></i></h3>
 
     {% include 'project_list.html' %}
 
@@ -46,6 +46,18 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
+                <label class="control-label">Features to Keep  <i class="fa fa-info-circle" data-toggle="popover" data-title="Features to Keep" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <input class="form-control" id="keep" name="keep" type="number" value="" placeholder="Leave blank for all relevant features"/>
+
+                <label class="control-label">Loss Function <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <select id="lossFunction" name="lossFunction" class="form-control">
+                    <option value="hinge" selected>Hinge</option>
+                    <option value="log" >Log (Logistic)</option>
+                    <option value="modified_huber" >Huber</option>
+                    <option value="squared_hinge" >Squared Hinge</option>
+                    <option value="perceptron" >Perceptron</option>
+                </select>
+
                 <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
                 <select id="fixTraining" name="fixTraining" class="form-control">
                     <option value="yes">Yes</option>
@@ -55,11 +67,11 @@
                 <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
                 <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
 
-                <label class="control-label">Max Epochs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
-                <input class="form-control" id="maxruns" name="maxruns" type="number" value="100"/>
+                <label class="control-label">L1 Regularization Ratio  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
+                <input class="form-control" id="mixingRatio" name="mixingRatio" type="number" value="0.5"/>
 
-                <label class="control-label">P-Value Threshold  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="pval" name="pval" type="number" value="0.01"/>
+                <label class="control-label">Max Iterations  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <input class="form-control" id="maxIterations" name="maxIterations" type="number" value="1000"/>
               </div>
             </div>
         </div>
@@ -75,42 +87,34 @@
             <div class="col-md-9">
                 <h3>Choose a Categorical Variable Attribute</h3>
                 <p>
-                    Create a random forest to selects the taxonomic groups/OTUs that can differentiate between the chosen categorical variable values. The weights of the taxonomic groups/OTUs the algorithm considers most important according to the <a href='https://cran.r-project.org/web/packages/Boruta/Boruta.pdf' target='_blank'>Boruta feature selection algorithm</a> will be displayed.
+                    The Elastic Net classification algorithm will fit a linear model with elastic-net regularization based on the selected categorical variable label. This analysis will then select the most important taxonomic group/OTUs used within the model.
                 </p>
             </div>
         </div>
     </div>
-    {% include 'notifications.html' %}
+    {% include 'notifications-error.html' %}
     {% include 'download_container.html' %}
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-        <div id="send-to-container" style="display:none;">
-            <div id="machine-learning-alert" class="alert alert-success" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) technique. ML will use the same training set as the feature selection</div>
-            <div class="row">
-                <div class="col-md-12">
-                    <h4>Train and test selected features with...</h4>
-                </div>
+    <div id="display-no-results" class="display-notification project-empty" style="display:none;">
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
             </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <button class="btn btn-default" type="button" id="send-to-lc">Linear Classifier</button>
-                    <button class="btn btn-default" type="button" id="send-to-rf">Random Forest</button>
-                    <button class="btn btn-default" type="button" id="send-to-dnn">Deep Learning</button>
-                </div>
+            <div class="col-md-9">
+                <h3>No taxonomic groups/OTUs were selected</h3>
+                <p>
+                    No taxonomic groups/OTUs had a non-zero coefficient in the selected model. Try adjusting the parameters to yield more results.
+                </p>
             </div>
-            <hr style="margin-bottom: 12px" />
         </div>
+    </div>
 
-        <table class="table table-hover">
-            <thead>
-            <tr id="boruta-stats-headers">
-            </tr>
-            </thead>
-            <tbody id="boruta-stats-rows">
-            </tbody>
-        </table>
+    <div class="analysis-container">
+        <div id="machine-learning-alert" class="alert alert-success" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) technique. ML will use the same training set as the feature selection</div>
+    </div>
+
+    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
     </div><!-- /.container -->
-
     <div id="push" style="height:42px;"></div>
 </div>
 
@@ -118,7 +122,7 @@
 
 
 <!-- Include custom JS here -->
-<script src="/static/js/core.boruta.js"></script>
+<script src="/static/js/core.elasticnet.classification.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->

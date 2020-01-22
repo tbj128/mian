@@ -297,6 +297,9 @@ function renderNetwork(abundancesObj) {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     var type = $("#type").val();
     if (type === "SampleID") {
         showLoading();

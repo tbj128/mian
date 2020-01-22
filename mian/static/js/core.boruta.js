@@ -87,15 +87,21 @@ function createSpecificListeners() {
         saveTableToNotebook("Boruta (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
     });
 
+    $("#send-to-lc").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/linear_classifier?pid=' + $("#project").val() + '&ref=Boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
+        }
+    });
+
     $("#send-to-rf").click(function() {
         if (cachedTrainingIndexes != null) {
-            window.open('/random_forest?pid=' + $("#project").val() + '&ref=boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures), '_blank');
+            window.open('/random_forest?pid=' + $("#project").val() + '&ref=Boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
         }
     });
 
     $("#send-to-dnn").click(function() {
         if (cachedTrainingIndexes != null) {
-            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures) + '&expvar=' + $("#catvar").val(), '_blank');
+            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=Boruta&problemType=classification&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#catvar").val(), '_blank');
         }
     });
 }
@@ -173,6 +179,9 @@ function renderBorutaTable(abundancesObj) {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
@@ -211,9 +220,9 @@ function updateAnalysis() {
         catvar: catvar,
         trainingProportion: trainingProportion,
         fixTraining: fixTraining,
+        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
         pval: pval,
         maxruns: maxruns,
-        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
     };
 
     $.ajax({

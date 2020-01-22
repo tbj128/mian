@@ -12,7 +12,7 @@
 #
 # ======== R specific setup =========
 #
-
+import numpy as np
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
@@ -90,6 +90,17 @@ class FisherExact(object):
                 else:
                     otu_to_genus[header] = ""
 
+        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
+        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        training_proportion = float(user_request.get_custom_attr("trainingProportion"))
+        if fix_training and len(existing_training_indexes) > 0:
+            existing_training_indexes = [int(i) for i in existing_training_indexes]
+            training_indexes = np.array(existing_training_indexes)
+        else:
+            training_indexes = np.random.randint(len(metaVals), size=int(training_proportion * len(metaVals)))
+        otuTable = otuTable[training_indexes, :]
+        metaVals = [metaVals[i] for i in training_indexes]
+
         groups = robjects.FactorVector(robjects.StrVector(metaVals))
         # Forms an OTU only table (without IDs)
         allOTUs = []
@@ -104,6 +115,7 @@ class FisherExact(object):
         catVar1 = user_request.get_custom_attr("pwVar1")
         catVar2 = user_request.get_custom_attr("pwVar2")
         minthreshold = user_request.get_custom_attr("minthreshold")
+        pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
 
         fisherResults = self.rStats.fisher_exact(dataf, groups, catVar1, catVar2, int(minthreshold))
 
@@ -120,10 +132,13 @@ class FisherExact(object):
                     newRow.append(str(fisherResults[i][j]))
                 j += 1
             otu = newRow[0]
+
             if int(user_request.level) == -1:
                 hints[otu] = otu_to_genus[otu]
             i += 1
-            results.append(newRow)
+
+            if float(newRow[1]) < pvalthreshold:
+                results.append(newRow)
 
         cat1 = catVar1
         cat2 = catVar2
@@ -132,5 +147,6 @@ class FisherExact(object):
         abundancesObj["hints"] = hints
         abundancesObj["cat1"] = cat1
         abundancesObj["cat2"] = cat2
+        abundancesObj["training_indexes"] = training_indexes.tolist()
 
         return abundancesObj

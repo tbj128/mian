@@ -47,20 +47,31 @@
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
-                <select id="fixTraining" name="fixTraining" class="form-control">
-                    <option value="yes">Yes</option>
-                    <option value="no" selected>No</option>
+                <label class="control-label">Cross-Validate on... <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <select id="crossValidate" name="crossValidate" class="form-control">
+                    <option value="train">Training Set Only</option>
+                    <option value="full">Full Dataset</option>
                 </select>
 
-                <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
+                <label class="control-label">Cross-Validation Folds <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <input class="form-control" id="crossValidateFolds" name="crossValidateFolds" type="number" value="3" />
 
-                <label class="control-label">Training Validation Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="validationProportion" name="validationProportion" type="number" value="0.3"/>
+                <div id="trainingConfig">
+                    <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                    <select id="fixTraining" name="fixTraining" class="form-control">
+                        <option value="yes">Yes</option>
+                        <option value="no" selected>No</option>
+                    </select>
 
-                <label class="control-label">Training Epochs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
-                <input class="form-control" id="epochs" name="epochs" type="number" value="100"/>
+                    <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                    <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7" />
+
+                    <label class="control-label">Show ROC for... <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                    <select id="rocFor" name="rocFor" class="form-control">
+                        <option value="train">Cross-Validated Training Data</option>
+                        <option value="test">Test Data</option>
+                    </select>
+                </div>
 
                 <label class="control-label">Number of Trees  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
                 <input class="form-control" id="numTrees" name="numTrees" type="number" value="10"/>
@@ -97,14 +108,16 @@
         <table class="table">
             <thead>
                 <tr>
-                  <th scope="col">Out-of-Bag Training Error</th>
-                  <th scope="col">Test Accuracy</th>
+                    <th scope="col">Out-of-Bag Training Error</th>
+                    <th scope="col">Cross-Validation Accuracy</th>
+                    <th scope="col">Test Accuracy</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                  <td id="oob-error"></td>
-                  <td id="accuracy"></td>
+                    <td id="oob-error"></td>
+                    <td id="cv-accuracy"></td>
+                    <td id="test-accuracy"></td>
                 </tr>
             </tbody>
         </table>

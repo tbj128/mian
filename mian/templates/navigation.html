@@ -63,14 +63,16 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Feature Selection <span class="caret"></span></a>
           <ul class="dropdown-menu">
             {% if share %}
-            <li><a class="nav-link" href="/share/random_forest">Boruta</a></li>
-            <li><a class="nav-link" href="/share/glmnet">Generalized Linear Model</a></li>
+            <li><a class="nav-link" href="/share/random_forest">Boruta Classification</a></li>
+            <li><a class="nav-link" href="/share/elastic_net_selection_classification">Elastic Net Classification</a></li>
+            <li><a class="nav-link" href="/share/elastic_net_selection_regression">Elastic Net Regression</a></li>
             <li><a class="nav-link" href="/share/fisher_exact">Fisher Exact Test</a></li>
             <li><a class="nav-link" href="/share/differential_selection">Differential Selection</a></li>
             <li><a class="nav-link" href="/share/correlations_selection">Correlations Selection</a></li>
             {% else %}
-            <li><a class="nav-link" href="/boruta">Boruta</a></li>
-            <li><a class="nav-link" href="/glmnet">Generalized Linear Model</a></li>
+            <li><a class="nav-link" href="/boruta">Boruta Classification</a></li>
+            <li><a class="nav-link" href="/elastic_net_selection_classification">Elastic Net Classification</a></li>
+            <li><a class="nav-link" href="/elastic_net_selection_regression">Elastic Net Regression</a></li>
             <li><a class="nav-link" href="/fisher_exact">Fisher Exact Test</a></li>
             <li><a class="nav-link" href="/differential_selection">Differential Selection</a></li>
             <li><a class="nav-link" href="/correlations_selection">Correlations Selection</a></li>

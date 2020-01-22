@@ -6,6 +6,7 @@
 # ===========================================
 
 from scipy import stats, math
+import numpy as np
 
 from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.analysis.analysis_base import AnalysisBase
@@ -31,6 +32,16 @@ class CorrelationsSelection(AnalysisBase):
         against = user_request.get_custom_attr("against")
         expvar = user_request.get_custom_attr("expvar")
         pvalthreshold = user_request.get_custom_attr("pvalthreshold")
+
+        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
+        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        training_proportion = float(user_request.get_custom_attr("trainingProportion"))
+        if fix_training and len(existing_training_indexes) > 0:
+            existing_training_indexes = [int(i) for i in existing_training_indexes]
+            training_indexes = np.array(existing_training_indexes)
+        else:
+            training_indexes = np.random.randint(len(otu_table), size=int(training_proportion * len(otu_table)))
+        otu_table = otu_table[training_indexes, :]
 
         if expvar == "":
             return {"correlations": []}
@@ -64,13 +75,17 @@ class CorrelationsSelection(AnalysisBase):
                 r += 1
 
         taxonomy_map = otu_metadata.get_taxonomy_map()
+        against_vals = [against_vals[i] for i in training_indexes]
 
         if select == "gene":
-            return self.analyse_select_gene(user_request, sample_labels, against_vals, pvalthreshold)
+            abunObj = self.analyse_select_gene(user_request, sample_labels, against_vals, pvalthreshold)
         elif select == "metadata":
-            return self.analyse_select_metadata(user_request, sample_labels, against_vals, pvalthreshold)
+            abunObj = self.analyse_select_metadata(user_request, sample_labels, against_vals, pvalthreshold)
         else:
-            return self.analyse_select_otu(user_request, otu_table, headers, against_vals, taxonomy_map, pvalthreshold)
+            abunObj = self.analyse_select_otu(user_request, otu_table, headers, against_vals, taxonomy_map, pvalthreshold)
+
+        abunObj["training_indexes"] = training_indexes.tolist()
+        return abunObj
 
     def analyse_select_gene(self, user_request, sample_labels, against_vals, pvalthreshold):
         genes = Genes(user_request.user_id, user_request.pid)

@@ -77,6 +77,16 @@
                 <label class="control-label">P-Value Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="Only results whose correlational selection p-value was less than this threshold will be displayed"></i></label>
                 <input class="form-control" id="pvalthreshold" name="pvalthreshold" type="number" value="0.05" min="0"
                        max="1" step="0.01"/>
+
+                <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <select id="fixTraining" name="fixTraining" class="form-control">
+                    <option value="yes">Yes</option>
+                    <option value="no" selected>No</option>
+                </select>
+
+                <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
+
               </div>
             </div>
         </div>
@@ -100,6 +110,22 @@
     {% include 'notifications.html' %}
     {% include 'download_container.html' %}
     <div id="analysis-container" class="analysis-container" style="display:none;">
+        <div id="send-to-container" style="display:none;">
+            <div id="machine-learning-alert" class="alert alert-success" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) technique. ML will use the same training set as the feature selection</div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h4>Train and test selected features with...</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <button class="btn btn-default" type="button" id="send-to-lr">Linear Regressor</button>
+                    <button class="btn btn-default" type="button" id="send-to-dnn">Deep Learning</button>
+                </div>
+            </div>
+            <hr style="margin-bottom: 12px" />
+        </div>
+
         <h4>Correlation Results with <span id="correlation-metadata"></span></h4>
         <table id="correlation-table" class="table table-hover">
             <thead>

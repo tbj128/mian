@@ -76,6 +76,19 @@ function initializeFields() {
         $("#maxIterations").val(getParameterByName("maxIterations"));
     }
 
+    if (getParameterByName("crossValidate") !== null) {
+        $("#crossValidate").val(getParameterByName("crossValidate"));
+        if ($("#crossValidate").val() === "full") {
+            $("#trainingConfig").hide();
+        } else {
+            $("#trainingConfig").show();
+        }
+    }
+
+    if (getParameterByName("crossValidateFolds") !== null) {
+        $("#crossValidateFolds").val(getParameterByName("crossValidateFolds"));
+    }
+
     if (getParameterByName("fixTraining") !== null) {
         $("#fixTraining").val(getParameterByName("fixTraining"));
 
@@ -88,6 +101,10 @@ function initializeFields() {
 
     if (getParameterByName("trainingProportion") !== null) {
         $("#trainingProportion").val(getParameterByName("trainingProportion"));
+    }
+
+    if (getParameterByName("rocFor") !== null) {
+        $("#rocFor").val(getParameterByName("rocFor"));
     }
 
     if (getParameterByName("trainingIndexes") !== null) {
@@ -123,6 +140,19 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#crossValidate").change(function() {
+        if ($("#crossValidate").val() === "full") {
+            $("#trainingConfig").hide();
+        } else {
+            $("#trainingConfig").show();
+        }
+        updateAnalysis();
+    });
+
+    $("#crossValidateFolds").change(function() {
+        updateAnalysis();
+    });
+
     $("#trainingProportion").change(function() {
         updateAnalysis();
     });
@@ -134,6 +164,11 @@ function createSpecificListeners() {
             $("#trainingProportion").prop("readonly", false);
         }
         updateAnalysis();
+    });
+
+    $("#rocFor").change(function() {
+        renderTrainingPlot();
+        setGetParameters(getUpdateAnalysisData());
     });
 
     $("#blackout").click(function() {
@@ -156,11 +191,24 @@ function renderTrainingPlot() {
 
     $("#auc-rows").empty();
 
-    var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj["class_to_roc"]).length);
+    var trainOrTestKey = ($("#rocFor").val() === "train" || $("#crossValidate").val() === "full") ? "train_class_to_roc" : "test_class_to_roc";
+    var curveType = "Test Data";
+    if ($("#crossValidate").val() === "full") {
+        curveType = "Cross-Validated Full Data";
+    } else if ($("#rocFor").val() === "train") {
+        curveType = "Cross-Validated Training Data";
+    }
+    $("#roc-curve-type").text(curveType);
+
+    var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj[trainOrTestKey]).length);
     config.data.datasets = [];
     var i = 0;
-    for (var k in cachedAbundancesObj["class_to_roc"]) {
-        $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["class_to_roc"][k]["auc"] + "</td></tr>");
+    for (var k in cachedAbundancesObj[trainOrTestKey]) {
+        if ($("#rocFor").val() === "train" || $("#crossValidate").val() === "full") {
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td></tr>");
+        } else {
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
+        }
         config.data.datasets.push({
             label: k,
             backgroundColor: "#" + colors[i],
@@ -168,10 +216,10 @@ function renderTrainingPlot() {
             data: [],
             fill: false,
             lineTension: 0,
-            data: cachedAbundancesObj["class_to_roc"][k]["tpr"].map((val, i) => {
+            data: cachedAbundancesObj[trainOrTestKey][k]["tpr"].map((val, i) => {
                 return {
-                    x: cachedAbundancesObj["class_to_roc"][k]["fpr"][i],
-                    y: cachedAbundancesObj["class_to_roc"][k]["tpr"][i]
+                    x: cachedAbundancesObj[trainOrTestKey][k]["fpr"][i],
+                    y: cachedAbundancesObj[trainOrTestKey][k]["tpr"][i]
                 }
             }),
         });
@@ -186,9 +234,7 @@ function renderTrainingPlot() {
 //
 function customLoading() {}
 
-function updateAnalysis() {
-    showLoading(expectedLoadFactor);
-
+function getUpdateAnalysisData() {
     var level = taxonomyLevels[getTaxonomicLevel()];
 
     var taxonomyFilter = getSelectedTaxFilter();
@@ -203,11 +249,6 @@ function updateAnalysis() {
     var trainingProportion = $("#trainingProportion").val();
     var fixTraining = $("#fixTraining").val();
 
-    if (catvar === "none") {
-        loadNoCatvar();
-        return;
-    }
-
     var data = {
         pid: $("#project").val(),
         taxonomyFilterCount: getLowCountThreshold(),
@@ -220,16 +261,34 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         level: level,
         catvar: catvar,
+        crossValidate: $("#crossValidate").val(),
+        crossValidateFolds: $("#crossValidateFolds").val(),
         lossFunction: $("#lossFunction").val(),
         mixingRatio: $("#mixingRatio").val(),
         maxIterations: $("#maxIterations").val(),
         fixTraining: fixTraining,
         trainingProportion: trainingProportion,
+        rocFor: $("#rocFor").val(),
         trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
     };
     if (getParameterByName("ref") != null) {
         data["ref"] = getParameterByName("ref");
     }
+    return data;
+}
+
+function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
+    showLoading(expectedLoadFactor);
+
+    if (catvar === "none") {
+        loadNoCatvar();
+        return;
+    }
+
+    var data = getUpdateAnalysisData();
 
     $.ajax({
         type: "POST",
@@ -238,20 +297,21 @@ function updateAnalysis() {
         success: function(result) {
             var abundancesObj = JSON.parse(result);
             cachedAbundancesObj = abundancesObj;
-            cachedTrainingIndexes = cachedAbundancesObj["training_indexes"];
 
+            if (cachedAbundancesObj["training_indexes"]) {
+                cachedTrainingIndexes = cachedAbundancesObj["training_indexes"];
+                data["trainingIndexes"] = cachedTrainingIndexes;
+            } else {
+                data["trainingIndexes"] = [];
+            }
             // Hack to update the URL with the training indexes
-            data["trainingIndexes"] = cachedTrainingIndexes;
             setGetParameters(data);
 
-            if (abundancesObj["training_indexes"].length > 0) {
-                loadSuccess();
-                $("#train-accuracy").text(abundancesObj["train_accuracy"]);
-                $("#test-accuracy").text(abundancesObj["test_accuracy"]);
-                renderTrainingPlot();
-            } else {
-                loadNoResults();
-            }
+            loadSuccess();
+            $("#cv-accuracy").text(`${abundancesObj["cv_accuracy"]} ± ${abundancesObj["cv_accuracy_std"]}`);
+            $("#test-accuracy").text(`${abundancesObj["test_accuracy"] ? abundancesObj["test_accuracy"] : "N/A"}`);
+
+            renderTrainingPlot();
         },
         error: function(err) {
             loadError();

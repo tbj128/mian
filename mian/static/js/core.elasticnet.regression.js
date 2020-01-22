@@ -1,5 +1,5 @@
 // ============================================================
-// Random Forest JS Component
+// Elastic Net Regression JS Component
 // ============================================================
 
 //
@@ -14,6 +14,7 @@ var cachedTrainingIndexes = null;
 //
 // Initialization
 //
+var initialExpVar = getParameterByName("expvar");
 initializeFields();
 initializeComponent({
     hasCatVar: true,
@@ -24,27 +25,18 @@ createSpecificListeners();
 //
 // Initializes fields based on the URL params
 //
-var initialExpVar = getParameterByName("expvar");
 function initializeFields() {
+
     if (getParameterByName("mixingRatio") !== null) {
         $("#mixingRatio").val(getParameterByName("mixingRatio"));
     }
 
+    if (getParameterByName("keep") !== null) {
+        $("#keep").val(getParameterByName("keep"));
+    }
+
     if (getParameterByName("maxIterations") !== null) {
         $("#maxIterations").val(getParameterByName("maxIterations"));
-    }
-
-    if (getParameterByName("crossValidate") !== null) {
-        $("#crossValidate").val(getParameterByName("crossValidate"));
-        if ($("#crossValidate").val() === "full") {
-            $("#trainingConfig").hide();
-        } else {
-            $("#trainingConfig").show();
-        }
-    }
-
-    if (getParameterByName("crossValidateFolds") !== null) {
-        $("#crossValidateFolds").val(getParameterByName("crossValidateFolds"));
     }
 
     if (getParameterByName("fixTraining") !== null) {
@@ -64,15 +56,6 @@ function initializeFields() {
     if (getParameterByName("trainingIndexes") !== null) {
         cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
     }
-
-    if (getParameterByName("rocFor") !== null) {
-        $("#rocFor").val(getParameterByName("rocFor"));
-    }
-
-    if (getParameterByName("ref") !== null) {
-        $("#referral-alert").show();
-        $("#referer-name").text(getParameterByName("ref"));
-    }
 }
 
 //
@@ -83,20 +66,11 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#lossFunction").change(function() {
+        updateAnalysis();
+    });
+
     $("#mixingRatio").change(function() {
-        updateAnalysis();
-    });
-
-    $("#crossValidate").change(function() {
-        if ($("#crossValidate").val() === "full") {
-            $("#trainingConfig").hide();
-        } else {
-            $("#trainingConfig").show();
-        }
-        updateAnalysis();
-    });
-
-    $("#crossValidateFolds").change(function() {
         updateAnalysis();
     });
 
@@ -105,6 +79,10 @@ function createSpecificListeners() {
     });
 
     $("#trainingProportion").change(function() {
+        updateAnalysis();
+    });
+
+    $("#keep").change(function() {
         updateAnalysis();
     });
 
@@ -117,21 +95,49 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
-    $("#rocFor").change(function() {
-        renderTrainingPlot();
-        setGetParameters(getUpdateAnalysisData());
-    });
-
     $("#blackout").click(function() {
         $("#blackout").hide();
     });
 
     $("#download-svg").click(function() {
-        downloadCanvas("random_forest", "canvas");
+        downloadCSV(tableResults);
     });
 
     $("#save-to-notebook").click(function() {
-        saveCanvasToNotebook("Linear Regression (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "L1 Regularization Ratio: " + $("#mixingRatio option:selected").text() + "\n", "canvas");
+        saveTableToNotebook("Elastic Net Regression (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", tableResults);
+    });
+
+    $("#send-to-lr").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/linear_regression?pid=' + $("#project").val() + '&ref=Elastic+Net+Regression&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#expvar").val(), '_blank');
+        }
+    });
+
+    $("#send-to-dnn").click(function() {
+        if (cachedTrainingIndexes != null) {
+            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=Elastic+Net+Regression&problemType=regression&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#expvar").val(), '_blank');
+        }
+    });
+}
+
+function renderTable(featureMap, hints) {
+    cachedSelectedFeatures = featureMap["features"];
+    tableResults = [["Selected Feature", "Absolute Feature Weight"]];
+    featureMap["features"].map((feature, i) => {
+        newRow = [feature, featureMap["weights"][i]];
+        tableResults.push(newRow);
+    });
+
+    $("#analysis-container").empty();
+
+    $("#analysis-container").append("<div><table class='table table-hover'><thead><tr><th scope='col'>Selected Feature</th><th scope='col'>Absolute Feature Weight</th></tr></thead><tbody id='elasticnet-rows'></tbody></table><hr /></div>");
+
+    featureMap["features"].forEach((feature, i) => {
+        var hint = "";
+        if (hints[feature] && hints[feature] !== "") {
+            hint = " <small class='text-muted'>(" + hints[feature] + ")</small>";
+        }
+        $("#elasticnet-rows").append("<tr><td><a href='" + shareToBoxplotLink(feature) + "' target='_blank'>" + feature + "</a>" + hint + "</td><td>" + featureMap["weights"][i] + "</td></tr>");
     });
 }
 
@@ -140,8 +146,11 @@ function createSpecificListeners() {
 //
 function customLoading() {}
 
-
-function getUpdateAnalysisData() {
+function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
+    showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -157,6 +166,11 @@ function getUpdateAnalysisData() {
     var trainingProportion = $("#trainingProportion").val();
     var fixTraining = $("#fixTraining").val();
 
+    if (expvar === "None") {
+        loadNoCatvar();
+        return;
+    }
+
     var data = {
         pid: $("#project").val(),
         taxonomyFilterCount: getLowCountThreshold(),
@@ -169,68 +183,40 @@ function getUpdateAnalysisData() {
         sampleFilterVals: sampleFilterVals,
         level: level,
         expvar: expvar,
-        crossValidate: $("#crossValidate").val(),
-        crossValidateFolds: $("#crossValidateFolds").val(),
         mixingRatio: $("#mixingRatio").val(),
         maxIterations: $("#maxIterations").val(),
+        keep: $("#keep").val(),
         fixTraining: fixTraining,
         trainingProportion: trainingProportion,
         trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
     };
-    if (getParameterByName("ref") != null) {
-        data["ref"] = getParameterByName("ref");
-    }
-
-    return data;
-}
-
-
-function updateAnalysis() {
-    if (!loaded) {
-        return;
-    }
-    showLoading(expectedLoadFactor);
-
-    if (expvar === "None") {
-        loadNoCatvar();
-        return;
-    }
-
-    var data = getUpdateAnalysisData();
 
     $.ajax({
         type: "POST",
-        url: getSharedPrefixIfNeeded() + "/linear_regression" + getSharedUserProjectSuffixIfNeeded(),
+        url: getSharedPrefixIfNeeded() + "/elastic_net_selection_regression" + getSharedUserProjectSuffixIfNeeded(),
         data: data,
         success: function(result) {
             var abundancesObj = JSON.parse(result);
             cachedAbundancesObj = abundancesObj;
+            cachedTrainingIndexes = cachedAbundancesObj["training_indexes"];
 
-            if (cachedAbundancesObj["training_indexes"]) {
-                cachedTrainingIndexes = cachedAbundancesObj["training_indexes"];
-                data["trainingIndexes"] = cachedTrainingIndexes;
-            } else {
-                data["trainingIndexes"] = [];
-            }
             // Hack to update the URL with the training indexes
+            data["trainingIndexes"] = cachedTrainingIndexes;
             setGetParameters(data);
 
-            loadSuccess();
-            $("#train-mae").text(`${abundancesObj["train_mae"]} ± ${abundancesObj["train_mae_std"]}`);
-            $("#train-mse").text(`${abundancesObj["train_mse"]} ± ${abundancesObj["train_mse_std"]}`);
-            $("#cv-mae").text(`${abundancesObj["cv_mae"]} ± ${abundancesObj["cv_mae_std"]}`);
-            $("#cv-mse").text(`${abundancesObj["cv_mse"]} ± ${abundancesObj["cv_mse_std"]}`);
-            if (abundancesObj["test_mae"]) {
-                $("#test-mae").text(`${abundancesObj["test_mae"]}`);
-                $("#test-mse").text(`${abundancesObj["test_mse"]}`);
+            if (abundancesObj["training_indexes"].length > 0) {
+                loadSuccess();
+                $("#send-to-container").show();
+                renderTable(abundancesObj["feature_map"], abundancesObj["hints"]);
             } else {
-                $("#test-mae").text("N/A");
-                $("#test-mse").text("N/A");
+                loadNoResults();
+                $("#send-to-container").hide();
             }
         },
         error: function(err) {
             loadError();
             console.log(err);
+            $("#send-to-container").hide();
         }
     });
 
@@ -248,7 +234,7 @@ function customCatVarCallback(result) {
     //
     $("#expvar").empty();
     allHeaders.forEach(function(obj) {
-        if (expVarToType[obj] === "both" || expVarToType[obj] === "numeric") {
+        if (obj === "None" || expVarToType[obj] === "both" || expVarToType[obj] === "numeric") {
             $("#expvar").append(
                 '<option value="' + obj + '">' + obj + "</option>"
             );

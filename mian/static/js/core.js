@@ -228,6 +228,9 @@ $(document).ready(function() {
     }
 
     function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
         var level = getTaxonomicLevel();
         var taxonomy = $("#taxonomy-specific").val();
         var corrvar = $("#corrvar").val();

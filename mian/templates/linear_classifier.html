@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {% include 'header.html' %}
     <title>Linear Classifier - Machine Learning - Mian</title>
@@ -7,144 +8,152 @@
 </head>
 
 <body>
-{% include 'navigation.html' %}
-{% include 'loading-bar.html' %}
+    {% include 'navigation.html' %} {% include 'loading-bar.html' %}
 
-<div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Linear Classifier <i class="fa fa-info-circle" data-toggle="popover" data-title="Random Forest" data-content="Selects the important taxonomic items (features) that are used to select for the metadata value in a random forest<br /><br />This test relies on the RandomForestRegressor module in the Python 'scikit-learn' library <a href='http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html'>here</a>"></i></h3>
+    <div id="editor" class="editor">
+        <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Linear Classifier <i class="fa fa-info-circle" data-toggle="popover" data-title="Random Forest" data-content="Selects the important taxonomic items (features) that are used to select for the metadata value in a random forest<br /><br />This test relies on the RandomForestRegressor module in the Python 'scikit-learn' library <a href='http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html'>here</a>"></i></h3> {% include 'project_list.html' %}
 
-    {% include 'project_list.html' %}
+        <hr/>
 
-    <hr/>
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            {% include 'filtering_options.html' %}
 
-    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-        {% include 'filtering_options.html' %}
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab" id="headingAnalysisParameters">
+                    <h4 class="panel-title">
+                        <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
+                          Analysis Parameters
+                        </a>
+                    </h4>
+                </div>
+                <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
+                    <div class="panel-body">
 
-        <div class="panel panel-default">
-            <div class="panel-heading" role="tab" id="headingAnalysisParameters">
-              <h4 class="panel-title">
-                <a class="accordion-toggle" role="button" data-toggle="collapse" href="#analysisParameters" aria-expanded="true" aria-controls="analysisParameters">
-                  Analysis Parameters
-                </a>
-              </h4>
-            </div>
-            <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
-              <div class="panel-body">
+                        <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                        <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
+                            <option value="Kingdom">Kingdom</option>
+                            <option value="Phylum">Phylum</option>
+                            <option value="Class">Class</option>
+                            <option value="Order">Order</option>
+                            <option value="Family">Family</option>
+                            <option value="Genus">Genus</option>
+                            <option value="Species">Species</option>
+                            <option value="OTU" selected>OTU</option>
+                        </select>
 
-                <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
-                <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
-                    <option value="Kingdom">Kingdom</option>
-                    <option value="Phylum">Phylum</option>
-                    <option value="Class">Class</option>
-                    <option value="Order">Order</option>
-                    <option value="Family">Family</option>
-                    <option value="Genus">Genus</option>
-                    <option value="Species">Species</option>
-                    <option value="OTU" selected>OTU</option>
-                </select>
+                        <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                        <select id="catvar" name="catvar" class="form-control">
+                        </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
-                <select id="catvar" name="catvar" class="form-control">
-                </select>
+                        <label class="control-label">Loss Function <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                        <select id="lossFunction" name="lossFunction" class="form-control">
+                            <option value="hinge" selected>Hinge</option>
+                            <option value="log">Log (Logistic)</option>
+                            <option value="modified_huber">Huber</option>
+                            <option value="squared_hinge">Squared Hinge</option>
+                            <option value="perceptron">Perceptron</option>
+                        </select>
 
-                <label class="control-label">Loss Function <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
-                <select id="lossFunction" name="lossFunction" class="form-control">
-                    <option value="hinge" selected>Hinge</option>
-                    <option value="log" >Log (Logistic)</option>
-                    <option value="modified_huber" >Huber</option>
-                    <option value="squared_hinge" >Squared Hinge</option>
-                    <option value="perceptron" >Perceptron</option>
-                </select>
+                        <label class="control-label">Cross-Validate on... <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                        <select id="crossValidate" name="crossValidate" class="form-control">
+                            <option value="train">Training Set Only</option>
+                            <option value="full">Full Dataset</option>
+                        </select>
 
-                <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
-                <select id="fixTraining" name="fixTraining" class="form-control">
-                    <option value="yes">Yes</option>
-                    <option value="no" selected>No</option>
-                </select>
+                        <label class="control-label">Cross-Validation Folds <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                        <input class="form-control" id="crossValidateFolds" name="crossValidateFolds" type="number" value="3" />
 
-                <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
+                        <div id="trainingConfig">
+                            <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                            <select id="fixTraining" name="fixTraining" class="form-control">
+                                <option value="yes">Yes</option>
+                                <option value="no" selected>No</option>
+                            </select>
 
-                <label class="control-label">Training Validation Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="validationProportion" name="validationProportion" type="number" value="0.3"/>
+                            <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                            <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7" />
 
-                <label class="control-label">Training Epochs  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
-                <input class="form-control" id="epochs" name="epochs" type="number" value="100"/>
+                            <label class="control-label">Show ROC for... <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                            <select id="rocFor" name="rocFor" class="form-control">
+                                <option value="train">Cross-Validated Training Data</option>
+                                <option value="test">Test Data</option>
+                            </select>
+                        </div>
 
-                <label class="control-label">L1 Regularization Ratio  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
-                <input class="form-control" id="mixingRatio" name="mixingRatio" type="number" value="0.5"/>
+                        <label class="control-label">L1 Regularization Ratio <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
+                        <input class="form-control" id="mixingRatio" name="mixingRatio" type="number" value="0.5" />
 
-                <label class="control-label">Max Iterations  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
-                <input class="form-control" id="maxIterations" name="maxIterations" type="number" value="1000"/>
-              </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="content-wrapper">
-    <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
-        <div class="row">
-            <div class="col-md-3">
-                <i class="fa fa-exclamation-circle fa-4x"></i>
-            </div>
-            <div class="col-md-9">
-                <h3>Choose a Categorical Variable Attribute</h3>
-                <p>
-                    Create a random forest to selects the taxonomic groups/OTUs that can differentiate between the chosen categorical variable values. The weights of the taxonomic groups/OTUs the algorithm considers most important according to the <a href='https://cran.r-project.org/web/packages/Boruta/Boruta.pdf' target='_blank'>Boruta feature selection algorithm</a> or the <a href='https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html' target='_blank'>Random Forest regressor</a> will be displayed.
-                </p>
+                        <label class="control-label">Max Iterations <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                        <input class="form-control" id="maxIterations" name="maxIterations" type="number" value="1000" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    {% include 'notifications.html' %}
-    {% include 'download_container.html' %}
 
-    <div id="analysis-container" class="analysis-container" style="min-height:500px;">
-        <div id="referral-alert" class="alert alert-success" role="alert" style="display:none;">
-            <strong>Feature Selection </strong>A random forest classifier is being built using features selected by the <strong><span id="referer-name"></span></strong> feature selection module
+    <div class="content-wrapper">
+        <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
+            <div class="row">
+                <div class="col-md-3">
+                    <i class="fa fa-exclamation-circle fa-4x"></i>
+                </div>
+                <div class="col-md-9">
+                    <h3>Choose a Categorical Variable Attribute</h3>
+                    <p>
+                        Create a random forest to selects the taxonomic groups/OTUs that can differentiate between the chosen categorical variable values. The weights of the taxonomic groups/OTUs the algorithm considers most important according to the <a href='https://cran.r-project.org/web/packages/Boruta/Boruta.pdf' target='_blank'>Boruta feature selection algorithm</a> or the <a href='https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html' target='_blank'>Random Forest regressor</a> will be displayed.
+                    </p>
+                </div>
+            </div>
         </div>
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col">Training Accuracy</th>
-                  <th scope="col">Test Accuracy</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                  <td id="train-accuracy"></td>
-                  <td id="test-accuracy"></td>
-                </tr>
-            </tbody>
-        </table>
-        <hr />
-        <h4>ROC Curve (Test Data)</h4>
-		<canvas id="canvas"></canvas>
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col">Label</th>
-                  <th scope="col">Area Under the Curve (AUC)</th>
-                </tr>
-            </thead>
-            <tbody id="auc-rows">
-            </tbody>
-        </table>
-    </div><!-- /.container -->
+        {% include 'notifications.html' %} {% include 'download_container.html' %}
 
-    <div id="push" style="height:42px;"></div>
-</div>
+        <div id="analysis-container" class="analysis-container" style="min-height:500px;">
+            <div id="referral-alert" class="alert alert-success" role="alert" style="display:none;">
+                <strong>Feature Selection </strong>A random forest classifier is being built using features selected by the <strong><span id="referer-name"></span></strong> feature selection module
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Cross-Validation Accuracy</th>
+                        <th scope="col">Test Accuracy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="cv-accuracy"></td>
+                        <td id="test-accuracy"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr />
+            <h4>ROC Curve (<span id="roc-curve-type"></span>)</h4>
+            <canvas id="canvas"></canvas>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Label</th>
+                        <th scope="col">Area Under the Curve (AUC)</th>
+                    </tr>
+                </thead>
+                <tbody id="auc-rows">
+                </tbody>
+            </table>
+        </div>
+        <!-- /.container -->
 
-{% include 'footer-viz-d3v4.html' %}
+        <div id="push" style="height:42px;"></div>
+    </div>
 
+    {% include 'footer-viz-d3v4.html' %}
 
-<!-- Include custom JS here -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-<script src="/static/js/palette.js"></script>
-<script src="/static/js/core.linearclassifier.js"></script>
+    <!-- Include custom JS here -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script src="/static/js/palette.js"></script>
+    <script src="/static/js/core.linearclassifier.js"></script>
 
-<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
 </body>
+
 </html>

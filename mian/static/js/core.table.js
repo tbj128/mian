@@ -65,6 +65,9 @@ function renderTableView(table) {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     $("#download-btn").hide();
     $("#too-large-message").hide();
     showLoading(expectedLoadFactor);

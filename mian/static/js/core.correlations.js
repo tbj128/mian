@@ -283,6 +283,9 @@ function loadOTUTableHeaders(corrvarType) {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
 
     var level = taxonomyLevels[$("#taxonomy").val()];

@@ -211,6 +211,9 @@ function renderGlmnetTable(abundancesObj) {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
     $("#display-poisson-error").hide();
 
@@ -263,12 +266,15 @@ function updateAnalysis() {
                 if (abundancesObj["error"]) {
                     hideLoading();
                     $("#display-poisson-error").show();
+                    $("#send-to-container").hide();
                 } else {
                     loadSuccess();
                     renderGlmnetTable(abundancesObj);
+                    $("#send-to-container").show();
                 }
             } else {
                 loadNoResults();
+                $("#send-to-container").hide();
             }
         },
         error: function(err) {

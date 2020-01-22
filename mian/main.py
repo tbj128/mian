@@ -60,6 +60,8 @@ from mian.analysis.correlation_network import CorrelationNetwork
 from mian.analysis.correlations_selection import CorrelationsSelection
 from mian.analysis.deep_neural_network import DeepNeuralNetwork
 from mian.analysis.differential_selection import DifferentialSelection
+from mian.analysis.elastic_net_selection_classification import ElasticNetSelectionClassification
+from mian.analysis.elastic_net_selection_regression import ElasticNetSelectionRegression
 from mian.analysis.fisher_exact import FisherExact
 from mian.analysis.glmnet import GLMNet
 from mian.analysis.heatmap import Heatmap
@@ -570,6 +572,28 @@ def differential_selection():
 @app.route('/share/differential_selection')
 def differential_selection_share():
     return render_sharing('differential_selection.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/elastic_net_selection_classification')
+@flask_login.login_required
+def elastic_net_selection_classification():
+    return render_normal('elastic_net_selection_classification.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/elastic_net_selection_classification')
+def elastic_net_selection_classification_share():
+    return render_sharing('elastic_net_selection_classification.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/elastic_net_selection_regression')
+@flask_login.login_required
+def elastic_net_selection_regression():
+    return render_normal('elastic_net_selection_regression.html', request, show_low_expression_filtering=True)
+
+
+@app.route('/share/elastic_net_selection_regression')
+def elastic_net_selection_regression_share():
+    return render_sharing('elastic_net_selection_regression.html', request, show_low_expression_filtering=True)
 
 
 @app.route('/fisher_exact')
@@ -1196,6 +1220,9 @@ def getCorrelationsSelection(user_request, req):
     user_request.set_custom_attr("against", req.form['against'])
     user_request.set_custom_attr("expvar", req.form['expvar'])
     user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = CorrelationsSelection()
     abundances = plugin.run(user_request)
@@ -1262,8 +1289,79 @@ def getDifferentialSelection(user_request, req):
     user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
     user_request.set_custom_attr("pwVar1", req.form['pwVar1'])
     user_request.set_custom_attr("pwVar2", req.form['pwVar2'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = DifferentialSelection()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
+# ---
+
+
+@app.route('/elastic_net_selection_classification', methods=['POST'])
+@flask_login.login_required
+def getElasticNetSelectionClassificationSecure():
+    user_request = __get_user_request(request)
+    return getElasticNetSelectionClassification(user_request, request)
+
+
+@app.route('/share/elastic_net_selection_classification', methods=['POST'])
+def getElasticNetSelectionClassificationShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getElasticNetSelectionClassification(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getElasticNetSelectionClassification(user_request, req):
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
+    user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
+    user_request.set_custom_attr("lossFunction", req.form['lossFunction'])
+    user_request.set_custom_attr("keep", req.form['keep'])
+
+    plugin = ElasticNetSelectionClassification()
+    abundances = plugin.run(user_request)
+    return json.dumps(abundances)
+
+
+# ---
+
+
+@app.route('/elastic_net_selection_regression', methods=['POST'])
+@flask_login.login_required
+def getElasticNetSelectionRegressionSecure():
+    user_request = __get_user_request(request)
+    return getElasticNetSelectionRegression(user_request, request)
+
+
+@app.route('/share/elastic_net_selection_regression', methods=['POST'])
+def getElasticNetSelectionRegressionShare():
+    if checkSharedValidity(request):
+        uid = request.args.get('uid', '')
+        user_request = __get_user_request(request, user=uid)
+        return getElasticNetSelectionRegression(user_request, request)
+    else:
+        abortNotShared()
+
+
+def getElasticNetSelectionRegression(user_request, req):
+    user_request.set_custom_attr("expvar", req.form['expvar'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
+    user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
+    user_request.set_custom_attr("keep", req.form['keep'])
+
+    plugin = ElasticNetSelectionRegression()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 
@@ -1292,6 +1390,10 @@ def getFisherExact(user_request, req):
     user_request.set_custom_attr("minthreshold", req.form['minthreshold'])
     user_request.set_custom_attr("pwVar1", req.form['pwVar1'])
     user_request.set_custom_attr("pwVar2", req.form['pwVar2'])
+    user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
+    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
+    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = FisherExact()
     abundances = plugin.run(user_request)
@@ -1386,6 +1488,8 @@ def getLinearClassifier(user_request, req):
     user_request.set_custom_attr("lossFunction", req.form['lossFunction'])
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
+    user_request.set_custom_attr("crossValidate", req.form['crossValidate'])
+    user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
     user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
@@ -1421,6 +1525,8 @@ def getLinearRegression(user_request, req):
     user_request.set_custom_attr("expvar", req.form['expvar'])
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
+    user_request.set_custom_attr("crossValidate", req.form['crossValidate'])
+    user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
     user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
@@ -1454,6 +1560,8 @@ def getRandomForestShare():
 def getRandomForest(user_request, req):
     user_request.set_custom_attr("numTrees", req.form['numTrees'])
     user_request.set_custom_attr("maxDepth", req.form['maxDepth'])
+    user_request.set_custom_attr("crossValidate", req.form['crossValidate'])
+    user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
     user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))

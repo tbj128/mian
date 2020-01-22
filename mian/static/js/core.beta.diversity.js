@@ -58,6 +58,9 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
     $("#permanova-loading").show();
     $("#permanova").empty();

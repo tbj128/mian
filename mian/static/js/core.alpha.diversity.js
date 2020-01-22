@@ -129,6 +129,9 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
 
     showLoading(expectedLoadFactor);
     var level = taxonomyLevels[getTaxonomicLevel()];

@@ -36,7 +36,7 @@ var taxonomyRenderedTypeahead = {};
 var genes = [];
 var geneRenderedTypeahead = {};
 
-var loaded = false;
+var loaded = true;
 
 //
 // Sets the initial field values based on the URL

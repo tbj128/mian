@@ -133,6 +133,9 @@ function updateYvals(shouldUpdateAnalysis) {
 
 // Required analysis entry-point method
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     console.log("Updating analysis");
 
     showLoading(expectedLoadFactor);

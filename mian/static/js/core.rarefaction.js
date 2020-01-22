@@ -259,6 +259,9 @@ function checkSubsampleWarning() {
 }
 
 function updateAnalysis() {
+    if (!loaded) {
+        return;
+    }
     showLoading(expectedLoadFactor);
 
     var colorvar = $("#colorvar").val();

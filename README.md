@@ -2,7 +2,7 @@
 description: '16S rRNA OTU table visualization, data analysis, and machine learning'
 ---
 
-# Mian
+# Mian Overview
 
 #### What is Mian?
 

@@ -132,7 +132,7 @@ If auto-subsampling produces a low number, your data might have outliers. Option
 
 Subsampling OTU tables is a point of contention in the research community \([1](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531), [2](https://www.polarmicrobes.org/how-i-learned-to-stop-worrying-and-love-subsampling-rarifying/)\), but is recommended here for comparative analysis. You may choose to proceed without normalization.
 
-![](.gitbook/assets/image%20%281%29.png)
+![](.gitbook/assets/image%20%289%29.png)
 
 
 

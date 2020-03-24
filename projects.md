@@ -2,7 +2,7 @@
 
 After creating a project, your projects home page will look like the following:
 
-![](.gitbook/assets/image%20%288%29.png)
+![](.gitbook/assets/image%20%2823%29.png)
 
 ### Download Files
 
@@ -24,7 +24,7 @@ On the left-panel, you can choose to create a quantile range on a quantitative v
 If you do not see any options in the second dropdown, you either did not upload a gene expression matrix file or you have no quantitative variables.
 {% endhint %}
 
-![](.gitbook/assets/image%20%285%29.png)
+![](.gitbook/assets/image%20%2814%29.png)
 
 You can have the system automatically \(and evenly\) bucketize the ranges according to the uploaded data, or you can provide your own custom quantile ranges. 
 
@@ -38,11 +38,11 @@ You can "View Original Source" to apply the same experimental settings to recrea
 
 Note that the experiment title and description are available for editing. 
 
-![](.gitbook/assets/image%20%283%29.png)
+![](.gitbook/assets/image%20%2812%29.png)
 
 To save a visualization or result, click the "Save Snapshot to Notebook" at the top of any tool.
 
-![](.gitbook/assets/image%20%287%29.png)
+![](.gitbook/assets/image%20%2822%29.png)
 
 ### Explore Your Data
 

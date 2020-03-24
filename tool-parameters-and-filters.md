@@ -23,7 +23,7 @@ OTU filtering is automatically applied on feature selection tools to improve per
 * Remove specific sample IDs by choosing the "Sample IDs" option
 * Remove entire sample groups by filtering by a categorical metadata variable \(eg. remove the entire control group to assess how the correlation changes\)
 
-![](.gitbook/assets/image%20%286%29.png)
+![](.gitbook/assets/image%20%288%29.png)
 
 
 

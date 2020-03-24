@@ -18,4 +18,10 @@
 * [Beta Diversity](beta-diversity.md)
 * [NMDS](nmds.md)
 * [PCoA](pcoa.md)
+* [Boruta \(Feature Selection\)](boruta-feature-selection.md)
+* [Elastic Net Classification](elastic-net-classification.md)
+* [Elastic Net Regression](elastic-net-regression.md)
+* [Fisher Exact Test](fisher-exact-test.md)
+* [Differential Selection](differential-selection.md)
+* [Correlations Selection](correlations-selection.md)
 

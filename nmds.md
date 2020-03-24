@@ -1,12 +1,10 @@
 # NMDS
 
-![](.gitbook/assets/image%20%2821%29.png)
-
-
+![](.gitbook/assets/image%20%2811%29.png)
 
 ### Used For
 
-* Visualizing the dissimilarity between different sample groups
+* Visualizing the similarity between different samples \(collapsing information into two components\)
 
 ### Visualization Parameters
 

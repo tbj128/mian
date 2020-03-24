@@ -4,7 +4,7 @@
 This tool starts out empty until you have added values to both "Correlation Variable 1" and "Correlation Variable 2"
 {% endhint %}
 
-![](.gitbook/assets/image%20%2815%29.png)
+![](.gitbook/assets/image%20%2819%29.png)
 
 ### Used For
 

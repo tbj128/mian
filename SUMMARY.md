@@ -24,4 +24,8 @@
 * [Fisher Exact Test](fisher-exact-test.md)
 * [Differential Selection](differential-selection.md)
 * [Correlations Selection](correlations-selection.md)
+* [Linear Regressor](linear-regressor.md)
+* [Linear Classifier](linear-classifier.md)
+* [Random Forest Classifier](random-forest-classifier.md)
+* [Deep Learning](deep-learning.md)
 

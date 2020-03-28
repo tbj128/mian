@@ -4,7 +4,7 @@
 This tool starts out empty until you have added at least one OTU or taxonomic group under the "OTUs or Taxonomic Groups to Show" field OR you have selected another option under "Y-Axis Values"
 {% endhint %}
 
-![](.gitbook/assets/image%20%2822%29.png)
+![](.gitbook/assets/image%20%2823%29.png)
 
 ### Used For
 

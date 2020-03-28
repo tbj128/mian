@@ -1,6 +1,6 @@
 # Linear Regressor
 
-![](.gitbook/assets/image%20%2818%29.png)
+![](.gitbook/assets/image%20%2819%29.png)
 
 
 
@@ -16,7 +16,7 @@ Machine learning models tend to work best with a dataset with a large number of 
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Experimental Variable
 
@@ -42,13 +42,19 @@ If set to yes, ensures that the same samples are used as the training set every 
 
 Define the proportion of the data that should be randomly picked to form a training dataset. 
 
-#### Number of Trees
+#### L1 Regularization Ratio
 
-The maximum number of trees to generate for the [random forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+L1 \([LASSO](https://en.wikipedia.org/wiki/Lasso_%28statistics%29)\) regularization helps encourage sparsity within the selected features, which means that fewer features will be used to predict the experimental variable. 
 
-#### Max Tree Depth
+0.5 is recommended.
 
-The max depth of each tree in the [random forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html). If empty, it will expand each tree to its fullest extent
+#### Max Epochs
+
+The maximum number of passes through the training data. 
+
+{% hint style="info" %}
+Note that the training may stop early if the model detects that the training error is no longer going down after five consecutive epochs
+{% endhint %}
 
 #### 
 

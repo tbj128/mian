@@ -30,7 +30,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Heatmap <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Composition Heatmap Analysis" data-content="Visualizes the contents of the OTU table grouped at the indicated taxonomic level as a heatmap" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Heatmap <a href="https://tbj128.gitbook.io/mian/heatmap-composition" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -50,7 +50,7 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/heatmap-composition#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum" selected>Phylum</option>
@@ -64,23 +64,23 @@
 
                 <hr/>
 
-                <label class="control-label">Row Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
+                <label class="control-label">Row Variable <a href="https://tbj128.gitbook.io/mian/heatmap-composition#row-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="rows" name="rows" class="form-control">
                     <option value="Taxonomic">Taxonomic Groups/OTUs</option>
                     <option value="SampleID">Sample ID</option>
                 </select>
 
-                <label class="control-label">Column Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
+                <label class="control-label">Column Variable <a href="https://tbj128.gitbook.io/mian/heatmap-composition#column-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="cols" name="cols" class="form-control">
                     <option value="SampleID">Sample ID</option>
                     <option value="Taxonomic">Taxonomic Groups/OTUs</option>
                 </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <a href="https://tbj128.gitbook.io/mian/heatmap-composition#categorical-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Label Visibility <i class="fa fa-info-circle" data-toggle="popover" data-title="Show Labels?" data-content="If the labels are hidden, the heatmap will be more compact"></i></label>
+                <label class="control-label">Label Visibility <a href="https://tbj128.gitbook.io/mian/heatmap-composition#label-visibility" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="showlabels" name="showlabels" class="form-control">
                     <option value="all">Show All Labels</option>
                     <option value="x">Show Column Labels Only</option>
@@ -88,19 +88,19 @@
                     <option value="no">Hide Labels</option>
                 </select>
 
-                <label class="control-label">Cluster Samples By <i class="fa fa-info-circle" data-toggle="popover" data-title="Apply Clustering?" data-content="Determines whether the heatmap should be clustered by the OTU count, the categorical value, or the original OTU table order"></i></label>
+                <label class="control-label">Cluster Samples By <a href="https://tbj128.gitbook.io/mian/heatmap-composition#cluster-samples-by" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="clustersamples" name="cluster" class="form-control">
                     <option value="categorical">Categorical Variable</option>
                     <option value="none">Don't Cluster</option>
                 </select>
 
-                <label class="control-label">Cluster Taxonomic Groups/OTU By <i class="fa fa-info-circle" data-toggle="popover" data-title="Apply Clustering?" data-content="Determines whether the heatmap should be clustered by the OTU count, the categorical value, or the original OTU table order"></i></label>
+                <label class="control-label">Cluster Taxonomic Groups/OTU By <a href="https://tbj128.gitbook.io/mian/heatmap-composition#cluster-taxonomic-groups-otu-by" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="clustertaxonomic" name="cluster" class="form-control">
                     <option value="otu">OTU Count</option>
                     <option value="none">Don't Cluster</option>
                 </select>
 
-                <label class="control-label">Color Scheme <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Groups Axis" data-content="Choose to either show the taxonomic groups on the x-axis or the categorical variable"></i></label>
+                <label class="control-label">Color Scheme <a href="https://tbj128.gitbook.io/mian/heatmap-composition#color-scheme" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="colorscheme" name="colorscheme" class="form-control pad-bottom">
                     <option value="blue">Blue</option>
                     <option value="rainbow">Rainbow</option>

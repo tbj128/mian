@@ -10,7 +10,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Boxplots <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Boxplots" data-content="Generates a series of boxplots based on a grouping parameter." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Boxplots <a href="https://tbj128.gitbook.io/mian/boxplots" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -29,20 +29,16 @@
             </div>
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters" style="margin-bottom: 100px;">
               <div class="panel-body">
-                <label class="control-label">Categorical Variable
-                    <i
-                        class="fa fa-info-circle" data-toggle="popover" data-html="true"
-                        data-title="Categorical Variable"
-                        data-content="<p>Indicate which sample metadata should be used as the grouping variable.</p><p>A numerical sample metadata variable can be treated as a categorical variable by <a href='/quantile_manager?pid={{currProject}}'>adding a quantile range.</a></p>"></i></label>
+                <label class="control-label">Categorical Variable <a href="https://tbj128.gitbook.io/mian/boxplots#categorical-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Y-Axis Values  <i class="fa fa-info-circle" data-toggle="popover" data-title="Y-Axis Values" data-content="The numeric parameter that should be represented on the Y-axis. <br /><br />Note the special parameters below:<ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max/Min/Mean/Median</strong> The max/min/mean/median of all OTUs within a sample</li></ul>"></i></label>
+                <label class="control-label">Y-Axis Values <a href="https://tbj128.gitbook.io/mian/boxplots#y-axis-values" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="yvals" name="yvals" class="form-control">
                 </select>
 
                 <div id="taxonomic-level-container">
-                    <label id="taxonomic-level-label" class="control-label">Taxonomic Level   <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="Renders the boxplots at the selected taxonomic level. The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                    <label id="taxonomic-level-label" class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/boxplots#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                         <option value="Kingdom">Kingdom</option>
                         <option value="Phylum">Phylum</option>
@@ -56,7 +52,7 @@
                 </div>
 
                 <div id="specific-taxonomy-container">
-                    <label id="specific-taxonomy-label" class="control-label">OTUs or Taxonomic Groups to Show <i class="fa fa-info-circle" data-toggle="popover" data-title="Select OTUs or Taxonomic Groups" data-content="Choose the OTUs or taxonomic groups whose summed abundances should be displayed on the boxplots." data-trigger="hover"></i></label>
+                    <label id="specific-taxonomy-label" class="control-label">OTUs or Taxonomic Groups to Show <a href="https://tbj128.gitbook.io/mian/boxplots#otus-or-taxonomic-groups-to-show" target="_blank"><i class="fa fa-info-circle"></i></a></label>
 
                     <div id="taxonomy-specific-typeahead-wrapper">
                         <input id="specific-taxonomy-typeahead" type="text" data-background="" value="" />
@@ -67,7 +63,7 @@
                 {% endwith %}
 
                 <div id="colorvarContainer">
-                    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
+                    <label class="control-label">Color Variable <a href="https://tbj128.gitbook.io/mian/boxplots#color-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="colorvar" name="colorvar" class="form-control">
                     </select>
                 </div>
@@ -84,12 +80,13 @@
     <div id="display-no-results" class="display-notification project-empty" style="display:none;">
         <div class="row">
             <div class="col-md-3">
-                <i class="fa fa-asterisk fa-4x"></i>
+                <i class="fa fa-bar-chart fa-4x"></i>
             </div>
             <div class="col-md-9">
-                <h3>Add a Taxonomic Group, OTU, or Gene To Display</h3>
+                <h3>No Results Yet</h3>
+                <h5>Start by adding a <strong>OTU, Taxonomic Group, or Gene</strong> on the left</h5>
                 <p>
-                    No results were returned. This can happen if you have not added a taxonomic group, OTU, or gene on the left sidebar or if you have applied an overly strict filter.
+                    <a href="https://tbj128.gitbook.io/mian/boxplots" target="_blank">How do I use this tool?</a>
                 </p>
             </div>
         </div>

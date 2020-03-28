@@ -31,7 +31,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Correlation Heatmap <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Heatmap" data-content="Generates a heatmap of the Pearson product-moment correlation matrix (grouped at the indicated taxonomic level).<br />Correlations are calculated across all samples - apply a sample filter if you wish to correlate only on specific groups of samples." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Correlation Heatmap <a href="https://tbj128.gitbook.io/mian/heatmap-correlation" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -50,7 +50,7 @@
             </div>
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
-                    <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                    <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/heatmap-correlation#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                         <option value="Kingdom">Kingdom</option>
                         <option value="Phylum">Phylum</option>
@@ -62,7 +62,7 @@
                         <option value="OTU" selected>OTU</option>
                     </select>
 
-                    <label class="control-label">Correlation Variable 1 (Columns) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 1" data-content="Determines which variable should be used for correlations (on the X-axis)<br /><br /><strong>Taxonomic Group or OTU</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
+                    <label class="control-label">Correlation Variable 1 (Columns) <a href="https://tbj128.gitbook.io/mian/heatmap-correlation#correlation-variable-1" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="corrvar1" name="corrvar1" class="form-control">
                         <option value="Taxonomy">Taxonomic Group or OTU</option>
                         <option value="Metadata">Sample Metadata</option>
@@ -93,7 +93,7 @@
                     </div>
 
 
-                    <label class="control-label">Correlation Variable 2 (Rows) <i class="fa fa-info-circle" data-toggle="popover" data-title="Correlation Variable 2" data-content="Determines which variable should be used for correlations (on the Y-axis)<br /><br /><strong>Taxonomic Group or OTU</strong> the counts of each taxonomic group <br /><strong>Sample Metadata</strong> the numeric metadata values from the uploaded sample metadata file"></i></label>
+                    <label class="control-label">Correlation Variable 2 (Rows) <a href="https://tbj128.gitbook.io/mian/heatmap-correlation#correlation-variable-2" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="corrvar2" name="corrvar2" class="form-control">
                         <option value="Taxonomy">Taxonomic Group or OTU</option>
                         <option value="Metadata">Sample Metadata</option>
@@ -124,13 +124,13 @@
                     </div>
 
 
-                    <label class="control-label">Cluster <i class="fa fa-info-circle" data-toggle="popover" data-title="Apply Clustering?" data-content="Determines whether columns and rows that are highly correlated should be grouped close together in the heatmap"></i></label>
+                    <label class="control-label">Cluster <a href="https://tbj128.gitbook.io/mian/heatmap-correlation#cluster" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="cluster" name="cluster" class="form-control">
                         <option value="Yes">Yes</option>
                         <option value="No">No (use original file order)</option>
                     </select>
 
-                    <label class="control-label">Show Labels <i class="fa fa-info-circle" data-toggle="popover" data-title="Show Labels?" data-content="If the labels are hidden, the heatmap will be more compact"></i></label>
+                    <label class="control-label">Show Labels <a href="https://tbj128.gitbook.io/mian/heatmap-correlation#show-labels" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="showlabels" name="showlabels" class="form-control">
                         <option value="all">Show All Lables</option>
                         <option value="x">Show X-Axis Labels Only</option>
@@ -138,10 +138,10 @@
                         <option value="no">Hide Labels</option>
                     </select>
 
-                    <label class="control-label">Min Number of Non-Zero Samples <i class="fa fa-info-circle" data-toggle="popover" data-title="Min Number of Non-Zero Samples" data-content="This is the minimum number of non-zero samples that the correlation variable needs to have to be included in the correlation matrix. This reduces noise from samples that do not contribute meaningfully because they mostly contain zero-values."></i></label>
+                    <label class="control-label">Min Number of Non-Zero Samples <a href="https://tbj128.gitbook.io/mian/heatmap-correlation#min-number-of-non-zero-samples" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <input class="form-control" id="minSamplesPresent" name="minSamplesPresent" type="number" value="3"/>
 
-                    <label class="control-label">Color Scheme <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Groups Axis" data-content="Choose to either show the taxonomic groups on the x-axis or the categorical variable"></i></label>
+                    <label class="control-label">Color Scheme <a href="https://tbj128.gitbook.io/mian/heatmap-correlation#color-scheme" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="colorscheme" name="colorscheme" class="form-control pad-bottom">
                         <option value="blue">Blue</option>
                         <option value="rainbow">Rainbow</option>

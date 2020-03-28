@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     {% include 'header.html' %}
-    <title>Elastic Net Selection Regression - Feature Selection - Mian</title>
+    <title>Elastic Net Regression - Feature Selection - Mian</title>
 </head>
 
 <body>
@@ -10,7 +10,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;Elastic Net Selection Regression <i class="fa fa-info-circle" data-toggle="popover" data-title="Glmnet" data-content="Selects the relevant features that predict the grouping metadata using Generalized Linear Models.<br /><br />This test relies on the R 'glmnet' package <a href='https://cran.r-project.org/web/packages/glmnet/glmnet.pdf' target='_blank'>here</a>" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;Elastic Net Regression <a href="https://tbj128.gitbook.io/mian/elastic-net-regression" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -30,7 +30,7 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum">Phylum</option>
@@ -42,26 +42,26 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Experimental Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Experimental Variable <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#experimental-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="expvar" name="expvar" class="form-control">
                 </select>
 
-                <label class="control-label">Features to Keep  <i class="fa fa-info-circle" data-toggle="popover" data-title="Features to Keep" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <label class="control-label">Features to Keep <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#number-of-features-to-keep" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="keep" name="keep" type="number" value="" placeholder="Leave blank for all relevant features"/>
 
-                <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="fixTraining" name="fixTraining" class="form-control">
                     <option value="yes">Yes</option>
                     <option value="no" selected>No</option>
                 </select>
 
-                <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
 
-                <label class="control-label">L1 Regularization Ratio  <i class="fa fa-info-circle" data-toggle="popover" data-title="Max Runs" data-content="The maximum number of runs the Boruta analysis should use" data-trigger="hover"></i></label>
+                <label class="control-label">L1 Regularization Ratio <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#l1-regularization-ratio" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="mixingRatio" name="mixingRatio" type="number" value="0.5"/>
 
-                <label class="control-label">Max Iterations  <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <label class="control-label">Max Epochs <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#max-epochs" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="maxIterations" name="maxIterations" type="number" value="1000"/>
               </div>
             </div>
@@ -73,12 +73,16 @@
     <div id="display-no-catvar" class="display-notification project-empty" style="display:none;">
         <div class="row">
             <div class="col-md-3">
-                <i class="fa fa-exclamation-circle fa-4x"></i>
+                <i class="fa fa-table fa-4x"></i>
             </div>
             <div class="col-md-9">
-                <h3>Choose a Categorical Variable Attribute</h3>
+                <h3>No Results Yet</h3>
+                <h5>Start by choosing an <strong>Experimental Variable</strong> on the left</h5>
                 <p>
-                    The Elastic Net classification algorithm will fit a linear model with elastic-net regularization based on the selected categorical variable label. This analysis will then select the most important taxonomic group/OTUs used within the model.
+                    If you can't find any experimental variables, you may not have any numerical variables in your metadata file.
+                </p>
+                <p>
+                    <a href="https://tbj128.gitbook.io/mian/elastic-net-regression" target="_blank">How do I use this tool?</a>
                 </p>
             </div>
         </div>

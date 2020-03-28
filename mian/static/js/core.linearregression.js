@@ -1,5 +1,5 @@
 // ============================================================
-// Random Forest JS Component
+// Linear Regression JS Component
 // ============================================================
 
 //
@@ -10,6 +10,45 @@ var expVarToType = {};
 var expectedLoadFactor = 500;
 var cachedAbundancesObj = null;
 var cachedTrainingIndexes = null;
+
+var config = {
+    type: 'line',
+    data: {
+        datasets: []
+    },
+    options: {
+        responsive: true,
+        title: {
+            display: false,
+            text: ''
+        },
+        tooltips: {
+            mode: 'index',
+            intersect: false,
+        },
+        hover: {
+            mode: 'nearest',
+            intersect: true
+        },
+        scales: {
+            xAxes: [{
+                type: 'linear',
+                position: 'bottom',
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Epochs'
+                }
+            }],
+            yAxes: [{
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Mean Absolute Error'
+                }
+            }]
+        },
+    }
+};
 
 //
 // Initialization
@@ -38,8 +77,10 @@ function initializeFields() {
         $("#crossValidate").val(getParameterByName("crossValidate"));
         if ($("#crossValidate").val() === "full") {
             $("#trainingConfig").hide();
+            $("#cvFolds").show();
         } else {
             $("#trainingConfig").show();
+            $("#cvFolds").hide();
         }
     }
 
@@ -73,6 +114,9 @@ function initializeFields() {
         $("#referral-alert").show();
         $("#referer-name").text(getParameterByName("ref"));
     }
+
+    var ctx = document.getElementById('canvas').getContext('2d');
+    window.trainChart = new Chart(ctx, config);
 }
 
 //
@@ -90,8 +134,10 @@ function createSpecificListeners() {
     $("#crossValidate").change(function() {
         if ($("#crossValidate").val() === "full") {
             $("#trainingConfig").hide();
+            $("#cvFolds").show();
         } else {
             $("#trainingConfig").show();
+            $("#cvFolds").hide();
         }
         updateAnalysis();
     });
@@ -127,7 +173,7 @@ function createSpecificListeners() {
     });
 
     $("#download-svg").click(function() {
-        downloadCanvas("random_forest", "canvas");
+        downloadCanvas("linear_regression", "canvas");
     });
 
     $("#save-to-notebook").click(function() {
@@ -140,6 +186,45 @@ function createSpecificListeners() {
 //
 function customLoading() {}
 
+function renderTrainingPlot() {
+    if (cachedAbundancesObj == null) {
+        return;
+    }
+
+    var colors = palette('cb-Accent', 2);
+    config.data.datasets = [];
+    config.data.datasets.push({
+        label: "Training",
+        backgroundColor: "#" + colors[0],
+        borderColor: "#" + colors[0],
+        data: [],
+        fill: false,
+        lineTension: 0,
+        data: cachedAbundancesObj["scores_train"].map((val, i) => {
+            return {
+                x: i,
+                y: val
+            }
+        }),
+    });
+
+    config.data.datasets.push({
+        label: "Test",
+        backgroundColor: "#" + colors[1],
+        borderColor: "#" + colors[1],
+        data: [],
+        fill: false,
+        lineTension: 0,
+        data: cachedAbundancesObj["scores_test"].map((val, i) => {
+            return {
+                x: i,
+                y: val
+            }
+        }),
+    });
+
+    window.trainChart.update();
+}
 
 function getUpdateAnalysisData() {
 
@@ -216,16 +301,35 @@ function updateAnalysis() {
             setGetParameters(data);
 
             loadSuccess();
-            $("#train-mae").text(`${abundancesObj["train_mae"]} ± ${abundancesObj["train_mae_std"]}`);
-            $("#train-mse").text(`${abundancesObj["train_mse"]} ± ${abundancesObj["train_mse_std"]}`);
-            $("#cv-mae").text(`${abundancesObj["cv_mae"]} ± ${abundancesObj["cv_mae_std"]}`);
-            $("#cv-mse").text(`${abundancesObj["cv_mse"]} ± ${abundancesObj["cv_mse_std"]}`);
-            if (abundancesObj["test_mae"]) {
-                $("#test-mae").text(`${abundancesObj["test_mae"]}`);
-                $("#test-mse").text(`${abundancesObj["test_mse"]}`);
+
+            if ($("#crossValidate").val() === "full") {
+                $("#train-mae").text("N/A");
+                $("#train-mse").text("N/A");
+                $("#cv-mae").text(`${abundancesObj["cv_mae"]} ± ${abundancesObj["cv_mae_std"]}`);
+                $("#cv-mse").text(`${abundancesObj["cv_mse"]} ± ${abundancesObj["cv_mse_std"]}`);
+                if (abundancesObj["test_mae"]) {
+                    $("#test-mae").text(`${abundancesObj["test_mae"]}`);
+                    $("#test-mse").text(`${abundancesObj["test_mse"]}`);
+                } else {
+                    $("#test-mae").text("N/A");
+                    $("#test-mse").text("N/A");
+                }
+                $("#training-plot-container").hide();
             } else {
-                $("#test-mae").text("N/A");
-                $("#test-mse").text("N/A");
+                $("#training-plot-container").show();
+                renderTrainingPlot();
+
+                $("#train-mae").text(`${abundancesObj["train_mae"]}`);
+                $("#train-mse").text(`${abundancesObj["train_mse"]}`);
+                $("#cv-mae").text("N/A");
+                $("#cv-mse").text("N/A");
+                if (abundancesObj["test_mae"]) {
+                    $("#test-mae").text(`${abundancesObj["test_mae"]}`);
+                    $("#test-mse").text(`${abundancesObj["test_mse"]}`);
+                } else {
+                    $("#test-mae").text("N/A");
+                    $("#test-mse").text("N/A");
+                }
             }
         },
         error: function(err) {

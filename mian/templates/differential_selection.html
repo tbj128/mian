@@ -11,7 +11,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Differential Selection <i class="fa fa-info-circle" data-toggle="popover" data-title="Differential Selection" data-html="true" data-content="Performs differential analysis of OTU data based on pairwise categorical metadata. <br /><br/>Taxonomic groups/OTUs that are statistically different between the two sample groupings will be displayed." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Differential Selection <a href="https://tbj128.gitbook.io/mian/differential-selection" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -31,7 +31,7 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/differential-selection#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum">Phylum</option>
@@ -43,35 +43,35 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <a href="https://tbj128.gitbook.io/mian/differential-selection#categorical-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Pairwise Comparison Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Pairwise Comparison Variable" data-content="Indicate the two metadata parameter values that will be used to select taxonomic groups/OTUs that are significantly different in one sample group over the other."></i></label>
+                <label class="control-label">Pairwise Comparison Variable <a href="https://tbj128.gitbook.io/mian/differential-selection#pairwise-comparison-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="pwVar1" name="pwVar1" class="form-control" style="margin-bottom: 4px;">
                 </select>
                 <select id="pwVar2" name="pwVar2" class="form-control">
                 </select>
 
-                <label class="control-label">Analysis Type  <i class="fa fa-info-circle" data-toggle="popover" data-title="Analysis Test" data-content="<ul><li><strong>ANCOM</strong> Differential abundance testing using pairwise log ratios and applying a parametric one-way ANOVA statistical test. Recommended if using unsampled data sets</li><li><strong>Wilcoxon Rank-Sum</strong> A non-parametric test to test whether a randomly selected sample from one group will be different from a randomly selected sample from another group</li><li><strong>Welch's T-Test</strong> A parametric test to test whether two populations have equal means</li></ul>"></i></label>
+                <label class="control-label">Analysis Type <a href="https://tbj128.gitbook.io/mian/differential-selection#analysis-type" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="type" name="type" class="form-control">
                     <option value="ttest">Welch's T-Test</option>
                     <option value="wilcoxon">Wilcoxon Rank-Sum</option>
                     <option value="ANCOM">ANCOM Differential Abundance Test (with 1-way ANOVA)</option>
                 </select>
 
-                <label class="control-label">P-Value Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="Only OTUs or taxas whose differential analysis p-value was less than this threshold will be displayed"></i></label>
+                <label class="control-label">P-Value Threshold <a href="https://tbj128.gitbook.io/mian/differential-selection#p-value-threshold" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="pvalthreshold" name="pvalthreshold" type="number" value="0.05" min="0"
                        max="1" step="0.01"/>
 
 
-                <label class="control-label">Fix Training Set Between Changes <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/differential-selection#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="fixTraining" name="fixTraining" class="form-control">
                     <option value="yes">Yes</option>
                     <option value="no" selected>No</option>
                 </select>
 
-                <label class="control-label">Dataset Training Proportion <i class="fa fa-info-circle" data-toggle="popover" data-title="P-Value Threshold" data-content="The threshold at which the p-value is deemed significant" data-trigger="hover"></i></label>
+                <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/differential-selection#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
 
               </div>
@@ -87,9 +87,13 @@
                 <i class="fa fa-exclamation-circle fa-4x"></i>
             </div>
             <div class="col-md-9">
-                <h3>Choose a Categorical Variable Attribute</h3>
+                <h3>No Results Yet</h3>
+                <h5>Start by choosing an <strong>Categorical Variable</strong> on the left</h5>
                 <p>
-                    The differential selection analysis apply ANCOM (analysis of composition) on an unsampled dataset or Welch's t-test on every taxonomic group/OTU between the sample groupings defined by the categorical variable value. <br />The most significant taxonomic groups/OTUs will be displayed.
+                    If you can't find any categorical variables, you may not have any categorical variables in your metadata file.
+                </p>
+                <p>
+                    <a href="https://tbj128.gitbook.io/mian/differential-selection" target="_blank">How do I use this tool?</a>
                 </p>
             </div>
         </div>

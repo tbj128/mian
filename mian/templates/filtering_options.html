@@ -9,10 +9,10 @@
     </div>
     <div id="dataFiltering" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingDataFiltering">
       <div class="panel-body">
-          <label class="control-label">OTU Filtering (By Low Expression)  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="OTU Filtering" data-content="Any taxonomic items that do not meet the min count and prevalence thresholds will be excluded from this analysis (does not apply to diversity analysis)" data-trigger="hover"></i></label>
+          <label class="control-label">OTU Filtering (By Low Expression) <a href="https://tbj128.gitbook.io/mian/tool-parameters-and-filters#otu-filtering" target="_blank"><i class="fa fa-info-circle"></i></a></label>
           <div class="row">
             <div class="col-md-6">
-                <span class="inner-control-label">Count Threshold <i class="fa fa-info-circle" data-toggle="popover" data-title="Count Threshold" data-content="A taxonomic item is considered present in a sample if it is expressed at or above the count threshold. The taxonomic item is kept if it is present in more than or equal to the prevalence percentage of samples."></i></span>
+                <span class="inner-control-label">Count Threshold</span>
                 {% if lowExpressionFilteringEnabled %}
                 <input class="form-control" id="countthreshold" name="countthreshold" type="number" value="2"/>
                 {% else %}
@@ -20,7 +20,7 @@
                 {% endif %}
             </div>
             <div class="col-md-6">
-                <span class="inner-control-label">Prevalence (%) <i class="fa fa-info-circle" data-toggle="popover" data-title="Prevalence" data-content="A taxonomic item is considered present in a sample if it is expressed at or above the count threshold. The taxonomic item is kept if it is present in more than or equal to the prevalence percentage of samples."></i></span>
+                <span class="inner-control-label">Prevalence (%)</span>
                 {% if lowExpressionFilteringEnabled %}
                 <input class="form-control" id="prevalence" name="prevalence" type="number" value="10" step="1"/>
                 {% else %}
@@ -29,7 +29,7 @@
             </div>
           </div>
 
-          <label class="control-label">OTU Filtering (By Taxonomy Level)  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="OTU Filtering" data-content="Applies the analysis after filtering the OTU table by specific taxonomies. <br />For example, you can filter the table by only including OTUs that fall under a specific phylum." data-trigger="hover"></i></label>
+          <label class="control-label">OTU Filtering (By Taxonomy Level) <a href="https://tbj128.gitbook.io/mian/tool-parameters-and-filters#otu-filtering" target="_blank"><i class="fa fa-info-circle"></i></a></label>
           <select id="filter-otu" name="filter-otu" class="form-control pad-bottom">
             <option value="none">Don't Filter</option>
             <option value="Kingdom">Kingdom</option>
@@ -60,7 +60,7 @@
           </div>
 
 
-          <label class="control-label">Sample Filtering (By Metadata)  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="Sample Filtering" data-content="Applies the analysis after filtering the OTU table by samples matching the specified metadata values. <br />For example, you could to filter the table only by samples showing a particular disease phenotype." data-trigger="hover"></i></label>
+          <label class="control-label">Sample Filtering (By Metadata) <a href="https://tbj128.gitbook.io/mian/tool-parameters-and-filters#sample-filtering" target="_blank"><i class="fa fa-info-circle"></i></a></label>
           <select id="filter-sample" name="filter-sample" class="form-control pad-bottom">
             <option value="none">Don't Filter</option>
             <option value="mian-sample-id">Sample ID</option>

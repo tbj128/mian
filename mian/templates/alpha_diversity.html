@@ -10,7 +10,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Alpha Diversity <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Alpha Diversity" data-content="Investigate the OTU/Taxonomic richness of the OTU table<br /><br />This analysis uses the diversity measure from the R 'vegan' package <a href='http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html' target='_blank'>here</a>" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Alpha Diversity <a href="https://tbj128.gitbook.io/mian/alpha-diversity" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -30,7 +30,7 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="Calculate the alpha diversity measure at the taxonomic level selected. The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/alpha-diversity#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum">Phylum</option>
@@ -42,22 +42,22 @@
                     <option value="OTU" selected>OTU</option>
                 </select>
 
-                <label class="control-label">Experimental Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A different alpha diversity boxplot will be created for each unique metadata value." data-trigger="hover"></i></label>
+                <label class="control-label">Experimental Variable <a href="https://tbj128.gitbook.io/mian/alpha-diversity#experimental-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="expvar" name="expvar" class="form-control">
                 </select>
 
-                <label class="control-label">Plot Type <i class="fa fa-info-circle" data-toggle="popover" data-title="Plot Type" data-content="Choose the type of plot to render on the page" data-trigger="hover"></i></label>
+                <label class="control-label">Plot Type <a href="https://tbj128.gitbook.io/mian/alpha-diversity#plot-type" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="plotType" name="plotType" class="form-control">
                     <option value="boxplot">Boxplot</option>
                     <option value="scatterplot">Scatterplot</option>
                 </select>
 
                 <div id="colorvarContainer">
-                    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
+                    <label class="control-label">Color Variable <a href="https://tbj128.gitbook.io/mian/alpha-diversity#color-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="colorvar" name="colorvar" class="form-control">
                     </select>
 
-                    <label class="control-label">Size Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Size Variable" data-content="Determines which metadata parameter should control the size of the dots in the scatterplot"></i></label>
+                    <label class="control-label">Size Variable <a href="https://tbj128.gitbook.io/mian/alpha-diversity#size-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="sizevar" name="sizevar" class="form-control">
                     </select>
                 </div>

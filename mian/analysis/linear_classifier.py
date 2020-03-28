@@ -8,18 +8,16 @@
 #
 # Imports
 #
-from scipy import interp
 
+import numpy as np
 import pandas as pd
-from sklearn.linear_model import ElasticNet, SGDClassifier
-from sklearn.metrics import mean_absolute_error, mean_squared_error, roc_curve, roc_auc_score
-from sklearn.model_selection import train_test_split, cross_validate, KFold, cross_val_score, StratifiedKFold
-from sklearn.multiclass import OneVsRestClassifier
+from scipy import interp
+from sklearn.linear_model import SGDClassifier
+from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.utils import shuffle
 
 from mian.model.otu_table import OTUTable
-from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
-import numpy as np
 
 
 class LinearClassifier(object):
@@ -33,10 +31,10 @@ class LinearClassifier(object):
         return self.analyse(user_request, otu_table, headers, metadata_vals)
 
     def analyse(self, user_request, otu_table, headers, metadata_vals):
-        loss_function = user_request.get_custom_attr("lossFunction")
-        fix_training = user_request.get_custom_attr("fixTraining")
         cross_validate_set = user_request.get_custom_attr("crossValidate")
         cross_validate_folds = int(user_request.get_custom_attr("crossValidateFolds"))
+        loss_function = user_request.get_custom_attr("lossFunction")
+        fix_training = user_request.get_custom_attr("fixTraining")
         training_proportion = user_request.get_custom_attr("trainingProportion")
         existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
         mixing_ratio = float(user_request.get_custom_attr("mixingRatio"))
@@ -89,37 +87,47 @@ class LinearClassifier(object):
                 test_accuracy = classifier.score(X_cv[X_cv.index.isin(test)], Y_cv[test])
                 test_accuracies.append(test_accuracy)
 
-                for i in range(len(classifier.classes_)):
-                    actual_class = classifier.classes_[i]
-                    Y_cv_binarize = binarize(classifier, Y_cv)
-
-                    fpr, tpr, _ = roc_curve(Y_cv_binarize[test, i], test_probs[:, i])
-                    auc = roc_auc_score(Y_cv_binarize[test, i], test_probs[:, i])
-
+                Y_cv_binarize = binarize(classifier, Y_cv[test])
+                if len(classifier.classes_) == 2:
+                    fpr, tpr, _ = roc_curve(Y_cv_binarize[:, 1], test_probs[:])
+                    auc = roc_auc_score(Y_cv_binarize[:, 1], test_probs[:])
                     tpr = interp(base_fpr, fpr, tpr)
                     tpr[0] = 0.0
 
-                    class_to_roc[actual_class]["fprs"].append(base_fpr)
-                    class_to_roc[actual_class]["tprs"].append(tpr)
-                    class_to_roc[actual_class]["aucs"].append(auc)
+                    label = classifier.classes_[1]
+                    class_to_roc[label]["fprs"].append(base_fpr)
+                    class_to_roc[label]["tprs"].append(tpr)
+                    class_to_roc[label]["aucs"].append(auc)
+                else:
+                    for c in range(len(classifier.classes_)):
+                        actual_class = classifier.classes_[c]
 
-                    i += 1
+                        fpr, tpr, _ = roc_curve(Y_cv_binarize[:, c], test_probs[:, c])
+                        auc = roc_auc_score(Y_cv_binarize[:, c], test_probs[:, c])
+
+                        tpr = interp(base_fpr, fpr, tpr)
+                        tpr[0] = 0.0
+
+                        class_to_roc[actual_class]["fprs"].append(base_fpr)
+                        class_to_roc[actual_class]["tprs"].append(tpr)
+                        class_to_roc[actual_class]["aucs"].append(auc)
+
+                        i += 1
 
             average_class_to_roc = {}
-            for i in range(len(uniq_metadata_vals)):
-                actual_class = uniq_metadata_vals[i]
-                if len(class_to_roc[actual_class]["tprs"]) > 0:
-                    average_class_to_roc[actual_class] = {
-                        "fpr": [a.item() for a in np.array(class_to_roc[actual_class]["fprs"]).mean(axis=0)],
-                        "tpr": [a.item() for a in np.array(class_to_roc[actual_class]["tprs"]).mean(axis=0)],
-                        "auc": np.array(class_to_roc[actual_class]["aucs"]).mean(),
-                        "auc_std": np.array(class_to_roc[actual_class]["aucs"]).std()
+            for k, v in class_to_roc.items():
+                if len(class_to_roc[k]["tprs"]) > 0:
+                    average_class_to_roc[k] = {
+                        "fpr": [round(a.item(), 4) for a in np.array(class_to_roc[k]["fprs"]).mean(axis=0)],
+                        "tpr": [round(a.item(), 4) for a in np.array(class_to_roc[k]["tprs"]).mean(axis=0)],
+                        "auc": round(np.array(class_to_roc[k]["aucs"]).mean(), 4),
+                        "auc_std": round(np.array(class_to_roc[k]["aucs"]).std(), 4)
                     }
 
             cv_obj = {
                 "class_to_roc": average_class_to_roc,
-                "cv_accuracy": np.array(test_accuracies).mean(),
-                "cv_accuracy_std": np.array(test_accuracies).std()
+                "cv_accuracy": round(np.array(test_accuracies).mean(), 4),
+                "cv_accuracy_std": round(np.array(test_accuracies).std(), 4)
             }
             return cv_obj
 
@@ -147,33 +155,73 @@ class LinearClassifier(object):
 
             X_train = X_train.reset_index(drop=True)
             X_test = X_test.reset_index(drop=True)
-            cv_obj = performCrossValidationForAUC(X_train, np.array(metadata_vals)[ind_train], y_train)
 
             classifier = SGDClassifier(loss=loss_function, l1_ratio=mixing_ratio, max_iter=max_iterations)
-            classifier.fit(X_train, y_train)
+
+            classes = np.unique(Y)
+            scores_train = []
+            scores_test = []
+            best_accuracy = 0
+            patience = 0
+            tol = 1e-3
+            epoch = 0
+            while epoch < max_iterations:
+                classifier.partial_fit(X_train, y_train, classes=classes)
+
+                train_score = classifier.score(X_train, y_train)
+                scores_train.append(train_score)
+                scores_test.append(classifier.score(X_test, y_test))
+
+                if best_accuracy < train_score:
+                    best_accuracy = train_score
+
+                if epoch > 5:
+                    if best_accuracy - tol > train_score:
+                        patience += 1
+                    else:
+                        patience = 0
+
+                # if patience == 5:
+                #     break
+                epoch += 1
+
+
+
             test_probs = classifier.decision_function(X_test)
+            train_accuracy = classifier.score(X_train, y_train)
             test_accuracy = classifier.score(X_test, y_test)
 
             class_to_roc = {}
-            for i in range(len(classifier.classes_)):
-                y_test_binarize = binarize(classifier, y_test)
-                fpr, tpr, _ = roc_curve(y_test_binarize[:, i], test_probs[:, i])
-                auc = roc_auc_score(y_test_binarize[:, i], test_probs[:, i])
+            y_test_binarize = binarize(classifier, y_test)
+            if len(classifier.classes_) == 2:
+                fpr, tpr, _ = roc_curve(y_test_binarize[:, 1], test_probs[:])
+                auc = roc_auc_score(y_test_binarize[:, 1], test_probs[:])
 
-                class_to_roc[classifier.classes_[i]] = {
-                    "fpr": [a.item() for a in fpr],
-                    "tpr": [a.item() for a in tpr],
-                    "auc": auc.item()
+                label = classifier.classes_[0] + " vs " + classifier.classes_[1]
+                class_to_roc[label] = {
+                    "fpr": [round(a.item(), 4) for a in fpr],
+                    "tpr": [round(a.item(), 4) for a in tpr],
+                    "auc": round(auc.item(), 4)
                 }
-                i += 1
+            else:
+                for i in range(len(classifier.classes_)):
+                    fpr, tpr, _ = roc_curve(y_test_binarize[:, i], test_probs[:, i])
+                    auc = roc_auc_score(y_test_binarize[:, i], test_probs[:, i])
+
+                    class_to_roc[classifier.classes_[i]] = {
+                        "fpr": [round(a.item(), 4) for a in fpr],
+                        "tpr": [round(a.item(), 4) for a in tpr],
+                        "auc": round(auc.item(), 4)
+                    }
+                    i += 1
 
             abundances_obj = {
-                "train_class_to_roc": cv_obj["class_to_roc"],
-                "cv_accuracy": cv_obj["cv_accuracy"],
-                "cv_accuracy_std": cv_obj["cv_accuracy_std"],
-                "test_accuracy": test_accuracy,
+                "train_accuracy": round(train_accuracy, 4),
+                "test_accuracy": round(test_accuracy, 4),
                 "test_class_to_roc": class_to_roc,
-                "training_indexes": ind_train.tolist()
+                "training_indexes": ind_train.tolist(),
+                "scores_train": scores_train,
+                "scores_test": scores_test
             }
 
             return abundances_obj

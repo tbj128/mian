@@ -14,10 +14,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <i
-            class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Correlations"
-            data-content="Draws a correlation graph between two metadata values and/or taxonomic abundances. Correlations use the Pearson correlation coefficient."
-            data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Correlations <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -40,10 +37,7 @@
                 <div class="panel-body">
 
                     <div id="taxonomic-level">
-                        <label id="taxonomic-level-label" class="control-label">Taxonomic Level <i
-                                class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level"
-                                data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied."
-                                data-trigger="hover"></i></label>
+                        <label id="taxonomic-level-label" class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                         <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                             <option value="Kingdom">Kingdom</option>
                             <option value="Phylum">Phylum</option>
@@ -58,10 +52,7 @@
 
                     <hr/>
 
-                    <label class="control-label">Correlation Variable 1 (X-Axis) <i class="fa fa-info-circle"
-                                                                                    data-toggle="popover"
-                                                                                    data-title="Correlation Variable 1"
-                                                                                    data-content="Determines which correlation variable should be used on the X-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
+                    <label class="control-label">Correlation Variable 1 (X-Axis) <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation#correlation-variable-1" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="corrvar1" name="corrvar1" class="form-control">
                     </select>
 
@@ -106,10 +97,7 @@
 
                     <hr/>
 
-                    <label class="control-label">Correlation Variable 2 (Y-Axis) <i class="fa fa-info-circle"
-                                                                                    data-toggle="popover"
-                                                                                    data-title="Correlation Variable 2"
-                                                                                    data-content="Determines which correlation variable should be used on the Y-axis<br /><ul><li><strong>Taxonomy Abundance</strong> The sum of the specified OTU or taxonomic group abundance in each sample.</li><li><strong>Aggregate Abundance</strong> The total abundance of all OTUs within a sample</li><li><strong>Max</strong> The max of all OTUs within a sample</li></ul>"></i></label>
+                    <label class="control-label">Correlation Variable 2 (Y-Axis) <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation#correlation-variable-2" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="corrvar2" name="corrvar2" class="form-control">
                     </select>
 
@@ -154,15 +142,11 @@
 
                     <hr/>
 
-                    <label class="control-label">Color Variable <i class="fa fa-info-circle" data-toggle="popover"
-                                                                   data-title="Color Variable"
-                                                                   data-content="Determines which metadata parameter should control the color of the dots in the correlation"></i></label>
+                    <label class="control-label">Color Variable <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation#color-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="colorvar" name="colorvar" class="form-control">
                     </select>
 
-                    <label class="control-label">Size Variable <i class="fa fa-info-circle" data-toggle="popover"
-                                                                  data-title="Size Variable"
-                                                                  data-content="Determines which metadata parameter should control the size of the dots in the correlation"></i></label>
+                    <label class="control-label">Size Variable <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation#size-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="sizevar" name="sizevar" class="form-control">
                     </select>
 
@@ -189,9 +173,7 @@
                         </select>
                     </div>
 
-                    <label class="control-label">Samples to Show <i class="fa fa-info-circle" data-toggle="popover"
-                                                                    data-title="Samples to Show"
-                                                                    data-content="Determines which sample types should be displayed in the correlation graph"></i></label>
+                    <label class="control-label">Samples to Show <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation#samples-to-show" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="samplestoshow" name="samplestoshow" class="form-control">
                         <option value="both">All Samples</option>
                         <option value="nonzero">Non-Zero Value Samples</option>
@@ -208,13 +190,16 @@
     <div id="display-no-results" class="display-notification project-empty" style="display:none;">
         <div class="row">
             <div class="col-md-3">
-                <i class="fa fa-asterisk fa-4x"></i>
+                <i class="fa fa-line-chart fa-4x"></i>
             </div>
             <div class="col-md-9">
-                <h3>Add a Taxonomic Group or OTU To Display</h3>
+                <h3>No Results Yet</h3>
+                <h5>Start by adding a <strong>OTU, Taxonomic Group, or Gene</strong> for both the X and Y axes on the left</h5>
                 <p>
-                    No results were returned. This can happen if you have not added a taxonomic group or OTU (if the
-                    correlation variable is set to taxonomic abundance) or if you have applied a too strict filter.
+                    No results could also happen if you have applied a too strict filter.
+                </p>
+                <p>
+                    <a href="https://tbj128.gitbook.io/mian/scatterplot-correlation" target="_blank">How do I use this tool?</a>
                 </p>
             </div>
         </div>

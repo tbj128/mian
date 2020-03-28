@@ -284,6 +284,7 @@ function loadOTUTableHeaders(corrvarType) {
 
 function updateAnalysis() {
     if (!loaded) {
+        loadNoResults();
         return;
     }
     showLoading(expectedLoadFactor);

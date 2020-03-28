@@ -26,7 +26,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Rarefaction <i class="fa fa-info-circle" data-toggle="popover" data-title="Rarefaction" data-content="Draws a series of rarefaction curves on the OTU table prior to subsampling<br /><br />This analysis relies on the rarecurve function in the R 'vegan' package <a href='https://www.rdocumentation.org/packages/vegan/versions/2.4-2/topics/rarefy' target='_blank'>here</a>" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Rarefaction <a href="https://tbj128.gitbook.io/mian/rarefaction-curves" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     <div class="alert alert-info" role="alert">
         <b>Note</b><br/>
@@ -56,7 +56,7 @@
               <div class="panel-body">
 
                 <div id="colorvarContainer">
-                    <label class="control-label">Color Variable  <i class="fa fa-info-circle" data-toggle="popover" data-title="Color Variable" data-content="Determines which metadata parameter should control the color of the dots in the scatterplot"></i></label>
+                    <label class="control-label">Color Variable <a href="https://tbj128.gitbook.io/mian/rarefaction-curves#color-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="colorvar" name="colorvar" class="form-control">
                     </select>
                 </div>

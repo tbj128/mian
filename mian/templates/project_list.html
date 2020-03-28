@@ -3,7 +3,7 @@
   <input type="hidden" id="uid" name="uid" value="{{ uid }}" />
   <input type="hidden" id="isShared" name="isShared" value="{{ share }}" />
   {% if share != True %}
-  <label class="control-label">Project  <i class="fa fa-info-circle" data-container="body" data-toggle="popover" data-html="true" data-placement="right" data-title="Project" data-content="Select the specific project you want to apply the analysis on. All other analysis parameters will remain the same." data-trigger="hover"></i></label>
+  <label class="control-label">Project <a href="https://tbj128.gitbook.io/mian/tool-parameters-and-filters#project-switcher" target="_blank"><i class="fa fa-info-circle"></i></a></label>
   <select id="project" name="project" class="form-control">
     {% for projectName in projectNames %}
       {% if projectNames[projectName]['pid'] == currProject %}

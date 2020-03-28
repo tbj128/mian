@@ -40,7 +40,7 @@
                 <input type="hidden" name="category" value="otuTable" />
                 <span id="biomOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
                 <span id="biomLoading" style="display:none;">
-                  <i class="fa fa-spinner upload-loading"></i>
+                  <i class="fa fa-spinner upload-loading"></i> <span id="biomLoadingProgress">24</span>%
                 </span>
                 <span id="biomWrapper" class="btn btn-default btn-file">
                     <span id="biomText">Upload</span> <input type="file" name="upload" id="biomInput" accept=".biom" />
@@ -73,7 +73,7 @@
                   <input type="hidden" name="category" value="otuTable" />
                   <span id="otuTableOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
                   <span id="otuTableLoading" style="display:none;">
-                    <i class="fa fa-spinner upload-loading"></i>
+                    <i class="fa fa-spinner upload-loading"></i> <span id="otuTableLoadingProgress">24</span>%
                   </span>
                   <span id="otuTableWrapper" class="btn btn-default btn-file">
                       <span id="otuTableText">Upload</span> <input type="file" name="upload" id="otuTable" accept=".tsv,.txt,.shared,.csv" />
@@ -110,9 +110,9 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
             <div class="col-md-2 upload-status">
               <form id="otuTaxonomyMappingForm" action="/upload" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="category" value="otuTaxonomyMapping" />
-                <span id="otuTaxonomyMappingOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
+                <span id="otuTaxonomyMappingOK" style="display:none;font-size:px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
                 <span id="otuTaxonomyMappingLoading" style="display:none;">
-                  <i class="fa fa-spinner upload-loading"></i>
+                  <i class="fa fa-spinner upload-loading"></i> <span id="otuTaxonomyMappingLoadingProgress"></span>%
                 </span>
                 <span id="otuTaxonomyMappingWrapper" class="btn btn-default btn-file">
                     <span id="otuTaxonomyMappingText">Upload</span> <input type="file" name="upload" id="otuTaxonomyMapping" accept=".txt,.tsv,.taxonomy" />
@@ -138,7 +138,7 @@ Otu02	Bacteria	Cyanobacteria	Nosphycideae	Nostocales	Nostoceae	Dolichospermum
                 <input type="hidden" name="category" value="otuMetadata" />
                 <span id="otuMetadataOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
                 <span id="otuMetadataLoading" style="display:none;">
-                  <i class="fa fa-spinner upload-loading"></i>
+                  <i class="fa fa-spinner upload-loading"></i> <span id="otuMetadataLoadingProgress"></span>%
                 </span>
                 <span id="otuMetadataWrapper" class="btn btn-default btn-file">
                     <span id="otuMetadataText">Upload</span> <input type="file" name="upload" id="otuMetadata" accept=".txt,.tsv" />
@@ -163,7 +163,7 @@ IL8R	3.7991	4.1968	2.3449	...
                 <input type="hidden" name="category" value="gene" />
                 <span id="geneOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
                 <span id="geneLoading" style="display:none;">
-                  <i class="fa fa-spinner upload-loading"></i>
+                  <i class="fa fa-spinner upload-loading"></i> <span id="geneLoadingProgress"></span>%
                 </span>
                 <span id="geneWrapper" class="btn btn-default btn-file">
                     <span id="geneText">Upload</span> <input type="file" name="upload" id="gene" accept=".txt" />
@@ -181,7 +181,7 @@ IL8R	3.7991	4.1968	2.3449	...
                 <input type="hidden" name="category" value="phylogenetic" />
                 <span id="phylogeneticOK" style="display:none;font-size:24px;margin:0 20px 0 0;vertical-align: middle;"><i class="glyphicon glyphicon-ok"></i></span>
                 <span id="phylogeneticLoading" style="display:none;">
-                  <i class="fa fa-spinner upload-loading"></i>
+                  <i class="fa fa-spinner upload-loading"></i> <span id="phylogeneticLoadingProgress"></span>%
                 </span>
                 <span id="phylogeneticWrapper" class="btn btn-default btn-file">
                     <span id="phylogeneticText">Upload</span> <input type="file" name="upload" id="phylogenetic" accept=".txt,.tre" />

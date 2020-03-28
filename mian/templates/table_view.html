@@ -11,7 +11,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Table <i class="fa fa-info-circle" data-toggle="popover" data-title="Table" data-content="Renders the OTU table in a raw tabular format, after applying the specified filters and grouping parameters below" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-th-large"></i>&nbsp;&nbsp;Table <a href="https://tbj128.gitbook.io/mian/table" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -31,7 +31,7 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/table#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum">Phylum</option>

@@ -52,7 +52,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Taxonomic Tree View <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Tree View" data-html="true" data-content="Renders a taxonomic tree up until the specified taxonomic level. At the lowest taxonomic level, the tree shows either the non-zero count or the mean/median/max abundances of all OTU-Samples that fall under the taxonomic group. <br /><br />Because each taxonomic group can contain one or more OTUs, the OTU-Sample unit is defined as the product of the number of OTUs under the taxonomic group and the number of samples." data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Taxonomic Tree View <a href="https://tbj128.gitbook.io/mian/taxonomic-tree-view" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -72,11 +72,11 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="The tree visualization will be broken down by the selected categorical metadata variable." data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <a href="https://tbj128.gitbook.io/mian/taxonomic-tree-view#categorical-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Taxonomic Display Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Display Level" data-content="The taxonomic tree will be rendered up until this taxonomic level."></i></label>
+                <label class="control-label">Taxonomic Display Level <a href="https://tbj128.gitbook.io/mian/taxonomic-tree-view#taxonomic-display-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy_display_level" name="taxonomy_display_level" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum">Phylum</option>
@@ -88,7 +88,7 @@
                     <option value="OTU">OTU</option>
                 </select>
 
-                <label class="control-label">Metric <i class="fa fa-info-circle" data-toggle="popover" data-title="Metric" data-content="Indicate which metric to display: <ul><li><strong>Non-Zero OTU-Sample Counts</strong> The number of OTU-samples with a non-zero count for the indicated taxonomic group. The OTU-sample represents the product of the number of samples and the number of OTUs that fall under the taxonomic group.</li><li><strong>Non-Zero Sample Counts</strong> The number of samples with a non-zero count for the indicated taxonomic group</li><li><strong>Mean OTU-Sample Abundance</strong> The mean of the counts across all samples and OTUs that fall under the indicated taxonomic group</li><li><strong>Median OTU-Sample Abundance</strong> The median of the counts across all samples and OTUs that fall under the indicated taxonomic group</li><li><strong>Max OTU-Sample Abundance</strong> The max of the counts across all samples and OTUs that fall under the indicated taxonomic group</li></ul>"></i></label>
+                <label class="control-label">Metric <a href="https://tbj128.gitbook.io/mian/taxonomic-tree-view#metric" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="display_values" name="display_values" class="form-control pad-bottom">
                     <option value="nonzero">Non-Zero OTU-Sample Counts</option>
                     <option value="nonzerosample">Non-Zero Sample Counts</option>
@@ -97,7 +97,7 @@
                     <option value="maxabun">Max OTU-Sample Abundance</option>
                 </select>
 
-                <label class="control-label">Exclude Unclassified <i class="fa fa-info-circle" data-toggle="popover" data-title="Exclude Unclassified" data-content="<ul><li><strong>Yes</strong> Ignores all counts coming from OTUs unclassified at the specified taxonomic level</li><li><strong>No</strong> Include counts from all OTUs</li></ul>"></i></label>
+                <label class="control-label">Exclude Unclassified <a href="https://tbj128.gitbook.io/mian/taxonomic-tree-view#exclude-unclassified" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="exclude_unclassified" name="exclude_unclassified" class="form-control pad-bottom">
                     <option value="yes">Yes</option>
                     <option value="no">No</option>

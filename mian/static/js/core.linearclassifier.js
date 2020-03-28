@@ -35,6 +35,45 @@ var config = {
                 position: 'bottom',
                 scaleLabel: {
                     display: true,
+                    labelString: 'Epochs'
+                }
+            }],
+            yAxes: [{
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Accuracy'
+                }
+            }]
+        },
+    }
+};
+
+var configRoc = {
+    type: 'line',
+    data: {
+        datasets: []
+    },
+    options: {
+        responsive: true,
+        title: {
+            display: false,
+            text: ''
+        },
+        tooltips: {
+            mode: 'index',
+            intersect: false,
+        },
+        hover: {
+            mode: 'nearest',
+            intersect: true
+        },
+        scales: {
+            xAxes: [{
+                type: 'linear',
+                position: 'bottom',
+                scaleLabel: {
+                    display: true,
                     labelString: 'False-Positive Rate'
                 }
             }],
@@ -80,8 +119,10 @@ function initializeFields() {
         $("#crossValidate").val(getParameterByName("crossValidate"));
         if ($("#crossValidate").val() === "full") {
             $("#trainingConfig").hide();
+            $("#cvFolds").show();
         } else {
             $("#trainingConfig").show();
+            $("#cvFolds").hide();
         }
     }
 
@@ -103,10 +144,6 @@ function initializeFields() {
         $("#trainingProportion").val(getParameterByName("trainingProportion"));
     }
 
-    if (getParameterByName("rocFor") !== null) {
-        $("#rocFor").val(getParameterByName("rocFor"));
-    }
-
     if (getParameterByName("trainingIndexes") !== null) {
         cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
     }
@@ -117,7 +154,10 @@ function initializeFields() {
     }
 
     var ctx = document.getElementById('canvas').getContext('2d');
-    window.rocChart = new Chart(ctx, config);
+    window.trainChart = new Chart(ctx, config);
+
+    var ctxRoc = document.getElementById('canvas-roc').getContext('2d');
+    window.rocChart = new Chart(ctxRoc, configRoc);
 }
 
 //
@@ -143,8 +183,10 @@ function createSpecificListeners() {
     $("#crossValidate").change(function() {
         if ($("#crossValidate").val() === "full") {
             $("#trainingConfig").hide();
+            $("#cvFolds").show();
         } else {
             $("#trainingConfig").show();
+            $("#cvFolds").hide();
         }
         updateAnalysis();
     });
@@ -166,17 +208,13 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
-    $("#rocFor").change(function() {
-        renderTrainingPlot();
-        setGetParameters(getUpdateAnalysisData());
-    });
-
     $("#blackout").click(function() {
         $("#blackout").hide();
     });
 
     $("#download-svg").click(function() {
         downloadCanvas("linear_classifier", "canvas");
+        downloadCanvas("linear_regression", "canvas-roc");
     });
 
     $("#save-to-notebook").click(function() {
@@ -189,27 +227,65 @@ function renderTrainingPlot() {
         return;
     }
 
+    var colors = palette('cb-Accent', 2);
+    config.data.datasets = [];
+    config.data.datasets.push({
+        label: "Training",
+        backgroundColor: "#" + colors[0],
+        borderColor: "#" + colors[0],
+        data: [],
+        fill: false,
+        lineTension: 0,
+        data: cachedAbundancesObj["scores_train"].map((val, i) => {
+            return {
+                x: i,
+                y: val
+            }
+        }),
+    });
+
+    config.data.datasets.push({
+        label: "Test",
+        backgroundColor: "#" + colors[1],
+        borderColor: "#" + colors[1],
+        data: [],
+        fill: false,
+        lineTension: 0,
+        data: cachedAbundancesObj["scores_test"].map((val, i) => {
+            return {
+                x: i,
+                y: val
+            }
+        }),
+    });
+
+    window.trainChart.update();
+}
+
+function renderRocPlot() {
+    if (cachedAbundancesObj == null) {
+        return;
+    }
+
     $("#auc-rows").empty();
 
-    var trainOrTestKey = ($("#rocFor").val() === "train" || $("#crossValidate").val() === "full") ? "train_class_to_roc" : "test_class_to_roc";
+    var trainOrTestKey = ($("#crossValidate").val() === "full") ? "train_class_to_roc" : "test_class_to_roc";
     var curveType = "Test Data";
     if ($("#crossValidate").val() === "full") {
         curveType = "Cross-Validated Full Data";
-    } else if ($("#rocFor").val() === "train") {
-        curveType = "Cross-Validated Training Data";
     }
     $("#roc-curve-type").text(curveType);
 
     var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj[trainOrTestKey]).length);
-    config.data.datasets = [];
+    configRoc.data.datasets = [];
     var i = 0;
     for (var k in cachedAbundancesObj[trainOrTestKey]) {
-        if ($("#rocFor").val() === "train" || $("#crossValidate").val() === "full") {
+        if ($("#crossValidate").val() === "full") {
             $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td></tr>");
         } else {
             $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
         }
-        config.data.datasets.push({
+        configRoc.data.datasets.push({
             label: k,
             backgroundColor: "#" + colors[i],
             borderColor: "#" + colors[i],
@@ -268,7 +344,6 @@ function getUpdateAnalysisData() {
         maxIterations: $("#maxIterations").val(),
         fixTraining: fixTraining,
         trainingProportion: trainingProportion,
-        rocFor: $("#rocFor").val(),
         trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
     };
     if (getParameterByName("ref") != null) {
@@ -308,10 +383,18 @@ function updateAnalysis() {
             setGetParameters(data);
 
             loadSuccess();
-            $("#cv-accuracy").text(`${abundancesObj["cv_accuracy"]} ± ${abundancesObj["cv_accuracy_std"]}`);
+            if (abundancesObj["cv_accuracy"]) {
+                $("#cv-accuracy").text(`${abundancesObj["cv_accuracy"]} ± ${abundancesObj["cv_accuracy_std"]}`);
+                $("#training-plot-container").hide();
+            } else {
+                $("#cv-accuracy").text("N/A");
+                $("#training-plot-container").show();
+                renderTrainingPlot();
+            }
+            $("#train-accuracy").text(`${abundancesObj["train_accuracy"] ? abundancesObj["train_accuracy"] : "N/A"}`);
             $("#test-accuracy").text(`${abundancesObj["test_accuracy"] ? abundancesObj["test_accuracy"] : "N/A"}`);
 
-            renderTrainingPlot();
+            renderRocPlot();
         },
         error: function(err) {
             loadError();

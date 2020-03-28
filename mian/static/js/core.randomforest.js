@@ -102,10 +102,6 @@ function initializeFields() {
         cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
     }
 
-    if (getParameterByName("rocFor") !== null) {
-        $("#rocFor").val(getParameterByName("rocFor"));
-    }
-
     if (getParameterByName("ref") !== null) {
         $("#referral-alert").show();
         $("#referer-name").text(getParameterByName("ref"));
@@ -157,11 +153,6 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
-    $("#rocFor").change(function() {
-        renderTrainingPlot();
-        setGetParameters(getUpdateAnalysisData());
-    });
-
     $("#blackout").click(function() {
         $("#blackout").hide();
     });
@@ -182,12 +173,10 @@ function renderTrainingPlot() {
 
     $("#auc-rows").empty();
 
-    var trainOrTestKey = ($("#rocFor").val() === "train" || $("#crossValidate").val() === "full") ? "train_class_to_roc" : "test_class_to_roc";
+    var trainOrTestKey = $("#crossValidate").val() === "full" ? "train_class_to_roc" : "test_class_to_roc";
     var curveType = "Test Data";
     if ($("#crossValidate").val() === "full") {
         curveType = "Cross-Validated Full Data";
-    } else if ($("#rocFor").val() === "train") {
-        curveType = "Cross-Validated Training Data";
     }
     $("#roc-curve-type").text(curveType);
 
@@ -195,7 +184,7 @@ function renderTrainingPlot() {
     config.data.datasets = [];
     var i = 0;
     for (var k in cachedAbundancesObj[trainOrTestKey]) {
-        if ($("#rocFor").val() === "train" || $("#crossValidate").val() === "full") {
+        if ($("#crossValidate").val() === "full") {
             $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td></tr>");
         } else {
             $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
@@ -300,7 +289,11 @@ function updateAnalysis() {
 
             loadSuccess();
             $("#oob-error").text(abundancesObj["oob_error"]);
-            $("#cv-accuracy").text(`${abundancesObj["cv_accuracy"]} ± ${abundancesObj["cv_accuracy_std"]}`);
+            if (abundancesObj["cv_accuracy"]) {
+                $("#cv-accuracy").text(`${abundancesObj["cv_accuracy"]} ± ${abundancesObj["cv_accuracy_std"]}`);
+            } else {
+                $("#cv-accuracy").text("N/A");
+            }
             $("#test-accuracy").text(`${abundancesObj["test_accuracy"] ? abundancesObj["test_accuracy"] : "N/A"}`);
             renderTrainingPlot();
         },

@@ -38,7 +38,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;NMDS <i class="fa fa-info-circle" data-toggle="popover" data-title="NMDS" data-content="Performs non-metric multidimensional scaling at the selected taxonomic level<br /><br />NMDS tries to represent the original data in a 2D reduced dimensional space. This analysis utilizes the <a href='http://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html' target='_blank'>scikit-learn package</a>"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;NMDS <a href="https://tbj128.gitbook.io/mian/nmds" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
     <hr/>
@@ -56,7 +56,7 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Taxonomic Level <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/nmds#taxonomic-level" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum">Phylum</option>
@@ -72,11 +72,11 @@
                         multiple="multiple">
                 </select>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which metadata should be used as the grouping variable" data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <a href="https://tbj128.gitbook.io/mian/nmds#categorical-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
-                <label class="control-label">Distance Metric <i class="fa fa-info-circle" data-toggle="popover" data-title="Dissimilarity Distance" data-content="Choose to show either a 2D plot or a 3D plot"></i></label>
+                <label class="control-label">Distance Metric <a href="https://tbj128.gitbook.io/mian/nmds#distance-metric" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="type" name="type" class="form-control">
                     <option value="braycurtis">Bray-Curtis</option>
                     <option value="jaccard">Jaccard</option>
@@ -94,7 +94,7 @@
     <div id="display-no-tree" class="display-notification project-empty" style="display:none;">
         <div class="row">
             <div class="col-md-3">
-                <i class="fa fa-exclamation-circle fa-4x"></i>
+                <i class="fa fa-bar-chart fa-4x"></i>
             </div>
             <div class="col-md-9">
                 <h3>No Phylogenetic Tree For This Project</h3>

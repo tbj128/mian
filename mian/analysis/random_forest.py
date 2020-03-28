@@ -8,16 +8,17 @@
 #
 # Imports
 #
+
+import numpy as np
 import pandas as pd
 from scipy import interp
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.utils import shuffle
 
 from mian.model.otu_table import OTUTable
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
-import numpy as np
 
 
 class RandomForest(object):
@@ -31,9 +32,9 @@ class RandomForest(object):
         return self.analyse(user_request, otu_table, headers, metadata_vals)
 
     def analyse(self, user_request, otu_table, headers, metadata_vals):
-        fix_training = user_request.get_custom_attr("fixTraining")
         cross_validate_set = user_request.get_custom_attr("crossValidate")
         cross_validate_folds = int(user_request.get_custom_attr("crossValidateFolds"))
+        fix_training = user_request.get_custom_attr("fixTraining")
         training_proportion = user_request.get_custom_attr("trainingProportion")
         existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
         num_trees = int(user_request.get_custom_attr("numTrees"))
@@ -83,41 +84,51 @@ class RandomForest(object):
 
             for i, (train, test) in enumerate(cv.split(X_cv, metadata_vals_cv)):
                 classifier.fit(X_cv[X_cv.index.isin(train)], Y_cv[train])
-                test_probs = classifier.predict_proba(X_cv[X_cv.index.isin(test)])
+                test_probs = classifier.decision_function(X_cv[X_cv.index.isin(test)])
                 test_accuracy = classifier.score(X_cv[X_cv.index.isin(test)], Y_cv[test])
                 test_accuracies.append(test_accuracy)
 
-                for i in range(len(classifier.classes_)):
-                    actual_class = classifier.classes_[i]
-                    Y_cv_binarize = binarize(classifier, Y_cv)
-
-                    fpr, tpr, _ = roc_curve(Y_cv_binarize[test, i], test_probs[:, i])
-                    auc = roc_auc_score(Y_cv_binarize[test, i], test_probs[:, i])
-
+                Y_cv_binarize = binarize(classifier, Y_cv[test])
+                if len(classifier.classes_) == 2:
+                    fpr, tpr, _ = roc_curve(Y_cv_binarize[:, 1], test_probs[:])
+                    auc = roc_auc_score(Y_cv_binarize[:, 1], test_probs[:])
                     tpr = interp(base_fpr, fpr, tpr)
                     tpr[0] = 0.0
 
-                    class_to_roc[actual_class]["fprs"].append(base_fpr)
-                    class_to_roc[actual_class]["tprs"].append(tpr)
-                    class_to_roc[actual_class]["aucs"].append(auc)
+                    label = classifier.classes_[1]
+                    class_to_roc[label]["fprs"].append(base_fpr)
+                    class_to_roc[label]["tprs"].append(tpr)
+                    class_to_roc[label]["aucs"].append(auc)
+                else:
+                    for c in range(len(classifier.classes_)):
+                        actual_class = classifier.classes_[c]
 
-                    i += 1
+                        fpr, tpr, _ = roc_curve(Y_cv_binarize[:, c], test_probs[:, c])
+                        auc = roc_auc_score(Y_cv_binarize[:, c], test_probs[:, c])
+
+                        tpr = interp(base_fpr, fpr, tpr)
+                        tpr[0] = 0.0
+
+                        class_to_roc[actual_class]["fprs"].append(base_fpr)
+                        class_to_roc[actual_class]["tprs"].append(tpr)
+                        class_to_roc[actual_class]["aucs"].append(auc)
+
+                        i += 1
 
             average_class_to_roc = {}
-            for i in range(len(uniq_metadata_vals)):
-                actual_class = uniq_metadata_vals[i]
-                if len(class_to_roc[actual_class]["tprs"]) > 0:
-                    average_class_to_roc[actual_class] = {
-                        "fpr": [a.item() for a in np.array(class_to_roc[actual_class]["fprs"]).mean(axis=0)],
-                        "tpr": [a.item() for a in np.array(class_to_roc[actual_class]["tprs"]).mean(axis=0)],
-                        "auc": np.array(class_to_roc[actual_class]["aucs"]).mean(),
-                        "auc_std": np.array(class_to_roc[actual_class]["aucs"]).std()
+            for k, v in class_to_roc.items():
+                if len(class_to_roc[k]["tprs"]) > 0:
+                    average_class_to_roc[k] = {
+                        "fpr": [round(a.item(), 4) for a in np.array(class_to_roc[k]["fprs"]).mean(axis=0)],
+                        "tpr": [round(a.item(), 4) for a in np.array(class_to_roc[k]["tprs"]).mean(axis=0)],
+                        "auc": round(np.array(class_to_roc[k]["aucs"]).mean(), 4),
+                        "auc_std": round(np.array(class_to_roc[k]["aucs"]).std(), 4)
                     }
 
             cv_obj = {
                 "class_to_roc": average_class_to_roc,
-                "cv_accuracy": np.array(test_accuracies).mean(),
-                "cv_accuracy_std": np.array(test_accuracies).std()
+                "cv_accuracy": round(np.array(test_accuracies).mean(), 4),
+                "cv_accuracy_std": round(np.array(test_accuracies).std(), 4)
             }
             return cv_obj
 
@@ -145,9 +156,9 @@ class RandomForest(object):
 
             X_train = X_train.reset_index(drop=True)
             X_test = X_test.reset_index(drop=True)
-            cv_obj = performCrossValidationForAUC(X_train, np.array(metadata_vals)[ind_train], y_train)
 
             classifier = RandomForestClassifier(n_estimators=num_trees, max_depth=max_depth, oob_score=True)
+
             classifier.fit(X_train, y_train)
             test_probs = classifier.predict_proba(X_test)
             test_accuracy = classifier.score(X_test, y_test)
@@ -166,9 +177,6 @@ class RandomForest(object):
                 i += 1
 
             abundances_obj = {
-                "train_class_to_roc": cv_obj["class_to_roc"],
-                "cv_accuracy": cv_obj["cv_accuracy"],
-                "cv_accuracy_std": cv_obj["cv_accuracy_std"],
                 "oob_error": 1 - classifier.oob_score_,
                 "test_accuracy": test_accuracy,
                 "test_class_to_roc": class_to_roc,
@@ -176,64 +184,3 @@ class RandomForest(object):
             }
 
             return abundances_obj
-
-
-        #
-        # # NORMALIZE THE DATASET
-        # df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
-        # stats = df.describe()
-        # stats = stats.transpose()
-        #
-        # def norm(x):
-        #     return (x - stats['mean']) / stats['std']
-        #
-        # X = norm(df)
-        #
-        # le = LabelEncoder()
-        # le.fit(metadata_vals)
-        # Y = le.transform(metadata_vals)
-        #
-        # if fix_training == "yes" and len(existing_training_indexes) > 0:
-        #     existing_training_indexes = np.array([int(i) for i in existing_training_indexes])
-        #     X_train = X[X.index.isin(existing_training_indexes)]
-        #     X_test = X[~X.index.isin(existing_training_indexes)]
-        #     y_train = Y[X.index.isin(existing_training_indexes)]
-        #     y_test = Y[~X.index.isin(existing_training_indexes)]
-        #     ind_train = existing_training_indexes
-        #     X_train, y_train = shuffle(X_train, y_train)
-        #     X_test, y_test = shuffle(X_test, y_test)
-        # else:
-        #     indices = np.arange(len(X))
-        #     X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices,
-        #                                                                              train_size=training_proportion)
-        #
-        # rf = RandomForestClassifier(n_estimators=num_trees, max_depth=max_depth, oob_score=True)
-        # rf.fit(X_train, y_train)
-        #
-        # accuracy = rf.score(X_test, y_test)
-        # probs = np.array(rf.predict_proba(X_test))
-        # class_to_roc = {}
-        # classes = rf.classes_
-        # i = 0
-        # for c in classes:
-        #     orig_c = list(le.inverse_transform([c]))[0]
-        #     y_test_mask = []
-        #     for y in y_test:
-        #         y_test_mask.append(1 if y == c else 0)
-        #     fpr, tpr, thresholds = roc_curve(y_test_mask, probs[:, i])
-        #     auc = roc_auc_score(y_test_mask, probs[:, i])
-        #     class_to_roc[orig_c] = {
-        #         "fpr": [a.item() for a in fpr],
-        #         "tpr": [a.item() for a in tpr],
-        #         "auc": auc.item()
-        #     }
-        #     i += 1
-        #
-        # abundances_obj = {
-        #     "oob_error": 1 - rf.oob_score_,
-        #     "accuracy": accuracy,
-        #     "class_to_roc": class_to_roc,
-        #     "training_indexes": ind_train.tolist()
-        # }
-        #
-        # return abundances_obj

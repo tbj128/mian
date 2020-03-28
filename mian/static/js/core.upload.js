@@ -146,6 +146,34 @@ $(document).ready(function() {
         $.ajax({
             url: "/upload",
             type: "POST",
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function(evt) {
+                    if (evt.lengthComputable) {
+                        var percentComplete = (evt.loaded / evt.total) * 100;
+
+                        if (formID == "biomForm") {
+                            $("#biomLoadingProgress").text(percentComplete);
+                        }
+                        if (formID == "otuTableForm") {
+                            $("#otuTableLoadingProgress").text(percentComplete);
+                        }
+                        if (formID == "otuTaxonomyMappingForm") {
+                            $("#otuTaxonomyMappingLoadingProgress").text(percentComplete);
+                        }
+                        if (formID == "otuMetadataForm") {
+                            $("#otuMetadataLoadingProgress").text(percentComplete);
+                        }
+                        if (formID == "phylogeneticForm") {
+                            $("#phylogeneticLoadingProgress").text(percentComplete);
+                        }
+                        if (formID == "geneForm") {
+                            $("#geneLoadingProgress").text(percentComplete);
+                        }
+                    }
+               }, false);
+               return xhr;
+            },
             data: formData,
             cache: false,
             processData: false, // Don't process the files

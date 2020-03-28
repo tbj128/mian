@@ -35,7 +35,7 @@
 {% include 'loading-bar.html' %}
 
 <div id="editor" class="editor">
-    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Donut <i class="fa fa-info-circle analysis-help" data-toggle="popover" data-title="Composition Donut Analysis" data-content="Visualizes the contents of the OTU table grouped at the indicated taxonomic level as a donut plot" data-trigger="hover"></i></h3>
+    <h3 class="pad-sides pad-top"><i class="fa fa-chevron-right"></i>&nbsp;&nbsp;Composition Donut <a href="https://tbj128.gitbook.io/mian/donut-composition" target="_blank"><i class="fa fa-info-circle analysis-help" ></i></a></h3>
 
     {% include 'project_list.html' %}
 
@@ -55,7 +55,7 @@
             <div id="analysisParameters" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingAnalysisParameters">
               <div class="panel-body">
 
-                <label class="control-label">Taxonomic Level  <i class="fa fa-info-circle" data-toggle="popover" data-title="Taxonomic Level" data-content="The OTUs will be grouped together (by summing the OTU values) at the selected taxonomic level before the analysis is applied." data-trigger="hover"></i></label>
+                <label class="control-label">Taxonomic Level <a href="https://tbj128.gitbook.io/mian/donut-composition#categorical-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="taxonomy" name="taxonomy" class="form-control pad-bottom">
                     <option value="Kingdom">Kingdom</option>
                     <option value="Phylum" selected>Phylum</option>
@@ -69,12 +69,12 @@
 
                 <hr/>
 
-                <label class="control-label">Categorical Variable <i class="fa fa-info-circle" data-toggle="popover" data-title="Categorical Variable" data-content="Indicate which sample metadata should be used as the grouping variable. A separate donut plot is created for each unique metadata value." data-trigger="hover"></i></label>
+                <label class="control-label">Categorical Variable <a href="https://tbj128.gitbook.io/mian/donut-composition#categorical-variable" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="catvar" name="catvar" class="form-control">
                 </select>
 
                 <!-- NOTE: This grouping is swapped on purpose, to reflect a more natural interpretation of the parameters -->
-                <label class="control-label">Donut Grouping <i class="fa fa-info-circle" data-toggle="popover" data-title="X-Axis Display" data-content="Choose to either show the taxonomic groups on the x-axis or the categorical variable"></i></label>
+                <label class="control-label">Donut Grouping <a href="https://tbj128.gitbook.io/mian/donut-composition#donut-grouping" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="xaxis" name="xaxis" class="form-control pad-bottom">
                     <option value="Categorical">Taxonomic Variable</option>
                     <option value="Taxonomic">Categorical Groups</option>

@@ -9,7 +9,7 @@
 # Imports
 #
 import pandas as pd
-from sklearn.linear_model import ElasticNet
+from sklearn.linear_model import ElasticNet, SGDRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
 from sklearn.utils import shuffle
@@ -55,19 +55,11 @@ class LinearRegression(object):
 
             classifier = ElasticNet(l1_ratio=mixing_ratio, max_iter=max_iterations)
 
-            train_maes = []
-            train_mses = []
             test_maes = []
             test_mses = []
 
             for i, (train, test) in enumerate(cv.split(X_cv, metadata_vals_cv)):
                 classifier.fit(X_cv[X_cv.index.isin(train)], Y_cv[train])
-                preds = classifier.predict(X_cv[X_cv.index.isin(train)])
-                train_mae = mean_absolute_error(Y_cv[train].astype(float), preds)
-                train_mse = mean_squared_error(Y_cv[train].astype(float), preds)
-                train_maes.append(train_mae)
-                train_mses.append(train_mse)
-
                 preds = classifier.predict(X_cv[X_cv.index.isin(test)])
                 test_mae = mean_absolute_error(Y_cv[test].astype(float), preds)
                 test_mse = mean_squared_error(Y_cv[test].astype(float), preds)
@@ -75,10 +67,6 @@ class LinearRegression(object):
                 test_mses.append(test_mse)
 
             cv_obj = {
-                "train_mae": np.array(train_maes).mean(),
-                "train_mae_std": np.array(train_maes).std(),
-                "train_mse": np.array(train_mses).mean(),
-                "train_mse_std": np.array(train_mses).std(),
                 "cv_mae": np.array(test_maes).mean(),
                 "cv_mae_std": np.array(test_maes).std(),
                 "cv_mse": np.array(test_mses).mean(),
@@ -89,10 +77,6 @@ class LinearRegression(object):
         if cross_validate_set == "full":
             cv_obj = performCrossValidationForAUC(X, metadata_vals, Y)
             return {
-                "train_mae": cv_obj["train_mae"],
-                "train_mae_std": cv_obj["train_mae_std"],
-                "train_mse": cv_obj["train_mse"],
-                "train_mse_std": cv_obj["train_mse_std"],
                 "cv_mae": cv_obj["cv_mae"],
                 "cv_mae_std": cv_obj["cv_mae_std"],
                 "cv_mse": cv_obj["cv_mse"],
@@ -115,25 +99,37 @@ class LinearRegression(object):
 
             X_train = X_train.reset_index(drop=True)
             X_test = X_test.reset_index(drop=True)
-            cv_obj = performCrossValidationForAUC(X_train, np.array(metadata_vals)[ind_train], y_train)
 
-            classifier = ElasticNet(l1_ratio=mixing_ratio, max_iter=max_iterations)
-            classifier.fit(X_train, y_train)
-            preds = classifier.predict(X_test)
-            test_mae = mean_absolute_error(y_test.astype(float), preds)
-            test_mse = mean_squared_error(y_test.astype(float), preds)
+            train_mae = 0
+            train_mse = 0
+            test_mae = 0
+            test_mse = 0
+            scores_train = []
+            scores_test = []
+            classifier = SGDRegressor(l1_ratio=mixing_ratio, max_iter=max_iterations)
+            epoch = 0
+            while epoch < max_iterations:
+                classifier.partial_fit(X_train, y_train)
+                preds_train = classifier.predict(X_train)
+                train_mae = mean_absolute_error(y_train.astype(float), preds_train)
+                train_mse = mean_squared_error(y_train.astype(float), preds_train)
+
+                preds_test = classifier.predict(X_test)
+                test_mae = mean_absolute_error(y_test.astype(float), preds_test)
+                test_mse = mean_squared_error(y_test.astype(float), preds_test)
+
+                scores_train.append(train_mae)
+                scores_test.append(test_mae)
+
+                epoch += 1
 
             abundances_obj = {
-                "train_mae": cv_obj["train_mae"],
-                "train_mae_std": cv_obj["train_mae_std"],
-                "train_mse": cv_obj["train_mse"],
-                "train_mse_std": cv_obj["train_mse_std"],
-                "cv_mae": cv_obj["cv_mae"],
-                "cv_mae_std": cv_obj["cv_mae_std"],
-                "cv_mse": cv_obj["cv_mse"],
-                "cv_mse_std": cv_obj["cv_mse_std"],
+                "train_mae": train_mae,
+                "train_mse": train_mse,
                 "test_mae": test_mae,
                 "test_mse": test_mse,
+                "scores_train": scores_train,
+                "scores_test": scores_test,
                 "training_indexes": ind_train.tolist()
             }
 

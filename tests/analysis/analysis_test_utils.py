@@ -18,7 +18,6 @@ r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")
-r_package_install.importr_custom("glmnet")
 
 
 class AnalysisTestUtils(object):

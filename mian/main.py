@@ -46,7 +46,6 @@ r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")
-r_package_install.importr_custom("glmnet")
 
 from mian.core.project_manager import ProjectManager, GENERAL_ERROR, OK
 from mian.analysis.alpha_diversity import AlphaDiversity
@@ -63,7 +62,6 @@ from mian.analysis.differential_selection import DifferentialSelection
 from mian.analysis.elastic_net_selection_classification import ElasticNetSelectionClassification
 from mian.analysis.elastic_net_selection_regression import ElasticNetSelectionRegression
 from mian.analysis.fisher_exact import FisherExact
-from mian.analysis.glmnet import GLMNet
 from mian.analysis.heatmap import Heatmap
 from mian.analysis.linear_regression import LinearRegression
 from mian.analysis.linear_classifier import LinearClassifier
@@ -605,17 +603,6 @@ def fisher_exact():
 @app.route('/share/fisher_exact')
 def fisher_exact_share():
     return render_sharing('fisher_exact.html', request, show_low_expression_filtering=True)
-
-
-@app.route('/glmnet')
-@flask_login.login_required
-def glmnet():
-    return render_normal('glmnet.html', request, show_low_expression_filtering=True)
-
-
-@app.route('/share/glmnet')
-def glmnet_share():
-    return render_sharing('glmnet.html', request, show_low_expression_filtering=True)
 
 
 @app.route('/heatmap')
@@ -1396,37 +1383,6 @@ def getFisherExact(user_request, req):
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = FisherExact()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
-
-
-# ---
-
-
-@app.route('/glmnet', methods=['POST'])
-@flask_login.login_required
-def getGlmnetSecure():
-    user_request = __get_user_request(request)
-    return getGlmnet(user_request, request)
-
-
-@app.route('/share/glmnet', methods=['POST'])
-def getGlmnetShare():
-    if checkSharedValidity(request):
-        uid = request.args.get('uid', '')
-        user_request = __get_user_request(request, user=uid)
-        return getGlmnet(user_request, request)
-    else:
-        abortNotShared()
-
-
-def getGlmnet(user_request, req):
-    user_request.set_custom_attr("expvar", req.form['expvar'])
-    user_request.set_custom_attr("alpha", req.form['alpha'])
-    user_request.set_custom_attr("model", req.form['model'])
-    user_request.set_custom_attr("lambdathreshold", req.form['lambdathreshold'])
-
-    plugin = GLMNet()
     abundances = plugin.run(user_request)
     return json.dumps(abundances)
 

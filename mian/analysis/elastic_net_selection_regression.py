@@ -10,6 +10,8 @@
 #
 import pandas as pd
 from sklearn.linear_model import ElasticNet
+from sklearn.model_selection import train_test_split
+
 from mian.model.otu_table import OTUTable
 import numpy as np
 
@@ -46,7 +48,11 @@ class ElasticNetSelectionRegression(object):
             existing_training_indexes = [int(i) for i in existing_training_indexes]
             training_indexes = np.array(existing_training_indexes)
         else:
-            training_indexes = np.random.randint(len(metadata_vals), size=int(training_proportion * len(metadata_vals)))
+            if training_proportion == 1:
+                training_indexes = np.array(range(len(otu_table)))
+            else:
+                _, training_indexes = train_test_split(range(len(otu_table)), test_size=(1 - training_proportion))
+        training_indexes = np.array(training_indexes)
         otu_table = otu_table[training_indexes, :]
 
         # NORMALIZE THE DATASET

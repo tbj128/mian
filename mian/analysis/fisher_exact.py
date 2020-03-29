@@ -17,6 +17,8 @@ import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 import rpy2.robjects.numpy2ri
+from sklearn.model_selection import train_test_split
+
 rpy2.robjects.numpy2ri.activate()
 
 from mian.model.otu_table import OTUTable
@@ -97,7 +99,11 @@ class FisherExact(object):
             existing_training_indexes = [int(i) for i in existing_training_indexes]
             training_indexes = np.array(existing_training_indexes)
         else:
-            training_indexes = np.random.randint(len(metaVals), size=int(training_proportion * len(metaVals)))
+            if training_proportion == 1:
+                training_indexes = np.array(range(len(otuTable)))
+            else:
+                _, training_indexes = train_test_split(range(len(otuTable)), test_size=(1 - training_proportion))
+        training_indexes = np.array(training_indexes)
         otuTable = otuTable[training_indexes, :]
         metaVals = [metaVals[i] for i in training_indexes]
 

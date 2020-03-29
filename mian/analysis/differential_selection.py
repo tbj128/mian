@@ -8,6 +8,7 @@
 #
 # Imports
 #
+from sklearn.model_selection import train_test_split
 
 from mian.model.otu_table import OTUTable
 from mian.core.statistics import Statistics
@@ -56,7 +57,11 @@ class DifferentialSelection(object):
             existing_training_indexes = [int(i) for i in existing_training_indexes]
             training_indexes = np.array(existing_training_indexes)
         else:
-            training_indexes = np.random.randint(len(metadata_vals), size=int(training_proportion * len(metadata_vals)))
+            if training_proportion == 1.0:
+                training_indexes = np.array(range(len(base)))
+            else:
+                _, training_indexes = train_test_split(range(len(base)), test_size=(1 - training_proportion))
+        training_indexes = np.array(training_indexes)
         base = base[training_indexes, :]
         metadata_vals = [metadata_vals[i] for i in training_indexes]
 
@@ -131,8 +136,13 @@ class DifferentialSelection(object):
             existing_training_indexes = [int(i) for i in existing_training_indexes]
             training_indexes = np.array(existing_training_indexes)
         else:
-            training_indexes = np.random.randint(len(metadata_vals), size=int(training_proportion * len(metadata_vals)))
+            if training_proportion == 1:
+                training_indexes = np.array(range(len(base)))
+            else:
+                _, training_indexes = np.array(train_test_split(range(len(base)), test_size=(1 - training_proportion)))
+        training_indexes = np.array(training_indexes)
         base = base[training_indexes, :]
+        sample_labels = [sample_labels[i] for i in training_indexes]
         metadata_vals = [metadata_vals[i] for i in training_indexes]
 
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))

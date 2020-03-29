@@ -7,6 +7,7 @@
 
 from scipy import stats, math
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.analysis.analysis_base import AnalysisBase
@@ -40,7 +41,11 @@ class CorrelationsSelection(AnalysisBase):
             existing_training_indexes = [int(i) for i in existing_training_indexes]
             training_indexes = np.array(existing_training_indexes)
         else:
-            training_indexes = np.random.randint(len(otu_table), size=int(training_proportion * len(otu_table)))
+            if training_proportion == 1:
+                training_indexes = np.array(range(len(otu_table)))
+            else:
+                _, training_indexes = train_test_split(range(len(otu_table)), test_size=(1 - training_proportion))
+        training_indexes = np.array(training_indexes)
         otu_table = otu_table[training_indexes, :]
 
         if expvar == "":

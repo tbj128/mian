@@ -5,9 +5,12 @@
 ### Used For
 
 * Assess the performance of a deep neural network on the OTU data in predicting a categorical or numerical variable
+* Examples:
+  * Predict patient outcome or sampling region based on the lung microbiome composition from COPD patients
+  * Predict hospital length-of-stay based on the nasopharyngeal microbiome composition from ICU patients
 
 {% hint style="info" %}
-Use deep neural networks \(DNN\) with caution. DNNs are typically best when there are thousands of examples for each categorical class. DNNs are also prone to overfitting.
+Use deep neural networks \(DNN\) with caution. DNNs are typically best when there are thousands of examples for each categorical class. DNNs are also prone to overfitting - dropout layers can help reduce overfitting.
 {% endhint %}
 
 ### Result Interpretation
@@ -19,7 +22,7 @@ Use deep neural networks \(DNN\) with caution. DNNs are typically best when ther
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Experimental Variable
 
@@ -33,6 +36,10 @@ If set to yes, ensures that the same samples are used as the training set every 
 
 Define the proportion of the data that should be randomly picked to form a training dataset. 
 
+#### Training Validation Proportion
+
+Define the proportion of the training data that should be randomly picked to form a validation dataset. 
+
 #### Training Epochs
 
 The maximum number of passes through the training data. 
@@ -43,7 +50,9 @@ Whether the DNN will be trained as a classifier \(categorical\) or a regressor \
 
 #### Measure
 
-Assess the model by either using the accuracy or cross-entropy loss. This affects both the training/validation test plot and the final test accuracy or loss. 
+Assess the model by either using the accuracy or cross-entropy loss for classification problems or mean absolute error or mean squared error for regression problems. 
+
+This affects both the training/validation test plot and the final test accuracy or loss. 
 
 #### Layers
 
@@ -52,7 +61,7 @@ Assess the model by either using the accuracy or cross-entropy loss. This affect
 Customize and build your own deep neural network by setting the number and type of layers you want to use:
 
 * **Dense Layer**: The neurons are fully-connected to the neurons of the next layer. 
-* **Dropout Layer**: The percentage of connections to randomly drop between the current layer and the next layer
+* \*\*\*\*[**Dropout Layer**](https://en.wikipedia.org/wiki/Dropout_%28neural_networks%29): The percentage of connections to randomly drop between the current layer and the next layer. Dropout reduces overfitting by preventing co-adaptions between neurons.
 
 ### Interactive Elements
 

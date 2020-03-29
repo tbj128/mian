@@ -1,5 +1,9 @@
 # Fisher Exact Test
 
+Applies the Fisher Exact presence/absence test to a contingency table built based on the two selected pairwise categorical metadata values  
+  
+This test relies on the fisher.test function in the R stats package [here](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/fisher.test.html)
+
 ![](.gitbook/assets/image%20%2833%29.png)
 
 
@@ -12,7 +16,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Categorical Variable
 

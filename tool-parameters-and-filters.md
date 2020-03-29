@@ -2,6 +2,10 @@
 
 Every tool has a set of options on the left-hand panel. Switch between your projects using the dropdown at the top.
 
+### Project Switcher
+
+Switch between different projects while keeping the rest of the parameters the same. This can help you compare results between different datasets. 
+
 ### Data Filtering
 
 On-demand filters are accessible via a dropdown menu for any tool. These filters allow you to exclude outliers or remove any data you don't want to see in the visualization or feature selection result. 

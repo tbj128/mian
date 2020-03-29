@@ -53,12 +53,6 @@ L1 \([LASSO](https://en.wikipedia.org/wiki/Lasso_%28statistics%29)\) regularizat
 
 The maximum number of passes through the training data. 
 
-{% hint style="info" %}
-Note that the training may stop early if the model detects that the training error is no longer going down after five consecutive epochs
-{% endhint %}
-
-#### 
-
 ### Interactive Elements
 
 * Hover over the training/test error curve generated for the test data

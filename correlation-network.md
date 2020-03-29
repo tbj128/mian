@@ -10,7 +10,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Perform Correlation On
 

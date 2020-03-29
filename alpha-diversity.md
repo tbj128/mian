@@ -1,5 +1,7 @@
 # Alpha Diversity
 
+Investigate the OTU/Taxonomic richness of the OTU table. This analysis uses the diversity measure from the R 'vegan' package [here](http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/diversity.html)
+
 ![](.gitbook/assets/image%20%286%29.png)
 
 ### Used For
@@ -11,7 +13,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Experimental Variable
 

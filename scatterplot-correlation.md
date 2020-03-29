@@ -18,7 +18,7 @@ This tool starts out empty until you have added values to both "Correlation Vari
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Correlation Variable 1
 
@@ -37,6 +37,14 @@ For instance, you might want to correlate the Streptococcus genus against TLR8 e
 #### Size Variable
 
 Choose a quantitative variable to resize the points by. This allows you to add a third quantitative variable to explore with. 
+
+#### Samples To Show
+
+Determines which sample types should be displayed in the correlation graph
+
+* **All samples**: Displays all samples
+* **Non-zero value samples**: Displays only samples that have a non-zero value for the selected taxonomic group\(s\) or OTU\(s\)
+* **Zero value samples**: Displays only samples that have a zero value for the selected taxonomic group\(s\) or OTU\(s\)
 
 ### Interactive Elements
 

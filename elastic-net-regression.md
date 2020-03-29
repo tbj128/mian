@@ -1,6 +1,13 @@
+---
+description: >-
+  This tool fits a linear model with elastic-net regularization based on the
+  selected categorical variable. This tool will then subsequently select the
+  highest weighted OTUs or taxonomic groups
+---
+
 # Elastic Net Regression
 
-
+![](.gitbook/assets/image%20%2836%29.png)
 
 ### Used For
 
@@ -10,7 +17,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Experimental Variable
 
@@ -40,11 +47,13 @@ You can set this value to be 1.0 if you don't plan on evaluating with a test dat
 
 #### L1 Regularization Ratio
 
-Specify the proportion of L1 regularization the model should use. 0.5 is recommended. 
+L1 \([LASSO](https://en.wikipedia.org/wiki/Lasso_%28statistics%29)\) regularization helps encourage sparsity within the selected features, which means that fewer features will be used to predict the experimental variable. 
+
+0.5 is recommended.
 
 #### Max Iterations
 
-The maximum number of iterations the model should train for
+The maximum number of passes through the data during training. 
 
 ### Interactive Elements
 

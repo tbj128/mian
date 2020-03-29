@@ -10,11 +10,17 @@
 Machine learning models tend to work best with a dataset with a large number of samples
 {% endhint %}
 
+### Result Interpretation
+
+* [ROC curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) shows the ability of the model to predict each unique label in the test data
+* The training error is measured using the [out-of-bag training error ](https://en.wikipedia.org/wiki/Out-of-bag_error)
+* If cross-validation is selected, the averaged k-fold cross validation accuracy is displayed instead 
+
 ### Feature Selection Parameters
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Categorical Variable
 

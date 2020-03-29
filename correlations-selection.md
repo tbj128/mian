@@ -1,5 +1,9 @@
 # Correlations Selection
 
+Calculates the correlation between each taxonomic group/OTU and the selected numerical metadata variable. Taxonomic groups/OTUs that correlate statistically with the numerical metadata will be selected.
+
+As an example, this is ideal for identifying taxonomic groups/OTUs that correlate with gene expression data.
+
 ![](.gitbook/assets/image%20%283%29.png)
 
 
@@ -16,7 +20,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Select...
 

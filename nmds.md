@@ -1,5 +1,9 @@
 # NMDS
 
+Performs non-metric multidimensional scaling at the selected taxonomic level  
+  
+NMDS tries to represent the original data in a 2D reduced dimensional space. This analysis utilizes the [scikit-learn package](http://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html)
+
 ![](.gitbook/assets/image%20%2811%29.png)
 
 ### Used For
@@ -10,7 +14,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Categorical Variable
 

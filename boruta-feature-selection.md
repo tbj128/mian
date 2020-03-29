@@ -1,8 +1,8 @@
 # Boruta \(Feature Selection\)
 
+Create a random forest to select the taxonomic groups/OTUs that can differentiate the chosen categorical variable. The weights of the taxonomic groups/OTUs the algorithm considers most important according to the [Boruta feature selection algorithm](https://cran.r-project.org/web/packages/Boruta/Boruta.pdf) will be displayed.
+
 ![](.gitbook/assets/image%20%284%29.png)
-
-
 
 ### Used For
 
@@ -12,7 +12,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Categorical Variable
 

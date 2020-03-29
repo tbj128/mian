@@ -1,3 +1,7 @@
+---
+description: Generates a series of boxplots based on a grouping parameter.
+---
+
 # Boxplots
 
 {% hint style="info" %}
@@ -31,7 +35,7 @@ Note the special parameters below:
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### OTUs or Taxonomic Groups to Show
 

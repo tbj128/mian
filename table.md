@@ -10,7 +10,7 @@
 
 #### Taxonomic Level
 
-Renders the table at the selected taxonomic level.
+Renders the table at the selected taxonomic level. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 ### Additional Features
 

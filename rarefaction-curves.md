@@ -1,5 +1,7 @@
 # Rarefaction Curves
 
+Draws a series of rarefaction curves on the OTU table prior to subsampling. This analysis relies on the rarecurve function in the R 'vegan' package [here](https://www.rdocumentation.org/packages/vegan/versions/2.4-2/topics/rarefy)
+
 ![](.gitbook/assets/image%20%2824%29.png)
 
 ### Used For

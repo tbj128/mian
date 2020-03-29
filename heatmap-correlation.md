@@ -1,5 +1,7 @@
 # Heatmap \(Correlation\)
 
+Generates a heatmap of the Pearson product-moment correlation matrix \(grouped at the indicated taxonomic level\). Correlations are calculated across all samples - apply a sample filter if you wish to correlate only on specific groups of samples.
+
 ![](.gitbook/assets/image%20%281%29.png)
 
 ### Used For
@@ -17,7 +19,7 @@ This tool differs from the scatterplot by determining pair-wise correlations of 
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Correlation Variable 1
 

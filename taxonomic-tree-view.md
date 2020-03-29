@@ -1,5 +1,9 @@
 # Taxonomic Tree View
 
+Renders a taxonomic tree up until the specified taxonomic level. At the lowest taxonomic level, the tree shows either the non-zero count or the mean/median/max abundances of all OTU-Samples that fall under the taxonomic group.
+
+Because each taxonomic group can contain one or more OTUs, the OTU-Sample unit is defined as the product of the number of OTUs under the taxonomic group and the number of samples.
+
 ![](.gitbook/assets/image%20%2814%29.png)
 
 ### Used For
@@ -25,7 +29,7 @@ Optionally create a categorical variable from a quantitative variable by using t
 
 Each sample group is assigned its own color.
 
-#### Taxonomic Display Level
+#### Taxonomic Level
 
 The taxonomic level to aggregate the OTUs at. Due to the possible size of the tree, you should either first filter for the taxonomic groups of interest or choose a less granular taxonomic level.
 

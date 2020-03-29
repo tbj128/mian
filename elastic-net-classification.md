@@ -1,8 +1,13 @@
+---
+description: >-
+  This tool fits a linear model with elastic-net regularization based on the
+  selected numerical experimental variable. This tool will then subsequently
+  select the highest weight OTUs or taxonomic groups
+---
+
 # Elastic Net Classification
 
 ![](.gitbook/assets/image%20%2817%29.png)
-
-
 
 ### Used For
 
@@ -12,7 +17,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Categorical Variable
 
@@ -32,7 +37,7 @@ The type of loss to use when training the model.
 
 Indicate whether the training set should remain the same every time a parameter is changed and the model is retrained.
 
-#### Dataset Training Proportion
+#### Training Proportion
 
 Define the proportion of the data that should be randomly picked to form a training dataset. 
 
@@ -42,11 +47,17 @@ You can set this value to be 1.0 if you don't plan on evaluating with a test dat
 
 #### L1 Regularization Ratio
 
-Specify the proportion of L1 regularization the model should use. 0.5 is recommended. 
+L1 \([LASSO](https://en.wikipedia.org/wiki/Lasso_%28statistics%29)\) regularization helps encourage sparsity within the selected features, which means that fewer features will be used to predict the experimental variable. 
+
+0.5 is recommended.
 
 #### Max Iterations
 
-The maximum number of iterations the model should train for
+The maximum number of passes through the data during training. 
+
+{% hint style="info" %}
+Note that the training may stop early if the model detects that the training error is no longer going down after five consecutive epochs
+{% endhint %}
 
 ### Interactive Elements
 

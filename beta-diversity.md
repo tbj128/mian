@@ -1,5 +1,7 @@
 # Beta Diversity
 
+Measures the dissimilarity between different groups of samples. This analysis uses the vegdist measure from the R 'vegan' package [here](http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/vegdist.html)
+
 ![](.gitbook/assets/image%20%282%29.png)
 
 
@@ -12,7 +14,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Categorical Variable
 

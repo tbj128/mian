@@ -1,8 +1,10 @@
 # Differential Selection
 
+Performs differential analysis of OTU data based on pairwise categorical metadata.
+
+Taxonomic groups/OTUs that are statistically different between the two sample groupings will be displayed.
+
 ![](.gitbook/assets/image%20%2832%29.png)
-
-
 
 ### Used For
 
@@ -12,7 +14,7 @@
 
 #### Taxonomic Level
 
-The taxonomic level to aggregate the OTUs at. 
+The taxonomic level to aggregate the OTUs at. The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
 #### Categorical Variable
 

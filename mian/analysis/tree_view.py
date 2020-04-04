@@ -50,7 +50,7 @@ class TreeView(AnalysisBase):
 
         otuToColNum = {}
         j = 0
-        while j < len(base[0]):
+        while j < base.shape[1]:
             otuToColNum[headers[j]] = j
             j += 1
 
@@ -81,12 +81,12 @@ class TreeView(AnalysisBase):
                 col = otuToColNum[otu]
 
                 i = 0
-                while i < len(base):
+                while i < base.shape[0]:
                     # Create a new OTU object, based on either the total counts or the sum of the OTU values
                     sampleID = sample_labels[i]
                     if sampleID in sample_ids_to_metadata_map:
                         metaVal = sample_ids_to_metadata_map[sampleID]
-                        otuVal = float(base[i][col])
+                        otuVal = float(base[i, col])
                         if displayValues == "nonzero":
                             if metaVal in otuObj:
                                 if otuVal > 0:

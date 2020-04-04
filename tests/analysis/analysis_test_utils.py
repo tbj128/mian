@@ -11,6 +11,7 @@ from mian.model.taxonomy import Taxonomy
 from mian.model.metadata import Metadata
 
 from mian.rutils import r_package_install
+import scipy.sparse
 
 r_package_install.importr_custom("permute")
 r_package_install.importr_custom("lattice")
@@ -40,6 +41,11 @@ class AnalysisTestUtils(object):
         with open(test_file, 'r') as tsf:
             data = tsf.read()
             return json.loads(data)
+
+    @staticmethod
+    def get_test_npz_as_table(test_dir, csv_name=SUBSAMPLED_OTU_TABLE_FILENAME):
+        csv_name = os.path.join(test_dir, csv_name)
+        return scipy.sparse.load_npz(csv_name)
 
     @staticmethod
     def get_test_input_as_table(test_dir, csv_name=SUBSAMPLED_OTU_TABLE_FILENAME, sep="\t", use_np=False):

@@ -16,6 +16,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.utils import shuffle
+from sklearn.preprocessing import normalize
 
 from mian.model.otu_table import OTUTable
 
@@ -41,14 +42,21 @@ class LinearClassifier(object):
         max_iterations = int(user_request.get_custom_attr("maxIterations"))
 
         # NORMALIZE THE DATASET
-        df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
-        stats = df.describe()
-        stats = stats.transpose()
+        # df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
 
-        def norm(x):
-            return (x - stats['mean']) / stats['std']
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
+        else:
+            X = otu_table
 
-        X = norm(df)
+        # stats = df.describe()
+        # stats = stats.transpose()
+        #
+        # def norm(x):
+        #     return (x - stats['mean']) / stats['std']
+        #
+        # X = norm(df)
         Y = np.array(metadata_vals)
         uniq_metadata_vals = list(set(Y))
 
@@ -151,11 +159,14 @@ class LinearClassifier(object):
             else:
                 indices = np.arange(len(X))
                 X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices,
-                                                                                         train_size=training_proportion)
+                                                                                         train_size=training_proportion,
+                                                                                         stratify=Y)
 
-            X_train = X_train.reset_index(drop=True)
-            X_test = X_test.reset_index(drop=True)
+            # X_train = X_train.reset_index(drop=True)
+            # X_test = X_test.reset_index(drop=True)
 
+            X_train = normalize(X_train)
+            X_test = normalize(X_test)
             classifier = SGDClassifier(loss=loss_function, l1_ratio=mixing_ratio, max_iter=max_iterations)
 
             classes = np.unique(Y)
@@ -206,13 +217,18 @@ class LinearClassifier(object):
             else:
                 for i in range(len(classifier.classes_)):
                     fpr, tpr, _ = roc_curve(y_test_binarize[:, i], test_probs[:, i])
-                    auc = roc_auc_score(y_test_binarize[:, i], test_probs[:, i])
+                    try:
+                        auc = roc_auc_score(y_test_binarize[:, i], test_probs[:, i])
 
-                    class_to_roc[classifier.classes_[i]] = {
-                        "fpr": [round(a.item(), 4) for a in fpr],
-                        "tpr": [round(a.item(), 4) for a in tpr],
-                        "auc": round(auc.item(), 4)
-                    }
+                        class_to_roc[classifier.classes_[i]] = {
+                            "fpr": [round(a.item(), 4) for a in fpr],
+                            "tpr": [round(a.item(), 4) for a in tpr],
+                            "auc": round(auc.item(), 4)
+                        }
+                    except ValueError:
+                        print("ROC could not be calculated")
+                        pass
+
                     i += 1
 
             abundances_obj = {

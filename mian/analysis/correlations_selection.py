@@ -4,7 +4,7 @@
 # @author: tbj128
 #
 # ===========================================
-
+import pandas as pd
 from scipy import stats, math
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -15,6 +15,7 @@ from mian.core.statistics import Statistics
 from mian.model.otu_table import OTUTable
 from mian.model.genes import Genes
 from mian.model.metadata import Metadata
+from mian.model.user_request import UserRequest
 
 
 class CorrelationsSelection(AnalysisBase):
@@ -26,6 +27,9 @@ class CorrelationsSelection(AnalysisBase):
         otu_metadata = table.get_otu_metadata()
         otu_table, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
         phylogenetic_tree = table.get_phylogenetic_tree()
+
+        self.table = table
+
         return self.analyse(user_request, otu_table, headers, sample_labels, metadata, otu_metadata, phylogenetic_tree)
 
     def analyse(self, user_request, otu_table, headers, sample_labels, metadata, otu_metadata, phylogenetic_tree):
@@ -42,11 +46,12 @@ class CorrelationsSelection(AnalysisBase):
             training_indexes = np.array(existing_training_indexes)
         else:
             if training_proportion == 1:
-                training_indexes = np.array(range(len(otu_table)))
+                training_indexes = np.array(range(otu_table.shape[0]))
             else:
-                _, training_indexes = train_test_split(range(len(otu_table)), test_size=(1 - training_proportion))
+                training_indexes, _ = train_test_split(range(otu_table.shape[0]), test_size=(1 - training_proportion))
         training_indexes = np.array(training_indexes)
         otu_table = otu_table[training_indexes, :]
+        sample_labels = np.array(sample_labels)[training_indexes]
 
         if expvar == "":
             return {"correlations": []}
@@ -62,7 +67,24 @@ class CorrelationsSelection(AnalysisBase):
         elif against == "alpha":
             expvar_vals = expvar.split(",")
             alpha = AlphaDiversity()
-            against_vals = alpha.calculate_alpha_diversity(otu_table, sample_labels, headers, phylogenetic_tree, expvar_vals[1], expvar_vals[0])
+
+            # We should only calculated the alpha diversity on an unfiltered OTU table
+            unfiltered_user_request = UserRequest(user_request.user_id, user_request.pid, taxonomy_filter_count=0,
+                                                  taxonomy_filter_prevalence=0, taxonomy_filter = -2,
+                                                  taxonomy_filter_role="Include", taxonomy_filter_vals=[], sample_filter=user_request.sample_filter,
+                                                  sample_filter_role=user_request.sample_filter_role,
+                                                  sample_filter_vals=user_request.sample_filter_vals, level=user_request.level, catvar="")
+
+            unfiltered_otu_table, unfiltered_headers, unfiltered_sample_labels = self.table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(unfiltered_user_request)
+            unfiltered_otu_table = unfiltered_otu_table[training_indexes, :]
+            unfiltered_sample_labels = np.array(unfiltered_sample_labels)[training_indexes]
+
+            if int(user_request.level) == -1:
+                # OTU tables are returned as a CSR matrix
+                unfiltered_otu_table = pd.DataFrame.sparse.from_spmatrix(unfiltered_otu_table, columns=unfiltered_headers,
+                                                              index=range(unfiltered_otu_table.shape[0]))
+
+            against_vals = alpha.calculate_alpha_diversity(unfiltered_otu_table, unfiltered_sample_labels, unfiltered_headers, phylogenetic_tree, expvar_vals[1], expvar_vals[0])
         else:
             expvar_arr = expvar.split(",")
             relevant_cols = []
@@ -72,15 +94,14 @@ class CorrelationsSelection(AnalysisBase):
                     relevant_cols.append(c)
                 c += 1
             r = 0
-            while r < len(otu_table):
+            while r < otu_table.shape[0]:
                 total_row_sum = 0
                 for c in relevant_cols:
-                    total_row_sum += float(otu_table[r][c])
+                    total_row_sum += otu_table[r, c]
                 against_vals.append(total_row_sum)
                 r += 1
 
         taxonomy_map = otu_metadata.get_taxonomy_map()
-        against_vals = [against_vals[i] for i in training_indexes]
 
         if select == "gene":
             abunObj = self.analyse_select_gene(user_request, sample_labels, against_vals, pvalthreshold)
@@ -94,7 +115,18 @@ class CorrelationsSelection(AnalysisBase):
 
     def analyse_select_gene(self, user_request, sample_labels, against_vals, pvalthreshold):
         genes = Genes(user_request.user_id, user_request.pid)
-        gene_table, gene_list, orig_sample_labels = genes.get_as_table(orig_sample_labels=sample_labels)
+        gene_table, gene_list, gene_sample_labels = genes.get_as_table()
+
+        sample_labels_map = {}
+        for i, sample_label in enumerate(gene_sample_labels):
+            sample_labels_map[sample_label] = i
+
+        label_index_ordered = []
+        for label in sample_labels:
+            if label in gene_sample_labels:
+                label_index_ordered.append(gene_sample_labels[label])
+            else:
+                label_index_ordered.append(-1)
 
         correlations = []
         pvals = []
@@ -102,9 +134,11 @@ class CorrelationsSelection(AnalysisBase):
         c = 0
         for gene in gene_list:
             gene_vals = []
-            r = 0
-            while r < len(gene_table):
-                gene_vals.append(float(gene_table[r][c]))
+            for r in label_index_ordered:
+                if r == -1:
+                    gene_vals.append(0)
+                else:
+                    gene_vals.append(float(gene_table[r, c]))
                 r += 1
 
             coef, pval = stats.pearsonr(against_vals, gene_vals)
@@ -186,12 +220,12 @@ class CorrelationsSelection(AnalysisBase):
         pvals = []
 
         c = 0
-        while c < len(base[0]):
+        while c < base.shape[1]:
             otu_name = headers[c]
             otu_vals = []
             r = 0
-            while r < len(base):
-                otu_vals.append(float(base[r][c]))
+            while r < base.shape[0]:
+                otu_vals.append(base[r, c])
                 r += 1
 
             coef, pval = stats.pearsonr(metadata_values, otu_vals)

@@ -10,10 +10,13 @@
 #
 
 import numpy as np
+import pandas as pd
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
+from boruta import BorutaPy
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 import rpy2.robjects.numpy2ri
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 rpy2.robjects.numpy2ri.activate()
@@ -21,20 +24,6 @@ rpy2.robjects.numpy2ri.activate()
 from mian.model.otu_table import OTUTable
 
 class Boruta(object):
-    r = robjects.r
-
-    rcode = """
-    
-    library(Boruta)
-
-    boruta <- function(base, groups, pval, maxruns) {
-        y.1 = as.factor(groups)
-        b <- Boruta(base, y.1, doTrace=0, holdHistory=FALSE, pValue=pval, maxRuns=maxruns)
-        return (b$finalDecision)
-    }
-    """
-
-    rStats = SignatureTranslatedAnonymousPackage(rcode, "rStats")
 
     def run(self, user_request):
         table = OTUTable(user_request.user_id, user_request.pid)
@@ -45,7 +34,7 @@ class Boruta(object):
 
         return self.analyse(user_request, otu_table, headers, metadata_values, taxonomy_map)
 
-    def analyse(self, user_request, otuTable, headers, metaVals, taxonomy_map):
+    def analyse(self, user_request, otu_table, headers, meta_vals, taxonomy_map):
         # Subsample the input to match the training proportion
         # We do this because we want to generate the microbial fingerprint on the training set and
         # later independently test on a test set
@@ -53,17 +42,19 @@ class Boruta(object):
         fix_training = user_request.get_custom_attr("fixTraining") == "yes"
         existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
         training_proportion = float(user_request.get_custom_attr("trainingProportion"))
+        pval = float(user_request.get_custom_attr("pval"))
+        maxruns = int(user_request.get_custom_attr("maxruns"))
         if fix_training and len(existing_training_indexes) > 0:
             existing_training_indexes = [int(i) for i in existing_training_indexes]
             training_indexes = np.array(existing_training_indexes)
         else:
             if training_proportion == 1:
-                training_indexes = np.array(range(len(otuTable)))
+                training_indexes = np.array(range(otu_table.shape[0]))
             else:
-                _, training_indexes = train_test_split(range(len(otuTable)), test_size=(1 - training_proportion))
+                training_indexes, _ = train_test_split(range(otu_table.shape[0]), test_size=(1 - training_proportion))
         training_indexes = np.array(training_indexes)
-        otuTable = otuTable[training_indexes, :]
-        metaVals = [metaVals[i] for i in training_indexes]
+        otu_table = otu_table[training_indexes, :]
+        meta_vals = np.array([meta_vals[i] for i in training_indexes])
 
         otu_to_genus = {}
         if int(user_request.level) == -1:
@@ -74,38 +65,32 @@ class Boruta(object):
                 else:
                     otu_to_genus[header] = ""
 
-        groups = robjects.FactorVector(robjects.StrVector(metaVals))
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            otu_table = otu_table.toarray()
 
-        allOTUs = []
-        col = 0
-        while col < len(otuTable[0]):
-            allOTUs.append((headers[col], otuTable[:, col]))
-            col += 1
+        rf = RandomForestClassifier(n_jobs=-1, class_weight='balanced')
+        feat_selector = BorutaPy(rf, n_estimators='auto', alpha=pval, max_iter=maxruns)
+        feat_selector.fit(otu_table, meta_vals)
 
-        od = rlc.OrdDict(allOTUs)
-        dataf = robjects.DataFrame(od)
-
-        pval = user_request.get_custom_attr("pval")
-        maxruns = user_request.get_custom_attr("maxruns")
-
-        borutaResults = self.rStats.boruta(dataf, groups, float(pval), int(maxruns))
-
-        assignments = {}
+        assignments = {
+            "Selected Features": [],
+            "Tentatively Selected": []
+        }
         hints = {}
+        for i, selected in enumerate(feat_selector.support_.tolist()):
+            if selected:
+                feature = headers[i]
+                assignments["Selected Features"].append(feature)
+                if int(user_request.level) == -1:
+                    hints[feature] = otu_to_genus[feature]
+        for i, selected in enumerate(feat_selector.support_weak_.tolist()):
+            if selected:
+                feature = headers[i]
+                assignments["Tentatively Selected"].append(feature)
+                if int(user_request.level) == -1:
+                    hints[feature] = otu_to_genus[feature]
 
-        i = 0
-        for lab in borutaResults.iter_labels():
-            if lab in assignments:
-                assignments[lab].append(allOTUs[i][0])
-            else:
-                assignments[lab] = [allOTUs[i][0]]
-            if int(user_request.level) == -1:
-                hints[allOTUs[i][0]] = otu_to_genus[allOTUs[i][0]]
-            i += 1
-
-        abundancesObj = {}
-        abundancesObj["results"] = assignments
-        abundancesObj["hints"] = hints
-        abundancesObj["training_indexes"] = training_indexes.tolist()
+        abundancesObj = {"results": assignments, "hints": hints, "training_indexes": training_indexes.tolist()}
 
         return abundancesObj

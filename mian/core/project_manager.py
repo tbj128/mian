@@ -11,8 +11,8 @@
 
 import uuid
 
-from io import StringIO
 import numpy as np
+import scipy.sparse as sparse
 
 from mian.core.data_io import DataIO
 from mian.core.otu_table_subsampler import OTUTableSubsampler
@@ -44,6 +44,7 @@ OTU_HEADER_NOT_IN_TAXONOMY_ERROR = -6
 OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR = -7
 OTU_DATATYPE_ERROR = -8
 
+
 class ProjectManager(object):
     BASE_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))  # Gets the parent folder
     DATA_DIRECTORY = os.path.join(BASE_DIRECTORY, "data")
@@ -64,28 +65,28 @@ class ProjectManager(object):
         elif type == "biom":
             return DataIO.text_from_path(self.user_id, project_name, BIOM_FILENAME, replace_newlines=False)
         elif type == "otu":
-            table = DataIO.tsv_to_table(self.user_id, project_name, RAW_OTU_TABLE_FILENAME)
+            table = DataIO.load_sparse(self.user_id, project_name, RAW_OTU_TABLE_FILENAME).toarray()
             labels = DataIO.tsv_to_table(self.user_id, project_name, RAW_OTU_TABLE_LABELS_FILENAME)
             new_headers = ["Sample Labels"]
             new_headers.extend(labels[0])
             full_table = [new_headers]
             i = 0
-            while i < len(table):
+            while i < table.shape[0]:
                 new_row = [labels[1][i] if i < len(labels[1]) else ""]
-                new_row.extend(table[i])
+                new_row.extend(table[i].tolist())
                 full_table.append(new_row)
                 i += 1
             return full_table
         elif type == "otu_subsampled":
-            table = DataIO.tsv_to_table(self.user_id, project_name, SUBSAMPLED_OTU_TABLE_FILENAME)
+            table = DataIO.load_sparse(self.user_id, project_name, SUBSAMPLED_OTU_TABLE_FILENAME).toarray()
             labels = DataIO.tsv_to_table(self.user_id, project_name, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
             new_headers = ["Sample Labels"]
             new_headers.extend(labels[0])
             full_table = [new_headers]
             i = 0
-            while i < len(table):
+            while i < table.shape[0]:
                 new_row = [labels[1][i] if i < len(labels[1]) else ""]
-                new_row.extend(table[i])
+                new_row.extend(table[i].tolist())
                 full_table.append(new_row)
                 i += 1
             return full_table
@@ -106,7 +107,7 @@ class ProjectManager(object):
                                    sampleFilterVals, 0, "")
         map = Map(self.user_id, pid)
 
-        table = OTUTable(self.user_id, pid, use_raw=True)
+        table = OTUTable(self.user_id, pid, use_raw=True, use_sparse=True)
         orig_base = table.get_table()
         orig_headers = table.get_headers()
         orig_sample_labels = table.get_sample_labels()
@@ -114,16 +115,12 @@ class ProjectManager(object):
         initial_samples_removed = set(orig_sample_labels) - set(sample_labels)
 
         has_float = map.matrix_type == "float"
-        base = np.array(base)
         min_sample_row_sum = base.sum(axis=1).min()
-
-        orig_base = np.array(orig_base)
-        orig_row_sums = orig_base.sum(axis=1)
-
+        orig_row_sums = orig_base.sum(axis=1).tolist()
 
         samples = {}
         i = 0
-        while i < len(orig_base):
+        while i < orig_base.shape[0]:
             row_sum = orig_row_sums[i]
             samples[orig_sample_labels[i]] = {
                 "row_sum": row_sum,
@@ -133,7 +130,7 @@ class ProjectManager(object):
 
         return {
             "samples": samples,
-            "min_sample_val": min_sample_row_sum,
+            "min_sample_val": min_sample_row_sum.item(),
             "has_float": has_float
         }
 
@@ -243,10 +240,6 @@ class ProjectManager(object):
         :return:
         '''
 
-        project_dir = os.path.join(OTUTableSubsampler.DATA_DIRECTORY, user_id)
-        project_dir = os.path.join(project_dir, pid)
-        raw_table_path = os.path.join(project_dir, output_raw_otu_file_name)
-
         is_mothur = False
         if base_arr[0][0] == "label" and base_arr[0][2] == "numOtus":
             # Input file is mothur - we need to delete unnecessary "label" and "numOtus" columns
@@ -290,7 +283,7 @@ class ProjectManager(object):
 
         labels = [headers, sample_labels]
 
-        DataIO.table_to_tsv(base, user_id, pid, raw_table_path)
+        DataIO.table_to_npz(sparse.csr_matrix(base), user_id, pid, output_raw_otu_file_name)
         DataIO.table_to_tsv(labels, user_id, pid, output_raw_otu_labels_file_name)
 
         return base, headers, sample_labels, matrix_type
@@ -426,11 +419,13 @@ class ProjectManager(object):
 
             logger.info("Loading biom into table")
             biom_table = load_table(biom_path)
+            logger.info("Transposing biom")
+            biom_table = biom_table.transpose()
             logger.info("Converting biom to intermediate TSV file " + biom_path)
 
             # Processes the uploaded OTU file by removing unnecessary columns and extracting the headers and sample labels
             try:
-                base, headers, sample_labels, matrix_type = self.__save_biom_table_as_tsv(self.user_id, pid, biom_table)
+                headers, sample_labels, matrix_type = self.__save_biom_table_as_tsv(self.user_id, pid, biom_table)
             except ValueError:
                 logger.exception("OTU file contains non-integers")
                 # Removes the project directory since the files in it are invalid
@@ -438,13 +433,14 @@ class ProjectManager(object):
                 return OTU_DATATYPE_ERROR, ""
 
             logger.info("Processed biom TSV file " + biom_path)
-
+            num_headers = len(headers)
+            num_samples = len(sample_labels)
 
             # Create Sample Metadata File
             logger.info("Creating sample metadata file")
             sample_metadata_path = os.path.join(project_dir, SAMPLE_METADATA_FILENAME)
-            sample_metadata = biom_table.metadata(None, 'sample')
-            sample_ids = biom_table.ids('sample')
+            sample_metadata = biom_table.metadata(None, 'observation')
+            sample_ids = biom_table.ids('observation')
             sample_ids_from_sample_metadata = {}
 
             if sample_metadata_filename == "" and sample_metadata is not None and len(sample_metadata) > 1 and len(sample_metadata[0]) > 1:
@@ -491,9 +487,8 @@ class ProjectManager(object):
                             if len(sample_metadata[i]) > 0:
                                 sample_ids_from_sample_metadata[sample_metadata[i][0]] = 1
                         i += 1
-                    # Set the original sample metadata filename only when we are confident
-                    # that we are going to usethis file
-                    orig_sample_metadata_filename = sample_metadata_filename
+
+                    logger.info("Finished reading user uploaded sample metadata file")
                 else:
                     # User did not upload a sample metadata file and the biom file had not sample metadata so
                     # we will just use the sample labels as-is (ie. treat it like there's no sample metadata)
@@ -506,9 +501,10 @@ class ProjectManager(object):
                             sample_ids_from_sample_metadata[sample_labels[i]] = 1
                             output_tsv.writerow([sample_labels[i]])
                             i += 1
-
+            logger.info("Validating OTU sample labels")
             missing_labels = self.__validate_otu_table_sample_labels(sample_labels, sample_ids_from_sample_metadata)
             if len(missing_labels) > 0:
+                logger.info("Missing the following labels: {}".format(missing_labels))
                 return OTU_LABEL_NOT_IN_SAMPLE_METADATA_ERROR, ", ".join(missing_labels)
 
             # Generates BIOM File
@@ -520,12 +516,12 @@ class ProjectManager(object):
 
             # Generates Taxonomy File
             logger.info("Creating taxonomy file")
-            otu_metadata = biom_table.metadata(None, 'observation')
+            otu_metadata = biom_table.metadata(None, 'sample')
             if otu_metadata == None:
                 # Mian requires the metadata file to function correctly
                 raise ValueError("Taxonomy data file is required")
 
-            otu_ids = biom_table.ids('observation')
+            otu_ids = biom_table.ids('sample')
             otu_metadata_path = os.path.join(project_dir, TAXONOMY_FILENAME)
             taxonomy_type = ""
             with open(otu_metadata_path, 'w') as f:
@@ -597,8 +593,8 @@ class ProjectManager(object):
             map_file.orig_phylogenetic_name = phylogenetic_filename
             map_file.orig_gene_name = gene_filename
             map_file.matrix_type = matrix_type
-            map_file.num_samples = len(sample_labels)
-            map_file.num_otus = len(headers)
+            map_file.num_samples = num_samples
+            map_file.num_otus = num_headers
             map_file.save()
 
             return OK, pid
@@ -625,7 +621,7 @@ class ProjectManager(object):
                 # Float-type matrix cannot be subsampled
                 subsample_type = SUBSAMPLE_TYPE_DISABLED
 
-            table = OTUTable(self.user_id, pid, use_raw=True, use_np=False)
+            table = OTUTable(self.user_id, pid, use_raw=True, use_np=False, use_sparse=True)
             orig_base = table.get_table()
             orig_headers = table.get_headers()
             orig_sample_labels = table.get_sample_labels()
@@ -633,33 +629,15 @@ class ProjectManager(object):
                                                                               user_request)
             initial_samples_removed = list(set(orig_sample_labels) - set(sample_labels))
 
-            new_base = []
-            i = 0
-            while i < len(base):
-                new_row = []
-                j = 0
-                while j < len(base[i]):
-                    try:
-                        if map_file.matrix_type == "float":
-                            new_row.append(float(base[i][j]))
-                        else:
-                            new_row.append(int(base[i][j]))
-                    except ValueError:
-                        new_row.append(0)
-                    j += 1
-                new_base.append(new_row)
-                i += 1
-
             # Subsamples the raw OTU file
-            subsample_to, removed_otus, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
+            subsample_to, subsampled_headers, subsampled_sample_labels = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
                                                                                                  pid=pid,
-                                                                                                 base=new_base,
+                                                                                                 base=base,
                                                                                                  headers=headers,
                                                                                                  sample_labels=sample_labels,
                                                                                                  subsample_type=subsample_type,
                                                                                                  manual_subsample_to=subsample_to)
 
-            initial_samples_removed.extend(samples_removed)
             logger.info("Subsampled file")
 
 
@@ -667,8 +645,8 @@ class ProjectManager(object):
             map_file.subsampled_type = subsample_type
             map_file.subsampled_value = subsample_to
             map_file.subsampled_removed_samples = initial_samples_removed
-            map_file.num_samples = len(sample_labels)
-            map_file.num_otus = len(headers) - len(removed_otus)
+            map_file.num_samples = len(subsampled_sample_labels)
+            map_file.num_otus = len(subsampled_headers)
             map_file.save()
 
             return pid, ""
@@ -681,61 +659,28 @@ class ProjectManager(object):
 
 
     def __save_biom_table_as_tsv(self, user_id, pid, biom_table, raw_table_path=RAW_OTU_TABLE_FILENAME, output_raw_otu_labels_file_name=RAW_OTU_TABLE_LABELS_FILENAME):
-        result = biom_table.to_tsv(header_key="",
-                                   header_value="",
-                                   metadata_formatter="sc_separated")
+        headers = biom_table._sample_ids.tolist()
+        sample_labels = biom_table._observation_ids.tolist()
 
         logger.info("Finished table.to_tsv")
 
         matrix_type = "int"
 
         # Converts the TSV string to an array
-        f = StringIO(result)
-        base_csv = []
-        base_csv_reader = csv.reader(f, delimiter='\t', quotechar='|')
-        i = 0
-        for o in base_csv_reader:
-            if i > 0:
-                # Ignores the first "Created from biom file" line
-                base_csv.append(o)
-            i += 1
-
-        intermediate_table = []
-        sample_labels = base_csv[0][1:]
-        headers = []
-
-        # Create the headers
-        row = 1
-        while row < len(base_csv):
-            headers.append(base_csv[row][0])
-            row += 1
-
-        # Create the intermediate table by transposing the table
-        col = 1
-        while col < len(base_csv[0]):
-            new_row = []
-            row = 1
-            while row < len(base_csv):
-                if base_csv[row][col] == "":
-                    new_row.append(0)
-                else:
-                    val = float(base_csv[row][col])
-                    if val.is_integer():
-                        new_row.append(int(float(base_csv[row][col])))
-                    else:
-                        new_row.append(float(base_csv[row][col]))
-                        matrix_type = "float"
-                row += 1
-            intermediate_table.append(new_row)
-            col += 1
+        project_dir = os.path.dirname(__file__)
+        project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
+        project_dir = os.path.join(project_dir, "data")
+        project_dir = os.path.join(project_dir, user_id)
+        project_dir = os.path.join(project_dir, pid)
+        csv_path = os.path.join(project_dir, raw_table_path)
+        sparse.save_npz(csv_path, biom_table.matrix_data.astype(dtype=int))
 
         logger.info("Finished loading to intermediate table")
 
         labels = [headers, sample_labels]
-        DataIO.table_to_tsv(intermediate_table, user_id, pid, raw_table_path)
         DataIO.table_to_tsv(labels, user_id, pid, output_raw_otu_labels_file_name)
 
-        return intermediate_table, headers, sample_labels, matrix_type
+        return headers, sample_labels, matrix_type
 
     def get_taxonomy_type(self, taxonomy_line):
         if type(taxonomy_line) is list:
@@ -840,7 +785,7 @@ class ProjectManager(object):
 
     def modify_subsampling(self, pid, subsample_type="auto", subsample_to=0):
         # Subsamples raw OTU table
-        base = DataIO.tsv_to_np_table(self.user_id, pid, RAW_OTU_TABLE_FILENAME)
+        base = DataIO.load_sparse(self.user_id, pid, RAW_OTU_TABLE_FILENAME)
 
         # Convert to int as you can only subsample int tables
         base = base.astype(int)

@@ -37,8 +37,6 @@ class Correlations(AnalysisBase):
         return self.analyse(user_request, base, headers, sample_labels, metadata, phylogenetic_tree)
 
     def analyse(self, user_request, base, headers, sample_labels, metadata, phylogenetic_tree):
-        base = np.array(base, dtype=float)
-
         level = int(user_request.level)
         corrvar1 = user_request.get_custom_attr("corrvar1")
         corrvar2 = user_request.get_custom_attr("corrvar2")
@@ -115,6 +113,9 @@ class Correlations(AnalysisBase):
 
         if corrvar1 == "mian-alpha" or corrvar2 == "mian-alpha" or sizevar == "mian-alpha":
             alpha = AlphaDiversity()
+            if int(user_request.level) == -1:
+                # OTU tables are returned as a CSR matrix
+                base = base.toarray()
             alpha_vals = alpha.calculate_alpha_diversity(base, sample_labels, headers, phylogenetic_tree, alpha_params[1], alpha_params[0])
 
         corrArr = []
@@ -122,7 +123,7 @@ class Correlations(AnalysisBase):
         corrValArr2 = []
 
         i = 0
-        while i < len(base):
+        while i < base.shape[0]:
             maxAbundance = np.max(base[i, :]) if corrvar1 == "mian-max" or corrvar2 == "mian-max" else 0
             totalAbundance = np.sum(base[i, :]) if corrvar1 == "mian-abundance" or corrvar2 == "mian-abundance" else 0
 

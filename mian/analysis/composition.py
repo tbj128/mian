@@ -79,7 +79,7 @@ class Composition(AnalysisBase):
                         logger.warning("Sample is missing from the OTU table: " + str(sample))
                         continue
                     rowIndex = sampleIDToRowIndex[sample]
-                    valsSum += float(base[rowIndex][j])
+                    valsSum += base[rowIndex, j].item()
                     valsTot += 1
 
                 avgVal = 0
@@ -142,15 +142,15 @@ class Composition(AnalysisBase):
         sumByOTU = {}
 
         j = 0
-        while j < len(base[0]):
+        while j < len(headers):
             i = 0
             otuSumsByGroup = {}
             for k,v in uniqueMetadataVals.items():
                 otuSumsByGroup[k] = 0
 
-            while i < len(base):
+            while i < base.shape[0]:
                 sampleID = sample_labels[i]
-                otuSumsByGroup[metadataMap[sampleID]] += float(base[i][j])
+                otuSumsByGroup[metadataMap[sampleID]] += base[i, j].item()
                 i += 1
             otu = headers[j]
             sumByOTU[otu] = otuSumsByGroup
@@ -221,7 +221,8 @@ def create_abundance_obj(abundances, unique_vals, metadata_to_id):
             id = keys[j]
             if id in ids_to_remove:
                 del abundance["o"][id]
-            total_val += abundance["o"][id]["avgVal"]
+            else:
+                total_val += abundance["o"][id]["avgVal"]
             j += 1
         if total_val == 0:
             del abundances[i]

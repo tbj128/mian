@@ -31,7 +31,7 @@ class CorrelationNetwork(object):
         corrType = user_request.get_custom_attr("type")
         cutoff = float(user_request.get_custom_attr("cutoff"))
 
-        X = np.array(base)
+        X = base.toarray()
 
         catvar_map = {}
         if corrType == "SampleID":

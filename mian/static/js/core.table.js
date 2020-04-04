@@ -107,8 +107,7 @@ function updateAnalysis() {
 
             var table = JSON.parse(result);
             tableResults = table;
-
-            if (tableResults.length > 2000 || tableResults[0].length > 2000) {
+            if (tableResults.length == 1 && tableResults[0] === "Too Large") {
                 $("#too-large-message").show();
             } else {
                 $("#too-large-message").hide();

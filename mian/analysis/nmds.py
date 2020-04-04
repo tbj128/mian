@@ -13,6 +13,7 @@
 # ======== R specific setup =========
 #
 import numpy as np
+import pandas as pd
 from sklearn import manifold
 from skbio import TreeNode
 from io import StringIO
@@ -44,6 +45,9 @@ class NMDS(object):
         logger.info("Starting NMDS analysis")
         type = user_request.get_custom_attr("type")
 
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            base = pd.DataFrame.sparse.from_spmatrix(base, columns=headers, index=range(base.shape[0]))
         if type == "weighted_unifrac" or type == "unweighted_unifrac":
             if phylogenetic_tree == "":
                 return {
@@ -56,35 +60,34 @@ class NMDS(object):
                     "has_float": True
                 }
 
-            base = base.astype(int)
             tree = TreeNode.read(StringIO(phylogenetic_tree))
             if len(tree.root().children) > 2:
                 # Ensure that the tree is rooted if it is not already rooted
                 tree = tree.root_at_midpoint()
-            dist_matrix = beta_diversity(type, base, ids=sample_labels, otu_ids=headers, tree=tree)
+            dist_matrix = beta_diversity(type, base, ids=sample_labels, otu_ids=headers, tree=tree).data
         elif type == "euclidean":
             dist_matrix = euclidean_distances(base)
         else:
             base = base.astype(int)
-            dist_matrix = beta_diversity(type, base)
+            dist_matrix = beta_diversity(type, base).data
 
-        similarities = []
-        i = 0
-        while i < dist_matrix.shape[0]:
-            new_row = []
-            j = 0
-            while j < dist_matrix.shape[0]:
-                new_row.append(dist_matrix[i][j])
-                j += 1
-            similarities.append(new_row)
-            i += 1
+        # similarities = []
+        # i = 0
+        # while i < dist_matrix.shape[0]:
+        #     new_row = []
+        #     j = 0
+        #     while j < dist_matrix.shape[0]:
+        #         new_row.append(dist_matrix[i][j])
+        #         j += 1
+        #     similarities.append(new_row)
+        #     i += 1
 
         # Use traditional MDS to determine the initial position
         mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, dissimilarity="precomputed", n_jobs=1)
-        pos = mds.fit(similarities).embedding_
+        pos = mds.fit(dist_matrix).embedding_
         # Use NMDS to adjust the original positions to optimize for stress
         nmds = manifold.MDS(n_components=2, metric=False, dissimilarity="precomputed", max_iter=3000, eps=1e-12)
-        npos = nmds.fit_transform(similarities, init=pos)
+        npos = nmds.fit_transform(dist_matrix, init=pos)
 
         ret_table = []
         i = 0

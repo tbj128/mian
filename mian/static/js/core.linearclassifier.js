@@ -358,7 +358,7 @@ function updateAnalysis() {
     }
     showLoading(expectedLoadFactor);
 
-    if (catvar === "none") {
+    if (!$("#catvar").val() || $("#catvar").val() === "none") {
         loadNoCatvar();
         return;
     }

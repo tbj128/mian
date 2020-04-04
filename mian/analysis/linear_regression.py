@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
 from sklearn.utils import shuffle
 
 from mian.model.otu_table import OTUTable
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, normalize
 import numpy as np
 
 
@@ -39,15 +39,12 @@ class LinearRegression(object):
         mixing_ratio = float(user_request.get_custom_attr("mixingRatio"))
         max_iterations = int(user_request.get_custom_attr("maxIterations"))
 
-        # NORMALIZE THE DATASET
-        df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
-        stats = df.describe()
-        stats = stats.transpose()
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
+        else:
+            X = otu_table
 
-        def norm(x):
-            return (x - stats['mean']) / stats['std']
-
-        X = norm(df)
         Y = np.array(metadata_vals)
 
         def performCrossValidationForAUC(X_cv, metadata_vals_cv, Y_cv):
@@ -97,8 +94,8 @@ class LinearRegression(object):
                 X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices,
                                                                                          train_size=training_proportion)
 
-            X_train = X_train.reset_index(drop=True)
-            X_test = X_test.reset_index(drop=True)
+            X_train = normalize(X_train)
+            X_test = normalize(X_test)
 
             train_mae = 0
             train_mse = 0

@@ -58,13 +58,16 @@ class Heatmap(object):
         corrvar1Base = []
         corrvar1Headers = []
         if corrvar1 == "Taxonomy":
-            corrvar1Base = base
+            corrvar1Base = base.toarray()
             corrvar1Headers = headers
         elif corrvar1 == "Metadata":
             corrvar1Base = numeric_metadata
             corrvar1Headers = numeric_metadata_headers.tolist()
         elif corrvar1 == "Alpha":
             alpha_params = user_request.get_custom_attr("corrvar1Alpha")
+            if int(user_request.level) == -1:
+                # OTU tables are returned as a CSR matrix
+                base = base.toarray()
             alpha_vals = alpha.calculate_alpha_diversity(base, sample_labels, headers, phylogenetic_tree, alpha_params[1],
                                                          alpha_params[0])
             corrvar1Base = []
@@ -77,13 +80,16 @@ class Heatmap(object):
         corrvar2Base = []
         corrvar2Headers = []
         if corrvar2 == "Taxonomy":
-            corrvar2Base = base
+            corrvar2Base = base.toarray()
             corrvar2Headers = headers
         elif corrvar2 == "Metadata":
             corrvar2Base = numeric_metadata
             corrvar2Headers = numeric_metadata_headers.tolist()
         elif corrvar2 == "Alpha":
             alpha_params = user_request.get_custom_attr("corrvar2Alpha")
+            if int(user_request.level) == -1:
+                # OTU tables are returned as a CSR matrix
+                base = base.toarray()
             alpha_vals = alpha.calculate_alpha_diversity(base, sample_labels, headers, phylogenetic_tree, alpha_params[1],
                                                          alpha_params[0])
             corrvar2Base = []
@@ -117,8 +123,8 @@ class Heatmap(object):
             non_zero = np.count_nonzero(X, axis=0)
             X = X[:, non_zero >= minSamplesPresent]
             correlations = np.corrcoef(X, rowvar=False)
-            row_headers = headers
-            col_headers = headers
+            row_headers = headers.tolist()
+            col_headers = headers.tolist()
 
         if cluster == "Yes":
             # Perform some simple clustering by ordering by the col sums

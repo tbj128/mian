@@ -1,13 +1,14 @@
-import json
-
-from mian.core.constants import SAMPLE_METADATA_FILENAME
-from mian.analysis.tree_view import TreeView
-from tests.analysis.analysis_test_utils import AnalysisTestUtils
-import unittest
+import csv
 import os
 import random
+import unittest
+
 import numpy as np
-import csv
+import scipy
+from scipy.sparse import csr_matrix
+
+from tests.analysis.analysis_test_utils import AnalysisTestUtils
+
 
 class TestGenerate(unittest.TestCase):
 
@@ -97,15 +98,13 @@ class TestGenerate(unittest.TestCase):
         metadata.append(["Non-Significant Numeric"] + generate_non_significant_numeric_metadata_column(num_samples))
         metadata.append(["Non-Significant Categorical"] + generate_non_significant_categorical_metadata_column(num_samples, 3))
 
-        otu.insert(0, sample_labels)
         otu = np.array(otu)
         otu = np.transpose(otu)
 
-        csv_path = os.path.join(output_dir, "table.tsv")
-        output_otu_csv = csv.writer(open(csv_path, 'w'), delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        output_otu_csv.writerow(headers)
-        for row in otu:
-            output_otu_csv.writerow(row)
+        otu_csr = csr_matrix(otu)
+
+        csv_path = os.path.join(output_dir, "table.tsv.npz")
+        scipy.sparse.save_npz(csv_path, otu_csr)
 
         metadata_csv_path = os.path.join(output_dir, "metadata.tsv")
         metadata = np.array(metadata)
@@ -234,5 +233,5 @@ def generate_correlated_metadata_column(num_samples):
 
 
 if __name__ == '__main__':
-    # unittest.main()
-    pass
+    unittest.main()
+    # pass

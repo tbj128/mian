@@ -251,7 +251,7 @@ function updateAnalysis() {
     var pwVar2 = $("#pwVar2").val();
     var type = $("#type").val();
 
-    if (catvar === "none") {
+    if (!catvar || catvar === "none") {
         loadNoCatvar();
         return;
     }

@@ -18,7 +18,8 @@ setup(
         'werkzeug>=0.15.3',
         'scikit-bio',
         'pandas',
-        'Keras==2.3.1'
+        'Keras==2.3.1',
+        'Boruta'
     ],
     license='MIT',
     author='Tom Jin',

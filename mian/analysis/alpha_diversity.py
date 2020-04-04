@@ -22,6 +22,7 @@ from scipy import stats, math
 from skbio import TreeNode
 from skbio.diversity import alpha_diversity
 from io import StringIO
+import numpy as np
 
 from mian.analysis.analysis_base import AnalysisBase
 from mian.core.statistics import Statistics
@@ -70,7 +71,7 @@ class AlphaDiversity(AnalysisBase):
     veganR = SignatureTranslatedAnonymousPackage(rcode, "veganR")
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = OTUTable(user_request.user_id, user_request.pid, use_sparse=True)
         table.load_phylogenetic_tree_if_exists()
 
         # No OTUs should be excluded for diversity analysis
@@ -110,6 +111,10 @@ class AlphaDiversity(AnalysisBase):
                 return {
                     "has_float": True
                 }
+
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            otu_table = otu_table.toarray()
         vals = self.calculate_alpha_diversity(otu_table, sample_labels, headers, phylogenetic_tree, alphaType, alphaContext)
 
 
@@ -179,18 +184,18 @@ class AlphaDiversity(AnalysisBase):
                 tree = tree.root_at_midpoint()
             return alpha_diversity(alpha_type, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
         else:
-            allOTUs = []
-            col = 0
-            while col < len(otu_table[0]):
-                colVals = []
-                row = 0
-                while row < len(otu_table):
-                    colVals.append(otu_table[row][col])
-                    row += 1
-                allOTUs.append((headers[col], robjects.FloatVector(colVals)))
-                col += 1
-
-            od = rlc.OrdDict(allOTUs)
-            dataf = robjects.DataFrame(od)
-
-            return self.veganR.alphaDiversity(dataf, alpha_type, alpha_context)
+            num_species = np.count_nonzero(otu_table > 0, axis=1)
+            if alpha_context == "evenness":
+                diversity = alpha_diversity(alpha_type, otu_table, ids=sample_labels)
+                if alpha_type == "shannon":
+                    return diversity / np.log(num_species)
+                elif alpha_type == "simpson":
+                    # simpson index = 1 - D
+                    return (1 - diversity) / num_species
+                else:
+                    # invsimpson index = 1/D
+                    return (1 / diversity) / num_species
+            elif alpha_context == "speciesnumber":
+                return num_species
+            else:
+                return alpha_diversity(alpha_type, otu_table, ids=sample_labels)

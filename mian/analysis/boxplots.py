@@ -24,7 +24,7 @@ class Boxplots(AnalysisBase):
     def abundance_boxplots(self, user_request, yvals):
         logger.info("Starting abundance_boxplots")
 
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = OTUTable(user_request.user_id, user_request.pid, use_sparse=True)
         if yvals == "mian-gene":
             genes = Genes(user_request.user_id, user_request.pid)
             gene_list = user_request.get_custom_attr("yvalsSpecificTaxonomy")
@@ -41,7 +41,7 @@ class Boxplots(AnalysisBase):
         return self.process_abundance_boxplots(user_request, yvals, base, headers, sample_labels, metadata_values, color_metadata_values)
 
     def process_abundance_boxplots(self, user_request, yvals, base, headers, sample_labels, metadata_values, color_metadata_values):
-        base = np.array(base)
+        # base = np.array(base)
 
         statsAbundances = {}
         abundances = {}
@@ -77,44 +77,34 @@ class Boxplots(AnalysisBase):
             if len(colsOfInterest) == 0:
                 return {"abundances": {}, "stats": []}
         elif yvals == "mian-gene":
-            i = 0
-            while i < len(headers):
-                colsOfInterest.append(i)
-                i += 1
-            if len(colsOfInterest) == 0:
+            if base.shape[1] == 0:
                 return {"abundances": {}, "stats": []}
 
 
         i = 0
-        while i < len(base):
+        while i < base.shape[0]:
             row = {}
             row["s"] = str(sample_labels[i])
 
-            abunArr = []
-
             if yvals == "mian-taxonomy-abundance":
-                row["a"] = float(np.sum(base[i][colsOfInterest]))
+                row["a"] = float(np.sum(base[i, colsOfInterest]))
             elif yvals == "mian-gene":
-                row["a"] = float(np.sum(base[i][colsOfInterest]))
+                # Gene table was already filtered to the columns of interest
+                row["a"] = float(np.sum(base[i, :]))
             else:
-                j = 0
-                while j < len(base[i]):
-                    abunArr.append(float(base[i][j]))
-                    j += 1
-
                 if yvals == "mian-min":
-                    row["a"] = np.min(abunArr)
+                    row["a"] = np.min(base[i, :]).item()
                 elif yvals == "mian-max":
-                    row["a"] = np.max(abunArr)
+                    row["a"] = np.max(base[i, :]).item()
                 elif yvals == "mian-median":
-                    row["a"] = np.median(abunArr)
+                    row["a"] = np.median(base[i, :]).item()
                 elif yvals == "mian-mean":
-                    row["a"] = np.average(abunArr)
+                    row["a"] = np.average(base[i, :]).item()
                 elif yvals == "mian-abundance":
-                    row["a"] = np.sum(abunArr)
+                    row["a"] = np.sum(base[i, :]).item()
                 else:
                     row["a"] = 0
-            row["color"] = color_metadata_values[i] if len(color_metadata_values) == len(base) else ""
+            row["color"] = color_metadata_values[i] if len(color_metadata_values) == base.shape[0] else ""
 
             if sample_labels[i] in metadataMap:
                 abundances[metadataMap[sample_labels[i]]].append(row)

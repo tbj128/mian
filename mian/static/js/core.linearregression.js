@@ -276,7 +276,7 @@ function updateAnalysis() {
     }
     showLoading(expectedLoadFactor);
 
-    if (expvar === "None") {
+    if (!$("#expvar").val() || $("#expvar").val() === "None") {
         loadNoCatvar();
         return;
     }

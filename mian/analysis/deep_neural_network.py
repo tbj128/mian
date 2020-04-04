@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 from mian.model.otu_table import OTUTable
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, normalize
 import pandas as pd
 
 from tensorflow import keras
@@ -40,20 +40,17 @@ class DeepNeuralNetwork(object):
         validation_proportion = user_request.get_custom_attr("validationProportion")
         existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
 
-        # NORMALIZE THE DATASET
-        df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
-        stats = df.describe()
-        stats = stats.transpose()
-
-        def norm(x):
-            return (x - stats['mean']) / stats['std']
-
-        X = norm(df)
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
+        else:
+            X = otu_table
 
         if problem_type == "classification":
             le = LabelEncoder()
             le.fit(metadata_vals)
             Y = le.transform(metadata_vals)
+            Y = to_categorical(Y)
         else:
             Y = metadata_vals
 
@@ -68,8 +65,11 @@ class DeepNeuralNetwork(object):
             X_test, y_test = shuffle(X_test, y_test)
         else:
             indices = np.arange(len(X))
-            X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices, train_size=training_proportion)
+            X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices, train_size=training_proportion,
+                                                                                         stratify=Y)
 
+        X_train = normalize(X_train)
+        X_test = normalize(X_test)
 
         def build_model(dnn_model, problem_type):
             i = 0
@@ -103,11 +103,11 @@ class DeepNeuralNetwork(object):
         model = build_model(dnn_model, problem_type)
         if problem_type == "classification":
             hist = model.fit(
-                X_train, to_categorical(y_train),
+                X_train, y_train,
                 epochs=epochs, validation_split=validation_proportion, verbose=0
             )
 
-            score = model.evaluate(X_test, to_categorical(y_test), verbose=0)
+            score = model.evaluate(X_test, y_test, verbose=0)
             print('Test loss:', score[0])
             print('Test accuracy:', score[1])
 
@@ -118,7 +118,7 @@ class DeepNeuralNetwork(object):
                 "val_loss": [a.item() for a in hist.history['val_loss']],
                 "test_accuracy": score[1].item(),
                 "test_loss": score[0].item(),
-                "num_samples": len(otu_table),
+                "num_samples": otu_table.shape[0],
                 "training_indexes": ind_train.tolist()
             }
             return abundances_obj

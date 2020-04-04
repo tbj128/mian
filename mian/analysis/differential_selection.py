@@ -58,9 +58,9 @@ class DifferentialSelection(object):
             training_indexes = np.array(existing_training_indexes)
         else:
             if training_proportion == 1.0:
-                training_indexes = np.array(range(len(base)))
+                training_indexes = np.array(range(base.shape[0]))
             else:
-                _, training_indexes = train_test_split(range(len(base)), test_size=(1 - training_proportion))
+                training_indexes, _ = train_test_split(range(base.shape[0]), test_size=(1 - training_proportion), stratify=metadata_vals)
         training_indexes = np.array(training_indexes)
         base = base[training_indexes, :]
         metadata_vals = [metadata_vals[i] for i in training_indexes]
@@ -77,18 +77,18 @@ class DifferentialSelection(object):
         otu_pvals = []
 
         j = 0
-        while j < len(base[0]):
+        while j < base.shape[1]:
             group1_arr = []
             group2_arr = []
 
             # Go through each sample for this OTU
             i = 0
-            while i < len(base):
+            while i < base.shape[0]:
                 metadata_val = metadata_vals[i]
                 if metadata_val == catVar1:
-                    group1_arr.append(float(base[i][j]))
+                    group1_arr.append(base[i, j])
                 if metadata_val == catVar2:
-                    group2_arr.append(float(base[i][j]))
+                    group2_arr.append(base[i, j])
                 i += 1
             groups_abundance = {catVar1: group1_arr, catVar2: group2_arr}
 
@@ -103,7 +103,7 @@ class DifferentialSelection(object):
         otus = []
 
         j = 0
-        while j < len(base[0]):
+        while j < base.shape[1]:
             otu_id = headers[j]
             pval = otu_pvals[j]
             qval = otu_qvals[j]
@@ -137,9 +137,9 @@ class DifferentialSelection(object):
             training_indexes = np.array(existing_training_indexes)
         else:
             if training_proportion == 1:
-                training_indexes = np.array(range(len(base)))
+                training_indexes = np.array(range(base.shape[0]))
             else:
-                _, training_indexes = np.array(train_test_split(range(len(base)), test_size=(1 - training_proportion)))
+                training_indexes, _ = np.array(train_test_split(range(base.shape[0]), test_size=(1 - training_proportion), stratify=metadata_vals))
         training_indexes = np.array(training_indexes)
         base = base[training_indexes, :]
         sample_labels = [sample_labels[i] for i in training_indexes]
@@ -164,13 +164,13 @@ class DifferentialSelection(object):
 
         new_base = []
         i = 0
-        while i < len(base):
+        while i < base.shape[0]:
             if relevant_rows[i]:
                 new_row = []
                 j = 0
-                while j < len(base[i]):
-                    if float(base[i][j]) > 0:
-                        new_row.append(float(base[i][j]))
+                while j < base.shape[1]:
+                    if base[i, j] > 0:
+                        new_row.append(base[i, j])
                     else:
                         # Use pseudocount as ANCOM does not accept zeros or negatives
                         new_row.append(0.001)

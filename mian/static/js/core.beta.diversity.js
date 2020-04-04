@@ -10,7 +10,7 @@ var expectedLoadFactor = 100;
 initializeFields();
 initializeComponent({
     hasCatVar: true,
-    hasCatVarNoneOption: false
+    hasCatVarNoneOption: true
 });
 createSpecificListeners();
 
@@ -64,6 +64,7 @@ function updateAnalysis() {
     showLoading(expectedLoadFactor);
     $("#permanova-loading").show();
     $("#permanova").empty();
+    $("#betadisper").empty();
 
     var level = taxonomyLevels[getTaxonomicLevel()];
 
@@ -79,6 +80,11 @@ function updateAnalysis() {
     var strata = $("#strata").val();
     var betaType = $("#betaType").val();
     var colorvar = $("#colorvar").val();
+
+    if (!catvar || catvar === "none") {
+        loadNoResults();
+        return;
+    }
 
     var data = {
         pid: $("#project").val(),
@@ -105,7 +111,9 @@ function updateAnalysis() {
         data: data,
         success: function(result) {
             var abundancesObj = JSON.parse(result);
-            if (abundancesObj["no_tree"]) {
+            if (abundancesObj["timeout"]) {
+                loadError("This can occur if your data set is very large. Consider using a file with fewer OTUs or samples. <a href='#'>Learn more here.</a>", "Maximum Running Time Exceeded");
+            } else if (abundancesObj["no_tree"]) {
                 loadNoTree();
             } else if (abundancesObj["has_float"]) {
                 loadFloatDataWarning();
@@ -131,7 +139,12 @@ function updateAnalysis() {
         data: data,
         success: function(result) {
             var abundancesObj = JSON.parse(result);
-            renderPERMANOVA(abundancesObj);
+            if (abundancesObj["timeout"]) {
+                $("#permanova-container").hide();
+                $("#permanova-loading").hide();
+            } else {
+                renderPERMANOVA(abundancesObj);
+            }
         },
         error: function(err) {
             $("#permanova-container").hide();

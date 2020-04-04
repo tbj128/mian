@@ -25,17 +25,17 @@ class TableView(AnalysisBase):
         return self.analyse(base, headers, sample_labels)
 
     def analyse(self, base, headers, sample_labels):
+        if base.shape[0] > 2000 or base.shape[1] > 2000:
+            return ["Too Large"]
+
         new_headers = ["Sample"]
         new_headers.extend(headers)
         otu_table = [new_headers]
 
         i = 0
-        while i < len(base):
+        while i < base.shape[0]:
             new_row = [sample_labels[i]]
-            j = 0
-            while j < len(base[i]):
-                new_row.append(float(base[i][j]))
-                j += 1
+            new_row.extend(base[i, :].tolist()[0])
             otu_table.append(new_row)
             i += 1
         return otu_table

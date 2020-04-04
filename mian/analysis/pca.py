@@ -11,6 +11,7 @@
 #
 # ======== R specific setup =========
 #
+import pandas as pd
 import rpy2.robjects as robjects
 import rpy2.rlike.container as rlc
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
@@ -74,7 +75,7 @@ class PCA(AnalysisBase):
     rViz = SignatureTranslatedAnonymousPackage(rcode, "rViz")
 
     def run(self, user_request):
-        table = OTUTable(user_request.user_id, user_request.pid)
+        table = OTUTable(user_request.user_id, user_request.pid, use_sparse=True)
         table.load_phylogenetic_tree_if_exists()
         base, headers, sample_labels = table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(user_request)
 
@@ -85,15 +86,18 @@ class PCA(AnalysisBase):
     def analyse(self, user_request, base, headers, sample_labels, metaVals, phylogenetic_tree):
         logger.info("Starting PCA analysis")
         type = user_request.get_custom_attr("type")
-        if type == "euclidean":
-            return self.analyse_pca(user_request, base, headers, sample_labels, metaVals)
-        else:
-            return self.analyse_other(user_request, base, headers, sample_labels, metaVals, phylogenetic_tree)
+        # if type == "euclidean":
+        #     return self.analyse_pca(user_request, base, headers, sample_labels, metaVals)
+        # else:
+        return self.analyse_other(user_request, base, headers, sample_labels, metaVals, phylogenetic_tree)
 
     def analyse_other(self, user_request, otu_table, headers, sample_labels, metaVals, phylogenetic_tree):
         type = user_request.get_custom_attr("type")
 
-        otu_table = otu_table.astype(int)
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            otu_table = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
+        # otu_table = otu_table.astype(int)
 
         if type == "weighted_unifrac" or type == "unweighted_unifrac":
             if phylogenetic_tree == "":

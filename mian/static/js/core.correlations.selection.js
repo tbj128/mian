@@ -207,7 +207,7 @@ function updateAnalysis() {
         return;
     }
 
-    if (expvar === "none") {
+    if (!expvar || expvar === "none") {
         loadNoCatvar();
         return;
     }

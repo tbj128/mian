@@ -418,7 +418,7 @@ function updateAnalysis() {
     var validationProportion = $("#validationProportion").val();
     var fixTraining = $("#fixTraining").val();
 
-    if (expvar === "None") {
+    if (!expvar || expvar === "None") {
         loadNoCatvar();
         return;
     }

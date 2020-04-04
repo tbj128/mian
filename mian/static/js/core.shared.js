@@ -277,7 +277,7 @@ function showNoCatvar() {
     $("#display-no-catvar").show();
 }
 
-function loadError(details) {
+function loadError(details, title) {
     hideLoading();
     $("#display-error").show();
     $("#display-error-details").empty();
@@ -292,6 +292,14 @@ function loadError(details) {
 
     if (details) {
         $("#display-error-details").html(details + " ");
+    } else {
+        $("#display-error-details").html("");
+    }
+
+    if (title) {
+        $("#display-error-details-title").html(title);
+    } else {
+        $("#display-error-details-title").html("Analysis cannot be performed with these parameters");
     }
 }
 

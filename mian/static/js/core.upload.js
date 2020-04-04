@@ -150,7 +150,7 @@ $(document).ready(function() {
                 var xhr = new window.XMLHttpRequest();
                 xhr.upload.addEventListener("progress", function(evt) {
                     if (evt.lengthComputable) {
-                        var percentComplete = (evt.loaded / evt.total) * 100;
+                        var percentComplete = ((evt.loaded / evt.total) * 100).toFixed(2);
 
                         if (formID == "biomForm") {
                             $("#biomLoadingProgress").text(percentComplete);

@@ -242,7 +242,7 @@ function updateAnalysis() {
     var pwVar1 = $("#pwVar1").val();
     var pwVar2 = $("#pwVar2").val();
 
-    if (catvar === "none") {
+    if (!catvar || catvar === "none") {
         loadNoCatvar();
         return;
     }

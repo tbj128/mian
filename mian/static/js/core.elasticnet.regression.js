@@ -166,7 +166,7 @@ function updateAnalysis() {
     var trainingProportion = $("#trainingProportion").val();
     var fixTraining = $("#fixTraining").val();
 
-    if (expvar === "None") {
+    if (!expvar || expvar === "None") {
         loadNoCatvar();
         return;
     }

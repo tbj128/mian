@@ -26,6 +26,11 @@ import zlib
 import time
 import uuid
 import logging
+import multiprocessing
+from multiprocessing.dummy import Pool as ThreadPool
+from functools import partial
+
+
 #
 # Imports and installs R packages as needed
 #
@@ -117,6 +122,24 @@ login_manager.init_app(app)
 db.initDB(DB_PATH, SCHEMA_PATH)
 
 
+#
+# -------------------------------------------
+#
+# Timeout Handling
+#
+MAX_FUNCTION_TIME_SECONDS = 60
+
+
+def abortable_worker(func, *args, **kwargs):
+    timeout = kwargs.get('timeout', MAX_FUNCTION_TIME_SECONDS)
+    p = ThreadPool(1)
+    res = p.apply_async(func, args=args)
+    try:
+        out = res.get(timeout)
+        return out
+    except multiprocessing.TimeoutError:
+        print("Aborting due to timeout")
+        raise multiprocessing.TimeoutError
 
 #
 # -------------------------------------------
@@ -929,8 +952,19 @@ def getAlphaDiversity(user_request, req):
     user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
 
     plugin = AlphaDiversity()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # --
@@ -960,8 +994,19 @@ def getBetaDiversity(user_request, req):
     user_request.set_custom_attr("api", "beta")
 
     plugin = BetaDiversity()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # --
@@ -990,9 +1035,20 @@ def getBetaDiversityPERMANOVA(user_request, req):
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "permanova")
 
+    retval = {}
     plugin = BetaDiversity()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request, retval,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # --
@@ -1023,8 +1079,18 @@ def getBoruta(user_request, req):
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
 
     plugin = Boruta()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # --
@@ -1054,8 +1120,18 @@ def getBoxplots(user_request, req):
     user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
 
     plugin = Boxplots()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # --
@@ -1082,8 +1158,18 @@ def getComposition(user_request, req):
     plugin = Composition()
     user_request.set_custom_attr("plotType", req.form['plotType'])
     user_request.set_custom_attr("xaxis", req.form['xaxis'])
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # --
@@ -1114,8 +1200,18 @@ def getCompositionHeatmap(user_request, req):
     user_request.set_custom_attr("clustertaxonomic", req.form['clustertaxonomic'])
     user_request.set_custom_attr("showlabels", req.form['showlabels'])
     user_request.set_custom_attr("colorscheme", req.form['colorscheme'])
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1149,8 +1245,18 @@ def getCorrelations(user_request, req):
     user_request.set_custom_attr("sizevarSpecificTaxonomies", req.form['sizevarSpecificTaxonomies'])
 
     plugin = Correlations()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1178,8 +1284,18 @@ def getCorrelationNetwork(user_request, req):
     user_request.set_custom_attr("cutoff", req.form['cutoff'])
 
     plugin = CorrelationNetwork()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1212,8 +1328,18 @@ def getCorrelationsSelection(user_request, req):
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = CorrelationsSelection()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1247,8 +1373,18 @@ def getDeepNeuralNetwork(user_request, req):
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
 
     plugin = DeepNeuralNetwork()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1281,8 +1417,18 @@ def getDifferentialSelection(user_request, req):
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = DifferentialSelection()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1315,8 +1461,18 @@ def getElasticNetSelectionClassification(user_request, req):
     user_request.set_custom_attr("keep", req.form['keep'])
 
     plugin = ElasticNetSelectionClassification()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1349,8 +1505,18 @@ def getElasticNetSelectionRegression(user_request, req):
     user_request.set_custom_attr("keep", req.form['keep'])
 
     plugin = ElasticNetSelectionRegression()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1383,8 +1549,18 @@ def getFisherExact(user_request, req):
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = FisherExact()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1416,8 +1592,18 @@ def getHeatmap(user_request, req):
     user_request.set_custom_attr("corrvar2Alpha", json.loads(req.form['corrvar2Alpha']))
 
     plugin = Heatmap()
-    abundances = plugin.run(user_request)
-    return base64.b64encode(zlib.compress(json.dumps(abundances).encode("utf-8")))
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return base64.b64encode(zlib.compress(json.dumps(retval.get()).encode("utf-8")))
+    except multiprocessing.TimeoutError:
+        return base64.b64encode(zlib.compress(json.dumps({
+            "timeout": True
+        }).encode("utf-8")))
 
 
 # ---
@@ -1451,8 +1637,18 @@ def getLinearClassifier(user_request, req):
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
 
     plugin = LinearClassifier()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 
@@ -1488,8 +1684,18 @@ def getLinearRegression(user_request, req):
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
 
     plugin = LinearRegression()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 
@@ -1523,8 +1729,18 @@ def getRandomForest(user_request, req):
     user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
 
     plugin = RandomForest()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1550,8 +1766,18 @@ def getRarefactionShare():
 def getRarefaction(user_request, req):
     plugin = RarefactionCurves()
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1578,8 +1804,18 @@ def getNMDS(user_request, req):
     user_request.set_custom_attr("type", req.form['type'])
 
     plugin = NMDS()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1609,8 +1845,18 @@ def getPCA(user_request, req):
     user_request.set_custom_attr("pca3", req.form['pca3'])
 
     plugin = PCA()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1634,8 +1880,18 @@ def getTableShare():
 
 def getTable(user_request):
     plugin = TableView()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 # ---
@@ -1662,8 +1918,18 @@ def getTree(user_request, req):
     user_request.set_custom_attr("display_values", req.form['display_values'])
     user_request.set_custom_attr("exclude_unclassified", req.form['exclude_unclassified'])
     plugin = TreeView()
-    abundances = plugin.run(user_request)
-    return json.dumps(abundances)
+    pool = multiprocessing.Pool(maxtasksperchild=1)
+    abortable_func = partial(abortable_worker, plugin.run)
+    retval = pool.apply_async(abortable_func, args=(user_request,))
+    pool.close()
+    pool.join()
+
+    try:
+        return json.dumps(retval.get())
+    except multiprocessing.TimeoutError:
+        return json.dumps({
+            "timeout": True
+        })
 
 
 
@@ -1677,13 +1943,11 @@ def getIsSubsampled():
     user = current_user.id
     pid = request.form['pid']
 
-    return json.dumps(1)
-
-    # isSubsampled = Subsample.get_is_subsampled(user, pid)
-    # if isSubsampled:
-    #     return json.dumps(1)
-    # else:
-    #     return json.dumps(0)
+    map = Map(user, pid)
+    if map.subsampled_value == 0:
+        return json.dumps(0)
+    else:
+        return json.dumps(1)
 
 
 @app.route('/update_notebook_section_title', methods=['POST'])
@@ -1928,7 +2192,7 @@ def downloadFile():
 
     def generate_tsv():
         for row in project_manager.get_file_for_download(currProject, type):
-            yield '\t'.join(row) + '\n'
+            yield '\t'.join(str(x) for x in row) + '\n'
     def generate_text():
         return project_manager.get_file_for_download(currProject, type)
 

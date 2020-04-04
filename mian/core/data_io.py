@@ -3,6 +3,7 @@ import os
 import logging
 from functools import lru_cache
 import numpy as np
+import scipy.sparse
 
 from mian.core.constants import RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_FILENAME, TAXONOMY_FILENAME, \
     SAMPLE_METADATA_FILENAME
@@ -22,6 +23,20 @@ class DataIO:
         project_dir = os.path.join(project_dir, pid)
         csv_name = os.path.join(project_dir, csv_name)
         return os.path.exists(csv_name)
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def load_sparse(user_id, pid, name):
+
+        project_dir = os.path.dirname(__file__)
+        project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
+        project_dir = os.path.join(project_dir, "data")
+        project_dir = os.path.join(project_dir, user_id)
+        project_dir = os.path.join(project_dir, pid)
+        csv_name = os.path.join(project_dir, name)
+
+        logger.info("Opening file with name " + csv_name)
+        return scipy.sparse.load_npz(csv_name)
 
     @staticmethod
     @lru_cache(maxsize=128)
@@ -113,6 +128,25 @@ class DataIO:
                 i += 1
 
         return otu_map
+
+    @staticmethod
+    def table_to_npz(base, user_id, pid, csv_name):
+        """
+        Exports a table to NPZ and writes it to the project directory
+        :param base:
+        :param user_id:
+        :param pid:
+        :param csv_name:
+        :return:
+        """
+        project_dir = os.path.dirname(__file__)
+        project_dir = os.path.abspath(os.path.join(project_dir, os.pardir))  # Gets the parent folder
+        project_dir = os.path.join(project_dir, "data")
+        project_dir = os.path.join(project_dir, user_id)
+        project_dir = os.path.join(project_dir, pid)
+        csv_path = os.path.join(project_dir, csv_name)
+        scipy.sparse.save_npz(csv_path, base)
+        logger.info("After write")
 
     @staticmethod
     def table_to_tsv(base, user_id, pid, csv_name):

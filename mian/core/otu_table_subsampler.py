@@ -15,7 +15,9 @@ import shutil
 
 import matplotlib
 
+from biom import Table
 from mian.model.otu_table import OTUTable
+import scipy.sparse as sparse
 
 matplotlib.use('TkAgg')
 
@@ -46,10 +48,6 @@ class OTUTableSubsampler(object):
         :return:
         """
 
-        project_dir = os.path.join(OTUTableSubsampler.DATA_DIRECTORY, user_id)
-        project_dir = os.path.join(project_dir, pid)
-        subsampled_table_path = os.path.join(project_dir, output_otu_file_name)
-
         if subsample_type == SUBSAMPLE_TYPE_AUTO:
             logger.info("Subsample type is auto")
             current_subsampled_depth = OTUTableSubsampler.__get_subsampled_depth(base)
@@ -58,9 +56,9 @@ class OTUTableSubsampler(object):
                 # If so, we just need to copy the raw table to the subsampled table location
                 logger.error("Table is already subsampled to a depth of " + str(current_subsampled_depth))
                 labels = [headers, sample_labels]
-                DataIO.table_to_tsv(base, user_id, pid, output_otu_file_name)
+                DataIO.table_to_npz(base, user_id, pid, output_otu_file_name)
                 DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-                return current_subsampled_depth, {}, []
+                return current_subsampled_depth, headers, sample_labels
             else:
                 # Sums each sample row to find the row with the smallest sum
                 # TODO: Bad input data may have very small row sum
@@ -78,64 +76,28 @@ class OTUTableSubsampler(object):
             # Just copy the raw data table to the subsampled table location
             logger.info("Subsample type is disabled")
             labels = [headers, sample_labels]
-            DataIO.table_to_tsv(base, user_id, pid, output_otu_file_name)
+            DataIO.table_to_npz(base, user_id, pid, output_otu_file_name)
             DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-            return 0, {}, []
+            return 0, headers, sample_labels
         else:
             logger.error("Invalid action selected")
             raise NotImplementedError("Invalid action selected")
 
         logger.info("Subsampling OTU table to " + str(subsample_to) + " using type " + str(subsample_type))
 
-        samples_removed = []
-        subsampled_base = []
-        subsampled_sample_labels = []
-
-        i = 0
-        for row in base:
-            if subsample_type == SUBSAMPLE_TYPE_MANUAL and sum(row) < subsample_to:
-                # Any row with fewer sequences than the requested depth will be omitted
-                samples_removed.append(sample_labels[i])
-            else:
-                row = subsample_counts(row, subsample_to)
-                subsampled_base.append(row)
-                subsampled_sample_labels.append(sample_labels[i])
-            i += 1
+        # Biom is naturally OTU ids on the rows so we are purposefully flipping it
+        temp_table = Table(base, observation_ids=sample_labels, sample_ids=headers)
+        temp_table = temp_table.subsample(subsample_to, axis="observation")
+        subsampled_sample_labels = temp_table._observation_ids.tolist()
+        subsampled_headers = temp_table._sample_ids.tolist()
+        DataIO.table_to_npz(temp_table.matrix_data, user_id, pid, output_otu_file_name)
 
         logger.info("Finished basic subsampling")
-
-        # Find any columns which now only have 0 values
-        zero_column_mask = OTUTableSubsampler.__get_zero_columns(subsampled_base)
-
-        # To conserve space, remove all OTUs that no longer have any associated values while writing new
-        # subsampled OTU table
-        with open(subsampled_table_path, 'w') as f:
-            output_tsv = csv.writer(f, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            for row in subsampled_base:
-                processed_row = []
-                j = 0
-                while j < len(row):
-                    if j not in zero_column_mask:
-                        processed_row.append(row[j])
-                    j += 1
-                output_tsv.writerow(processed_row)
-
-        subsampled_headers = []
-        otus_removed = {}
-        j = 0
-        while j < len(headers):
-            if j in zero_column_mask:
-                otus_removed[headers[j]] = 1
-            else:
-                subsampled_headers.append(headers[j])
-            j += 1
-
-        logger.info("Finished writing CSV")
 
         labels = [subsampled_headers, subsampled_sample_labels]
         DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
 
-        return subsample_to, otus_removed, samples_removed
+        return subsample_to, subsampled_headers, subsampled_sample_labels
 
     @staticmethod
     def __get_subsampled_depth(base):
@@ -145,15 +107,11 @@ class OTUTableSubsampler(object):
         :param base:
         :return:
         """
-        last_total = -1
-        i = 0
-        while i < len(base):
-            total = sum(base[i])
-            if last_total > -1 and last_total != total:
-                return -1
-            last_total = total
-            i += 1
-        return last_total
+        all_sum = base.sum(axis=1)
+        if set(all_sum.A[:,0].tolist()):
+            return all_sum.min().item()
+        else:
+            return -1
 
     @staticmethod
     def __get_min_depth(base):
@@ -163,14 +121,7 @@ class OTUTableSubsampler(object):
         :param base:
         :return:
         """
-        min = -1
-        i = 0
-        while i < len(base):
-            total = sum(base[i])
-            if min == -1 or total < min:
-                min = total
-            i += 1
-        return min
+        return base.sum(axis=1).min().item()
 
     @staticmethod
     def __get_zero_columns(base):

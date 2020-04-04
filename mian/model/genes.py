@@ -19,7 +19,7 @@ class Genes(object):
         self.pid = pid
 
         # Lazy load the gene table/labels as needed
-        self.gene_table = []
+        self.gene_table = None
         self.gene_labels = []
 
     def get_gene_headers(self, type):
@@ -37,7 +37,7 @@ class Genes(object):
                 self.gene_labels = DataIO.tsv_to_table(self.user_id, self.pid, GENE_LABELS_FILENAME)
             return self.gene_labels[0]
 
-    def get_as_table(self, gene_list=[], orig_sample_labels=[]):
+    def get_as_table(self, gene_list=[]):
         """
         Gets a gene table where the samples are rows and genes are columns
         :param gene_list: filters columns to those genes in this list. if empty, return all columns
@@ -47,8 +47,8 @@ class Genes(object):
         if not DataIO.does_file_exist(self.user_id, self.pid, GENE_FILENAME):
             return [], [], []
 
-        if len(self.gene_table) == 0:
-            self.gene_table = DataIO.tsv_to_table(self.user_id, self.pid, GENE_FILENAME)
+        if self.gene_table is None:
+            self.gene_table = DataIO.tsv_to_np_table(self.user_id, self.pid, GENE_FILENAME)
 
         if len(self.gene_labels) == 0:
             self.gene_labels = DataIO.tsv_to_table(self.user_id, self.pid, GENE_LABELS_FILENAME)
@@ -56,37 +56,16 @@ class Genes(object):
         sample_labels = self.gene_labels[1]
 
         new_headers = []
-        cols_to_keep = {}
+        cols_to_keep = []
         i = 0
         while i < len(headers):
             if len(gene_list) == 0 or headers[i] in gene_list:
-                cols_to_keep[i] = True
+                cols_to_keep.append(i)
                 new_headers.append(headers[i])
             i += 1
 
-        new_sample_labels = []
-        rows_to_keep = {}
-        i = 0
-        while i < len(sample_labels):
-            if len(orig_sample_labels) == 0 or sample_labels[i] in orig_sample_labels:
-                rows_to_keep[i] = True
-                new_sample_labels.append(sample_labels[i])
-            i += 1
-
-        base = []
-        i = 0
-        while i < len(self.gene_table):
-            if i in rows_to_keep:
-                new_row = []
-                j = 0
-                while j < len(self.gene_table[i]):
-                    if j in cols_to_keep:
-                        new_row.append(self.gene_table[i][j])
-                    j += 1
-                base.append(new_row)
-            i += 1
-
-        return base, new_headers, new_sample_labels
+        base = self.gene_table[:, cols_to_keep]
+        return base, new_headers, sample_labels
 
     def get_multi_gene_values(self, gene_list, sample_labels=None):
         """
@@ -98,19 +77,19 @@ class Genes(object):
         if not DataIO.does_file_exist(self.user_id, self.pid, GENE_FILENAME):
             return []
 
-        if len(self.gene_table) == 0:
+        if self.gene_table is None:
             # Gene table is already in the order of the samples
-            self.gene_table = DataIO.tsv_to_table(self.user_id, self.pid, GENE_FILENAME)
+            self.gene_table = DataIO.tsv_to_np_table(self.user_id, self.pid, GENE_FILENAME)
 
         if len(self.gene_labels) == 0:
             self.gene_labels = DataIO.tsv_to_table(self.user_id, self.pid, GENE_LABELS_FILENAME)
         headers = self.gene_labels[0]
         gene_sample_labels = self.gene_labels[1]
-        cols_of_interest = {}
+        cols_of_interest = []
         j = 0
         while j < len(headers):
             if headers[j] in gene_list:
-                cols_of_interest[j] = True
+                cols_of_interest.append(j)
             j += 1
         if len(cols_of_interest) == 0:
             return []
@@ -119,9 +98,7 @@ class Genes(object):
 
         i = 0
         for row in self.gene_table:
-            tot = 0
-            for c in cols_of_interest.keys():
-                tot += float(row[c])
+            tot = np.sum(row[cols_of_interest]).item()
             vals[gene_sample_labels[i]] = tot
             i += 1
 

@@ -59,7 +59,7 @@
 
                 <label class="control-label">Diversity Type <a href="https://tbj128.gitbook.io/mian/beta-diversity#diversity-type" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="betaType" name="betaType" class="form-control">
-                    <option value="bray">Bray-Curtis</option>
+                    <option value="braycurtis">Bray-Curtis</option>
                     <option value="jaccard">Jaccard</option>
                     <option value="sor">Sorenson</option>
                     <option value="w">Whittaker</option>
@@ -75,6 +75,21 @@
 <div class="content-wrapper">
     {% include 'notifications.html' %}
     {% include 'download_container.html' %}
+
+    <div id="display-no-results" class="display-notification project-empty" style="display:none;">
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-bar-chart fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>No Results Yet</h3>
+                <h5>Start by adding a <strong>Categorical Variable</strong> on the left</h5>
+                <p>
+                    <a href="https://tbj128.gitbook.io/mian/beta-diversity" target="_blank">How do I use this tool?</a>
+                </p>
+            </div>
+        </div>
+    </div>
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
     </div><!-- /.container -->
@@ -93,8 +108,8 @@
     </div>
 
     <div id="betadisper-container" class="analysis-container" style="display:none;">
-        <h4>ANOVA</h4>
-        <h4><small>Significance test for the multivariate homogeneity between groups (ie. whether the spread of samples is different between multiple group). <a href="http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/betadisper.html" target="_blank">Learn more here</a></small></h4>
+        <h4>PERMDISP</h4>
+        <h4><small>Significance test for the multivariate homogeneity between groups (ie. whether the spread of samples is different between multiple group). <a href="http://scikit-bio.org/docs/0.5.4/generated/generated/skbio.stats.distance.permdisp.html" target="_blank">Learn more here</a></small></h4>
         <pre>
             <code>
                 <span id="betadisper" style="font-family:'Lucida Console', Monaco, monospace;"></span>

@@ -58,11 +58,11 @@ class RarefactionCurves(object):
         # Forms an OTU only table (without IDs)
         all_otus = []
         col = 0
-        while col < len(base[0]):
+        while col < base.shape[1]:
             colVals = []
             row = 0
-            while row < len(base):
-                colVals.append(base[row][col])
+            while row < base.shape[0]:
+                colVals.append(base[row, col])
                 row += 1
             all_otus.append((headers[col], robjects.FloatVector(colVals)))
             col += 1

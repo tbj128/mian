@@ -11,6 +11,7 @@
 import pandas as pd
 from sklearn.linear_model import ElasticNet
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import normalize
 
 from mian.model.otu_table import OTUTable
 import numpy as np
@@ -49,21 +50,19 @@ class ElasticNetSelectionRegression(object):
             training_indexes = np.array(existing_training_indexes)
         else:
             if training_proportion == 1:
-                training_indexes = np.array(range(len(otu_table)))
+                training_indexes = np.array(range(otu_table.shape[0]))
             else:
-                _, training_indexes = train_test_split(range(len(otu_table)), test_size=(1 - training_proportion))
+                training_indexes, _ = train_test_split(range(otu_table.shape[0]), test_size=(1 - training_proportion))
         training_indexes = np.array(training_indexes)
         otu_table = otu_table[training_indexes, :]
 
-        # NORMALIZE THE DATASET
-        df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
-        stats = df.describe()
-        stats = stats.transpose()
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
+        else:
+            X = otu_table
 
-        def norm(x):
-            return (x - stats['mean']) / stats['std']
-
-        X = norm(df)
+        X = normalize(X)
         Y = np.array(metadata_vals)
         Y = Y[training_indexes]
 

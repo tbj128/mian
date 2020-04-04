@@ -100,18 +100,22 @@ class FisherExact(object):
             training_indexes = np.array(existing_training_indexes)
         else:
             if training_proportion == 1:
-                training_indexes = np.array(range(len(otuTable)))
+                training_indexes = np.array(range(otuTable.shape[0]))
             else:
-                _, training_indexes = train_test_split(range(len(otuTable)), test_size=(1 - training_proportion))
+                training_indexes, _ = train_test_split(range(otuTable.shape[0]), test_size=(1 - training_proportion), stratify=metaVals)
         training_indexes = np.array(training_indexes)
         otuTable = otuTable[training_indexes, :]
         metaVals = [metaVals[i] for i in training_indexes]
+
+        if int(user_request.level) == -1:
+            # OTU tables are returned as a CSR matrix
+            otuTable = otuTable.toarray()
 
         groups = robjects.FactorVector(robjects.StrVector(metaVals))
         # Forms an OTU only table (without IDs)
         allOTUs = []
         col = 0
-        while col < len(otuTable[0]):
+        while col < otuTable.shape[1]:
             allOTUs.append((headers[col], otuTable[:, col]))
             col += 1
 

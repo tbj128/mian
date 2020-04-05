@@ -12,7 +12,7 @@ class TestNMDS(unittest.TestCase):
         user_request = AnalysisTestUtils.create_default_user_request()
         user_request.set_custom_attr("type", "euclidean")
 
-        otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT, use_np=True)
+        otu_table = AnalysisTestUtils.get_test_npz_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         metadata_values = AnalysisTestUtils.get_disease_metadata_values(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
 

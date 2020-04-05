@@ -138,9 +138,9 @@ class PCA(AnalysisBase):
 
             pcaObj = {"s": sample_labels[i],
                       "m": meta,
-                      "pca1": round(pcaVals.iloc[i]["PC" + pca1], 8),
-                      "pca2": round(pcaVals.iloc[i]["PC" + pca2], 8),
-                      "pca3": round(pcaVals.iloc[i]["PC" + pca3], 8)
+                      "pca1": round(pcaVals.iloc[i]["PC" + str(pca1)], 8),
+                      "pca2": round(pcaVals.iloc[i]["PC" + str(pca2)], 8),
+                      "pca3": round(pcaVals.iloc[i]["PC" + str(pca3)], 8)
                       }
             if pcaObj["pca1"] > pca1Max:
                 pca1Max = pcaObj["pca1"]

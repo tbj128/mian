@@ -38,15 +38,6 @@ class TestOTUTable(unittest.TestCase):
         elapsed = end - start
         print(elapsed)
 
-        start = datetime.datetime.now()
-        filtered_table, headers, sample_labels = otu_table.aggregate_otu_table_at_taxonomic_level(otu_table.get_table(), otu_table.headers,
-                                                                          otu_table.sample_labels, user_request)
-        filtered_table, headers, sample_labels = otu_table.filter_out_low_count_np(filtered_table, headers, sample_labels, user_request)
-        print(filtered_table.shape[0])
-        print(filtered_table.shape[1])
-        end = datetime.datetime.now()
-        elapsed = end - start
-        print(elapsed)
         print("")
         start = datetime.datetime.now()
         filtered_table, headers, sample_labels = otu_table.aggregate_otu_table_at_taxonomic_level_np(otu_table.get_table(), otu_table.headers, otu_table.sample_labels, user_request)

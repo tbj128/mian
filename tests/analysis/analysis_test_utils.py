@@ -32,7 +32,7 @@ class AnalysisTestUtils(object):
     @staticmethod
     def create_default_user_request():
         # -2 represents no taxonomy filtering
-        user_request = UserRequest("testuid", "testpid", 0, 0, -2, "Include", [], "", "Include", [], -2, "")
+        user_request = UserRequest("testuid", "testpid", 0, 0, -2, "Include", [], "", "Include", [], -1, "")
         return user_request
 
     @staticmethod

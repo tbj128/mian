@@ -9,25 +9,17 @@
 # Imports
 #
 
-import sys
-import numpy as np
-import shutil
-
 import matplotlib
 
 from biom import Table
-from mian.model.otu_table import OTUTable
-import scipy.sparse as sparse
 
 matplotlib.use('TkAgg')
 
 from mian.core.data_io import DataIO
 from mian.core.constants import SUBSAMPLE_TYPE_AUTO, SUBSAMPLE_TYPE_MANUAL, SUBSAMPLE_TYPE_DISABLED, \
-    SUBSAMPLED_OTU_TABLE_FILENAME, RAW_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
-import csv
+    SUBSAMPLED_OTU_TABLE_FILENAME, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME
 import os
 import logging
-from skbio.stats import subsample_counts
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -39,7 +31,7 @@ class OTUTableSubsampler(object):
     DATA_DIRECTORY = os.path.join(BASE_DIRECTORY, "data")
 
     @staticmethod
-    def subsample_otu_table(user_id, pid, subsample_type, manual_subsample_to, base, headers, sample_labels, output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME, output_otu_labels_file_name=SUBSAMPLED_OTU_TABLE_LABELS_FILENAME):
+    def subsample_otu_table(user_id, pid, subsample_type, manual_subsample_to, base, headers, sample_labels, output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME, output_otu_labels_file_name=SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, is_biom=False):
         """
         Subsamples the OTU table to the size of the smallest sample if subsample_to < 1. Otherwise, subsample
         the OTU table to the specified value
@@ -85,12 +77,11 @@ class OTUTableSubsampler(object):
 
         logger.info("Subsampling OTU table to " + str(subsample_to) + " using type " + str(subsample_type))
 
-        # Biom is naturally OTU ids on the rows so we are purposefully flipping it
-        temp_table = Table(base, observation_ids=sample_labels, sample_ids=headers)
-        temp_table = temp_table.subsample(subsample_to, axis="observation")
-        subsampled_sample_labels = temp_table._observation_ids.tolist()
-        subsampled_headers = temp_table._sample_ids.tolist()
-        DataIO.table_to_npz(temp_table.matrix_data, user_id, pid, output_otu_file_name)
+        temp_table = Table(base.transpose(), observation_ids=headers, sample_ids=sample_labels)
+        temp_table = temp_table.subsample(subsample_to, axis="sample")
+        subsampled_sample_labels = temp_table._sample_ids.tolist()
+        subsampled_headers = temp_table._observation_ids.tolist()
+        DataIO.table_to_npz(temp_table.matrix_data.transpose(), user_id, pid, output_otu_file_name)
 
         logger.info("Finished basic subsampling")
 
@@ -108,7 +99,7 @@ class OTUTableSubsampler(object):
         :return:
         """
         all_sum = base.sum(axis=1)
-        if set(all_sum.A[:,0].tolist()):
+        if set(all_sum.A[:,0].tolist()) == 1:
             return all_sum.min().item()
         else:
             return -1

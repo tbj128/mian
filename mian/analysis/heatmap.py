@@ -123,8 +123,8 @@ class Heatmap(object):
             non_zero = np.count_nonzero(X, axis=0)
             X = X[:, non_zero >= minSamplesPresent]
             correlations = np.corrcoef(X, rowvar=False)
-            row_headers = headers.tolist()
-            col_headers = headers.tolist()
+            row_headers = headers
+            col_headers = headers
 
         if cluster == "Yes":
             # Perform some simple clustering by ordering by the col sums

@@ -16,7 +16,7 @@ class TestTreeView(unittest.TestCase):
         user_request.set_custom_attr("display_values", "nonzero")
         user_request.set_custom_attr("exclude_unclassified", "yes")
 
-        otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
+        otu_table = AnalysisTestUtils.get_test_npz_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         taxonomy_map = AnalysisTestUtils.get_test_taxonomy(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         sample_ids_from_metadata = AnalysisTestUtils.get_sample_ids_from_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)

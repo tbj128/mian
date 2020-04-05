@@ -636,7 +636,8 @@ class ProjectManager(object):
                                                                                                  headers=headers,
                                                                                                  sample_labels=sample_labels,
                                                                                                  subsample_type=subsample_type,
-                                                                                                 manual_subsample_to=subsample_to)
+                                                                                                 manual_subsample_to=subsample_to,
+                                                                                                 is_biom=map_file.orig_biom_name != "")
 
             logger.info("Subsampled file")
 

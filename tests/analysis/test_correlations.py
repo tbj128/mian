@@ -24,7 +24,7 @@ class TestCorrelations(unittest.TestCase):
         user_request.set_custom_attr("sizevarSpecificTaxonomies", "[]")
         user_request.set_custom_attr("samplestoshow", "both")
 
-        otu_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
+        otu_table = AnalysisTestUtils.get_test_npz_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         headers, sample_labels = AnalysisTestUtils.get_test_input_as_metadata(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT)
         metadata_table = AnalysisTestUtils.get_test_input_as_table(AnalysisTestUtils.SIMPLE_TEST_CASE_ROOT, SAMPLE_METADATA_FILENAME)
 

@@ -15,7 +15,7 @@ class TestProjectManager(unittest.TestCase):
     def test__create_project_from_tsv(self):
         project_manager = ProjectManager("unit_tests")
 
-        unit_tests_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, "small_biom")
+        unit_tests_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, "small_tsv")
         test_staging_dir = os.path.join(TestProjectManager.STAGING_DIRECTORY, "unit_tests")
         if not os.path.exists(test_staging_dir):
             os.makedirs(test_staging_dir)
@@ -32,12 +32,12 @@ class TestProjectManager(unittest.TestCase):
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))
 
-        subsampled_table = DataIO.tsv_to_np_table("unit_tests", pid, "table.subsampled.tsv")
-        self.assertEqual(6, len(subsampled_table))
+        subsampled_table = DataIO.load_sparse("unit_tests", pid, "table.subsampled.npz")
+        self.assertEqual(6, subsampled_table.shape[0])
 
         r = 0
-        while r < len(subsampled_table):
-            self.assertEqual(30, np.sum(subsampled_table[r]))
+        while r < subsampled_table.shape[0]:
+            self.assertEqual(30, np.sum(subsampled_table[r, :]))
             r += 1
 
         subsampled_table_labels = DataIO.tsv_to_table("unit_tests", pid, "table.subsampled.labels.tsv")
@@ -64,12 +64,12 @@ class TestProjectManager(unittest.TestCase):
         test_project_dir = os.path.join(TestProjectManager.UNIT_TESTS_DIRECTORY, pid)
         self.assertTrue(os.path.exists(test_project_dir))
 
-        subsampled_table = DataIO.tsv_to_np_table("unit_tests", pid, "table.subsampled.tsv")
-        self.assertEqual(6, len(subsampled_table))
+        subsampled_table = DataIO.load_sparse("unit_tests", pid, "table.subsampled.npz")
+        self.assertEqual(6, subsampled_table.shape[0])
 
         r = 0
-        while r < len(subsampled_table):
-            self.assertEqual(30, np.sum(subsampled_table[r]))
+        while r < subsampled_table.shape[0]:
+            self.assertEqual(30, np.sum(subsampled_table[r, :]))
             r += 1
 
         subsampled_table_labels = DataIO.tsv_to_table("unit_tests", pid, "table.subsampled.labels.tsv")

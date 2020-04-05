@@ -1,0 +1,1 @@
+{"project_name": "Small_TSV", "subsampled_value": 30, "subsampled_type": "auto", "subsampled_removed_samples": [], "orig_biom_name": "", "orig_otu_table_name": "table.tsv", "orig_taxonomy_name": "taxonomy.tsv", "orig_sample_metadata_name": "metadata.tsv", "taxonomy_type": "Greengenes"}

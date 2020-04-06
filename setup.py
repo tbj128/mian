@@ -19,7 +19,8 @@ setup(
         'scikit-bio',
         'pandas',
         'Keras==2.3.1',
-        'Boruta'
+        'Boruta',
+        'tensorflow==2.0.0rc1'
     ],
     license='MIT',
     author='Tom Jin',

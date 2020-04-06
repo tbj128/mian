@@ -20,7 +20,7 @@ setup(
         'pandas',
         'Keras==2.3.1',
         'Boruta',
-        'tensorflow==2.0.0rc1'
+        'tensorflow==2.1.0'
     ],
     license='MIT',
     author='Tom Jin',

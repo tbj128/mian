@@ -1035,11 +1035,10 @@ def getBetaDiversityPERMANOVA(user_request, req):
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "permanova")
 
-    retval = {}
     plugin = BetaDiversity()
     pool = multiprocessing.Pool(maxtasksperchild=1)
     abortable_func = partial(abortable_worker, plugin.run)
-    retval = pool.apply_async(abortable_func, args=(user_request, retval,))
+    retval = pool.apply_async(abortable_func, args=(user_request,))
     pool.close()
     pool.join()
 

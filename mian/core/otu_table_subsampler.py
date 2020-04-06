@@ -9,11 +9,7 @@
 # Imports
 #
 
-import matplotlib
-
 from biom import Table
-
-matplotlib.use('TkAgg')
 
 from mian.core.data_io import DataIO
 from mian.core.constants import SUBSAMPLE_TYPE_AUTO, SUBSAMPLE_TYPE_MANUAL, SUBSAMPLE_TYPE_DISABLED, \

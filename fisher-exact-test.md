@@ -4,7 +4,7 @@ Applies the Fisher Exact presence/absence test to a contingency table built base
   
 This test relies on the fisher.test function in the R stats package [here](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/fisher.test.html)
 
-![](.gitbook/assets/image%20%2833%29.png)
+![](.gitbook/assets/image%20%2828%29%20%281%29.png)
 
 
 

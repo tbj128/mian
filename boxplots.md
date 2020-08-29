@@ -8,7 +8,7 @@ description: Generates a series of boxplots based on a grouping parameter.
 This tool starts out empty until you have added at least one OTU or taxonomic group under the "OTUs or Taxonomic Groups to Show" field OR you have selected another option under "Y-Axis Values"
 {% endhint %}
 
-![](.gitbook/assets/image%20%2823%29.png)
+![](.gitbook/assets/image%20%286%29%20%281%29.png)
 
 ### Used For
 

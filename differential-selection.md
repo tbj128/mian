@@ -4,7 +4,7 @@ Performs differential analysis of OTU data based on pairwise categorical metadat
 
 Taxonomic groups/OTUs that are statistically different between the two sample groupings will be displayed.
 
-![](.gitbook/assets/image%20%2832%29.png)
+![](.gitbook/assets/image%20%2827%29%20%281%29.png)
 
 ### Used For
 

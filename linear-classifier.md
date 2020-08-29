@@ -19,13 +19,23 @@ Machine learning models tend to work best with a dataset with a large number of 
 
 The OTUs will be grouped together \(by summing the OTU values\) at the selected taxonomic level before the analysis is applied.
 
-#### Experimental Variable
+#### Categorical Variable
 
-The numeric variable that the model should predict. 
+The categorical variable that the model should predict. 
 
 {% hint style="info" %}
-If there are no values in the dropdown, this likely means that there were no numeric variables found
+If there are no values in the dropdown, this likely means that there were no categorical variables found
 {% endhint %}
+
+#### Loss Function
+
+The type of linear classifier to apply. Choices include:
+
+* **Hinge \(Linear SVM\)**: Ideal for high-dimensional feature spaces \(such as OTU tables\). Finds the separating hyperplane that maximizes the margin between targeted classes. Non-linear kernels are not yet available.
+* **Log \(Logistic\)**: Performs similarly to Linear SVMs but may be better when there are fewer samples. A type of generalized linear model that models the parameters as a Bernoulli distribution.
+* **Huber**: Loss function that is less sensitive to outliers
+* **Squared Hinge**: Quadratically penalized hinge loss
+* **Perceptron**: Linear loss by the perceptron algorithm.
 
 #### Evaluation Method
 

@@ -348,7 +348,8 @@ class OTUTable(object):
 
         if int(level) == -1:
             # OTUs requested
-            return headers
+            # IMPORTANT: Only return the first 3000 OTUs due to browser limitations
+            return headers[:3000]
 
         taxonomy = Taxonomy(user_id, pid)
         taxonomy_map = taxonomy.get_taxonomy_map()

@@ -239,6 +239,10 @@ function updateAnalysis() {
             data["trainingIndexes"] = cachedTrainingIndexes;
             setGetParameters(data);
 
+            if (abundancesObj["timeout"]) {
+                loadError("This can occur if your data set is very large. Consider using a file with fewer OTUs or samples. <a href='#'>Learn more here.</a>", "Maximum Running Time Exceeded");
+                $("#send-to-container").hide();
+            }
             if (abundancesObj["training_indexes"].length > 0) {
                 loadSuccess();
                 $("#send-to-container").show();

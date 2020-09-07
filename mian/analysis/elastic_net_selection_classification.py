@@ -56,7 +56,6 @@ class ElasticNetSelectionClassification(object):
                 training_indexes, _ = train_test_split(range(otu_table.shape[0]), test_size=(1 - training_proportion), stratify=metadata_vals)
         training_indexes = np.array(training_indexes)
         otu_table = otu_table[training_indexes, :]
-        metadata_vals = metadata_vals[training_indexes]
 
         if int(user_request.level) == -1:
             # OTU tables are returned as a CSR matrix

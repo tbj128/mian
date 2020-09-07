@@ -196,6 +196,7 @@ class AlphaDiversity(AnalysisBase):
                     # invsimpson index = 1/D
                     return (1 / diversity) / num_species
             elif alpha_context == "speciesnumber":
-                return num_species
+                return alpha_diversity("observed_otus", otu_table, ids=sample_labels)
+                # return num_species
             else:
                 return alpha_diversity(alpha_type, otu_table, ids=sample_labels)

@@ -57,11 +57,11 @@ if (getParameterByName("taxonomyFilterRole")) {
 }
 
 if (getParameterByName("taxonomyFilterCount")) {
-    $("#taxonomyFilterCount").val(getParameterByName("taxonomyFilterCount"));
+    $("#countthreshold").val(getParameterByName("taxonomyFilterCount"));
 }
 
 if (getParameterByName("taxonomyFilterPrevalence")) {
-    $("#taxonomyFilterPrevalence").val(getParameterByName("taxonomyFilterPrevalence"));
+    $("#prevalence").val(getParameterByName("taxonomyFilterPrevalence"));
 }
 
 if (getParameterByName("level") !== null) {
@@ -204,7 +204,20 @@ function getNumOTUsCurrentProject() {
     return parseInt($("#num_otus-" + $("#project").val()).val());
 }
 
+function toTime(input) {
+    var sec_num = parseInt(input, 10); // don't forget the second param
+    var hours   = Math.floor(sec_num / 3600);
+    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+':'+minutes+':'+seconds;
+}
+
 function showLoading(expectedLoadFactor, useTaxonomicOnly) {
+    $("#loading-alt-text").text("");
     showFilteringAppliedNotification();
 
     loaded = false;
@@ -216,16 +229,21 @@ function showLoading(expectedLoadFactor, useTaxonomicOnly) {
             expectedLoadTime = numOTUs / expectedLoadFactor;
         }
 
-        if (expectedLoadTime > 1000 ) {
+        if (expectedLoadTime > 3000 ) {
             console.log("Expected load time is " + expectedLoadTime);
+            $('.loading').css('width',  "");
             $('#progress').css('width',  "0%");
             $("#progress").show();
-            $({property: 0}).animate({property: 75}, {
+            $({property: 0}).animate({property: 100}, {
                 duration: expectedLoadTime,
                 step: function() {
                     if (!loaded) {
                         var p = Math.round(this.property);
                         $('#progress').css('width',  p + "%");
+                        $('.loading').css('width',  "300px");
+
+                        var timeRemaining = toTime((100 - p) / 100 * expectedLoadFactor);
+                        $("#loading-alt-text").html(p + "% done<br />(Warning: high samples/OTUs)");
                     }
                 },
                 complete: function() {

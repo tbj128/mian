@@ -1013,7 +1013,14 @@ function updateAnalysis() {
         data: data,
         success: function(result) {
             abundancesObj = JSON.parse(result);
-            if (abundancesObj["no_tree"]) {
+
+            if (abundancesObj["timeout"]) {
+                loadError("This can occur if your data set is very large. Consider using a file with fewer OTUs or samples. <a href='#'>Learn more here.</a>", "Maximum Running Time Exceeded");
+
+                $("#analysis-container-2d").hide();
+                $("#analysis-container-3d-info").hide();
+                $("#variance-container").hide();
+            } else if (abundancesObj["no_tree"]) {
                 loadNoTree();
                 $("#analysis-container-2d").hide();
                 $("#analysis-container-3d-info").hide();

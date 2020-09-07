@@ -20,6 +20,7 @@ from urllib.parse import unquote
 import random
 import json
 import hashlib
+import numpy as np
 import shutil
 import base64
 import zlib
@@ -132,6 +133,18 @@ MAX_FUNCTION_TIME_SECONDS = 60
 
 def abortable_worker(func, *args, **kwargs):
     timeout = kwargs.get('timeout', MAX_FUNCTION_TIME_SECONDS)
+    p = ThreadPool(1)
+    res = p.apply_async(func, args=args)
+    try:
+        out = res.get(timeout)
+        return out
+    except multiprocessing.TimeoutError:
+        print("Aborting due to timeout")
+        raise multiprocessing.TimeoutError
+
+
+def abortable_worker_long(func, *args, **kwargs):
+    timeout = kwargs.get('timeout', MAX_FUNCTION_TIME_SECONDS * 3)
     p = ThreadPool(1)
     res = p.apply_async(func, args=args)
     try:
@@ -924,6 +937,16 @@ def getMetadataVals(user, pid, catvar):
 
 # Visualization endpoints
 
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NpEncoder, self).default(obj)
 
 @app.route('/alpha_diversity', methods=['POST'])
 @flask_login.login_required
@@ -960,7 +983,7 @@ def getAlphaDiversity(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -990,19 +1013,20 @@ def getBetaDiversityShare():
 def getBetaDiversity(user_request, req):
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("betaType", req.form['betaType'])
+    user_request.set_custom_attr("numPermutations", req.form['numPermutations'])
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "beta")
 
     plugin = BetaDiversity()
 
     pool = multiprocessing.Pool(maxtasksperchild=1)
-    abortable_func = partial(abortable_worker, plugin.run)
+    abortable_func = partial(abortable_worker_long, plugin.run)
     retval = pool.apply_async(abortable_func, args=(user_request,))
     pool.close()
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1032,18 +1056,19 @@ def getBetaDiversityPERMANOVAShare():
 def getBetaDiversityPERMANOVA(user_request, req):
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("betaType", req.form['betaType'])
+    user_request.set_custom_attr("numPermutations", req.form['numPermutations'])
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "permanova")
 
     plugin = BetaDiversity()
     pool = multiprocessing.Pool(maxtasksperchild=1)
-    abortable_func = partial(abortable_worker, plugin.run)
+    abortable_func = partial(abortable_worker_long, plugin.run)
     retval = pool.apply_async(abortable_func, args=(user_request,))
     pool.close()
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1085,7 +1110,7 @@ def getBoruta(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1126,7 +1151,7 @@ def getBoxplots(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1164,7 +1189,7 @@ def getComposition(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1206,7 +1231,7 @@ def getCompositionHeatmap(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1251,7 +1276,7 @@ def getCorrelations(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1290,7 +1315,7 @@ def getCorrelationNetwork(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1334,7 +1359,7 @@ def getCorrelationsSelection(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1379,7 +1404,7 @@ def getDeepNeuralNetwork(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1423,7 +1448,7 @@ def getDifferentialSelection(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1467,7 +1492,7 @@ def getElasticNetSelectionClassification(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1511,7 +1536,7 @@ def getElasticNetSelectionRegression(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1555,7 +1580,7 @@ def getFisherExact(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1598,7 +1623,7 @@ def getHeatmap(user_request, req):
     pool.join()
 
     try:
-        return base64.b64encode(zlib.compress(json.dumps(retval.get()).encode("utf-8")))
+        return base64.b64encode(zlib.compress(json.dumps(retval.get(), cls=NpEncoder).encode("utf-8")))
     except multiprocessing.TimeoutError:
         return base64.b64encode(zlib.compress(json.dumps({
             "timeout": True
@@ -1643,7 +1668,7 @@ def getLinearClassifier(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1690,7 +1715,7 @@ def getLinearRegression(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1735,7 +1760,7 @@ def getRandomForest(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1772,7 +1797,7 @@ def getRarefaction(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1810,7 +1835,7 @@ def getNMDS(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1851,7 +1876,7 @@ def getPCA(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1886,7 +1911,7 @@ def getTable(user_request):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True
@@ -1924,7 +1949,7 @@ def getTree(user_request, req):
     pool.join()
 
     try:
-        return json.dumps(retval.get())
+        return json.dumps(retval.get(), cls=NpEncoder)
     except multiprocessing.TimeoutError:
         return json.dumps({
             "timeout": True

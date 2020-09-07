@@ -15,6 +15,7 @@ class TestBetaDiversity(unittest.TestCase):
 
         user_request = AnalysisTestUtils.create_default_user_request()
         user_request.set_custom_attr("betaType", "braycurtis")
+        user_request.set_custom_attr("numPermutations", 999)
         user_request.set_custom_attr("strata", "")
         user_request.set_custom_attr("api", "beta")
         user_request.set_custom_attr("phylogenetic_tree", "")

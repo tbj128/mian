@@ -67,13 +67,13 @@ class BetaDiversity(AnalysisBase):
         }
     }
     
-    betaDiversityPERMANOVA <- function(allOTUs, groups) {
+    betaDiversityPERMANOVA <- function(allOTUs, groups, permutations) {
         # Note, you can also pass in the data arg and specify the actual feature name instead of passing the array directly in as groups
-        return(adonis(allOTUs~groups))
+        return(adonis(allOTUs~groups, permutations=permutations))
     }
 
-    betaDiversityPERMANOVAWithStrata <- function(allOTUs, groups, strata) {
-        return(adonis(allOTUs~groups, strata=strata))
+    betaDiversityPERMANOVAWithStrata <- function(allOTUs, groups, strata, permutations) {
+        return(adonis(allOTUs~groups, strata=strata, permutations=permutations))
     }
     
     betaDiversityDisper <- function(allOTUs, groups, method) {
@@ -131,6 +131,7 @@ class BetaDiversity(AnalysisBase):
         print("Starting Beta Diversity Analysis")
 
         betaType = user_request.get_custom_attr("betaType")
+        numPermutations = int(user_request.get_custom_attr("numPermutations"))
 
         if int(user_request.level) == -1:
             # OTU tables are returned as a CSR matrix
@@ -167,9 +168,9 @@ class BetaDiversity(AnalysisBase):
         sample_size, num_groups, grouping, tri_idxs, distances = _preprocess_input(
             dist_matrix, metadata_values, None)
         test_stat_function = partial(_compute_groups, samples, 'centroid')
-        stat, p_value = _run_monte_carlo_stats(test_stat_function, grouping, permutations=999)
+        stat, p_value = _run_monte_carlo_stats(test_stat_function, grouping, permutations=numPermutations)
         permdisp_out = _build_results('PERMDISP', 'F-value', sample_size, num_groups,
-                              stat, p_value, permutations=999)
+                              stat, p_value, permutations=numPermutations)
 
         samples['grouping'] = metadata_values
         centroids = samples.groupby('grouping').aggregate('mean')
@@ -199,6 +200,8 @@ class BetaDiversity(AnalysisBase):
 
     def analyse_permanova(self, user_request, otu_table, headers, metadata_values, strata_values):
 
+        numPermutations = int(user_request.get_custom_attr("numPermutations"))
+
         if int(user_request.level) == -1:
             # OTU tables are returned as a CSR matrix
             otu_table = otu_table.toarray()
@@ -222,10 +225,10 @@ class BetaDiversity(AnalysisBase):
         dataf = robjects.DataFrame(od)
 
         if strata_values is None:
-            permanova = self.veganR.betaDiversityPERMANOVA(dataf, groups)
+            permanova = self.veganR.betaDiversityPERMANOVA(dataf, groups, numPermutations)
         else:
             strata = robjects.FactorVector(robjects.StrVector(strata_values))
-            permanova = self.veganR.betaDiversityPERMANOVAWithStrata(dataf, groups, strata)
+            permanova = self.veganR.betaDiversityPERMANOVAWithStrata(dataf, groups, strata, numPermutations)
         abundancesObj = {}
         abundancesObj["permanova"] = str(permanova)
 

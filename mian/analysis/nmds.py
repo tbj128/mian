@@ -83,10 +83,10 @@ class NMDS(object):
         #     i += 1
 
         # Use traditional MDS to determine the initial position
-        mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, dissimilarity="precomputed", n_jobs=1)
+        mds = manifold.MDS(n_components=2, max_iter=300, eps=1e-9, dissimilarity="precomputed", n_jobs=1)
         pos = mds.fit(dist_matrix).embedding_
         # Use NMDS to adjust the original positions to optimize for stress
-        nmds = manifold.MDS(n_components=2, metric=False, dissimilarity="precomputed", max_iter=3000, eps=1e-12)
+        nmds = manifold.MDS(n_components=2, metric=False, dissimilarity="precomputed", max_iter=300, eps=1e-12)
         npos = nmds.fit_transform(dist_matrix, init=pos)
 
         ret_table = []

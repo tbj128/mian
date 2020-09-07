@@ -23,6 +23,9 @@ function initializeFields() {
     if (getParameterByName("betaType") !== null) {
         $("#betaType").val(getParameterByName("betaType"));
     }
+    if (getParameterByName("numPermutations") !== null) {
+        $("#numPermutations").val(getParameterByName("numPermutations"));
+    }
 }
 
 //
@@ -42,6 +45,10 @@ function createSpecificListeners() {
     });
 
     $("#betaType").change(function() {
+        updateAnalysis();
+    });
+
+    $("#numPermutations").change(function() {
         updateAnalysis();
     });
 
@@ -79,6 +86,7 @@ function updateAnalysis() {
     var catvar = $("#catvar").val();
     var strata = $("#strata").val();
     var betaType = $("#betaType").val();
+    var numPermutations = $("#numPermutations").val();
     var colorvar = $("#colorvar").val();
 
     if (!catvar || catvar === "none") {
@@ -100,6 +108,7 @@ function updateAnalysis() {
         catvar: catvar,
         strata: strata,
         betaType: betaType,
+        numPermutations: numPermutations,
         colorvar: colorvar
     };
 
@@ -112,7 +121,7 @@ function updateAnalysis() {
         success: function(result) {
             var abundancesObj = JSON.parse(result);
             if (abundancesObj["timeout"]) {
-                loadError("This can occur if your data set is very large. Consider using a file with fewer OTUs or samples. <a href='#'>Learn more here.</a>", "Maximum Running Time Exceeded");
+                loadError("This can occur if your data set is very large. Consider using a file with fewer OTUs or samples, or by using fewer permutations. <a href='#'>Learn more here.</a>", "Maximum Running Time Exceeded");
             } else if (abundancesObj["no_tree"]) {
                 loadNoTree();
             } else if (abundancesObj["has_float"]) {

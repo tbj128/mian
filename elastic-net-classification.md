@@ -1,8 +1,8 @@
 ---
 description: >-
-  This tool fits a linear model with elastic-net regularization based on the
-  selected numerical experimental variable. This tool will then subsequently
-  select the highest weight OTUs or taxonomic groups
+  This tool fits a linear classifier with elastic-net regularization. This tool
+  will then subsequently select the highest weight OTUs or taxonomic groups
+  using recursive feature elimination.
 ---
 
 # Elastic Net Classification
@@ -11,7 +11,7 @@ description: >-
 
 ### Used For
 
-* Selecting OTUs or taxonomic groups \("OTU signature"\) that differentiate between two or more sample groups according to a generalized linear model with Elastic Net regularization
+* Selecting OTUs or taxonomic groups \("OTU signature"\) that differentiate between two or more sample groups according to a generalized linear model with Elastic Net regularization. Note that the OTUs are normalized prior to training the model to retrieve comparable coefficients.
 
 ### Feature Selection Parameters
 

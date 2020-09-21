@@ -1,3 +1,7 @@
+---
+description: Univariate feature selection (categorical variables)
+---
+
 # Differential Selection
 
 Performs differential analysis of OTU data based on pairwise categorical metadata.

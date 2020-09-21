@@ -1,8 +1,8 @@
 ---
 description: >-
-  This tool fits a linear model with elastic-net regularization based on the
-  selected categorical variable. This tool will then subsequently select the
-  highest weighted OTUs or taxonomic groups
+  This tool fits a linear regressor with elastic-net regularization. This tool
+  will then subsequently select the highest weighted OTUs or taxonomic groups
+  using recursive feature elimination.
 ---
 
 # Elastic Net Regression

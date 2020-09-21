@@ -1,3 +1,7 @@
+---
+description: Univariate feature selection (numeric values)
+---
+
 # Correlations Selection
 
 Calculates the correlation between each taxonomic group/OTU and the selected numerical metadata variable. Taxonomic groups/OTUs that correlate statistically with the numerical metadata will be selected.

@@ -9,6 +9,7 @@
 # Imports
 #
 import pandas as pd
+from sklearn.feature_selection import RFE
 from sklearn.linear_model import ElasticNet
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import normalize
@@ -66,19 +67,26 @@ class ElasticNetSelectionRegression(object):
         Y = np.array(metadata_vals)
         Y = Y[training_indexes]
 
-        # https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0188475
-        classifier = ElasticNet(l1_ratio=mixing_ratio, max_iter=max_iterations)
-        classifier.fit(X, Y)
         columns = np.array(headers)
 
+        # https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0188475
+        classifier = ElasticNet(l1_ratio=mixing_ratio, max_iter=max_iterations)
+        if keep == -1:
+            selector = RFE(classifier, n_features_to_select=len(columns), step=1)
+        else:
+            selector = RFE(classifier, n_features_to_select=keep, step=1)
+
+        selector.fit(X, Y)
+        columns = columns[selector.support_]
+
         hints = {}
-        coef = pd.Series(classifier.coef_, index=columns)
+        coef = pd.Series(selector.estimator_.coef_, index=columns)
         if keep == -1:
             features = columns[coef != 0]
             weights = coef[coef != 0].abs().sort_values(ascending=False).values
         else:
-            features = coef.abs().sort_values(ascending=False).head(keep).index
-            weights = coef.abs().sort_values(ascending=False).head(keep).values
+            features = coef.abs().sort_values(ascending=False).index
+            weights = coef.abs().sort_values(ascending=False).values
 
         if int(user_request.level) == -1:
             for f in features:

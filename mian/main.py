@@ -52,6 +52,7 @@ r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")
+r_package_install.importr_custom("DESeq2")
 
 from mian.core.project_manager import ProjectManager, GENERAL_ERROR, OK
 from mian.analysis.alpha_diversity import AlphaDiversity

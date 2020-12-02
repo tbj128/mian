@@ -1,5 +1,5 @@
 ---
-description: '16S rRNA OTU table visualization, data analysis, and machine learning'
+description: 'OTU table visualization, data analysis, and machine learning'
 ---
 
 # Mian Overview
@@ -10,7 +10,7 @@ Mian is an open-source web-platform that enables data exploration and analysis o
 
 Mian gives researchers access to interactive data visualizations, machine learning models and feature selection tools, and automated statistical assessments. No code required. 
 
-#### How Is Mian Different?
+#### What's Unique About Mian?
 
 * Apply linear regression or a deep-neural network on your data without any additional setup
 * Automatically find important genes or histological features

@@ -2473,7 +2473,7 @@ def get_project_ids_to_info(user_id):
     project_name_to_info = {}
     user_dir = os.path.join(ProjectManager.DATA_DIRECTORY, user_id)
     for subdir, dirs, files in os.walk(user_dir):
-        for dir in dirs:
+        for dir in sorted(dirs):
             logger.info("Found project directory " + str(dir) + " for user " + str(user_id))
             if dir != ProjectManager.STAGING_DIRECTORY:
                 pid = dir

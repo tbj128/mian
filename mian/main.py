@@ -319,10 +319,7 @@ def projects():
     nonce = request.args.get('nonce', '')
     status = request.args.get('status', '')
     message = request.args.get('message', '')
-    if nonce != "":
-        project_names_to_info = get_project_ids_to_info(nonce)
-    else:
-        project_names_to_info = get_project_ids_to_info(current_user.id)
+    project_names_to_info = get_project_ids_to_info(current_user.id)
     is_demo = current_user.name == "demo@miandata.org"
     return render_template('projects.html', demo=is_demo, newSignup=new_signup, projectNames=project_names_to_info, status=status, message=message, nonce=nonce)
 

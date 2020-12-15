@@ -6,10 +6,6 @@
   </head>
 
   <body>
-
-    <div class="alert alert-warning">
-        <strong>Thanks for stopping by!</strong> Mian is still undergoing beta testing so you may run into some bugs. You can help make Mian better by filing issues in <a href="https://github.com/tbj128/mian/issues" target="_blank">our Github repo</a> or by <a href="mailto:tom.jin@outlook.com" target="_blank">emailing us here</a>.
-    </div>
     <div id="ie-warning" class="alert alert-danger" style="display:none;">
         <strong>Internet Explorer Not Supported</strong> Mian works best on Chrome, Safari, or Firefox. Some features may not be available on Internet Explorer.
     </div>
@@ -20,6 +16,12 @@
         <input type="hidden" class="form-control" id="password" name="password" value="Password1">
     </form>
 
+    <form id="demo-signup" method="POST" action="/signup">
+        <input type="hidden" class="form-control" id="inputName" name="inputName" value="demo@miandata.org">
+        <input type="hidden" class="form-control" id="inputPassword" name="inputPassword" value="Password1">
+        <input type="hidden" class="form-control" name="inputSignupBypass" id="inputSignupBypass" value="true">
+    </form>
+
     <div class="highlight">
       <div class="container">
         <div class="row">
@@ -28,8 +30,9 @@
             <h4 style="color:#D4F5FF;line-height:26px;">A new way to visualize, analyse, and train machine learning models on the microbiome. Built by the research community for the research community.</h4>
             <br /><br />
             <p>
-              <a href="signup" class="btn btn-default btn-lg">&nbsp;&nbsp;Signup&nbsp;&nbsp;</a>
-              <a href="javascript:{}" onclick="document.getElementById('demo-login').submit(); return false;" class="btn btn-default btn-lg" style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;">&nbsp;&nbsp;Try Demo&nbsp;&nbsp;</a>
+              <a href="signup" class="btn btn-default btn-lg" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Create an account using your email to easily access your data." data-trigger="hover">&nbsp;&nbsp;Signup&nbsp;&nbsp;</a>
+              <a href="javascript:{}" onclick="document.getElementById('demo-login').submit(); return false;" class="btn btn-default btn-lg" style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;"  data-container="body" data-toggle="popover" data-placement="bottom" data-content="Try Mian with several sample datasets." data-trigger="hover">&nbsp;&nbsp;Try Demo&nbsp;&nbsp;</a>
+              <a href="javascript:{}" onclick="document.getElementById('demo-signup').submit(); return false;" class="btn btn-default btn-lg" style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Upload your own data and explore Mian, but bookmark the link for future access." data-trigger="hover">&nbsp;&nbsp;Continue Without Signup&nbsp;&nbsp;</a>
             </p>
           </div>
           <div class="col-md-6"><img src="/static/img/laptop-preview.png" /></div>

@@ -38,19 +38,23 @@ $(document).ready(function() {
         $("#projectUploadType").val("otu");
     });
 
+    $('[data-toggle="popover"]').popover();
+
     // The event listener for the file upload
-    document
-        .getElementById("biomInput")
-        .addEventListener("change", uploadBiom, false);
-    document
-        .getElementById("otuTable")
-        .addEventListener("change", uploadOTUTable, false);
-    document
-        .getElementById("otuTaxonomyMapping")
-        .addEventListener("change", uploadTaxonomyMapping, false);
-    document
-        .getElementById("otuMetadata")
-        .addEventListener("change", uploadMetadata, false);
+    if (document.getElementById("biomInput") != null) {
+        document
+            .getElementById("biomInput")
+            .addEventListener("change", uploadBiom, false);
+        document
+            .getElementById("otuTable")
+            .addEventListener("change", uploadOTUTable, false);
+        document
+            .getElementById("otuTaxonomyMapping")
+            .addEventListener("change", uploadTaxonomyMapping, false);
+        document
+            .getElementById("otuMetadata")
+            .addEventListener("change", uploadMetadata, false);
+    }
 
     function uploadBiom() {
         upload("biomForm");

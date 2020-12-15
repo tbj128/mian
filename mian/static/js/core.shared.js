@@ -72,6 +72,9 @@ if (getParameterByName("pid") !== null) {
     $("#project").val(getParameterByName("pid"));
 }
 
+// Sets the nonce link for signup bypass feature
+setNonceLink();
+
 
 var initialCatvar = getParameterByName("catvar");
 var initialSampleFilter = getParameterByName("sampleFilter");
@@ -417,6 +420,48 @@ function setExtraNavLinks(attr) {
             $(this).attr("href", currHref + "?pid=" + attr);
         }
     });
+}
+
+function setNonceLink() {
+    if ($("#user-nonce").length) {
+        insertParam("nonce", $("#user-nonce").val());
+    }
+}
+
+function removeURLParameter(url, parameter) {
+    var urlparts= url.split('?');
+    if (urlparts.length>=2) {
+
+        var prefix= encodeURIComponent(parameter)+'=';
+        var pars= urlparts[1].split(/[&;]/g);
+
+        for (var i= pars.length; i-- > 0;) {
+            if (pars[i].lastIndexOf(prefix, 0) !== -1) {
+                pars.splice(i, 1);
+            }
+        }
+
+        url= urlparts[0] + (pars.length > 0 ? '?' + pars.join('&') : "");
+        return url;
+    } else {
+        return url;
+    }
+}
+
+function insertParam(key, value) {
+    if (history.pushState) {
+        var currentUrlWithOutHash = window.location.origin + window.location.pathname + window.location.search;
+        var hash = window.location.hash
+        var currentUrlWithOutHash = removeURLParameter(currentUrlWithOutHash, key);
+        var queryStart;
+        if(currentUrlWithOutHash.indexOf('?') !== -1){
+            queryStart = '&';
+        } else {
+            queryStart = '?';
+        }
+        var newurl = currentUrlWithOutHash + queryStart + key + '=' + value + hash
+        window.history.pushState({path:newurl},'',newurl);
+    }
 }
 
 function getTaxonomicLevel() {

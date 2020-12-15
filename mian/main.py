@@ -166,7 +166,17 @@ def abortable_worker_long(func, *args, **kwargs):
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     next = url_for(request.endpoint, **request.args)
-    return redirect(url_for('login', next=next))
+    nonce = request.args["nonce"] if "nonce" in request.args else ""
+
+    if nonce != "":
+        # User could be using signup bypass feature
+        isAuth, userID = checkAuth(nonce, nonce)
+        if isAuth:
+            user = User(nonce, userID, True)
+            flask_login.login_user(user)
+            return redirect_dest(fallback=url_for('projects'))
+
+    return redirect(url_for('login', next=next, nonce=nonce))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -176,29 +186,36 @@ def signup():
     else:
         email = request.form['inputName']
         password = request.form['inputPassword']
+        signupBypass = request.form['inputSignupBypass'] == "true"
 
-        # Checks that the user doesn't already exist
-        if checkUserExists(email):
-            return render_template('signup.html', exists=1)
+        if not signupBypass:
+            # Checks that the user doesn't already exist
+            if checkUserExists(email):
+                return render_template('signup.html', exists=1)
 
-        addUser(email, password)
+            addUser(email, password)
 
-        # Checks that the user account was created properly and obtains the user ID
-        isAuth, userID = checkAuth(email, password)
+            # Checks that the user account was created properly and obtains the user ID
+            isAuth, userID = checkAuth(email, password)
 
-        # Sets up the user folder
-        dataPath = os.path.join(RELATIVE_PATH, 'data')
-        dataPath = os.path.join(dataPath, str(userID))
-        if not os.path.exists(dataPath):
-            os.makedirs(dataPath)
+            # Sets up the user folder
+            dataPath = os.path.join(RELATIVE_PATH, 'data')
+            dataPath = os.path.join(dataPath, str(userID))
+            if not os.path.exists(dataPath):
+                os.makedirs(dataPath)
 
-        # Auto logs in the user
-        if isAuth:
-            user = User(email, userID, True)
-            flask_login.login_user(user)
-            return redirect(url_for('projects', signup=1))
+            # Auto logs in the user
+            if isAuth:
+                user = User(email, userID, True)
+                flask_login.login_user(user)
+                return redirect(url_for('projects', signup=1))
 
-        return render_template('signup.html', error=1)
+            return render_template('signup.html', error=1)
+        else:
+            # Bypasses login by auto-generating an account
+            nonce = str(uuid.uuid4())
+            addUser(nonce, nonce)
+            return redirect(url_for('projects', signup=1, nonce=nonce))
 
 
 def redirect_dest(fallback):
@@ -298,14 +315,16 @@ def notebook():
 @app.route('/projects')
 @flask_login.login_required
 def projects():
-    new_signup = False
-    if request.args.get('signup', '') == '1':
-        new_signup = True
+    new_signup = request.args.get('signup', '') == '1'
+    nonce = request.args.get('nonce', '')
     status = request.args.get('status', '')
     message = request.args.get('message', '')
-    project_names_to_info = get_project_ids_to_info(current_user.id)
+    if nonce != "":
+        project_names_to_info = get_project_ids_to_info(nonce)
+    else:
+        project_names_to_info = get_project_ids_to_info(current_user.id)
     is_demo = current_user.name == "demo@miandata.org"
-    return render_template('projects.html', demo=is_demo, newSignup=new_signup, projectNames=project_names_to_info, status=status, message=message)
+    return render_template('projects.html', demo=is_demo, newSignup=new_signup, projectNames=project_names_to_info, status=status, message=message, nonce=nonce)
 
 
 @app.route('/quantile_manager')

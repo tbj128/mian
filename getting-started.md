@@ -8,6 +8,17 @@ You can permanently delete you data at any time.
 
 Alternatively, try the demo account.
 
+## Starting From dada2 Pipeline \(ASV table\)
+
+If you are following the dada2 tutorial \([https://benjjneb.github.io/dada2/tutorial.html](https://benjjneb.github.io/dada2/tutorial.html)\) to create an ASV table, note the following instructions when creating the input to Mian.
+
+Because, Mian will require a CSV or TSV file input, so we need to save some of the objects that dada2 produces. These steps assume you have completed the tutorial up to the "Assign Taxonomy" step:
+
+* Save the filtered ASV table:  `write.csv(seqtab.nochim, "<some output directory>/seqtab.csv")`
+* Save the taxonomy file:  `write.csv(taxa, "<some output directory>/seqtab.csv")`
+
+Note that you will still need to create a sample metadata file following the format below.
+
 ## Create a Project
 
 Mian accepts two commonly-used input formats: BIOM and TSV/CSV files - switch between them using the toggle at the top.
@@ -16,19 +27,19 @@ Certain metadata files are common to both formats.
 
 #### BIOM
 
-[BIOM](http://biom-format.org/) is a commonly-used biological matrix file format that contains both the OTU data file and the taxonomy information. 
+[BIOM](http://biom-format.org/) is a commonly-used biological matrix file format that contains both the OTU/ASV data file and the taxonomy information. 
 
 You can either include the sample metadata in the BIOM file or upload it in a separate file.
 
-#### OTU Table \(TSV/CSV\)
+#### OTU or ASV Table \(TSV/CSV\)
 
 {% hint style="info" %}
 Sample IDs should be consistent with the metadata files
 {% endhint %}
 
-This file must be one of the following formats. The former is a .shared file produced by mothur, the latter is a manually created OTU file.
+This file must be one of the following formats. The former is a .shared file produced by mothur, the latter is a manually created OTU/ASV file.
 
-Counts should be integers. Headers are required \(OTU names taken from headers\).
+Counts should be integers. Headers are required \(OTU/ASV names taken from headers\).
 
 Subsampling is optional \(further subsampling will be an option in the next step\).
 
@@ -61,7 +72,7 @@ Sample	body_site	disease	CD8	...
 ...
 ```
 
-#### OTU Taxonomy Mapping
+#### OTU/ASV Taxonomy Mapping
 
 {% hint style="info" %}
 OTU names should be consistent with the uploaded OTU file

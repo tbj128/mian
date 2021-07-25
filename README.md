@@ -6,7 +6,7 @@ description: 'OTU table visualization, data analysis, and machine learning'
 
 #### What is Mian?
 
-Mian is an open-source web-platform that enables data exploration and analysis of OTU data with respect to gene expression, categorical and numerical metadata \(eg. immunohistological data, experimental conditions\), and taxonomic structure. 
+Mian is an open-source web-platform that enables data exploration and analysis of OTU or ASV data with respect to gene expression, categorical and numerical metadata \(eg. immunohistological data, experimental conditions\), and taxonomic structure. 
 
 Mian gives researchers access to interactive data visualizations, machine learning models and feature selection tools, and automated statistical assessments. No code required. 
 
@@ -20,7 +20,7 @@ Mian gives researchers access to interactive data visualizations, machine learni
 
 #### Interactive Visualizations
 
-Common features include detail highlights, tunable settings, filters, notebook snapshots, and downloadable images. 
+Common features include detail highlights, tuneable settings, filters, notebook snapshots, and downloadable images. 
 
 * **Boxplots**
   * Create boxplots of specific OTUs or taxonomic groups against categorical variables

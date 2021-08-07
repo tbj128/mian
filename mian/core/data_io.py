@@ -108,7 +108,10 @@ class DataIO:
                 if len(o) > 0:
                     if i == 0:
                         if not accept_empty_headers:
-                            j = 0
+                            # Note: We validate empty headers starting from the second
+                            # column because it's ok to have empty header value for the
+                            # first column (e.g. as is produced from dada2 pipeline)
+                            j = 1
                             while j < len(o):
                                 if o[j].strip() == "":
                                     empty_header_cols[j] = True

@@ -4,6 +4,9 @@
 
 SUBSAMPLE_TYPE_AUTO = "auto"
 SUBSAMPLE_TYPE_MANUAL = "manual"
+SUBSAMPLE_TYPE_TSS = "tss"
+SUBSAMPLE_TYPE_UQ = "uq"
+SUBSAMPLE_TYPE_CSS = "css"
 SUBSAMPLE_TYPE_DISABLED = "no"
 
 # The raw uploaded .biom file (if applicable)

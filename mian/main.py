@@ -129,8 +129,11 @@ db.initDB(DB_PATH, SCHEMA_PATH)
 #
 # Timeout Handling
 #
+# TODO: This feature appears to been broken in either Python 3.7 or Python 3.8
+#       In Python 3.8, multiprocessing appears to trigger excessive refreshing
+#       or reloading of this file. Consider mixture of front-end timeout and signal library
+#       See: https://stackoverflow.com/questions/366682/how-to-limit-execution-time-of-a-function-call-in-python
 MAX_FUNCTION_TIME_SECONDS = 60
-
 
 def abortable_worker(func, *args, **kwargs):
     timeout = kwargs.get('timeout', MAX_FUNCTION_TIME_SECONDS)
@@ -1199,6 +1202,9 @@ def getComposition(user_request, req):
     plugin = Composition()
     user_request.set_custom_attr("plotType", req.form['plotType'])
     user_request.set_custom_attr("xaxis", req.form['xaxis'])
+
+    # return json.dumps(plugin.run(user_request), cls=NpEncoder)
+
     pool = multiprocessing.Pool(maxtasksperchild=1)
     abortable_func = partial(abortable_worker, plugin.run)
     retval = pool.apply_async(abortable_func, args=(user_request,))

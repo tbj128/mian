@@ -15,3 +15,8 @@ The following instructions are for an example installation of Mian on an Apache 
 - Run `sudo a2ensite <your web address>`
 - Restart the Apache server: `sudo apachectl restart`. Note that the required R dependencies will be installed when the page is first loaded.
 
+#### Python Notes
+- Mian must be run with Python < 3.7 due to limitations in how the function timeout works. The multiprocessing library in these newer versions appears to trigger infinite reloading of the main file.
+
+#### Tensorflow Notes
+- On M1 ARM64 Macbooks, Mian was tested under Rosetta 2. Tensorflow must be built from source (without AVX or GPU) to achieve a version compatible with Python 3.6 (following instructions from https://www.tensorflow.org/install/source )

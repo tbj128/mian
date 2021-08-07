@@ -100,11 +100,18 @@ class DeepNeuralNetwork(object):
 
             return model
 
+
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_train, y_train, train_size=training_proportion, stratify=y_train
+        )
+
         model = build_model(dnn_model, problem_type)
         if problem_type == "classification":
             hist = model.fit(
                 X_train, y_train,
-                epochs=epochs, validation_split=validation_proportion, verbose=0
+                validation_data=(X_val, y_val),
+                epochs=epochs,
+                verbose=0
             )
 
             score = model.evaluate(X_test, y_test, verbose=0)
@@ -112,12 +119,12 @@ class DeepNeuralNetwork(object):
             print('Test accuracy:', score[1])
 
             abundances_obj = {
-                "accuracy": [a.item() for a in hist.history['accuracy']],
-                "val_accuracy": [a.item() for a in hist.history['val_accuracy']],
-                "loss": [a.item() for a in hist.history['loss']],
-                "val_loss": [a.item() for a in hist.history['val_loss']],
-                "test_accuracy": score[1].item(),
-                "test_loss": score[0].item(),
+                "accuracy": [a for a in hist.history['accuracy']],
+                "val_accuracy" : [a for a in hist.history['val_accuracy']],
+                "loss": [a for a in hist.history['loss']],
+                "val_loss": [a for a in hist.history['val_loss']],
+                "test_accuracy": score[1],
+                "test_loss": score[0],
                 "num_samples": otu_table.shape[0],
                 "training_indexes": ind_train.tolist()
             }

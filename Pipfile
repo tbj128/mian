@@ -1,32 +1,32 @@
-[[source]]
+# Dependencies:
+# pipenv install numpy 
 
+[[source]]
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [dev-packages]
-
 pytest = "*"
 
-
 [packages]
-
-biom-format = "==2.1.6"
-flask = ">=1.0.0"
+biom-format = "*"
+flask = "==1.1.1"
 flask-login = "==0.4.0"
 Flask-Mail = "==0.9.1"
 h5py = "*"
 rpy2 = "==3.1.0"
 scikit-learn = "*"
 scipy = "*"
-werkzeug = ">=0.15.3"
+werkzeug = "==1.0.1"
 scikit-bio = "==0.5.6"
 pandas = "==1.0.3"
 Keras = "==2.3.1"
 Boruta = "*"
-tensorflow = "==2.0.0b1"
+tensorflow = "==2.5.0"
+traitlets = "==4.3.3"
+numpy = "*"
+cython = "*"
 
 [requires]
-
-python_version = "3.6"
+python_version = "3.6.7"

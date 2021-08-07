@@ -72,8 +72,11 @@
                   <div class="row">
                     <div class="col-md-6">
                         <select id="subsampleType" name="subsampleType" class="form-control pad-bottom">
-                          <option value="auto" selected>Auto Subsample</option>
-                          <option value="manual">Manual Subsample</option>
+                          <option value="auto" selected>Rarefaction (Auto)</option>
+                          <option value="manual">Rarefaction (Manual)</option>
+                          <option value="tss">Total Sum Scaling</option>
+                          <option value="uq">Upper Quartile Scaling</option>
+                          <option value="css">Cumulative Sum Scaling</option>
                           <option value="no">Don't Subsample</option>
                         </select>
                       </div>
@@ -81,6 +84,9 @@
                         <input type="number" class="form-control" id="subsampleTo" name="subsampleTo" placeholder="Subsample To..." style="display:none;">
                         <p id="auto-prompt" class="normalize-info" style="font-size:11px;color:#999;">Subsamples each sample in the OTU table to the smallest number of sequences of any sample.</p>
                         <p id="manual-prompt" class="normalize-info" style="font-size:11px;color:#999;margin-top:6px;display:none;">Subsamples each sample in the OTU table to a specific value.</p>
+                        <p id="tss-prompt" class="normalize-info" style="font-size:11px;color:#999;margin-top:6px;display:none;">Divides the count of each feature by the total count per sample.</p>
+                        <p id="uq-prompt" class="normalize-info" style="font-size:11px;color:#999;margin-top:6px;display:none;">The OTU counts are divided by the upper quartile of counts (excluding zero count OTUs) across samples.</p>
+                        <p id="css-prompt" class="normalize-info" style="font-size:11px;color:#999;margin-top:6px;display:none;">Uses a median-like quantile normalization which attempts to correct the differences in sampling depth by re-scaling the samples based on a subset (quartile) of lower abundant taxa. <a href="https://www.metagenomics.wiki/tools/16s/norm/css" target="_blank" referrerpolicy="no-referrer">Learn more</a></p>
                         <p id="no-prompt" class="normalize-info" style="font-size:11px;color:#999;display:none;">Assumes that the uploaded OTU table is normalized already. (eg. you have already applied a normalization method such as rarefaction, DESeq2, or CSS)</p>
                         <p id="has-float" class="normalize-info" style="font-size:11px;color:#999;display:none;">Subsampling cannot be applied to OTU tables containing non-integer numbers</p>
                       </div>

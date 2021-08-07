@@ -48,6 +48,12 @@ $(document).ready(function() {
                 $("#manual-prompt").show();
             } else if (type === "auto") {
                 $("#auto-prompt").show();
+            } else if (type === "uq") {
+                $("#uq-prompt").show();
+            } else if (type === "tss") {
+                $("#tss-prompt").show();
+            } else if (type === "css") {
+                $("#css-prompt").show();
             } else {
                 $("#subsampleTo").hide();
                 $("#no-prompt").show();
@@ -230,6 +236,18 @@ $(document).ready(function() {
                     $("#subsampleType").prop('disabled', false);
                 } else if ($("#subsampleType").val() === "manual") {
                     $("#subsamplingTo").text($("#subsampleTo").val());
+                    $("#subsamplingToContainer").show();
+                    $("#subsampleType").prop('disabled', false);
+                } else if ($("#subsampleType").val() === "uq") {
+                    $("#subsamplingTo").text("N/A (upper quantile scaling)");
+                    $("#subsamplingToContainer").show();
+                    $("#subsampleType").prop('disabled', false);
+                } else if ($("#subsampleType").val() === "tss") {
+                    $("#subsamplingTo").text("1 (total row sum)");
+                    $("#subsamplingToContainer").show();
+                    $("#subsampleType").prop('disabled', false);
+                } else if ($("#subsampleType").val() === "css") {
+                    $("#subsamplingTo").text("N/A (cumulative sum scaling)");
                     $("#subsamplingToContainer").show();
                     $("#subsampleType").prop('disabled', false);
                 } else {

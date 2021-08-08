@@ -605,7 +605,9 @@ class ProjectManager(object):
             return BIOM_ERROR, ""
 
 
-    def create_project(self, pid, sampleFilter, sampleFilterRole, sampleFilterVals, subsample_type="auto", subsample_to=0):
+    def create_project(self, pid, sampleFilter, sampleFilterRole, sampleFilterVals,
+                       subsample_type="auto", subsample_to=0, low_expression_filtering_type="none",
+                       low_expression_filtering_count=0, low_expression_filtering_prevalence=0):
 
         map_file = Map(self.user_id, pid)
 
@@ -625,27 +627,49 @@ class ProjectManager(object):
             orig_base = table.get_table()
             orig_headers = table.get_headers()
             orig_sample_labels = table.get_sample_labels()
+
+            low_expression_otus_removed = 0
+            if low_expression_filtering_type == "filter-before":
+                logger.info(f"Low-expression filtering before normalization - shape {orig_base.shape}")
+                orig_num_otus = orig_base.shape[1]
+                orig_base, orig_headers, orig_sample_labels = table.filter_out_low_count(orig_base, orig_headers, orig_sample_labels, low_expression_filtering_count, low_expression_filtering_prevalence)
+                logger.info(f"Post low-expression filtering - shape {orig_base.shape}")
+                low_expression_otus_removed = orig_num_otus - orig_base.shape[1]
+
             base, headers, sample_labels = table.filter_otu_table_by_metadata(orig_base, orig_headers, orig_sample_labels,
                                                                               user_request)
+
             initial_samples_removed = list(set(orig_sample_labels) - set(sample_labels))
 
             # Subsamples the raw OTU file
-            subsample_to, subsampled_headers, subsampled_sample_labels = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                                                 pid=pid,
-                                                                                                 base=base,
-                                                                                                 headers=headers,
-                                                                                                 sample_labels=sample_labels,
-                                                                                                 subsample_type=subsample_type,
-                                                                                                 manual_subsample_to=subsample_to,
-                                                                                                 is_biom=map_file.orig_biom_name != "")
+            base, subsample_to, subsampled_headers, subsampled_sample_labels = OTUTableSubsampler.subsample_otu_table(base=base,
+                                                                                                                      headers=headers,
+                                                                                                                      sample_labels=sample_labels,
+                                                                                                                      subsample_type=subsample_type,
+                                                                                                                      manual_subsample_to=subsample_to)
 
             logger.info("Subsampled file")
 
+            if low_expression_filtering_type == "filter-after":
+                logger.info(f"Low-expression filtering after normalization - shape {base.shape}")
+                orig_num_otus = base.shape[1]
+                base, subsampled_headers, subsampled_sample_labels = table.filter_out_low_count(base, subsampled_headers, subsampled_sample_labels, low_expression_filtering_count, low_expression_filtering_prevalence)
+                logger.info(f"Post low-expression filtering - shape {base.shape}")
+                low_expression_otus_removed = orig_num_otus - base.shape[1]
+
+            # Saves output file
+            labels = [subsampled_headers, subsampled_sample_labels]
+            DataIO.table_to_npz(base, self.user_id, pid, SUBSAMPLED_OTU_TABLE_FILENAME)
+            DataIO.table_to_tsv(labels, self.user_id, pid, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
 
             # Updates map.txt file
             map_file.subsampled_type = subsample_type
             map_file.subsampled_value = subsample_to
             map_file.subsampled_removed_samples = initial_samples_removed
+            map_file.low_expression_filter_otus_removed = low_expression_otus_removed
+            map_file.low_expression_filter_type = low_expression_filtering_type
+            map_file.low_expression_filter_count = low_expression_filtering_count
+            map_file.low_expression_filter_prevalence = low_expression_filtering_prevalence
             map_file.num_samples = len(subsampled_sample_labels)
             map_file.num_otus = len(subsampled_headers)
             map_file.save()
@@ -792,16 +816,19 @@ class ProjectManager(object):
         base = base.astype(int)
 
         labels = DataIO.tsv_to_table(self.user_id, pid, RAW_OTU_TABLE_LABELS_FILENAME)
-        subsample_value, otus_removed, samples_removed = OTUTableSubsampler.subsample_otu_table(user_id=self.user_id,
-                                                                                                pid=pid,
-                                                                                                subsample_type=subsample_type,
-                                                                                                manual_subsample_to=subsample_to,
-                                                                                                base=base,
-                                                                                                headers=labels[0],
-                                                                                                sample_labels=labels[1])
+        base, subsample_value, subsampled_headers, subsampled_sample_labels = OTUTableSubsampler.subsample_otu_table(subsample_type=subsample_type,
+                                                                                                                     manual_subsample_to=subsample_to,
+                                                                                                                     base=base,
+                                                                                                                     headers=labels[0],
+                                                                                                                     sample_labels=labels[1])
 
         if isinstance(subsample_value, (np.generic)):
             subsample_value = subsample_value.item()
+
+        # Saves output file
+        labels = [subsampled_headers, subsampled_sample_labels]
+        DataIO.table_to_npz(base, self.user_id, pid, SUBSAMPLED_OTU_TABLE_FILENAME)
+        DataIO.table_to_tsv(labels, self.user_id, pid, SUBSAMPLED_OTU_TABLE_LABELS_FILENAME)
 
         # Updates the map.txt file
         map_file = Map(self.user_id, pid)

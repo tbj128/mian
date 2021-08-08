@@ -11,6 +11,10 @@ class Map(object):
         self.subsampled_value = ""
         self.subsampled_type = ""
         self.subsampled_removed_samples = []
+        self.low_expression_filter_type = "none"
+        self.low_expression_filter_count = 0
+        self.low_expression_filter_prevalence = 0
+        self.low_expression_filter_otus_removed = 0
         self.orig_biom_name = ""
         self.orig_otu_table_name = ""
         self.orig_taxonomy_name = ""
@@ -42,6 +46,10 @@ class Map(object):
                 self.matrix_type = map_from_json["matrix_type"] if "matrix_type" in map_from_json else "int"
                 self.num_samples = map_from_json["num_samples"] if "num_samples" in map_from_json else 0
                 self.num_otus = map_from_json["num_otus"] if "num_otus" in map_from_json else 0
+                self.low_expression_filter_type = map_from_json["low_expression_filter_type"] if "low_expression_filter_type" in map_from_json else "none"
+                self.low_expression_filter_count = map_from_json["low_expression_filter_count"] if "low_expression_filter_count" in map_from_json else 0
+                self.low_expression_filter_prevalence = map_from_json["low_expression_filter_prevalence"] if "low_expression_filter_prevalence" in map_from_json else 0
+                self.low_expression_filter_otus_removed = map_from_json["low_expression_filter_otus_removed"] if "low_expression_filter_otus_removed" in map_from_json else 0
                 self.shared = map_from_json["shared"] if "shared" in map_from_json else "no"
 
     def save(self):
@@ -60,6 +68,10 @@ class Map(object):
             "matrix_type": self.matrix_type,
             "num_samples": self.num_samples,
             "num_otus": self.num_otus,
+            "low_expression_filter_type": self.low_expression_filter_type,
+            "low_expression_filter_count": self.low_expression_filter_count,
+            "low_expression_filter_prevalence": self.low_expression_filter_prevalence,
+            "low_expression_filter_otus_removed": self.low_expression_filter_otus_removed,
             "shared": self.shared
         }
 

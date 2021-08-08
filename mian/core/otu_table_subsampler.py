@@ -30,7 +30,7 @@ class OTUTableSubsampler(object):
     DATA_DIRECTORY = os.path.join(BASE_DIRECTORY, "data")
 
     @staticmethod
-    def subsample_otu_table(user_id, pid, subsample_type, manual_subsample_to, base, headers, sample_labels, output_otu_file_name=SUBSAMPLED_OTU_TABLE_FILENAME, output_otu_labels_file_name=SUBSAMPLED_OTU_TABLE_LABELS_FILENAME, is_biom=False):
+    def subsample_otu_table(subsample_type, manual_subsample_to, base, headers, sample_labels):
         """
         Subsamples the OTU table to the size of the smallest sample if subsample_to < 1. Otherwise, subsample
         the OTU table to the specified value
@@ -46,21 +46,18 @@ class OTUTableSubsampler(object):
                 # Check if the table is already subsampled.
                 # If so, we just need to copy the raw table to the subsampled table location
                 logger.error("Table is already subsampled to a depth of " + str(current_subsampled_depth))
-                labels = [headers, sample_labels]
-                DataIO.table_to_npz(base, user_id, pid, output_otu_file_name)
-                DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-                return current_subsampled_depth, headers, sample_labels
+                return base, current_subsampled_depth, headers, sample_labels
             else:
                 # Sums each sample row to find the row with the smallest sum
                 # TODO: Bad input data may have very small row sum
                 subsample_to = OTUTableSubsampler.__get_min_depth(base)
-                return OTUTableSubsampler.__subsample_to_fixed(user_id, pid, subsample_to, base, headers, sample_labels, output_otu_file_name, output_otu_labels_file_name)
+                return OTUTableSubsampler.__subsample_to_fixed(subsample_to, base, headers, sample_labels)
 
         elif subsample_type == SUBSAMPLE_TYPE_MANUAL:
             logger.info("Subsample type is manual")
             if str(manual_subsample_to).isdigit():
                 subsample_to = int(manual_subsample_to)
-                return OTUTableSubsampler.__subsample_to_fixed(user_id, pid, subsample_to, base, headers, sample_labels, output_otu_file_name, output_otu_labels_file_name)
+                return OTUTableSubsampler.__subsample_to_fixed(subsample_to, base, headers, sample_labels)
             else:
                 logger.error("Provided manual_subsample_to of " + str(manual_subsample_to) + " is not valid")
                 raise ValueError("Provided subsample value is not valid")
@@ -70,56 +67,39 @@ class OTUTableSubsampler(object):
             logger.info("Subsample type is TSS")
             c = scipy.sparse.diags(1 / base.sum(axis=1).A.ravel())
             base = c @ base
-            DataIO.table_to_npz(base, user_id, pid, output_otu_file_name)
             logger.info("Finished TSS subsampling")
-            labels = [headers, sample_labels]
-            DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-            return 1, headers, sample_labels
+            return base, 1, headers, sample_labels
 
         elif subsample_type == SUBSAMPLE_TYPE_UQ:
             logger.info("Subsample type is UQ")
             mat, headers = OTUTableSubsampler.upper_quantile_scaling(base.toarray(), headers)
-            DataIO.table_to_npz(scipy.sparse.csr_matrix(mat), user_id, pid, output_otu_file_name)
             logger.info("Finished UQ subsampling")
-            labels = [headers, sample_labels]
-            DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-            return 1, headers, sample_labels
+            return scipy.sparse.csr_matrix(mat), 1, headers, sample_labels
 
         elif subsample_type == SUBSAMPLE_TYPE_CSS:
             logger.info("Subsample type is CSS")
-            DataIO.table_to_npz(scipy.sparse.csr_matrix(OTUTableSubsampler.cumulative_sum_scaling(base.toarray())), user_id, pid, output_otu_file_name)
+            base = scipy.sparse.csr_matrix(OTUTableSubsampler.cumulative_sum_scaling(base.toarray()))
             logger.info("Finished CSS subsampling")
-            labels = [headers, sample_labels]
-            DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-            return 1, headers, sample_labels
+            return base, 1, headers, sample_labels
 
         elif subsample_type == SUBSAMPLE_TYPE_DISABLED:
             # Just copy the raw data table to the subsampled table location
             logger.info("Subsample type is disabled")
-            labels = [headers, sample_labels]
-            DataIO.table_to_npz(base, user_id, pid, output_otu_file_name)
-            DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-            return 0, headers, sample_labels
+            return base, 0, headers, sample_labels
         else:
             logger.error("Invalid action selected")
             raise NotImplementedError("Invalid action selected")
 
-        logger.info("Subsampling OTU table to " + str(subsample_to) + " using type " + str(subsample_type))
-
     @staticmethod
-    def __subsample_to_fixed(user_id, pid, subsample_to, base, headers, sample_labels, output_otu_file_name, output_otu_labels_file_name):
+    def __subsample_to_fixed(subsample_to, base, headers, sample_labels):
         temp_table = Table(base.transpose(), observation_ids=headers, sample_ids=sample_labels)
         temp_table = temp_table.subsample(subsample_to, axis="sample")
         subsampled_sample_labels = temp_table._sample_ids.tolist()
         subsampled_headers = temp_table._observation_ids.tolist()
-        DataIO.table_to_npz(temp_table.matrix_data.transpose(), user_id, pid, output_otu_file_name)
 
         logger.info("Finished basic subsampling")
 
-        labels = [subsampled_headers, subsampled_sample_labels]
-        DataIO.table_to_tsv(labels, user_id, pid, output_otu_labels_file_name)
-
-        return subsample_to, subsampled_headers, subsampled_sample_labels
+        return temp_table.matrix_data.transpose(), subsample_to, subsampled_headers, subsampled_sample_labels
 
     @staticmethod
     def __get_subsampled_depth(base):

@@ -97,6 +97,49 @@
 
             <hr />
 
+            <div id="low-prevalence-filter-container" class="row filter-container">
+              <div>
+                <div class="col-md-12">
+                  <h3 style="margin-top:0px"><i class="fa fa-filter"></i>&nbsp;&nbsp;Low-Expression Filtering  <a href="https://tbj128.gitbook.io/mian/tool-parameters-and-filters#otu-filtering" target="_blank"><i class="fa fa-info-circle"></i></a></h3>
+                  <p>Choose to exclude OTUs/ASVs that have low expression to improve performance and reduce spurious results.</p>
+                  <p style="color:#999;"><strong>Head's Up</strong> Applying low-expression filtering can affect visualizations or tools that look at the composition of the microbiome.</p>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <select id="low-expression-filter" name="low-expression-filter" class="form-control pad-bottom">
+                        <option value="none">Don't Filter</option>
+                        <option value="filter-before">Filter Before Normalization</option>
+                        <option value="filter-after">Filter After Normalization</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="low-expression-filter-none-prompt">
+                          <p style="color:#999;font-size:11px">If you choose not to filter, you can still apply this filter later within each tool.</p>
+                        </div>
+                        <div id="low-expression-filter-details" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <span class="inner-control-label"><strong>Presence Threshold</strong></span>
+                                    <p style="color:#999;font-size:11px">Minimum count for OTU/ASV to be considered present.</p>
+                                    <input class="form-control" id="low-expression-count" name="low-expression-count" type="number" value="0"/>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:12px">
+                                <div class="col-md-12">
+                                    <span class="inner-control-label"><strong>Prevalence (%)</strong></span>
+                                    <p style="color:#999;font-size:11px">OTU/ASV must be present in this % of samples.</p>
+                                    <input class="form-control" id="low-expression-prevalence" name="low-expression-prevalence" type="number" value="0" step="0.1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr />
+
             <div id="filter-container" class="row filter-container">
               <div>
                 <div class="col-md-12">
@@ -111,6 +154,9 @@
                       </select>
                     </div>
                     <div class="col-md-6">
+                      <div id="filter-sample-none-prompt">
+                        <p style="color:#999;font-size:11px">If you choose not to filter, you can still apply this filter later within each tool.</p>
+                      </div>
                       <div id="filter-sample-wrapper" style="position:relative;">
                         <select style="display:none;" id="filter-sample-specific" name="filter-sample-specific" class="form-control pad-bottom" multiple="multiple">
                         </select>
@@ -140,6 +186,9 @@
                     <input type="hidden" id="sampleFilter" name="sampleFilter" value="" />
                     <input type="hidden" id="sampleFilterRole" name="sampleFilterRole" value="" />
                     <input type="hidden" id="sampleFilterVals" name="sampleFilterVals" value="" />
+                    <input type="hidden" id="lowExpressionFilteringType" name="lowExpressionFilteringType" value="none" />
+                    <input type="hidden" id="lowExpressionFilteringCount" name="lowExpressionFilteringCount" value="0" />
+                    <input type="hidden" id="lowExpressionFilteringPrevalence" name="lowExpressionFilteringPrevalence" value="0" />
                     <input type="hidden" id="projectSubsampleType" name="projectSubsampleType" value="auto" />
                     <input type="hidden" id="projectSubsampleTo" name="projectSubsampleTo" value="" />
                     <button id="upload-submit" type="submit" class="btn btn-primary" style="width:180px;">Create Project</button>

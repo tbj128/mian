@@ -18,7 +18,35 @@ $(document).ready(function() {
         getFilteringInfo();
     });
 
+    $("#low-expression-filter").change(function() {
+        if ($("#low-expression-filter").val() === "none") {
+            $("#low-expression-filter-none-prompt").show();
+            $("#low-expression-filter-details").hide();
+        } else {
+            $("#low-expression-filter-none-prompt").hide();
+            $("#low-expression-filter-details").show();
+        }
+    });
+
+    $("#low-expression-filter").change(function() {
+        $("#lowExpressionFilteringType").val($("#low-expression-filter").val());
+    });
+
+    $("#low-expression-count").change(function() {
+        $("#lowExpressionFilteringCount").val($("#low-expression-count").val());
+    });
+
+    $("#low-expression-prevalence").change(function() {
+        $("#lowExpressionFilteringPrevalence").val($("#low-expression-prevalence").val());
+    });
+
     $("#filter-sample").change(function() {
+        if ($("#filter-sample").val() === "none") {
+            $("#filter-sample-none-prompt").show();
+        } else {
+            $("#filter-sample-none-prompt").hide();
+        }
+
         updateFilterSamplesOptions();
         getFilteringInfo();
     });

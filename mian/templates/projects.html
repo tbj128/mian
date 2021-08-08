@@ -200,6 +200,14 @@
                             <br />
                             Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-toggle="popover" data-html="true" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
                             {% endif %}
+
+                            {% if projectNames[projectName]["low_expression_filter_type"] != "none" %}
+                            <br />
+                            <br />
+                            Removed <strong>{{ projectNames[projectName]["low_expression_filter_otus_removed"] }}</strong> OTUs/ASVs based on low-expression filtering
+                            <br />
+                            <span style="color:#999">(count threshold: {{ projectNames[projectName]["low_expression_filter_count"] }}, min prevalence: {{ projectNames[projectName]["low_expression_filter_prevalence"] }})</span>
+                            {% endif %}
                           </td>
                           <td class="col-md-3">BIOM File</td>
                         </tr>
@@ -271,6 +279,14 @@
                             <br />
                             <br />
                             Removed <strong id="subsampleRemoved-{{ projectNames[projectName]["pid"] }}">{{ projectNames[projectName]["subsampled_removed_samples"]|length }}</strong> samples <i class="fa fa-question-circle" data-trigger="hover" data-html="true" data-toggle="popover" title="Removed Samples" data-content="Samples were filtered out either manually or automatically when the OTU count is below the subsample threshold: <strong>{{ projectNames[projectName]['subsampled_removed_samples']|join(', ') }}</strong>"></i>
+                            {% endif %}
+
+                            {% if projectNames[projectName]["low_expression_filter_type"] != "none" %}
+                            <br />
+                            <br />
+                            Removed <strong>{{ projectNames[projectName]["low_expression_filter_otus_removed"] }}</strong> OTUs/ASVs based on low-expression filtering
+                            <br />
+                            <span style="color:#999">(count threshold: {{ projectNames[projectName]["low_expression_filter_count"] }}, min prevalence: {{ projectNames[projectName]["low_expression_filter_prevalence"] }})</span>
                             {% endif %}
                           </td>
                           <td class="col-md-3">OTU Table</td>

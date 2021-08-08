@@ -399,6 +399,19 @@ def createFilter():
         project_subsample_to = request.form['projectSubsampleTo']
         sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
         sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
+        lowExpressionFilteringType = request.form['lowExpressionFilteringType'] if 'lowExpressionFilteringType' in request.form else "none"
+
+        lowExpressionFilteringCount = request.form['lowExpressionFilteringCount'] if 'lowExpressionFilteringCount' in request.form else 0
+        try:
+            lowExpressionFilteringCount = float(lowExpressionFilteringCount)
+        except:
+            lowExpressionFilteringCount = 0
+
+        lowExpressionFilteringPrevalence = request.form['lowExpressionFilteringPrevalence'] if 'lowExpressionFilteringPrevalence' in request.form else 0
+        try:
+            lowExpressionFilteringPrevalence = float(lowExpressionFilteringPrevalence)
+        except:
+            lowExpressionFilteringPrevalence = 0
         sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
 
         try:
@@ -407,7 +420,10 @@ def createFilter():
                                                              sampleFilterRole=sampleFilterRole,
                                                              sampleFilterVals=sampleFilterVals,
                                                              subsample_type=project_subsample_type,
-                                                             subsample_to=project_subsample_to)
+                                                             subsample_to=project_subsample_to,
+                                                             low_expression_filtering_type=lowExpressionFilteringType,
+                                                             low_expression_filtering_count=lowExpressionFilteringCount,
+                                                             low_expression_filtering_prevalence=lowExpressionFilteringPrevalence)
         except:
             return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
 
@@ -2524,6 +2540,10 @@ def get_project_ids_to_info(user_id):
                         "matrix_type": project_map.matrix_type,
                         "num_samples": project_map.num_samples,
                         "num_otus": project_map.num_otus,
+                        "low_expression_filter_type": project_map.low_expression_filter_type,
+                        "low_expression_filter_count": project_map.low_expression_filter_count,
+                        "low_expression_filter_prevalence": project_map.low_expression_filter_prevalence,
+                        "low_expression_filter_otus_removed": project_map.low_expression_filter_otus_removed,
                         "shared": project_map.shared,
                         "num_gene_quantiles": num_gene_quantiles,
                         "num_metadata_quantiles": num_metadata_quantiles
@@ -2545,6 +2565,10 @@ def get_project_ids_to_info(user_id):
                         "matrix_type": project_map.matrix_type,
                         "num_samples": project_map.num_samples,
                         "num_otus": project_map.num_otus,
+                        "low_expression_filter_type": project_map.low_expression_filter_type,
+                        "low_expression_filter_count": project_map.low_expression_filter_count,
+                        "low_expression_filter_prevalence": project_map.low_expression_filter_prevalence,
+                        "low_expression_filter_otus_removed": project_map.low_expression_filter_otus_removed,
                         "shared": project_map.shared,
                         "num_gene_quantiles": num_gene_quantiles,
                         "num_metadata_quantiles": num_metadata_quantiles

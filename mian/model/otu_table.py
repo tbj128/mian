@@ -298,16 +298,22 @@ class OTUTable(object):
         return aggregated_base, aggregated_headers, sample_labels
 
     def filter_out_low_count_np(self, base, headers, sample_labels, user_request):
-
         logger.info("Starting filtering by low count")
         count_threshold = user_request.taxonomy_filter_count
         min_prevalence = user_request.taxonomy_filter_prevalence
+        base_updated, headers_updated, samples_updated = self.filter_out_low_count(base, headers, sample_labels, count_threshold, min_prevalence)
+        return base_updated, headers_updated, samples_updated
+
+    def filter_out_low_count(self, base, headers, sample_labels, count_threshold, min_prevalence):
+        logger.info(f"Starting filtering by low count with {count_threshold} and {min_prevalence}")
 
         headers = np.array(headers)
         num_samples = base.shape[0]
         min_prevalence_percentage = min_prevalence / float(100)
-        otus_over_threshold = (base > count_threshold).astype(int)
+        otus_over_threshold = (base >= count_threshold).astype(int)
         otus_to_keep = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) >= min_prevalence_percentage
+        # otus_over_threshold = np.where(base > count_threshold, 1, 0)
+        # otus_to_keep = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) >= min_prevalence_percentage
 
         # print(otus_to_keep.A[0])
 

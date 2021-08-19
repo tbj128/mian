@@ -25,6 +25,8 @@ createSpecificListeners();
 // Initializes fields based on the URL params
 //
 var initialColorVar = getParameterByName("colorvar");
+var initialColorPalette1 = getParameterByName("colorpalette1");
+var initialColorPalette2 = getParameterByName("colorpalette2");
 var initialYvals = getParameterByName("yvals");
 var initialYvalsSpecificTaxonomy = getParameterByName("yvalsSpecificTaxonomy") ? JSON.parse(getParameterByName("yvalsSpecificTaxonomy")) : null;
 function initializeFields() {
@@ -42,6 +44,21 @@ function createSpecificListeners() {
     });
 
     $("#colorvar").change(function() {
+        if ($("#colorvar").val() === "None") {
+            $("#colorPaletteContainer1").hide()
+            $("#colorPaletteContainer2").show()
+        } else {
+            $("#colorPaletteContainer1").show()
+            $("#colorPaletteContainer2").hide()
+        }
+        updateAnalysis();
+    });
+
+    $("#colorpalette1").change(function() {
+        updateAnalysis();
+    });
+
+    $("#colorpalette2").change(function() {
         updateAnalysis();
     });
 
@@ -151,6 +168,8 @@ function updateAnalysis() {
 
     var catvar = $("#catvar").val();
     var colorvar = $("#colorvar").val();
+    var colorpalette1 = $("#colorpalette1").val();
+    var colorpalette2 = $("#colorpalette2").val();
     var yvals = $("#yvals").val();
     var statisticalTest = $("#statisticalTest").val();
 
@@ -185,6 +204,8 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         catvar: catvar,
         colorvar: colorvar,
+        colorpalette1: colorpalette1,
+        colorpalette2: colorpalette2,
         yvals: yvals,
         level: level,
         yvalsSpecificTaxonomy: yvalsSpecificTaxonomy,
@@ -212,7 +233,14 @@ function updateAnalysis() {
                 } else if (yvalSelectedOption === "mian-gene") {
                     yAxisLabel = $("#gene-typeahead-1").val();
                 }
-                renderBoxplots(abundancesObj, "", yAxisLabel);
+
+                var colorPalette;
+                if ($("#colorvar").val() === "None") {
+                    colorPalette = $("#colorpalette2").val()
+                } else {
+                    colorPalette = $("#colorpalette1").val()
+                }
+                renderBoxplots(abundancesObj, "", yAxisLabel, colorPalette);
                 renderPvaluesTable(abundancesObj);
             }
         },
@@ -247,6 +275,23 @@ function customCatVarCallback(result) {
     if (initialColorVar) {
         $("#colorvar").val(initialColorVar);
         initialColorVar = null;
+        if ($("#colorvar").val() === "None") {
+            $("#colorPaletteContainer1").hide()
+            $("#colorPaletteContainer2").show()
+        } else {
+            $("#colorPaletteContainer1").show()
+            $("#colorPaletteContainer2").hide()
+        }
+    }
+
+    if (initialColorPalette1) {
+        $("#colorpalette1").val(initialColorPalette1);
+        initialColorPalette1 = null;
+    }
+
+    if (initialColorPalette2) {
+        $("#colorpalette2").val(initialColorPalette2);
+        initialColorPalette2 = null;
     }
 }
 

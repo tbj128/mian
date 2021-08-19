@@ -1,7 +1,7 @@
 // ============================================================
 // Boxplot JS Shared Component
 // ============================================================
-function renderBoxplots(abundancesObj, xAxisText, yAxisText) {
+function renderBoxplots(abundancesObj, xAxisText, yAxisText, colorPalette="default") {
     $("#analysis-container").empty();
 
     var dataObj = abundancesObj["abundances"];
@@ -101,7 +101,14 @@ function renderBoxplots(abundancesObj, xAxisText, yAxisText) {
         .text(xAxisText);
 
     var svg = svgContainer.selectAll(".box");
-    var color = d3.scaleOrdinal(d3.schemeCategory20);
+    var color;
+    if (colorPalette === "tableau") {
+        color = d3.scaleOrdinal(["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ab"])
+    } else if (colorPalette === "dark") {
+        color = d3.scaleOrdinal(["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02","#a6761d","#666666"])
+    } else {
+        color = d3.scaleOrdinal(d3.schemeCategory20);
+    }
 
     for (var i = 0; i < categories.length; i++) {
         var dataCat = dataObj[categories[i]];
@@ -161,7 +168,7 @@ function renderBoxplots(abundancesObj, xAxisText, yAxisText) {
             index--;
         }
 
-        //draw verical line for lowerWhisker
+        //draw vertical line for lowerWhisker
         svg
             .append("line")
             .attr("class", "whisker")
@@ -239,7 +246,15 @@ function renderBoxplots(abundancesObj, xAxisText, yAxisText) {
             })
             .style("fill", function(d) {
                 if (!d.hasOwnProperty("color") || d.color === "") {
-                    return "#242C70";
+                    if (colorPalette === "blue") {
+                        return "#1384A0";
+                    } else if (colorPalette === "green") {
+                        return "#13A048";
+                    } else if (colorPalette === "black") {
+                        return "#000000";
+                    } else {
+                        return "#242C70";
+                    }
                 } else {
                     return color(d.color);
                 }

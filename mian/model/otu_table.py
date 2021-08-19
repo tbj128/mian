@@ -307,19 +307,17 @@ class OTUTable(object):
     def filter_out_low_count(self, base, headers, sample_labels, count_threshold, min_prevalence):
         logger.info(f"Starting filtering by low count with {count_threshold} and {min_prevalence}")
 
-        headers = np.array(headers)
-        num_samples = base.shape[0]
-        min_prevalence_percentage = min_prevalence / float(100)
-        otus_over_threshold = (base >= count_threshold).astype(int)
-        otus_to_keep = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) >= min_prevalence_percentage
-        # otus_over_threshold = np.where(base > count_threshold, 1, 0)
-        # otus_to_keep = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) >= min_prevalence_percentage
-
-        # print(otus_to_keep.A[0])
-
-        logger.info(
-            "Done filtering by low count. Kept " + str(sum(otus_to_keep.A[0])) + " cols out of " + str(len(headers)))
-        return base[:, otus_to_keep.A[0]], headers[otus_to_keep.A[0]], sample_labels
+        if count_threshold > 0:
+            headers = np.array(headers)
+            num_samples = base.shape[0]
+            min_prevalence_percentage = min_prevalence / float(100)
+            otus_over_threshold = (base >= count_threshold).astype(int)
+            otus_to_keep = np.divide(np.sum(otus_over_threshold, axis=0), num_samples) >= min_prevalence_percentage
+            logger.info(
+                "Done filtering by low count. Kept " + str(sum(otus_to_keep.A[0])) + " cols out of " + str(len(headers)))
+            return base[:, otus_to_keep.A[0]], headers[otus_to_keep.A[0]], sample_labels
+        else:
+            return base, headers, sample_labels
 
     def aggregate_low_count_np(self, base, headers, sample_labels, user_request):
         count_threshold = user_request.taxonomy_filter_count

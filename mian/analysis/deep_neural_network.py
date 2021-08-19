@@ -8,7 +8,6 @@
 #
 # Imports
 #
-from keras.utils import to_categorical
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
 
@@ -19,6 +18,7 @@ from sklearn.preprocessing import LabelEncoder, normalize
 import pandas as pd
 
 from tensorflow import keras
+from tensorflow.keras.utils import to_categorical
 import numpy as np
 
 class DeepNeuralNetwork(object):

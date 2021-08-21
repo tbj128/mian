@@ -6,7 +6,11 @@ Signing up is easy. Provide an email and password - your account is used to stor
 
 You can permanently delete you data at any time. 
 
-Alternatively, try the demo account.
+Alternatively, try the demo account \(press "Try Demo" from the [homepage](https://miandata.org/)\) which includes example datasets from the following studies:
+
+* Sze _et al._ [Host Response to the Lung Microbiome in Chronic Obstructive Pulmonary Disease](https://www.atsjournals.org/doi/full/10.1164/rccm.201502-0223OC)  \(can also be added in a newly registered account\)
+* Moitinho-Silva _et al_. [Investigating the high and low microbial abundance status in marine sponges](https://www.frontiersin.org/articles/10.3389/fmicb.2017.00752/full)
+* Ravenscraft _et al_. [No evidence that gut microbiota impose a net cost on their butterfly host](https://onlinelibrary.wiley.com/doi/pdf/10.1111/mec.15057)
 
 ## Starting From dada2 Pipeline \(ASV table\)
 
@@ -143,7 +147,7 @@ If auto-subsampling produces a low number, your data might have outliers. Option
 
 Subsampling OTU tables is a point of contention in the research community \([1](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003531), [2](https://www.polarmicrobes.org/how-i-learned-to-stop-worrying-and-love-subsampling-rarifying/)\), but is recommended here for comparative analysis. You may choose to proceed without normalization.
 
-![](.gitbook/assets/image%20%281%29%20%281%29.png)
+![](.gitbook/assets/image%20%284%29%20%281%29.png)
 
 
 

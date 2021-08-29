@@ -61,8 +61,8 @@
                 <div id="trainingConfig">
                     <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/random-forest-classifier#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="fixTraining" name="fixTraining" class="form-control">
-                        <option value="yes">Yes</option>
-                        <option value="no" selected>No</option>
+                        <option value="yes" selected>Yes</option>
+                        <option value="no">No</option>
                     </select>
 
                     <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/random-forest-classifier#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
@@ -70,7 +70,7 @@
                 </div>
 
                 <label class="control-label">Number of Trees <a href="https://tbj128.gitbook.io/mian/random-forest-classifier#number-of-trees" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                <input class="form-control" id="numTrees" name="numTrees" type="number" value="10"/>
+                <input class="form-control" id="numTrees" name="numTrees" type="number" value="100"/>
 
                 <label class="control-label">Max Tree Depth <a href="https://tbj128.gitbook.io/mian/random-forest-classifier#max-tree-depth" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="maxDepth" name="maxDepth" type="number" value="" placeholder="Leave blank for no max depth" />
@@ -106,15 +106,11 @@
             <thead>
                 <tr>
                     <th scope="col">Out-of-Bag Training Error</th>
-                    <th scope="col">Cross-Validation Accuracy</th>
-                    <th scope="col">Test Accuracy</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td id="oob-error"></td>
-                    <td id="cv-accuracy"></td>
-                    <td id="test-accuracy"></td>
                 </tr>
             </tbody>
         </table>
@@ -125,12 +121,25 @@
             <thead>
                 <tr>
                   <th scope="col">Label</th>
-                  <th scope="col">Area Under the Curve (AUC)</th>
+                  <th scope="col">Train - AUC</th>
+                  <th scope="col">Val - AUC</th>
+                  <th scope="col">Test - AUC</th>
                 </tr>
             </thead>
             <tbody id="auc-rows">
             </tbody>
         </table>
+        <hr/>
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Interpreting Your Results</h4>
+            <ul>
+                <li>Assess the predictive performance of your model using the test error.</li>
+                <li>Tune your model for better performance by looking only at the validation error.</li>
+                <li>The AUC tells you the probability that a randomly sampled positive patient will have a higher predicted score for the positive class than the negative class.</li>
+            </ul>
+            <br />
+            <a href="https://tbj128.gitbook.io/mian/random-forest#interpreting-your-results" target="_blank" class="btn btn-sm btn-default">Learn More</a>
+        </div>
     </div><!-- /.container -->
 
     <div id="push" style="height:42px;"></div>

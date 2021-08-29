@@ -8,7 +8,7 @@
 var tableResults = [];
 var expectedLoadFactor = 500;
 var cachedAbundancesObj = null;
-var cachedTrainingIndexes = null;
+var cachedSeed = null;
 
 var config = {
     type: 'line',
@@ -98,8 +98,8 @@ function initializeFields() {
         $("#trainingProportion").val(getParameterByName("trainingProportion"));
     }
 
-    if (getParameterByName("trainingIndexes") !== null) {
-        cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
+    if (getParameterByName("seed") !== null) {
+        cachedSeed = getParameterByName("seed");
     }
 
     if (getParameterByName("ref") !== null) {
@@ -159,10 +159,11 @@ function createSpecificListeners() {
 
     $("#download-svg").click(function() {
         downloadCanvas("random_forest", "canvas");
+        downloadCSV(tableResults);
     });
 
     $("#save-to-notebook").click(function() {
-        saveCanvasToNotebook("Random Forest (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n", "canvas");
+        saveTableToNotebook("Random Forest (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "Loss Function: " + $("#lossFunction option:selected").text() + "\n", tableResults);
     });
 }
 
@@ -180,14 +181,23 @@ function renderTrainingPlot() {
     }
     $("#roc-curve-type").text(curveType);
 
+    tableResults = [];
+    if ($("#crossValidate").val() === "full") {
+        tableResults.push(["Label", "Cross-Validation AUROC"]);
+    } else {
+        tableResults.push(["Label", "Training AUROC", "Validation AUROC", "Test AUROC"]);
+    }
+
     var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj[trainOrTestKey]).length);
     config.data.datasets = [];
     var i = 0;
     for (var k in cachedAbundancesObj[trainOrTestKey]) {
         if ($("#crossValidate").val() === "full") {
+            tableResults.push([k, cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"]]);
             $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td></tr>");
         } else {
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
+            tableResults.push([k, cachedAbundancesObj["train_class_to_roc"][k]["auc"], cachedAbundancesObj["val_class_to_roc"][k]["auc"], cachedAbundancesObj["test_class_to_roc"][k]["auc"]]);
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["auc"] + "</td></tr>");
         }
         config.data.datasets.push({
             label: k,
@@ -248,7 +258,7 @@ function getUpdateAnalysisData() {
         maxDepth: $("#maxDepth").val(),
         fixTraining: fixTraining,
         trainingProportion: trainingProportion,
-        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
+        seed: cachedSeed
     };
     if (getParameterByName("ref") != null) {
         data["ref"] = getParameterByName("ref");
@@ -278,23 +288,17 @@ function updateAnalysis() {
             var abundancesObj = JSON.parse(result);
             cachedAbundancesObj = abundancesObj;
 
-            if (cachedAbundancesObj["training_indexes"]) {
-                cachedTrainingIndexes = cachedAbundancesObj["training_indexes"];
-                data["trainingIndexes"] = cachedTrainingIndexes;
+            if (cachedAbundancesObj["seed"]) {
+                cachedSeed = cachedAbundancesObj["seed"];
+                data["seed"] = cachedSeed;
             } else {
-                data["trainingIndexes"] = [];
+                data["seed"] = "";
             }
             // Hack to update the URL with the training indexes
             setGetParameters(data);
 
             loadSuccess();
             $("#oob-error").text(abundancesObj["oob_error"]);
-            if (abundancesObj["cv_accuracy"]) {
-                $("#cv-accuracy").text(`${abundancesObj["cv_accuracy"]} ± ${abundancesObj["cv_accuracy_std"]}`);
-            } else {
-                $("#cv-accuracy").text("N/A");
-            }
-            $("#test-accuracy").text(`${abundancesObj["test_accuracy"] ? abundancesObj["test_accuracy"] : "N/A"}`);
             renderTrainingPlot();
         },
         error: function(err) {

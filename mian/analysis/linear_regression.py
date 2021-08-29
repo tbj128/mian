@@ -9,14 +9,14 @@
 # Imports
 #
 import pandas as pd
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import ElasticNet, SGDRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
-from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split, KFold
 
 from mian.model.otu_table import OTUTable
-from sklearn.preprocessing import LabelEncoder, normalize
 import numpy as np
+import random
 
 
 class LinearRegression(object):
@@ -35,7 +35,7 @@ class LinearRegression(object):
         cross_validate_folds = int(user_request.get_custom_attr("crossValidateFolds"))
         fix_training = user_request.get_custom_attr("fixTraining")
         training_proportion = user_request.get_custom_attr("trainingProportion")
-        existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
         mixing_ratio = float(user_request.get_custom_attr("mixingRatio"))
         max_iterations = int(user_request.get_custom_attr("maxIterations"))
 
@@ -74,60 +74,47 @@ class LinearRegression(object):
         if cross_validate_set == "full":
             cv_obj = performCrossValidationForAUC(X, metadata_vals, Y)
             return {
-                "cv_mae": cv_obj["cv_mae"],
-                "cv_mae_std": cv_obj["cv_mae_std"],
-                "cv_mse": cv_obj["cv_mse"],
-                "cv_mse_std": cv_obj["cv_mse_std"]
+                "cv_mae": round(cv_obj["cv_mae"], 2),
+                "cv_mae_std": round(cv_obj["cv_mae_std"], 2),
+                "cv_mse": round(cv_obj["cv_mse"], 2),
+                "cv_mse_std": round(cv_obj["cv_mse_std"], 2)
             }
         else:
-            if fix_training == "yes" and len(existing_training_indexes) > 0:
-                existing_training_indexes = np.array([int(i) for i in existing_training_indexes])
-                X_train = X[X.index.isin(existing_training_indexes)]
-                X_test = X[~X.index.isin(existing_training_indexes)]
-                y_train = Y[X.index.isin(existing_training_indexes)]
-                y_test = Y[~X.index.isin(existing_training_indexes)]
-                ind_train = existing_training_indexes
-                X_train, y_train = shuffle(X_train, y_train)
-                X_test, y_test = shuffle(X_test, y_test)
+            if fix_training == "yes":
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, random_state=seed)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, random_state=seed)
             else:
-                indices = np.arange(len(X))
-                X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices,
-                                                                                         train_size=training_proportion)
+                # Use a random seed each time (not recommended)
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5)
 
-            X_train = normalize(X_train)
-            X_test = normalize(X_test)
+            imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
+            X_train = imp_mean.fit_transform(X_train)
+            X_val = imp_mean.transform(X_val)
+            X_test = imp_mean.transform(X_test)
 
-            train_mae = 0
-            train_mse = 0
-            test_mae = 0
-            test_mse = 0
-            scores_train = []
-            scores_test = []
-            classifier = SGDRegressor(l1_ratio=mixing_ratio, max_iter=max_iterations)
-            epoch = 0
-            while epoch < max_iterations:
-                classifier.partial_fit(X_train, y_train)
-                preds_train = classifier.predict(X_train)
-                train_mae = mean_absolute_error(y_train.astype(float), preds_train)
-                train_mse = mean_squared_error(y_train.astype(float), preds_train)
+            classifier = ElasticNet(l1_ratio=mixing_ratio, fit_intercept=True, max_iter=max_iterations)
+            classifier.fit(X_train, y_train)
+            preds_train = classifier.predict(X_train)
+            train_mae = mean_absolute_error(y_train.astype(float), preds_train)
+            train_mse = mean_squared_error(y_train.astype(float), preds_train)
 
-                preds_test = classifier.predict(X_test)
-                test_mae = mean_absolute_error(y_test.astype(float), preds_test)
-                test_mse = mean_squared_error(y_test.astype(float), preds_test)
+            preds_val = classifier.predict(X_val)
+            val_mae = mean_absolute_error(y_val.astype(float), preds_val)
+            val_mse = mean_squared_error(y_val.astype(float), preds_val)
 
-                scores_train.append(train_mae)
-                scores_test.append(test_mae)
-
-                epoch += 1
+            preds_test = classifier.predict(X_test)
+            test_mae = mean_absolute_error(y_test.astype(float), preds_test)
+            test_mse = mean_squared_error(y_test.astype(float), preds_test)
 
             abundances_obj = {
-                "train_mae": train_mae,
-                "train_mse": train_mse,
-                "test_mae": test_mae,
-                "test_mse": test_mse,
-                "scores_train": scores_train,
-                "scores_test": scores_test,
-                "training_indexes": ind_train.tolist()
+                "train_mae": round(train_mae, 2),
+                "train_mse": round(train_mse, 2),
+                "val_mae": round(val_mae, 2),
+                "val_mse": round(val_mse, 2),
+                "test_mae": round(test_mae, 2),
+                "test_mse": round(test_mse, 2),
+                "seed": seed
             }
 
             return abundances_obj

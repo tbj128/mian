@@ -48,7 +48,7 @@
 
                 <label class="control-label">Evaluation Method <a href="https://tbj128.gitbook.io/mian/linear-regressor#evaluation-method" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="crossValidate" name="crossValidate" class="form-control">
-                    <option value="train">Train/Test Split</option>
+                    <option value="train">Train/Val/Test Split</option>
                     <option value="full">Cross-Validation on Full Dataset</option>
                 </select>
 
@@ -57,11 +57,11 @@
                     <input class="form-control" id="crossValidateFolds" name="crossValidateFolds" type="number" value="3" />
                 </div>
 
-                <div id="trainingConfig" style="display:none;">
+                <div id="trainingConfig">
                     <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/linear-regressor#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                     <select id="fixTraining" name="fixTraining" class="form-control">
-                        <option value="yes">Yes</option>
-                        <option value="no" selected>No</option>
+                        <option value="yes" selected>Yes</option>
+                        <option value="no">No</option>
                     </select>
 
                     <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/linear-regressor#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
@@ -110,29 +110,38 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr id="training-row">
                     <th scope="row">Training</th>
                     <td id="train-mae"></td>
                     <td id="train-mse"></td>
                 </tr>
-                <tr>
+                <tr id="cv-row">
                     <th scope="row">Cross-Validation Testing</th>
                     <td id="cv-mae"></td>
                     <td id="cv-mse"></td>
                 </tr>
-                <tr>
-                    <th scope="row">Testing</th>
+                <tr id="val-row">
+                    <th scope="row">Validation</th>
+                    <td id="val-mae"></td>
+                    <td id="val-mse"></td>
+                </tr>
+                <tr id="test-row">
+                    <th scope="row">Test</th>
                     <td id="test-mae"></td>
                     <td id="test-mse"></td>
                 </tr>
             </tbody>
         </table>
         <hr/>
-
-        <div id="training-plot-container">
-            <hr />
-            <h4>Training/Test Plot</h4>
-            <canvas id="canvas"></canvas>
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Interpreting Your Results</h4>
+            <ul>
+                <li>Assess the predictive performance of your model using the test error.</li>
+                <li>Tune your model for better performance by looking only at the validation error.</li>
+                <li>The mean absolute/squared error is the error that your model experiences when predicting for the Experiment Variable.</li>
+            </ul>
+            <br />
+            <a href="https://tbj128.gitbook.io/mian/linear-regressor#interpreting-your-results" target="_blank" class="btn btn-sm btn-default">Learn More</a>
         </div>
     </div><!-- /.container -->
 

@@ -13,11 +13,10 @@ import numpy as np
 import pandas as pd
 from scipy import interp
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import SGDClassifier
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.preprocessing import normalize
-from sklearn.utils import shuffle
+import random
 
 from mian.model.otu_table import OTUTable
 
@@ -37,7 +36,7 @@ class RandomForest(object):
         cross_validate_folds = int(user_request.get_custom_attr("crossValidateFolds"))
         fix_training = user_request.get_custom_attr("fixTraining")
         training_proportion = user_request.get_custom_attr("trainingProportion")
-        existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
         num_trees = int(user_request.get_custom_attr("numTrees"))
         max_depth = int(user_request.get_custom_attr("maxDepth")) if user_request.get_custom_attr("maxDepth") != "" else None
 
@@ -82,36 +81,25 @@ class RandomForest(object):
 
             for i, (train, test) in enumerate(cv.split(X_cv, metadata_vals_cv)):
                 classifier.fit(X_cv[X_cv.index.isin(train)], Y_cv[train])
-                test_probs = classifier.decision_function(X_cv[X_cv.index.isin(test)])
+                test_probs = classifier.predict_proba(X_cv[X_cv.index.isin(test)])
                 test_accuracy = classifier.score(X_cv[X_cv.index.isin(test)], Y_cv[test])
                 test_accuracies.append(test_accuracy)
 
                 Y_cv_binarize = binarize(classifier, Y_cv[test])
-                if len(classifier.classes_) == 2:
-                    fpr, tpr, _ = roc_curve(Y_cv_binarize[:, 1], test_probs[:])
-                    auc = roc_auc_score(Y_cv_binarize[:, 1], test_probs[:])
+                for c in range(len(classifier.classes_)):
+                    actual_class = classifier.classes_[c]
+
+                    fpr, tpr, _ = roc_curve(Y_cv_binarize[:, c], test_probs[:, c])
+                    auc = roc_auc_score(Y_cv_binarize[:, c], test_probs[:, c])
+
                     tpr = interp(base_fpr, fpr, tpr)
                     tpr[0] = 0.0
 
-                    label = classifier.classes_[1]
-                    class_to_roc[label]["fprs"].append(base_fpr)
-                    class_to_roc[label]["tprs"].append(tpr)
-                    class_to_roc[label]["aucs"].append(auc)
-                else:
-                    for c in range(len(classifier.classes_)):
-                        actual_class = classifier.classes_[c]
+                    class_to_roc[actual_class]["fprs"].append(base_fpr)
+                    class_to_roc[actual_class]["tprs"].append(tpr)
+                    class_to_roc[actual_class]["aucs"].append(auc)
 
-                        fpr, tpr, _ = roc_curve(Y_cv_binarize[:, c], test_probs[:, c])
-                        auc = roc_auc_score(Y_cv_binarize[:, c], test_probs[:, c])
-
-                        tpr = interp(base_fpr, fpr, tpr)
-                        tpr[0] = 0.0
-
-                        class_to_roc[actual_class]["fprs"].append(base_fpr)
-                        class_to_roc[actual_class]["tprs"].append(tpr)
-                        class_to_roc[actual_class]["aucs"].append(auc)
-
-                        i += 1
+                    i += 1
 
             average_class_to_roc = {}
             for k, v in class_to_roc.items():
@@ -130,6 +118,24 @@ class RandomForest(object):
             }
             return cv_obj
 
+        def get_auc(classifier, y_test, test_probs):
+            class_to_roc = {}
+            y_test_binarize = binarize(classifier, y_test)
+            for i in range(len(classifier.classes_)):
+                fpr, tpr, _ = roc_curve(y_test_binarize[:, i], test_probs[:, i])
+                try:
+                    auc = roc_auc_score(y_test_binarize[:, i], test_probs[:, i])
+
+                    class_to_roc[classifier.classes_[i]] = {
+                        "fpr": [round(a.item(), 4) for a in fpr],
+                        "tpr": [round(a.item(), 4) for a in tpr],
+                        "auc": round(auc.item(), 4)
+                    }
+                except ValueError:
+                    print("ROC could not be calculated")
+                    pass
+            return class_to_roc
+
         if cross_validate_set == "full":
             cv_obj = performCrossValidationForAUC(X, metadata_vals, Y)
             return {
@@ -138,48 +144,36 @@ class RandomForest(object):
                 "cv_accuracy_std": cv_obj["cv_accuracy_std"]
             }
         else:
-            if fix_training == "yes" and len(existing_training_indexes) > 0:
-                existing_training_indexes = np.array([int(i) for i in existing_training_indexes])
-                X_train = X[X.index.isin(existing_training_indexes)]
-                X_test = X[~X.index.isin(existing_training_indexes)]
-                y_train = Y[X.index.isin(existing_training_indexes)]
-                y_test = Y[~X.index.isin(existing_training_indexes)]
-                ind_train = existing_training_indexes
-                X_train, y_train = shuffle(X_train, y_train)
-                X_test, y_test = shuffle(X_test, y_test)
+            if fix_training == "yes":
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, random_state=seed, stratify=Y)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, random_state=seed, stratify=y_test)
             else:
-                indices = np.arange(len(X))
-                X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices,
-                                                                                         train_size=training_proportion,
-                                                                                         stratify=Y)
+                # Use a random seed each time (not recommended)
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, stratify=Y)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, stratify=y_test)
 
-            X_train = normalize(X_train)
-            X_test = normalize(X_test)
+            imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
+            X_train = imp_mean.fit_transform(X_train)
+            X_val = imp_mean.transform(X_val)
+            X_test = imp_mean.transform(X_test)
 
             classifier = RandomForestClassifier(n_estimators=num_trees, max_depth=max_depth, oob_score=True)
 
             classifier.fit(X_train, y_train)
+            train_probs = classifier.predict_proba(X_train)
+            val_probs = classifier.predict_proba(X_val)
             test_probs = classifier.predict_proba(X_test)
-            test_accuracy = classifier.score(X_test, y_test)
 
-            class_to_roc = {}
-            for i in range(len(classifier.classes_)):
-                y_test_binarize = binarize(classifier, y_test)
-                fpr, tpr, _ = roc_curve(y_test_binarize[:, i], test_probs[:, i])
-                auc = roc_auc_score(y_test_binarize[:, i], test_probs[:, i])
-
-                class_to_roc[classifier.classes_[i]] = {
-                    "fpr": [a.item() for a in fpr],
-                    "tpr": [a.item() for a in tpr],
-                    "auc": auc.item()
-                }
-                i += 1
+            train_class_to_roc = get_auc(classifier, y_train, train_probs)
+            val_class_to_roc = get_auc(classifier, y_val, val_probs)
+            test_class_to_roc = get_auc(classifier, y_test, test_probs)
 
             abundances_obj = {
                 "oob_error": 1 - classifier.oob_score_,
-                "test_accuracy": test_accuracy,
-                "test_class_to_roc": class_to_roc,
-                "training_indexes": ind_train.tolist()
+                "train_class_to_roc": train_class_to_roc,
+                "val_class_to_roc": val_class_to_roc,
+                "test_class_to_roc": test_class_to_roc,
+                "seed": seed
             }
 
             return abundances_obj

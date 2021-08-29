@@ -12,14 +12,15 @@
 import numpy as np
 import pandas as pd
 from scipy import interp
-from sklearn.linear_model import SGDClassifier
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.linear_model import SGDClassifier, LogisticRegression, Perceptron
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.utils import shuffle
-from sklearn.preprocessing import normalize
+from sklearn.impute import IterativeImputer, SimpleImputer
+from sklearn.svm import LinearSVC
 
 from mian.model.otu_table import OTUTable
-
+import random
 
 class LinearClassifier(object):
 
@@ -37,12 +38,9 @@ class LinearClassifier(object):
         loss_function = user_request.get_custom_attr("lossFunction")
         fix_training = user_request.get_custom_attr("fixTraining")
         training_proportion = user_request.get_custom_attr("trainingProportion")
-        existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
         mixing_ratio = float(user_request.get_custom_attr("mixingRatio"))
         max_iterations = int(user_request.get_custom_attr("maxIterations"))
-
-        # NORMALIZE THE DATASET
-        # df = pd.DataFrame(data=otu_table, columns=headers, index=range(len(otu_table)))
 
         if int(user_request.level) == -1:
             # OTU tables are returned as a CSR matrix
@@ -50,13 +48,6 @@ class LinearClassifier(object):
         else:
             X = otu_table
 
-        # stats = df.describe()
-        # stats = stats.transpose()
-        #
-        # def norm(x):
-        #     return (x - stats['mean']) / stats['std']
-        #
-        # X = norm(df)
         Y = np.array(metadata_vals)
         uniq_metadata_vals = list(set(Y))
 
@@ -81,7 +72,6 @@ class LinearClassifier(object):
 
             base_fpr = np.linspace(0, 1, 51)
             class_to_roc = {}
-            test_accuracies = []
             for i in range(len(uniq_metadata_vals)):
                 class_to_roc[uniq_metadata_vals[i]] = {
                     "fprs": [],
@@ -92,8 +82,6 @@ class LinearClassifier(object):
             for i, (train, test) in enumerate(cv.split(X_cv, metadata_vals_cv)):
                 classifier.fit(X_cv[X_cv.index.isin(train)], Y_cv[train])
                 test_probs = classifier.decision_function(X_cv[X_cv.index.isin(test)])
-                test_accuracy = classifier.score(X_cv[X_cv.index.isin(test)], Y_cv[test])
-                test_accuracies.append(test_accuracy)
 
                 Y_cv_binarize = binarize(classifier, Y_cv[test])
                 if len(classifier.classes_) == 2:
@@ -133,75 +121,11 @@ class LinearClassifier(object):
                     }
 
             cv_obj = {
-                "class_to_roc": average_class_to_roc,
-                "cv_accuracy": round(np.array(test_accuracies).mean(), 4),
-                "cv_accuracy_std": round(np.array(test_accuracies).std(), 4)
+                "class_to_roc": average_class_to_roc
             }
             return cv_obj
 
-        if cross_validate_set == "full":
-            cv_obj = performCrossValidationForAUC(X, metadata_vals, Y)
-            return {
-                "train_class_to_roc": cv_obj["class_to_roc"],
-                "cv_accuracy": cv_obj["cv_accuracy"],
-                "cv_accuracy_std": cv_obj["cv_accuracy_std"]
-            }
-        else:
-            if fix_training == "yes" and len(existing_training_indexes) > 0:
-                existing_training_indexes = np.array([int(i) for i in existing_training_indexes])
-                X_train = X[X.index.isin(existing_training_indexes)]
-                X_test = X[~X.index.isin(existing_training_indexes)]
-                y_train = Y[X.index.isin(existing_training_indexes)]
-                y_test = Y[~X.index.isin(existing_training_indexes)]
-                ind_train = existing_training_indexes
-                X_train, y_train = shuffle(X_train, y_train)
-                X_test, y_test = shuffle(X_test, y_test)
-            else:
-                indices = np.arange(len(X))
-                X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices,
-                                                                                         train_size=training_proportion,
-                                                                                         stratify=Y)
-
-            # X_train = X_train.reset_index(drop=True)
-            # X_test = X_test.reset_index(drop=True)
-
-            X_train = normalize(X_train)
-            X_test = normalize(X_test)
-            classifier = SGDClassifier(loss=loss_function, l1_ratio=mixing_ratio, max_iter=max_iterations)
-
-            classes = np.unique(Y)
-            scores_train = []
-            scores_test = []
-            best_accuracy = 0
-            patience = 0
-            tol = 1e-3
-            epoch = 0
-            while epoch < max_iterations:
-                classifier.partial_fit(X_train, y_train, classes=classes)
-
-                train_score = classifier.score(X_train, y_train)
-                scores_train.append(train_score)
-                scores_test.append(classifier.score(X_test, y_test))
-
-                if best_accuracy < train_score:
-                    best_accuracy = train_score
-
-                if epoch > 5:
-                    if best_accuracy - tol > train_score:
-                        patience += 1
-                    else:
-                        patience = 0
-
-                # if patience == 5:
-                #     break
-                epoch += 1
-
-
-
-            test_probs = classifier.decision_function(X_test)
-            train_accuracy = classifier.score(X_train, y_train)
-            test_accuracy = classifier.score(X_test, y_test)
-
+        def get_auc(classifier, y_test, test_probs):
             class_to_roc = {}
             y_test_binarize = binarize(classifier, y_test)
             if len(classifier.classes_) == 2:
@@ -228,16 +152,47 @@ class LinearClassifier(object):
                     except ValueError:
                         print("ROC could not be calculated")
                         pass
+            return class_to_roc
 
-                    i += 1
+        if cross_validate_set == "full":
+            cv_obj = performCrossValidationForAUC(X, metadata_vals, Y)
+            return {
+                "train_class_to_roc": cv_obj["class_to_roc"]
+            }
+        else:
+            if fix_training == "yes":
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, random_state=seed, stratify=Y)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, random_state=seed, stratify=y_test)
+            else:
+                # Use a random seed each time (not recommended)
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, stratify=Y)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, stratify=y_test)
+
+            imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
+            X_train = imp_mean.fit_transform(X_train)
+            X_val = imp_mean.transform(X_val)
+            X_test = imp_mean.transform(X_test)
+
+            classifier = SGDClassifier(penalty="elasticnet", loss=loss_function, l1_ratio=mixing_ratio, max_iter=max_iterations)
+
+            classifier.fit(X_train, y_train)
+            train_probs = classifier.decision_function(X_train)
+            val_probs = classifier.decision_function(X_val)
+            test_probs = classifier.decision_function(X_test)
+
+            print(f"X_train: {X_train.shape}")
+            print(f"X_val: {X_val.shape}")
+            print(f"X_test: {X_test.shape}")
+
+            train_class_to_roc = get_auc(classifier, y_train, train_probs)
+            val_class_to_roc = get_auc(classifier, y_val, val_probs)
+            test_class_to_roc = get_auc(classifier, y_test, test_probs)
 
             abundances_obj = {
-                "train_accuracy": round(train_accuracy, 4),
-                "test_accuracy": round(test_accuracy, 4),
-                "test_class_to_roc": class_to_roc,
-                "training_indexes": ind_train.tolist(),
-                "scores_train": scores_train,
-                "scores_test": scores_test
+                "train_class_to_roc": train_class_to_roc,
+                "val_class_to_roc": val_class_to_roc,
+                "test_class_to_roc": test_class_to_roc,
+                "seed": seed
             }
 
             return abundances_obj

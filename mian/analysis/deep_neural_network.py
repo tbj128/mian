@@ -8,18 +8,20 @@
 #
 # Imports
 #
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import mean_absolute_error, mean_squared_error, roc_curve, roc_auc_score
 from sklearn.model_selection import train_test_split
 
 from sklearn.utils import shuffle
 
 from mian.model.otu_table import OTUTable
-from sklearn.preprocessing import LabelEncoder, normalize
+from sklearn.preprocessing import LabelEncoder, normalize, StandardScaler
 import pandas as pd
 
 from tensorflow import keras
 from tensorflow.keras.utils import to_categorical
 import numpy as np
+import random
 
 class DeepNeuralNetwork(object):
 
@@ -33,12 +35,12 @@ class DeepNeuralNetwork(object):
 
     def analyse(self, user_request, otu_table, headers, metadata_vals):
         epochs = user_request.get_custom_attr("epochs")
+        lr = float(user_request.get_custom_attr("lr"))
         dnn_model = user_request.get_custom_attr("dnnModel")
         problem_type = user_request.get_custom_attr("problemType")
         fix_training = user_request.get_custom_attr("fixTraining")
         training_proportion = user_request.get_custom_attr("trainingProportion")
-        validation_proportion = user_request.get_custom_attr("validationProportion")
-        existing_training_indexes = np.array(user_request.get_custom_attr("trainingIndexes"))
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
 
         if int(user_request.level) == -1:
             # OTU tables are returned as a CSR matrix
@@ -46,30 +48,66 @@ class DeepNeuralNetwork(object):
         else:
             X = otu_table
 
+        le_name_mapping = {}
         if problem_type == "classification":
             le = LabelEncoder()
             le.fit(metadata_vals)
             Y = le.transform(metadata_vals)
+            le_name_mapping = dict(zip(le.transform(le.classes_), le.classes_))
             Y = to_categorical(Y)
         else:
-            Y = metadata_vals
+            Y = np.array([float(i) for i in metadata_vals])
 
-        if fix_training == "yes" and len(existing_training_indexes) > 0:
-            existing_training_indexes = np.array([int(i) for i in existing_training_indexes])
-            X_train = X[X.index.isin(existing_training_indexes)]
-            X_test = X[~X.index.isin(existing_training_indexes)]
-            y_train = Y[X.index.isin(existing_training_indexes)]
-            y_test = Y[~X.index.isin(existing_training_indexes)]
-            ind_train = existing_training_indexes
-            X_train, y_train = shuffle(X_train, y_train)
-            X_test, y_test = shuffle(X_test, y_test)
+        if fix_training == "yes":
+            if problem_type == "classification":
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, random_state=seed, stratify=Y)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, random_state=seed, stratify=y_test)
+            else:
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, random_state=seed)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, random_state=seed)
         else:
-            indices = np.arange(len(X))
-            X_train, X_test, y_train, y_test, ind_train, ind_test = train_test_split(X, Y, indices, train_size=training_proportion,
-                                                                                         stratify=Y)
+            if problem_type == "classification":
+                # Use a random seed each time (not recommended)
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, stratify=Y)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, stratify=y_test)
+            else:
+                # Use a random seed each time (not recommended)
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5)
 
-        X_train = normalize(X_train)
-        X_test = normalize(X_test)
+        imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
+        X_train = imp_mean.fit_transform(X_train)
+        X_val = imp_mean.transform(X_val)
+        X_test = imp_mean.transform(X_test)
+
+        # Note: mean is not scaled to support sparse matrices
+        scaler = StandardScaler(with_mean=False)
+        X_train = scaler.fit_transform(X_train)
+        X_val = scaler.transform(X_val)
+        X_test = scaler.transform(X_test)
+
+        def get_auc(class_mapping, y_test, test_probs):
+            """
+            One vs Rest strategy
+            :param class_mapping
+            :param y_test: (n, c)
+            :param test_probs: (n, c)
+            """
+            class_to_roc = {}
+            for i in range(y_test.shape[1]):
+                fpr, tpr, _ = roc_curve(y_test[:, i], test_probs[:, i])
+                try:
+                    auc = roc_auc_score(y_test[:, i], test_probs[:, i])
+
+                    class_to_roc[class_mapping[i]] = {
+                        "fpr": [round(a.item(), 4) for a in fpr],
+                        "tpr": [round(a.item(), 4) for a in tpr],
+                        "auc": round(auc.item(), 4)
+                    }
+                except ValueError:
+                    print("ROC could not be calculated")
+                    pass
+            return class_to_roc
 
         def build_model(dnn_model, problem_type):
             i = 0
@@ -86,24 +124,17 @@ class DeepNeuralNetwork(object):
             if problem_type == "classification":
                 layers.append(keras.layers.Dense(len(set(metadata_vals)), activation='sigmoid'))
                 model = keras.Sequential(layers)
-                optimizer = 'adam'
+                optimizer = keras.optimizers.Adam(learning_rate=lr)
                 model.compile(loss='categorical_crossentropy',
-                              optimizer=optimizer,
-                              metrics=['accuracy'])
+                              optimizer=optimizer)
             else:
                 layers.append(keras.layers.Dense(1))
                 model = keras.Sequential(layers)
-                optimizer = 'adam'
+                optimizer = keras.optimizers.Adam(learning_rate=lr)
                 model.compile(loss='mse',
-                              optimizer=optimizer,
-                              metrics=['mae', 'mse'])
+                              optimizer=optimizer)
 
             return model
-
-
-        X_train, X_val, y_train, y_val = train_test_split(
-            X_train, y_train, train_size=training_proportion, stratify=y_train
-        )
 
         model = build_model(dnn_model, problem_type)
         if problem_type == "classification":
@@ -114,40 +145,60 @@ class DeepNeuralNetwork(object):
                 verbose=0
             )
 
-            score = model.evaluate(X_test, y_test, verbose=0)
-            print('Test loss:', score[0])
-            print('Test accuracy:', score[1])
+            y_test_prob = model.predict(X_test, verbose=0)
+            test_auc = get_auc(le_name_mapping, y_test, y_test_prob)
+            y_val_prob = model.predict(X_val, verbose=0)
+            val_auc = get_auc(le_name_mapping, y_val, y_val_prob)
+            y_train_prob = model.predict(X_train, verbose=0)
+            train_auc = get_auc(le_name_mapping, y_train, y_train_prob)
 
             abundances_obj = {
-                "accuracy": [a for a in hist.history['accuracy']],
-                "val_accuracy" : [a for a in hist.history['val_accuracy']],
-                "loss": [a for a in hist.history['loss']],
+                "train_loss": [a for a in hist.history['loss']],
                 "val_loss": [a for a in hist.history['val_loss']],
-                "test_accuracy": score[1],
-                "test_loss": score[0],
+                "train_class_to_roc": train_auc,
+                "val_class_to_roc": val_auc,
+                "test_class_to_roc": test_auc,
                 "num_samples": otu_table.shape[0],
-                "training_indexes": ind_train.tolist()
+                "train_size": X_train.shape,
+                "val_size": X_val.shape,
+                "test_size": X_test.shape,
+                "seed": seed
             }
             return abundances_obj
         else:
             hist = model.fit(
                 X_train, y_train,
-                epochs=epochs, validation_split=validation_proportion, verbose=0
+                epochs=epochs,
+                validation_data=(X_val, y_val),
+                verbose=0
             )
 
-            actual_predictions = model.predict(X_test)
-            test_mae = mean_absolute_error(y_test, actual_predictions)
-            test_mse = mean_squared_error(y_test, actual_predictions)
+            train_predictions = model.predict(X_train)
+            train_mae = mean_absolute_error(y_train, train_predictions)
+            train_mse = mean_squared_error(y_train, train_predictions)
+
+            val_predictions = model.predict(X_val)
+            val_mae = mean_absolute_error(y_val, val_predictions)
+            val_mse = mean_squared_error(y_val, val_predictions)
+
+            test_predictions = model.predict(X_test)
+            test_mae = mean_absolute_error(y_test, test_predictions)
+            test_mse = mean_squared_error(y_test, test_predictions)
 
             abundances_obj = {
-                "mae": [a.item() for a in hist.history['mae']],
-                "val_mae": [a.item() for a in hist.history['val_mae']],
-                "mse": [a.item() for a in hist.history['mse']],
-                "val_mse": [a.item() for a in hist.history['val_mse']],
-                "test_mae": test_mae.item(),
-                "test_mse": test_mse.item(),
-                "num_samples": len(otu_table),
-                "training_indexes": ind_train.tolist()
+                "train_loss": [a for a in hist.history['loss']],
+                "val_loss": [a for a in hist.history['val_loss']],
+                "train_mae": round(train_mae.item(), 2),
+                "train_mse": round(train_mse.item(), 2),
+                "val_mae": round(val_mae.item(), 2),
+                "val_mse": round(val_mse.item(), 2),
+                "test_mae": round(test_mae.item(), 2),
+                "test_mse": round(test_mse.item(), 2),
+                "num_samples": otu_table.shape[0],
+                "train_size": X_train.shape,
+                "val_size": X_val.shape,
+                "test_size": X_test.shape,
+                "seed": seed
             }
 
             return abundances_obj

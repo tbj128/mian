@@ -9,7 +9,7 @@ var tableResults = [];
 var expVarToType = {};
 var expectedLoadFactor = 500;
 var cachedAbundancesObj = null;
-var cachedTrainingIndexes = null;
+var cachedSeed = null;
 
 var config = {
     type: 'line',
@@ -102,8 +102,8 @@ function initializeFields() {
         $("#trainingProportion").val(getParameterByName("trainingProportion"));
     }
 
-    if (getParameterByName("trainingIndexes") !== null) {
-        cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
+    if (getParameterByName("seed") !== null) {
+        cachedSeed = getParameterByName("seed");
     }
 
     if (getParameterByName("rocFor") !== null) {
@@ -114,9 +114,6 @@ function initializeFields() {
         $("#referral-alert").show();
         $("#referer-name").text(getParameterByName("ref"));
     }
-
-    var ctx = document.getElementById('canvas').getContext('2d');
-    window.trainChart = new Chart(ctx, config);
 }
 
 //
@@ -164,7 +161,6 @@ function createSpecificListeners() {
     });
 
     $("#rocFor").change(function() {
-        renderTrainingPlot();
         setGetParameters(getUpdateAnalysisData());
     });
 
@@ -173,11 +169,11 @@ function createSpecificListeners() {
     });
 
     $("#download-svg").click(function() {
-        downloadCanvas("linear_regression", "canvas");
+        downloadCSV(tableResults);
     });
 
     $("#save-to-notebook").click(function() {
-        saveCanvasToNotebook("Linear Regression (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "L1 Regularization Ratio: " + $("#mixingRatio option:selected").text() + "\n", "canvas");
+        saveTableToNotebook("Linear Regression (" + $("#expvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "L1 Regularization Ratio: " + $("#mixingRatio").val() + "\n", tableResults);
     });
 }
 
@@ -185,46 +181,6 @@ function createSpecificListeners() {
 // Analysis Specific Methods
 //
 function customLoading() {}
-
-function renderTrainingPlot() {
-    if (cachedAbundancesObj == null) {
-        return;
-    }
-
-    var colors = palette('cb-Accent', 2);
-    config.data.datasets = [];
-    config.data.datasets.push({
-        label: "Training",
-        backgroundColor: "#" + colors[0],
-        borderColor: "#" + colors[0],
-        data: [],
-        fill: false,
-        lineTension: 0,
-        data: cachedAbundancesObj["scores_train"].map((val, i) => {
-            return {
-                x: i,
-                y: val
-            }
-        }),
-    });
-
-    config.data.datasets.push({
-        label: "Test",
-        backgroundColor: "#" + colors[1],
-        borderColor: "#" + colors[1],
-        data: [],
-        fill: false,
-        lineTension: 0,
-        data: cachedAbundancesObj["scores_test"].map((val, i) => {
-            return {
-                x: i,
-                y: val
-            }
-        }),
-    });
-
-    window.trainChart.update();
-}
 
 function getUpdateAnalysisData() {
 
@@ -260,7 +216,7 @@ function getUpdateAnalysisData() {
         maxIterations: $("#maxIterations").val(),
         fixTraining: fixTraining,
         trainingProportion: trainingProportion,
-        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
+        seed: cachedSeed,
     };
     if (getParameterByName("ref") != null) {
         data["ref"] = getParameterByName("ref");
@@ -291,11 +247,11 @@ function updateAnalysis() {
             var abundancesObj = JSON.parse(result);
             cachedAbundancesObj = abundancesObj;
 
-            if (cachedAbundancesObj["training_indexes"]) {
-                cachedTrainingIndexes = cachedAbundancesObj["training_indexes"];
-                data["trainingIndexes"] = cachedTrainingIndexes;
+            if (cachedAbundancesObj["seed"]) {
+                cachedSeed = cachedAbundancesObj["seed"];
+                data["seed"] = cachedSeed;
             } else {
-                data["trainingIndexes"] = [];
+                data["seed"] = "";
             }
             // Hack to update the URL with the training indexes
             setGetParameters(data);
@@ -303,26 +259,33 @@ function updateAnalysis() {
             loadSuccess();
 
             if ($("#crossValidate").val() === "full") {
-                $("#train-mae").text("N/A");
-                $("#train-mse").text("N/A");
                 $("#cv-mae").text(`${abundancesObj["cv_mae"]} ± ${abundancesObj["cv_mae_std"]}`);
                 $("#cv-mse").text(`${abundancesObj["cv_mse"]} ± ${abundancesObj["cv_mse_std"]}`);
-                if (abundancesObj["test_mae"]) {
-                    $("#test-mae").text(`${abundancesObj["test_mae"]}`);
-                    $("#test-mse").text(`${abundancesObj["test_mse"]}`);
-                } else {
-                    $("#test-mae").text("N/A");
-                    $("#test-mse").text("N/A");
-                }
-                $("#training-plot-container").hide();
-            } else {
-                $("#training-plot-container").show();
-                renderTrainingPlot();
+                $("#cv-row").show();
+                $("#training-row").hide();
+                $("#val-row").hide();
+                $("#test-row").hide();
 
-                $("#train-mae").text(`${abundancesObj["train_mae"]}`);
-                $("#train-mse").text(`${abundancesObj["train_mse"]}`);
+                tableResults = [];
+                tableResults.push(["Dataset", "Mean Absolute Error", "Mean Squared Error"]);
+                tableResults.push(["Cross-Validation", `${abundancesObj["cv_mae"]} ± ${abundancesObj["cv_mae_std"]}`, `${abundancesObj["cv_mse"]} ± ${abundancesObj["cv_mse_std"]}`]);
+            } else {
                 $("#cv-mae").text("N/A");
                 $("#cv-mse").text("N/A");
+                if (abundancesObj["train_mae"]) {
+                    $("#train-mae").text(`${abundancesObj["train_mae"]}`);
+                    $("#train-mse").text(`${abundancesObj["train_mse"]}`);
+                } else {
+                    $("#train-mae").text("N/A");
+                    $("#train-mse").text("N/A");
+                }
+                if (abundancesObj["val_mae"]) {
+                    $("#val-mae").text(`${abundancesObj["val_mae"]}`);
+                    $("#val-mse").text(`${abundancesObj["val_mse"]}`);
+                } else {
+                    $("#val-mae").text("N/A");
+                    $("#val-mse").text("N/A");
+                }
                 if (abundancesObj["test_mae"]) {
                     $("#test-mae").text(`${abundancesObj["test_mae"]}`);
                     $("#test-mse").text(`${abundancesObj["test_mse"]}`);
@@ -330,6 +293,16 @@ function updateAnalysis() {
                     $("#test-mae").text("N/A");
                     $("#test-mse").text("N/A");
                 }
+                $("#cv-row").hide();
+                $("#training-row").show();
+                $("#val-row").show();
+                $("#test-row").show();
+
+                tableResults = [];
+                tableResults.push(["Dataset", "Mean Absolute Error", "Mean Squared Error"]);
+                tableResults.push(["Training", abundancesObj["train_mae"], abundancesObj["train_mse"]]);
+                tableResults.push(["Validation", abundancesObj["val_mae"], abundancesObj["val_mse"]]);
+                tableResults.push(["Test", abundancesObj["test_mae"], abundancesObj["test_mse"]]);
             }
         },
         error: function(err) {

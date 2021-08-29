@@ -1427,13 +1427,13 @@ def getDeepNeuralNetworkShare():
 
 def getDeepNeuralNetwork(user_request, req):
     user_request.set_custom_attr("epochs", int(req.form['epochs']))
+    user_request.set_custom_attr("lr", float(req.form['lr']))
     user_request.set_custom_attr("dnnModel", json.loads(req.form['dnnModel']))
     user_request.set_custom_attr("expvar", req.form['expvar'])
     user_request.set_custom_attr("problemType", req.form['problemType'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
     user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
-    user_request.set_custom_attr("validationProportion", float(req.form['validationProportion']))
-    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+    user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = DeepNeuralNetwork()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1697,7 +1697,7 @@ def getLinearClassifier(user_request, req):
     user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
     user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
-    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+    user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = LinearClassifier()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1744,7 +1744,7 @@ def getLinearRegression(user_request, req):
     user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
     user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
-    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+    user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = LinearRegression()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1789,7 +1789,7 @@ def getRandomForest(user_request, req):
     user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
     user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
-    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+    user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = RandomForest()
     pool = multiprocessing.Pool(maxtasksperchild=1)

@@ -78,40 +78,24 @@
 
                 <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/deep-learning#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="fixTraining" name="fixTraining" class="form-control">
-                    <option value="yes">Yes</option>
-                    <option value="no" selected>No</option>
+                    <option value="yes" selected>Yes</option>
+                    <option value="no">No</option>
                 </select>
 
                 <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/deep-learning#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
 
-                <label class="control-label">Training Validation Proportion <a href="https://tbj128.gitbook.io/mian/deep-learning#training-validation-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                <input class="form-control" id="validationProportion" name="validationProportion" type="number" value="0.3"/>
-
                 <label class="control-label">Training Epochs <a href="https://tbj128.gitbook.io/mian/deep-learning#training-epochs" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="epochs" name="epochs" type="number" value="100"/>
+
+                <label class="control-label">Learning Rate <a href="https://tbj128.gitbook.io/mian/deep-learning#learning-rate" target="_blank"><i class="fa fa-info-circle"></i></a></label>
+                <input class="form-control" id="lr" name="lr" type="number" value="0.001"/>
 
                 <label class="control-label">Problem Type <a href="https://tbj128.gitbook.io/mian/deep-learning#problem-type" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="problemType" name="problemType" class="form-control pad-bottom">
                     <option value="classification">Classification</option>
                     <option value="regression">Regression</option>
                 </select>
-
-                <div id="regressionMeasureContainer" style="display:none">
-                    <label class="control-label">Measure <a href="https://tbj128.gitbook.io/mian/deep-learning#measure" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                    <select id="regressionMeasure" name="regressionMeasure" class="form-control pad-bottom">
-                        <option value="mae">Mean Absolute Error</option>
-                        <option value="mse">Mean Squared Error</option>
-                    </select>
-                </div>
-
-                <div id="classificationMeasureContainer" style="display:none">
-                    <label class="control-label">Measure <a href="https://tbj128.gitbook.io/mian/deep-learning#measure" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                    <select id="classificationMeasure" name="classificationMeasure" class="form-control pad-bottom">
-                        <option value="accuracy">Accuracy</option>
-                        <option value="loss">Cross-Entropy Loss</option>
-                    </select>
-                </div>
 
                 <label class="control-label">
                     Layers: <a href="https://tbj128.gitbook.io/mian/deep-learning#layers" target="_blank"><i class="fa fa-info-circle"></i></a>
@@ -148,25 +132,52 @@
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
         <div class="row">
-            <div class="col-md-3">
-                <table class="table table-bordered">
+            <div class="col-md-12">
+                <table id="auc-table" class="table table-bordered" style="display:none;">
                     <thead>
                         <tr>
-                            <th id="test-error-measure"></th>
+                          <th scope="col">Label</th>
+                          <th scope="col">Train AUC</th>
+                          <th scope="col">Val AUC</th>
+                          <th scope="col">Test AUC</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="auc-rows">
+                    </tbody>
+                </table>
+
+                <table id="mae-mse-table" class="table table-bordered" style="display:none;">
+                    <thead>
                         <tr>
-                            <td id="test-error-measure-val"></td>
+                          <th scope="col">Dataset</th>
+                          <th scope="col">Mean Absolute Error</th>
+                          <th scope="col">Mean Squared Error</th>
                         </tr>
+                    </thead>
+                    <tbody id="mae-mse-rows">
                     </tbody>
                 </table>
             </div>
-            <div class="col-md-9">
+        </div>
+        <div class="row">
+            <div class="col-md-12">
                 <div id="low-sample-warning" class="alert alert-warning" role="alert" style="display:none;"><strong>Not Enough Samples Warning </strong>Results here may be susceptible to overfitting and show high variation between runs</div>
             </div>
         </div>
 		<canvas id="canvas"></canvas>
+		<canvas id="canvas-roc"></canvas>
+        <hr/>
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Interpreting Your Results</h4>
+            <ul>
+                <li>Assess the predictive performance of your model using the test error.</li>
+                <li>Tune your model for better performance by looking only at the validation error.</li>
+                <li>If your model is properly trained, the loss should decrease over time for both the train and validation sets.</li>
+                <li>The AUC tells you the probability that a randomly sampled positive patient will have a higher predicted score for the positive class than the negative class.</li>
+            </ul>
+            <br />
+            <a href="https://tbj128.gitbook.io/mian/deep-learning#interpreting-your-results" target="_blank" class="btn btn-sm btn-default">Learn More</a>
+        </div>
     </div><!-- /.container -->
 
     <div id="push" style="height:42px;"></div>
@@ -177,6 +188,7 @@
 
 <!-- Include custom JS here -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+<script src="/static/js/palette.js"></script>
 <script src="/static/js/core.dnn.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->

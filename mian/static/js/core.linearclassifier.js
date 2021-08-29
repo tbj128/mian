@@ -8,7 +8,7 @@
 var tableResults = [];
 var expectedLoadFactor = 500;
 var cachedAbundancesObj = null;
-var cachedTrainingIndexes = null;
+var cachedSeed = null;
 
 var config = {
     type: 'line',
@@ -144,17 +144,14 @@ function initializeFields() {
         $("#trainingProportion").val(getParameterByName("trainingProportion"));
     }
 
-    if (getParameterByName("trainingIndexes") !== null) {
-        cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
+    if (getParameterByName("seed") !== null) {
+        cachedSeed = getParameterByName("seed");
     }
 
     if (getParameterByName("ref") !== null) {
         $("#referral-alert").show();
         $("#referer-name").text(getParameterByName("ref"));
     }
-
-    var ctx = document.getElementById('canvas').getContext('2d');
-    window.trainChart = new Chart(ctx, config);
 
     var ctxRoc = document.getElementById('canvas-roc').getContext('2d');
     window.rocChart = new Chart(ctxRoc, configRoc);
@@ -213,53 +210,13 @@ function createSpecificListeners() {
     });
 
     $("#download-svg").click(function() {
-        downloadCanvas("linear_classifier", "canvas");
-        downloadCanvas("linear_regression", "canvas-roc");
+        downloadCSV(tableResults);
+        downloadCanvas("linear_classifier", "canvas-roc");
     });
 
     $("#save-to-notebook").click(function() {
-        saveCanvasToNotebook("Linear Classifier (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "Loss Function: " + $("#lossFunction option:selected").text() + "\n" + "L1 Regularization Ratio: " + $("#mixingRatio option:selected").text() + "\n", "canvas");
+        saveTableToNotebook("Linear Classifier (" + $("#catvar").val() + ")", "Taxonomic Level: " + $("#taxonomy option:selected").text() + "\n" + "Loss Function: " + $("#lossFunction option:selected").text() + "\n" + "L1 Regularization Ratio: " + $("#mixingRatio").val() + "\n", tableResults);
     });
-}
-
-function renderTrainingPlot() {
-    if (cachedAbundancesObj == null) {
-        return;
-    }
-
-    var colors = palette('cb-Accent', 2);
-    config.data.datasets = [];
-    config.data.datasets.push({
-        label: "Training",
-        backgroundColor: "#" + colors[0],
-        borderColor: "#" + colors[0],
-        data: [],
-        fill: false,
-        lineTension: 0,
-        data: cachedAbundancesObj["scores_train"].map((val, i) => {
-            return {
-                x: i,
-                y: val
-            }
-        }),
-    });
-
-    config.data.datasets.push({
-        label: "Test",
-        backgroundColor: "#" + colors[1],
-        borderColor: "#" + colors[1],
-        data: [],
-        fill: false,
-        lineTension: 0,
-        data: cachedAbundancesObj["scores_test"].map((val, i) => {
-            return {
-                x: i,
-                y: val
-            }
-        }),
-    });
-
-    window.trainChart.update();
 }
 
 function renderRocPlot() {
@@ -276,14 +233,23 @@ function renderRocPlot() {
     }
     $("#roc-curve-type").text(curveType);
 
+    tableResults = [];
+    if ($("#crossValidate").val() === "full") {
+        tableResults.push(["Label", "Cross-Validation AUROC"]);
+    } else {
+        tableResults.push(["Label", "Training AUROC", "Validation AUROC", "Test AUROC"]);
+    }
+
     var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj[trainOrTestKey]).length);
     configRoc.data.datasets = [];
     var i = 0;
     for (var k in cachedAbundancesObj[trainOrTestKey]) {
         if ($("#crossValidate").val() === "full") {
+            tableResults.push([k, cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"]]);
             $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td></tr>");
         } else {
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
+            tableResults.push([k, cachedAbundancesObj["train_class_to_roc"][k]["auc"], cachedAbundancesObj["val_class_to_roc"][k]["auc"], cachedAbundancesObj["test_class_to_roc"][k]["auc"]]);
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
         }
         configRoc.data.datasets.push({
             label: k,
@@ -344,7 +310,7 @@ function getUpdateAnalysisData() {
         maxIterations: $("#maxIterations").val(),
         fixTraining: fixTraining,
         trainingProportion: trainingProportion,
-        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
+        seed: cachedSeed
     };
     if (getParameterByName("ref") != null) {
         data["ref"] = getParameterByName("ref");
@@ -373,27 +339,16 @@ function updateAnalysis() {
             var abundancesObj = JSON.parse(result);
             cachedAbundancesObj = abundancesObj;
 
-            if (cachedAbundancesObj["training_indexes"]) {
-                cachedTrainingIndexes = cachedAbundancesObj["training_indexes"];
-                data["trainingIndexes"] = cachedTrainingIndexes;
+            if (cachedAbundancesObj["seed"]) {
+                cachedSeed = cachedAbundancesObj["seed"];
+                data["seed"] = cachedSeed;
             } else {
-                data["trainingIndexes"] = [];
+                data["seed"] = "";
             }
             // Hack to update the URL with the training indexes
             setGetParameters(data);
 
             loadSuccess();
-            if (abundancesObj["cv_accuracy"]) {
-                $("#cv-accuracy").text(`${abundancesObj["cv_accuracy"]} ± ${abundancesObj["cv_accuracy_std"]}`);
-                $("#training-plot-container").hide();
-            } else {
-                $("#cv-accuracy").text("N/A");
-                $("#training-plot-container").show();
-                renderTrainingPlot();
-            }
-            $("#train-accuracy").text(`${abundancesObj["train_accuracy"] ? abundancesObj["train_accuracy"] : "N/A"}`);
-            $("#test-accuracy").text(`${abundancesObj["test_accuracy"] ? abundancesObj["test_accuracy"] : "N/A"}`);
-
             renderRocPlot();
         },
         error: function(err) {

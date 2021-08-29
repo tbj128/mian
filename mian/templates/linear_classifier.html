@@ -49,16 +49,16 @@
 
                         <label class="control-label">Loss Function <a href="https://tbj128.gitbook.io/mian/linear-classifier#loss-function" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                         <select id="lossFunction" name="lossFunction" class="form-control">
-                            <option value="hinge" selected>Hinge (Linear SVM)</option>
-                            <option value="log">Log (Logistic)</option>
-                            <option value="modified_huber">Huber</option>
+                            <option value="log" selected>Log (Logistic)</option>
+                            <option value="hinge">Hinge (Linear SVM)</option>
                             <option value="squared_hinge">Squared Hinge</option>
+                            <option value="modified_huber">Huber</option>
                             <option value="perceptron">Perceptron</option>
                         </select>
 
                         <label class="control-label">Evaluation Method <a href="https://tbj128.gitbook.io/mian/linear-classifier#evaluation-method" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                         <select id="crossValidate" name="crossValidate" class="form-control">
-                            <option value="train">Train/Test Split</option>
+                            <option value="train">Train/Val/Test Split</option>
                             <option value="full">Cross-Validation on Full Dataset</option>
                         </select>
 
@@ -71,8 +71,8 @@
                         <div id="trainingConfig">
                             <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/linear-classifier#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                             <select id="fixTraining" name="fixTraining" class="form-control">
-                                <option value="yes">Yes</option>
-                                <option value="no" selected>No</option>
+                                <option value="yes" selected>Yes</option>
+                                <option value="no">No</option>
                             </select>
 
                             <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/linear-classifier#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
@@ -111,40 +111,32 @@
             <div id="referral-alert" class="alert alert-success" role="alert" style="display:none;">
                 <strong>Feature Selection </strong>A random forest classifier is being built using features selected by the <strong><span id="referer-name"></span></strong> feature selection module
             </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Cross-Validation Accuracy</th>
-                        <th scope="col">Training Accuracy</th>
-                        <th scope="col">Test Accuracy</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td id="cv-accuracy"></td>
-                        <td id="train-accuracy"></td>
-                        <td id="test-accuracy"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div id="training-plot-container">
-                <hr />
-                <h4>Training/Test Plot</h4>
-                <canvas id="canvas"></canvas>
-            </div>
-            <hr />
             <h4>ROC Curve (<span id="roc-curve-type"></span>)</h4>
             <canvas id="canvas-roc"></canvas>
             <table class="table">
                 <thead>
                     <tr>
                         <th scope="col">Label</th>
-                        <th scope="col">Area Under the Curve (AUC)</th>
+                        <th scope="col">Training - Area Under the Curve (AUC)</th>
+                        <th scope="col">Validation - Area Under the Curve (AUC)</th>
+                        <th scope="col">Test - Area Under the Curve (AUC)</th>
                     </tr>
                 </thead>
                 <tbody id="auc-rows">
                 </tbody>
             </table>
+
+            <hr/>
+            <div class="alert alert-info" role="alert">
+                <h4 class="alert-heading">Interpreting Your Results</h4>
+                <ul>
+                    <li>Assess the predictive performance of your model using the test error.</li>
+                    <li>Tune your model for better performance by looking only at the validation error.</li>
+                    <li>The AUC tells you the probability that a randomly sampled positive patient will have a higher predicted score for the positive class than the negative class.</li>
+                </ul>
+                <br />
+                <a href="https://tbj128.gitbook.io/mian/linear-classifier#interpreting-your-results" target="_blank" class="btn btn-sm btn-default">Learn More</a>
+            </div>
         </div>
         <!-- /.container -->
 

@@ -1,10 +1,10 @@
 # Deep Learning
 
-![](.gitbook/assets/image%20%2815%29.png)
+![](.gitbook/assets/image%20%2845%29.png)
 
 ### Used For
 
-* Assess the performance of a deep neural network on the OTU data in predicting a categorical or numerical variable
+* Assess the performance of a deep neural network \(implemented here as a multi-layer perceptron\) on the OTU data in predicting a categorical or numerical variable
 * Examples:
   * Predict patient outcome or sampling region based on the lung microbiome composition from COPD patients
   * Predict hospital length-of-stay based on the nasopharyngeal microbiome composition from ICU patients
@@ -12,11 +12,6 @@
 {% hint style="info" %}
 Use deep neural networks \(DNN\) with caution. DNNs are typically best when there are thousands of examples for each categorical class. DNNs are also prone to overfitting - dropout layers can help reduce overfitting.
 {% endhint %}
-
-### Result Interpretation
-
-* The graph shows either the accuracy or cross-entropy loss over epochs for the training and validation data only
-* The test accuracy or loss is calculated once after the training is complete
 
 ### Feature Selection Parameters
 
@@ -62,6 +57,17 @@ Customize and build your own deep neural network by setting the number and type 
 
 * **Dense Layer**: The neurons are fully-connected to the neurons of the next layer. 
 * \*\*\*\*[**Dropout Layer**](https://en.wikipedia.org/wiki/Dropout_%28neural_networks%29): The percentage of connections to randomly drop between the current layer and the next layer. Dropout reduces overfitting by preventing co-adaptions between neurons.
+
+### Result Interpretation
+
+* The figure shows you the loss over training epochs. The loss should decrease as the number of epochs increase. Tips:
+  * If the loss fluctuates, try decreasing the learning rate.
+  * If the loss doesn't plateau, try increasing the learning rate.
+  * If the training and validation losses diverge, you have overfitting. In this case, try adding a dropout layer or decreasing the number of layers in the model.
+  * If the losses do not decrease, try increasing the number of layers or increasing the number of units in each layer.
+* Assess the predictive performance of your model using the test AUC \(area under the [ROC curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) shown\). _Note: Whenever possible, it is still recommended to validate a trained model against an independent dataset \(one that is collected outside of your study\)._
+* Tune your model for better performance by looking only at the validation AUC. Tuning refers to changing the configurable parameters to try to achieve a better performance for your dataset.  _It is important to not tune against the test AUC to ensure you don't overfit your model to the test set._
+* The AUC tells you the probability that a randomly sampled positive patient will have a higher predicted score for the positive class than the negative class. The AUC will be shown in a "one-vs-all" format.
 
 ### Interactive Elements
 

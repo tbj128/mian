@@ -1,6 +1,6 @@
 # Linear Classifier
 
-![](.gitbook/assets/image%20%2828%29.png)
+![](.gitbook/assets/image%20%2844%29.png)
 
 ### Used For
 
@@ -62,6 +62,12 @@ L1 \([LASSO](https://en.wikipedia.org/wiki/Lasso_%28statistics%29)\) regularizat
 #### Max Epochs
 
 The maximum number of passes through the training data. 
+
+### Interpreting Your Results
+
+* Assess the predictive performance of your model using the test AUC.  _Note: Whenever possible, it is still recommended to validate a trained model against an independent dataset \(one that is collected outside of your study\)._
+* Tune your model for better performance by looking only at the validation AUC. Tuning refers to changing the configurable parameters to try to achieve a better performance for your dataset.  _It is important to not tune against the test AUC to ensure you don't overfit your model to the test set._
+* The AUC tells you the probability that a randomly sampled positive patient will have a higher predicted score for the positive class than the negative class. The AUC will be shown in a "one-vs-all" format.
 
 ### Interactive Elements
 

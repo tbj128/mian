@@ -136,7 +136,8 @@ class LinearClassifier(object):
                 class_to_roc[label] = {
                     "fpr": [round(a.item(), 4) for a in fpr],
                     "tpr": [round(a.item(), 4) for a in tpr],
-                    "auc": round(auc.item(), 4)
+                    "auc": round(auc.item(), 4),
+                    "num_positives": sum(y_test_binarize[:, 1])
                 }
             else:
                 for i in range(len(classifier.classes_)):
@@ -147,7 +148,8 @@ class LinearClassifier(object):
                         class_to_roc[classifier.classes_[i]] = {
                             "fpr": [round(a.item(), 4) for a in fpr],
                             "tpr": [round(a.item(), 4) for a in tpr],
-                            "auc": round(auc.item(), 4)
+                            "auc": round(auc.item(), 4),
+                            "num_positives": sum(y_test_binarize[:, i])
                         }
                     except ValueError:
                         print("ROC could not be calculated")
@@ -180,10 +182,6 @@ class LinearClassifier(object):
             val_probs = classifier.decision_function(X_val)
             test_probs = classifier.decision_function(X_test)
 
-            print(f"X_train: {X_train.shape}")
-            print(f"X_val: {X_val.shape}")
-            print(f"X_test: {X_test.shape}")
-
             train_class_to_roc = get_auc(classifier, y_train, train_probs)
             val_class_to_roc = get_auc(classifier, y_val, val_probs)
             test_class_to_roc = get_auc(classifier, y_test, test_probs)
@@ -192,6 +190,9 @@ class LinearClassifier(object):
                 "train_class_to_roc": train_class_to_roc,
                 "val_class_to_roc": val_class_to_roc,
                 "test_class_to_roc": test_class_to_roc,
+                "train_size": X_train.shape,
+                "val_size": X_val.shape,
+                "test_size": X_test.shape,
                 "seed": seed
             }
 

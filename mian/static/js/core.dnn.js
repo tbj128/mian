@@ -346,6 +346,9 @@ function renderTrainingPlot() {
     $("#auc-rows").empty();
     $("#mae-mse-rows").empty();
     if ($("#problemType").val() === "classification") {
+        $("#train-n").text(cachedAbundancesObj["train_size"][0]);
+        $("#val-n").text(cachedAbundancesObj["val_size"][0]);
+        $("#test-n").text(cachedAbundancesObj["test_size"][0]);
 
         var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj["train_class_to_roc"]).length);
         configRoc.data.datasets = [];
@@ -353,7 +356,7 @@ function renderTrainingPlot() {
         var i = 0;
         for (var k in cachedAbundancesObj["train_class_to_roc"]) {
             tableResults.push([k, cachedAbundancesObj["train_class_to_roc"][k]["auc"], cachedAbundancesObj["val_class_to_roc"][k]["auc"], cachedAbundancesObj["test_class_to_roc"][k]["auc"]]);
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["auc"] + "</td></tr>");
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["auc"] + "</td></tr>");
 
             configRoc.data.datasets.push({
                 label: k,
@@ -362,10 +365,10 @@ function renderTrainingPlot() {
                 data: [],
                 fill: false,
                 lineTension: 0,
-                data: cachedAbundancesObj["train_class_to_roc"][k]["tpr"].map((val, i) => {
+                data: cachedAbundancesObj["test_class_to_roc"][k]["tpr"].map((val, i) => {
                     return {
-                        x: cachedAbundancesObj["train_class_to_roc"][k]["fpr"][i],
-                        y: cachedAbundancesObj["train_class_to_roc"][k]["tpr"][i]
+                        x: cachedAbundancesObj["test_class_to_roc"][k]["fpr"][i],
+                        y: cachedAbundancesObj["test_class_to_roc"][k]["tpr"][i]
                     }
                 }),
             });
@@ -381,9 +384,9 @@ function renderTrainingPlot() {
         tableResults.push(["Validation", cachedAbundancesObj["val_mae"], cachedAbundancesObj["val_mse"]])
         tableResults.push(["Test", cachedAbundancesObj["test_mae"], cachedAbundancesObj["test_mse"]])
 
-        $("#mae-mse-rows").append("<tr><td>Training</td><td>" + cachedAbundancesObj["train_mae"] + "</td><td>" + cachedAbundancesObj["train_mse"] + "</td></tr>");
-        $("#mae-mse-rows").append("<tr><td>Validation</td><td>" + cachedAbundancesObj["val_mae"] + "</td><td>" + cachedAbundancesObj["val_mse"] + "</td></tr>");
-        $("#mae-mse-rows").append("<tr><td>Test</td><td>" + cachedAbundancesObj["test_mae"] + "</td><td>" + cachedAbundancesObj["test_mse"] + "</td></tr>");
+        $("#mae-mse-rows").append("<tr><td>Training (n=" + cachedAbundancesObj["train_size"][0] + ")</td><td>" + cachedAbundancesObj["train_mae"] + "</td><td>" + cachedAbundancesObj["train_mse"] + "</td></tr>");
+        $("#mae-mse-rows").append("<tr><td>Validation (n=" + cachedAbundancesObj["val_size"][0] + ")</td><td>" + cachedAbundancesObj["val_mae"] + "</td><td>" + cachedAbundancesObj["val_mse"] + "</td></tr>");
+        $("#mae-mse-rows").append("<tr><td>Test (n=" + cachedAbundancesObj["test_size"][0] + ")</td><td>" + cachedAbundancesObj["test_mae"] + "</td><td>" + cachedAbundancesObj["test_mse"] + "</td></tr>");
 
         $("#auc-table").hide();
         $("#mae-mse-table").show();

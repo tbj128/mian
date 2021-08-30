@@ -76,6 +76,12 @@
                 <select id="expvar" name="expvar" class="form-control">
                 </select>
 
+                <label class="control-label">Problem Type <a href="https://tbj128.gitbook.io/mian/deep-learning#problem-type" target="_blank"><i class="fa fa-info-circle"></i></a></label>
+                <select id="problemType" name="problemType" class="form-control pad-bottom">
+                    <option value="classification">Classification</option>
+                    <option value="regression">Regression</option>
+                </select>
+
                 <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/deep-learning#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="fixTraining" name="fixTraining" class="form-control">
                     <option value="yes" selected>Yes</option>
@@ -90,12 +96,6 @@
 
                 <label class="control-label">Learning Rate <a href="https://tbj128.gitbook.io/mian/deep-learning#learning-rate" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="lr" name="lr" type="number" value="0.001"/>
-
-                <label class="control-label">Problem Type <a href="https://tbj128.gitbook.io/mian/deep-learning#problem-type" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                <select id="problemType" name="problemType" class="form-control pad-bottom">
-                    <option value="classification">Classification</option>
-                    <option value="regression">Regression</option>
-                </select>
 
                 <label class="control-label">
                     Layers: <a href="https://tbj128.gitbook.io/mian/deep-learning#layers" target="_blank"><i class="fa fa-info-circle"></i></a>
@@ -137,9 +137,18 @@
                     <thead>
                         <tr>
                           <th scope="col">Label</th>
-                          <th scope="col">Train AUC</th>
-                          <th scope="col">Val AUC</th>
-                          <th scope="col">Test AUC</th>
+                          <th scope="col" colspan="2">Train (n=<span id="train-n"></span>)</th>
+                          <th scope="col" colspan="2">Val (n=<span id="val-n"></span>)</th>
+                          <th scope="col" colspan="2">Test (n=<span id="test-n"></span>)</th>
+                        </tr>
+                        <tr>
+                          <th scope="col"></th>
+                          <th scope="col">Samples</th>
+                          <th scope="col">AUC</th>
+                          <th scope="col">Samples</th>
+                          <th scope="col">AUC</th>
+                          <th scope="col">Samples</th>
+                          <th scope="col">AUC</th>
                         </tr>
                     </thead>
                     <tbody id="auc-rows">

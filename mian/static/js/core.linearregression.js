@@ -270,6 +270,10 @@ function updateAnalysis() {
                 tableResults.push(["Dataset", "Mean Absolute Error", "Mean Squared Error"]);
                 tableResults.push(["Cross-Validation", `${abundancesObj["cv_mae"]} ± ${abundancesObj["cv_mae_std"]}`, `${abundancesObj["cv_mse"]} ± ${abundancesObj["cv_mse_std"]}`]);
             } else {
+                $("#train-n").text(cachedAbundancesObj["train_size"][0]);
+                $("#val-n").text(cachedAbundancesObj["val_size"][0]);
+                $("#test-n").text(cachedAbundancesObj["test_size"][0]);
+
                 $("#cv-mae").text("N/A");
                 $("#cv-mse").text("N/A");
                 if (abundancesObj["train_mae"]) {

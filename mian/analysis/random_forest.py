@@ -129,7 +129,8 @@ class RandomForest(object):
                     class_to_roc[classifier.classes_[i]] = {
                         "fpr": [round(a.item(), 4) for a in fpr],
                         "tpr": [round(a.item(), 4) for a in tpr],
-                        "auc": round(auc.item(), 4)
+                        "auc": round(auc.item(), 4),
+                        "num_positives": sum(y_test_binarize[:, i])
                     }
                 except ValueError:
                     print("ROC could not be calculated")
@@ -173,6 +174,9 @@ class RandomForest(object):
                 "train_class_to_roc": train_class_to_roc,
                 "val_class_to_roc": val_class_to_roc,
                 "test_class_to_roc": test_class_to_roc,
+                "train_size": X_train.shape,
+                "val_size": X_val.shape,
+                "test_size": X_test.shape,
                 "seed": seed
             }
 

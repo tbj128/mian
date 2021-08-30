@@ -102,7 +102,8 @@ class DeepNeuralNetwork(object):
                     class_to_roc[class_mapping[i]] = {
                         "fpr": [round(a.item(), 4) for a in fpr],
                         "tpr": [round(a.item(), 4) for a in tpr],
-                        "auc": round(auc.item(), 4)
+                        "auc": round(auc.item(), 4),
+                        "num_positives": sum(y_test[:, i])
                     }
                 except ValueError:
                     print("ROC could not be calculated")
@@ -122,7 +123,7 @@ class DeepNeuralNetwork(object):
                     layers.append(keras.layers.Dropout(float(layer["dropoutfrac"])))
                 i += 1
             if problem_type == "classification":
-                layers.append(keras.layers.Dense(len(set(metadata_vals)), activation='sigmoid'))
+                layers.append(keras.layers.Dense(len(set(metadata_vals)), activation='softmax'))
                 model = keras.Sequential(layers)
                 optimizer = keras.optimizers.Adam(learning_rate=lr)
                 model.compile(loss='categorical_crossentropy',

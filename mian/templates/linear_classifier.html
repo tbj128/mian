@@ -117,9 +117,18 @@
                 <thead>
                     <tr>
                         <th scope="col">Label</th>
-                        <th scope="col">Training - Area Under the Curve (AUC)</th>
-                        <th scope="col">Validation - Area Under the Curve (AUC)</th>
-                        <th scope="col">Test - Area Under the Curve (AUC)</th>
+                        <th scope="col" colspan="2">Train (n=<span id="train-n"></span>)</th>
+                        <th scope="col" colspan="2">Val (n=<span id="val-n"></span>)</th>
+                        <th scope="col" colspan="2">Test (n=<span id="test-n"></span>)</th>
+                    </tr>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Samples</th>
+                        <th scope="col">AUC</th>
+                        <th scope="col">Samples</th>
+                        <th scope="col">AUC</th>
+                        <th scope="col">Samples</th>
+                        <th scope="col">AUC</th>
                     </tr>
                 </thead>
                 <tbody id="auc-rows">

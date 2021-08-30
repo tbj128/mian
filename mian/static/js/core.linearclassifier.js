@@ -238,6 +238,9 @@ function renderRocPlot() {
         tableResults.push(["Label", "Cross-Validation AUROC"]);
     } else {
         tableResults.push(["Label", "Training AUROC", "Validation AUROC", "Test AUROC"]);
+        $("#train-n").text(cachedAbundancesObj["train_size"][0]);
+        $("#val-n").text(cachedAbundancesObj["val_size"][0]);
+        $("#test-n").text(cachedAbundancesObj["test_size"][0]);
     }
 
     var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj[trainOrTestKey]).length);
@@ -246,10 +249,10 @@ function renderRocPlot() {
     for (var k in cachedAbundancesObj[trainOrTestKey]) {
         if ($("#crossValidate").val() === "full") {
             tableResults.push([k, cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"]]);
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td></tr>");
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>N/A</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>");
         } else {
             tableResults.push([k, cachedAbundancesObj["train_class_to_roc"][k]["auc"], cachedAbundancesObj["val_class_to_roc"][k]["auc"], cachedAbundancesObj["test_class_to_roc"][k]["auc"]]);
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
         }
         configRoc.data.datasets.push({
             label: k,

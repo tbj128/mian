@@ -49,7 +49,7 @@
 
                 <label class="control-label">Evaluation Method <a href="https://tbj128.gitbook.io/mian/random-forest-classifier#evaluation-method" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <select id="crossValidate" name="crossValidate" class="form-control">
-                    <option value="train">Train/Test Split</option>
+                    <option value="train">Train/Val/Test Split</option>
                     <option value="full">Cross-Validation on Full Dataset</option>
                 </select>
 
@@ -121,9 +121,18 @@
             <thead>
                 <tr>
                   <th scope="col">Label</th>
-                  <th scope="col">Train - AUC</th>
-                  <th scope="col">Val - AUC</th>
-                  <th scope="col">Test - AUC</th>
+                  <th scope="col" colspan="2">Train (n=<span id="train-n"></span>)</th>
+                  <th scope="col" colspan="2">Val (n=<span id="val-n"></span>)</th>
+                  <th scope="col" colspan="2">Test (n=<span id="test-n"></span>)</th>
+                </tr>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">Samples</th>
+                  <th scope="col">AUC</th>
+                  <th scope="col">Samples</th>
+                  <th scope="col">AUC</th>
+                  <th scope="col">Samples</th>
+                  <th scope="col">AUC</th>
                 </tr>
             </thead>
             <tbody id="auc-rows">

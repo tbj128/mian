@@ -114,6 +114,9 @@ class LinearRegression(object):
                 "val_mse": round(val_mse, 2),
                 "test_mae": round(test_mae, 2),
                 "test_mse": round(test_mse, 2),
+                "train_size": X_train.shape,
+                "val_size": X_val.shape,
+                "test_size": X_test.shape,
                 "seed": seed
             }
 

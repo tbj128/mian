@@ -1,5 +1,5 @@
 // ============================================================
-// Fisher Exact JS Component
+// Correlation Network JS Component
 // ============================================================
 
 //
@@ -20,6 +20,9 @@ createSpecificListeners();
 function initializeFields() {
     if (getParameterByName("type") !== null) {
         $("#type").val(getParameterByName("type"));
+    }
+    if (getParameterByName("corrMethod") !== null) {
+        $("#corrMethod").val(getParameterByName("corrMethod"));
     }
     if (getParameterByName("cutoff") !== null) {
         $("#cutoff").val(getParameterByName("cutoff"));
@@ -42,6 +45,9 @@ function createSpecificListeners() {
         } else {
             $("#catvar-container").hide();
         }
+        updateAnalysis();
+    });
+    $("#corrMethod").change(function() {
         updateAnalysis();
     });
     $("#cutoff").change(function() {
@@ -318,6 +324,7 @@ function updateAnalysis() {
     var sampleFilterVals = getSelectedSampleFilterVals();
 
     var catvar = $("#catvar").val();
+    var corrMethod = $("#corrMethod").val();
     var cutoff = $("#cutoff").val();
 
     var data = {
@@ -333,6 +340,7 @@ function updateAnalysis() {
         level: level,
         catvar: catvar,
         type: type,
+        corrMethod: corrMethod,
         cutoff: cutoff
     };
 

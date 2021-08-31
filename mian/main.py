@@ -1135,8 +1135,8 @@ def getBoruta(user_request, req):
     user_request.set_custom_attr("pval", req.form['pval'])
     user_request.set_custom_attr("maxruns", req.form['maxruns'])
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
-    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingIndexes", json.loads(req.form['trainingIndexes']))
+    user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
+    user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = Boruta()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1302,6 +1302,7 @@ def getCorrelations(user_request, req):
     user_request.set_custom_attr("corrvar2", req.form['corrvar2'])
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("sizevar", req.form['sizevar'])
+    user_request.set_custom_attr("corrMethod", req.form['corrMethod'])
     user_request.set_custom_attr("samplestoshow", req.form['samplestoshow'])
     user_request.set_custom_attr("corrvar1SpecificTaxonomies", req.form['corrvar1SpecificTaxonomies'])
     user_request.set_custom_attr("corrvar2SpecificTaxonomies", req.form['corrvar2SpecificTaxonomies'])
@@ -1345,6 +1346,7 @@ def getCorrelationNetworkShare():
 def getCorrelationNetwork(user_request, req):
     user_request.set_custom_attr("type", req.form['type'])
     user_request.set_custom_attr("cutoff", req.form['cutoff'])
+    user_request.set_custom_attr("corrMethod", req.form['corrMethod'])
 
     plugin = CorrelationNetwork()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1385,9 +1387,10 @@ def getCorrelationsSelection(user_request, req):
     user_request.set_custom_attr("select", req.form['select'])
     user_request.set_custom_attr("against", req.form['against'])
     user_request.set_custom_attr("expvar", req.form['expvar'])
+    user_request.set_custom_attr("corrMethod", req.form['corrMethod'])
     user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
-    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
+    user_request.set_custom_attr("seed", req.form['seed'])
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = CorrelationsSelection()
@@ -1475,8 +1478,8 @@ def getDifferentialSelection(user_request, req):
     user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
     user_request.set_custom_attr("pwVar1", req.form['pwVar1'])
     user_request.set_custom_attr("pwVar2", req.form['pwVar2'])
-    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
+    user_request.set_custom_attr("seed", req.form['seed'])
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = DifferentialSelection()
@@ -1515,8 +1518,8 @@ def getElasticNetSelectionClassificationShare():
 
 
 def getElasticNetSelectionClassification(user_request, req):
-    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
+    user_request.set_custom_attr("seed", req.form['seed'])
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
@@ -1560,8 +1563,8 @@ def getElasticNetSelectionRegressionShare():
 
 def getElasticNetSelectionRegression(user_request, req):
     user_request.set_custom_attr("expvar", req.form['expvar'])
-    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
+    user_request.set_custom_attr("seed", req.form['seed'])
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
@@ -1607,8 +1610,8 @@ def getFisherExact(user_request, req):
     user_request.set_custom_attr("pwVar1", req.form['pwVar1'])
     user_request.set_custom_attr("pwVar2", req.form['pwVar2'])
     user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
-    user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingIndexes", req.form['trainingIndexes'])
+    user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
+    user_request.set_custom_attr("seed", req.form['seed'])
     user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
 
     plugin = FisherExact()
@@ -1649,6 +1652,7 @@ def getHeatmapShare():
 def getHeatmap(user_request, req):
     user_request.set_custom_attr("corrvar1", req.form['corrvar1'])
     user_request.set_custom_attr("corrvar2", req.form['corrvar2'])
+    user_request.set_custom_attr("corrMethod", req.form['corrMethod'])
     user_request.set_custom_attr("cluster", req.form['cluster'])
     user_request.set_custom_attr("minSamplesPresent", req.form['minSamplesPresent'])
     user_request.set_custom_attr("corrvar1Alpha", json.loads(req.form['corrvar1Alpha']))

@@ -8,6 +8,7 @@
 #
 # Imports
 #
+from scipy.stats import stats
 
 from mian.model.otu_table import OTUTable
 import numpy as np
@@ -47,6 +48,7 @@ class Heatmap(object):
     def analyse(self, user_request, base, headers, sample_labels, metadata, phylogenetic_tree):
         corrvar1 = user_request.get_custom_attr("corrvar1")
         corrvar2 = user_request.get_custom_attr("corrvar2")
+        corrMethod = user_request.get_custom_attr("corrMethod")
         cluster = user_request.get_custom_attr("cluster")
         minSamplesPresent = int(user_request.get_custom_attr("minSamplesPresent"))
 
@@ -114,7 +116,12 @@ class Heatmap(object):
 
             X = np.concatenate((X, Y), axis=1)
 
-            correlations = np.corrcoef(X, rowvar=False)
+            if corrMethod == "spearman":
+                correlations, _ = stats.spearmanr(X)
+            elif corrMethod == "pearson":
+                correlations = np.corrcoef(X, rowvar=False)
+            else:
+                raise NotImplementedError("Correlation method not implemented")
             correlations = correlations[len(headers):len(headers) + len(y_headers), 0:len(headers)]
             row_headers = y_headers.tolist()
             col_headers = headers.tolist()
@@ -122,7 +129,12 @@ class Heatmap(object):
             X = np.array(corrvar1Base)
             non_zero = np.count_nonzero(X, axis=0)
             X = X[:, non_zero >= minSamplesPresent]
-            correlations = np.corrcoef(X, rowvar=False)
+            if corrMethod == "spearman":
+                correlations, _ = stats.spearmanr(X)
+            elif corrMethod == "pearson":
+                correlations = np.corrcoef(X, rowvar=False)
+            else:
+                raise NotImplementedError("Correlation method not implemented")
             row_headers = headers
             col_headers = headers
 

@@ -17,6 +17,7 @@ import logging
 from skbio.stats.composition import ancom
 import pandas as pd
 import numpy as np
+import random
 
 from mian.rutils import r_package_install
 
@@ -61,21 +62,11 @@ class DifferentialSelection(object):
                 else:
                     otu_to_genus[header] = ""
 
-        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
-        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
         training_proportion = float(user_request.get_custom_attr("trainingProportion"))
-        if fix_training and len(existing_training_indexes) > 0:
-            existing_training_indexes = [int(i) for i in existing_training_indexes]
-            training_indexes = np.array(existing_training_indexes)
-        else:
-            if training_proportion == 1.0:
-                training_indexes = np.array(range(base.shape[0]))
-            else:
-                training_indexes, _ = train_test_split(range(base.shape[0]), test_size=(1 - training_proportion), stratify=metadata_vals)
-        training_indexes = np.array(training_indexes)
-        base = base[training_indexes, :]
-        metadata_vals = [metadata_vals[i] for i in training_indexes]
-        sample_labels = [sample_labels[i] for i in training_indexes]
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
+
+        if training_proportion < 1:
+            base, _, metadata_vals, _, sample_labels, _ = train_test_split(base, metadata_vals, sample_labels, train_size=training_proportion, random_state=seed)
 
         # Note data is transposed for input into DESeq2
         base = base.todense() + 1  # Add one due to https://help.galaxyproject.org/t/error-with-deseq2-every-gene-contains-at-least-one-zero/564/2
@@ -109,7 +100,7 @@ class DifferentialSelection(object):
 
         return {
             "differentials": otus,
-            "training_indexes": training_indexes.tolist()
+            "seed": seed
         }
 
     def analyse(self, user_request, base, headers, sample_labels, metadata_vals, taxonomy_map):
@@ -122,20 +113,11 @@ class DifferentialSelection(object):
                 else:
                     otu_to_genus[header] = ""
 
-        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
-        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
         training_proportion = float(user_request.get_custom_attr("trainingProportion"))
-        if fix_training and len(existing_training_indexes) > 0:
-            existing_training_indexes = [int(i) for i in existing_training_indexes]
-            training_indexes = np.array(existing_training_indexes)
-        else:
-            if training_proportion == 1.0:
-                training_indexes = np.array(range(base.shape[0]))
-            else:
-                training_indexes, _ = train_test_split(range(base.shape[0]), test_size=(1 - training_proportion), stratify=metadata_vals)
-        training_indexes = np.array(training_indexes)
-        base = base[training_indexes, :]
-        metadata_vals = [metadata_vals[i] for i in training_indexes]
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
+
+        if training_proportion < 1:
+            base, _, metadata_vals, _, sample_labels, _ = train_test_split(base, metadata_vals, sample_labels, train_size=training_proportion, random_state=seed)
 
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
         catVar1 = user_request.get_custom_attr("pwVar1")
@@ -188,7 +170,7 @@ class DifferentialSelection(object):
 
         return {
             "differentials": otus,
-            "training_indexes": training_indexes.tolist()
+            "seed": seed
         }
 
     def analyse_with_ancom(self, user_request, base, headers, sample_labels, metadata_vals, taxonomy_map):
@@ -201,21 +183,11 @@ class DifferentialSelection(object):
                 else:
                     otu_to_genus[header] = ""
 
-        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
-        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
         training_proportion = float(user_request.get_custom_attr("trainingProportion"))
-        if fix_training and len(existing_training_indexes) > 0:
-            existing_training_indexes = [int(i) for i in existing_training_indexes]
-            training_indexes = np.array(existing_training_indexes)
-        else:
-            if training_proportion == 1:
-                training_indexes = np.array(range(base.shape[0]))
-            else:
-                training_indexes, _ = np.array(train_test_split(range(base.shape[0]), test_size=(1 - training_proportion), stratify=metadata_vals))
-        training_indexes = np.array(training_indexes)
-        base = base[training_indexes, :]
-        sample_labels = [sample_labels[i] for i in training_indexes]
-        metadata_vals = [metadata_vals[i] for i in training_indexes]
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
+
+        if training_proportion < 1:
+            base, _, metadata_vals, _, sample_labels, _ = train_test_split(base, metadata_vals, sample_labels, train_size=training_proportion, random_state=seed)
 
         pvalthreshold = float(user_request.get_custom_attr("pvalthreshold"))
         catVar1 = user_request.get_custom_attr("pwVar1")
@@ -267,5 +239,5 @@ class DifferentialSelection(object):
 
         return {
             "differentials": otus,
-            "training_indexes": training_indexes.tolist()
+            "seed": seed
         }

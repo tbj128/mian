@@ -8,7 +8,7 @@
 //
 var tableResults = [];
 var expectedLoadFactor = 500;
-var cachedTrainingIndexes = null;
+var cachedSeed = null;
 var cachedSelectedFeatures = null;
 
 //
@@ -34,17 +34,18 @@ function initializeFields() {
     if (getParameterByName("trainingProportion") !== null) {
         $("#trainingProportion").val(getParameterByName("trainingProportion"));
     }
-    if (getParameterByName("fixTraining") !== null) {
-        $("#fixTraining").val(getParameterByName("fixTraining"));
+    if (getParameterByName("useTrainingSet") !== null) {
+        $("#useTrainingSet").val(getParameterByName("useTrainingSet"));
 
-        if ($("#fixTraining").val() === "yes") {
-            $("#trainingProportion").prop("readonly", true);
+        if ($("#useTrainingSet").val() === "yes") {
+            $("#trainingProportionContainer").show();
         } else {
-            $("#trainingProportion").prop("readonly", false);
+            $("#trainingProportion").val(1);
+            $("#trainingProportionContainer").hide();
         }
     }
-    if (getParameterByName("trainingIndexes") !== null) {
-        cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
+    if (getParameterByName("seed") !== null) {
+        cachedSeed = getParameterByName("seed");
     }
 }
 
@@ -68,12 +69,14 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
-    $("#fixTraining").change(function() {
+    $("#useTrainingSet").change(function() {
 
-        if ($("#fixTraining").val() === "yes") {
-            $("#trainingProportion").prop("readonly", true);
+        if ($("#useTrainingSet").val() === "yes") {
+            $("#trainingProportion").val(0.7);
+            $("#trainingProportionContainer").show();
         } else {
-            $("#trainingProportion").prop("readonly", false);
+            $("#trainingProportion").val(1);
+            $("#trainingProportionContainer").hide();
         }
 
         updateAnalysis();
@@ -88,20 +91,23 @@ function createSpecificListeners() {
     });
 
     $("#send-to-lc").click(function() {
-        if (cachedTrainingIndexes != null) {
-            window.open('/linear_classifier?pid=' + $("#project").val() + '&ref=Boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
+        if (cachedSeed != null) {
+            var trainingProportion = $("#useTrainingSet").val() === "yes" ? $("#trainingProportion").val() : 0.7;
+            window.open('/linear_classifier?pid=' + $("#project").val() + '&ref=Boruta&trainingProportion=' + trainingProportion + '&seed=' + cachedSeed + '&taxonomyFilter=' + getSelectedTaxFilter() + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
         }
     });
 
     $("#send-to-rf").click(function() {
-        if (cachedTrainingIndexes != null) {
-            window.open('/random_forest?pid=' + $("#project").val() + '&ref=Boruta&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
+        if (cachedSeed != null) {
+            var trainingProportion = $("#useTrainingSet").val() === "yes" ? $("#trainingProportion").val() : 0.7;
+            window.open('/random_forest?pid=' + $("#project").val() + '&ref=Boruta&trainingProportion=' + trainingProportion + '&seed=' + cachedSeed + '&taxonomyFilter=' + getSelectedTaxFilter() + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&catvar=' + $("#catvar").val(), '_blank');
         }
     });
 
     $("#send-to-dnn").click(function() {
-        if (cachedTrainingIndexes != null) {
-            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=Boruta&problemType=classification&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#catvar").val(), '_blank');
+        if (cachedSeed != null) {
+            var trainingProportion = $("#useTrainingSet").val() === "yes" ? $("#trainingProportion").val() : 0.7;
+            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=Boruta&trainingProportion=' + trainingProportion + '&problemType=classification&seed=' + cachedSeed + '&taxonomyFilter=' + getSelectedTaxFilter() + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#catvar").val(), '_blank');
         }
     });
 }
@@ -199,7 +205,7 @@ function updateAnalysis() {
     var pval = $("#pval").val();
     var maxruns = $("#maxruns").val();
     var trainingProportion = $("#trainingProportion").val();
-    var fixTraining = $("#fixTraining").val();
+    var useTrainingSet = $("#useTrainingSet").val();
 
     if (!catvar || catvar === "none") {
         loadNoCatvar();
@@ -219,10 +225,10 @@ function updateAnalysis() {
         level: level,
         catvar: catvar,
         trainingProportion: trainingProportion,
-        fixTraining: fixTraining,
-        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
+        useTrainingSet: useTrainingSet,
         pval: pval,
         maxruns: maxruns,
+        seed: cachedSeed,
     };
 
     $.ajax({
@@ -232,7 +238,7 @@ function updateAnalysis() {
         success: function(result) {
             var abundancesObj = JSON.parse(result);
             if (!$.isEmptyObject(abundancesObj["results"])) {
-                cachedTrainingIndexes = [...abundancesObj["training_indexes"]];
+                cachedSeed = abundancesObj["seed"];
                 if (abundancesObj["results"]["Confirmed"]) {
                     cachedSelectedFeatures = [...abundancesObj["results"]["Confirmed"]];
                 } else {
@@ -244,7 +250,7 @@ function updateAnalysis() {
                 renderBorutaTable(abundancesObj);
 
                 // Hack to update the URL with the training indexes
-                data["trainingIndexes"] = cachedTrainingIndexes;
+                data["seed"] = cachedSeed;
                 setGetParameters(data);
             } else {
                 loadNoResults();

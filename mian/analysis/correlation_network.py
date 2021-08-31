@@ -8,6 +8,7 @@
 #
 # Imports
 #
+from scipy.stats import stats
 
 from mian.model.otu_table import OTUTable
 from sklearn.preprocessing import LabelEncoder
@@ -29,6 +30,7 @@ class CorrelationNetwork(object):
 
     def analyse(self, user_request, base, headers, sample_labels, metadata_col):
         corrType = user_request.get_custom_attr("type")
+        corrMethod = user_request.get_custom_attr("corrMethod")
         cutoff = float(user_request.get_custom_attr("cutoff"))
 
         X = base.toarray()
@@ -36,7 +38,13 @@ class CorrelationNetwork(object):
         catvar_map = {}
         if corrType == "SampleID":
             correlation_headers = sample_labels
-            partial_correlations = np.corrcoef(X, rowvar=True)
+            if corrMethod == "spearman":
+                partial_correlations, _ = stats.spearmanr(X, axis=1)
+            elif corrMethod == "pearson":
+                print(f"USING PEARSON")
+                partial_correlations = np.corrcoef(X, rowvar=True)
+            else:
+                raise NotImplementedError("Correlation method not implemented")
 
             if len(sample_labels) == len(metadata_col):
                 i = 0
@@ -46,7 +54,13 @@ class CorrelationNetwork(object):
         else:
             # Filter OTU table columns so that the matrix created is manageable in size
             correlation_headers = headers
-            partial_correlations = np.corrcoef(X, rowvar=False)
+            if corrMethod == "spearman":
+                partial_correlations, _ = stats.spearmanr(X)
+            elif corrMethod == "pearson":
+                print(f"USING PEARSON")
+                partial_correlations = np.corrcoef(X, rowvar=False)
+            else:
+                raise NotImplementedError("Correlation method not implemented")
 
         non_zero = (np.abs(np.triu(partial_correlations, k=1)) > cutoff)
 
@@ -61,6 +75,8 @@ class CorrelationNetwork(object):
                     for start, stop in zip(start_idx, end_idx)]
         values = partial_correlations[non_zero]
 
+        print(f"correlation_headers = {len(correlation_headers)}")
+        print(f"LABELS = {len(labels)}")
         nodes = [{"id": str(correlation_headers[i]), "c": str(labels[i]), "v": self.get_catvar(corrType, correlation_headers[i], catvar_map)}
                  for i in range(len(correlation_headers))]
         links = [{"source": str(seg[0]), "target": str(seg[1]), "v": round(float(val), 3)}

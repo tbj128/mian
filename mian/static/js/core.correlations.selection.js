@@ -8,7 +8,7 @@
 var tableResults = [];
 var correlationDataTable;
 var expectedLoadFactor = 500;
-var cachedTrainingIndexes = null;
+var cachedSeed = null;
 var cachedSelectedFeatures = null;
 
 //
@@ -33,6 +33,9 @@ function initializeFields() {
     if (getParameterByName("against") !== null) {
         $("#against").val(getParameterByName("against"));
     }
+    if (getParameterByName("corrMethod") !== null) {
+        $("#corrMethod").val(getParameterByName("corrMethod"));
+    }
     if ($("#against").val() === "metadata") {
         showNumericalVariableContainer(1);
     } else if ($("#against").val() === "gene") {
@@ -45,17 +48,18 @@ function initializeFields() {
     if (getParameterByName("trainingProportion") !== null) {
         $("#trainingProportion").val(getParameterByName("trainingProportion"));
     }
-    if (getParameterByName("fixTraining") !== null) {
-        $("#fixTraining").val(getParameterByName("fixTraining"));
+    if (getParameterByName("useTrainingSet") !== null) {
+        $("#useTrainingSet").val(getParameterByName("useTrainingSet"));
 
-        if ($("#fixTraining").val() === "yes") {
-            $("#trainingProportion").prop("readonly", true);
+        if ($("#useTrainingSet").val() === "yes") {
+            $("#trainingProportionContainer").show();
         } else {
-            $("#trainingProportion").prop("readonly", false);
+            $("#trainingProportion").val(1);
+            $("#trainingProportionContainer").hide();
         }
     }
-    if (getParameterByName("trainingIndexes") !== null) {
-        cachedTrainingIndexes = JSON.parse(getParameterByName("trainingIndexes"));
+    if (getParameterByName("seed") !== null) {
+        cachedSeed = getParameterByName("seed");
     }
 }
 
@@ -80,6 +84,10 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
+    $("#corrMethod").change(function() {
+        updateAnalysis();
+    });
+
     $("#expvar").change(function() {
         updateAnalysis();
     });
@@ -100,12 +108,14 @@ function createSpecificListeners() {
         updateAnalysis();
     });
 
-    $("#fixTraining").change(function() {
+    $("#useTrainingSet").change(function() {
 
-        if ($("#fixTraining").val() === "yes") {
-            $("#trainingProportion").prop("readonly", true);
+        if ($("#useTrainingSet").val() === "yes") {
+            $("#trainingProportion").val(0.7);
+            $("#trainingProportionContainer").show();
         } else {
-            $("#trainingProportion").prop("readonly", false);
+            $("#trainingProportion").val(1);
+            $("#trainingProportionContainer").hide();
         }
 
         updateAnalysis();
@@ -120,14 +130,16 @@ function createSpecificListeners() {
     });
 
     $("#send-to-lr").click(function() {
-        if (cachedTrainingIndexes != null) {
-            window.open('/linear_regression?pid=' + $("#project").val() + '&ref=Correlations+Selection&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#expvar").val(), '_blank');
+        if (cachedSeed != null) {
+            var trainingProportion = $("#useTrainingSet").val() === "yes" ? $("#trainingProportion").val() : 0.7;
+            window.open('/linear_regression?pid=' + $("#project").val() + '&ref=Correlations+Selection&trainingProportion=' + trainingProportion + '&seed=' + cachedSeed + '&taxonomyFilter=' + getSelectedTaxFilter() + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#expvar").val(), '_blank');
         }
     });
 
     $("#send-to-dnn").click(function() {
-        if (cachedTrainingIndexes != null) {
-            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=Correlations+Selection&problemType=regression&trainingIndexes=' + JSON.stringify(cachedTrainingIndexes) + '&taxonomyFilter=' + taxonomyLevels[$("#taxonomy").val()] + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#expvar").val(), '_blank');
+        if (cachedSeed != null) {
+            var trainingProportion = $("#useTrainingSet").val() === "yes" ? $("#trainingProportion").val() : 0.7;
+            window.open('/deep_neural_network?pid=' + $("#project").val() + '&ref=Correlations+Selection&trainingProportion=' + trainingProportion + '&problemType=regression&&seed=' + cachedSeed + '&taxonomyFilter=' + getSelectedTaxFilter() + '&taxonomyFilterRole=Include&taxonomyFilterVals=' + JSON.stringify(cachedSelectedFeatures.map(f => f.split("; ")[f.split("; ").length - 1])) + '&expvar=' + $("#expvar").val(), '_blank');
         }
     });
 }
@@ -202,6 +214,7 @@ function updateAnalysis() {
 
     var select = $("#select").val();
     var against = $("#against").val();
+    var corrMethod = $("#corrMethod").val();
     if ((select === "gene" || against === "gene") && !hasGenes) {
         loadNoGenesWarning();
         return;
@@ -213,7 +226,7 @@ function updateAnalysis() {
     }
 
     var trainingProportion = $("#trainingProportion").val();
-    var fixTraining = $("#fixTraining").val();
+    var useTrainingSet = $("#useTrainingSet").val();
 
     var data = {
         pid: $("#project").val(),
@@ -227,12 +240,13 @@ function updateAnalysis() {
         sampleFilterVals: sampleFilterVals,
         select: select,
         against: against,
+        corrMethod: corrMethod,
         pvalthreshold: $("#pvalthreshold").val(),
         expvar: expvar,
         level: level,
         trainingProportion: trainingProportion,
-        fixTraining: fixTraining,
-        trainingIndexes: JSON.stringify(cachedTrainingIndexes != null ? cachedTrainingIndexes : []),
+        useTrainingSet: useTrainingSet,
+        seed: cachedSeed,
     };
 
     setGetParameters(data);
@@ -250,8 +264,11 @@ function updateAnalysis() {
                 loadSuccess();
                 $("#send-to-container").show();
                 renderCorrelationsSelection(abundancesObj);
-                cachedTrainingIndexes = [...abundancesObj["training_indexes"]];
+                cachedSeed = abundancesObj["seed"];
                 cachedSelectedFeatures = abundancesObj["correlations"].map(d => d["otu"]);
+                // Hack to update the URL with the training indexes
+                data["seed"] = cachedSeed;
+                setGetParameters(data);
             } else {
                 loadNoResults();
                 $("#send-to-container").hide();

@@ -8,6 +8,7 @@ import pandas as pd
 from scipy import stats, math
 import numpy as np
 from sklearn.model_selection import train_test_split
+import random
 
 from mian.analysis.alpha_diversity import AlphaDiversity
 from mian.analysis.analysis_base import AnalysisBase
@@ -38,20 +39,11 @@ class CorrelationsSelection(AnalysisBase):
         expvar = user_request.get_custom_attr("expvar")
         pvalthreshold = user_request.get_custom_attr("pvalthreshold")
 
-        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
-        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
         training_proportion = float(user_request.get_custom_attr("trainingProportion"))
-        if fix_training and len(existing_training_indexes) > 0:
-            existing_training_indexes = [int(i) for i in existing_training_indexes]
-            training_indexes = np.array(existing_training_indexes)
-        else:
-            if training_proportion == 1:
-                training_indexes = np.array(range(otu_table.shape[0]))
-            else:
-                training_indexes, _ = train_test_split(range(otu_table.shape[0]), test_size=(1 - training_proportion))
-        training_indexes = np.array(training_indexes)
-        otu_table = otu_table[training_indexes, :]
-        sample_labels = np.array(sample_labels)[training_indexes]
+
+        if training_proportion < 1:
+            otu_table, _, sample_labels, _ = train_test_split(otu_table, sample_labels, train_size=training_proportion, random_state=seed)
 
         if expvar == "":
             return {"correlations": []}
@@ -76,8 +68,8 @@ class CorrelationsSelection(AnalysisBase):
                                                   sample_filter_vals=user_request.sample_filter_vals, level=user_request.level, catvar="")
 
             unfiltered_otu_table, unfiltered_headers, unfiltered_sample_labels = self.table.get_table_after_filtering_and_aggregation_and_low_count_exclusion(unfiltered_user_request)
-            unfiltered_otu_table = unfiltered_otu_table[training_indexes, :]
-            unfiltered_sample_labels = np.array(unfiltered_sample_labels)[training_indexes]
+
+            unfiltered_otu_table, _, unfiltered_sample_labels, _ = train_test_split(unfiltered_otu_table, unfiltered_sample_labels, train_size=training_proportion, random_state=seed)
 
             if int(user_request.level) == -1:
                 # OTU tables are returned as a CSR matrix
@@ -110,10 +102,12 @@ class CorrelationsSelection(AnalysisBase):
         else:
             abunObj = self.analyse_select_otu(user_request, otu_table, headers, against_vals, taxonomy_map, pvalthreshold)
 
-        abunObj["training_indexes"] = training_indexes.tolist()
+        abunObj["seed"] = seed
         return abunObj
 
     def analyse_select_gene(self, user_request, sample_labels, against_vals, pvalthreshold):
+        corrMethod = user_request.get_custom_attr("corrMethod")
+
         genes = Genes(user_request.user_id, user_request.pid)
         gene_table, gene_list, gene_sample_labels = genes.get_as_table()
 
@@ -141,7 +135,13 @@ class CorrelationsSelection(AnalysisBase):
                     gene_vals.append(float(gene_table[r, c]))
                 r += 1
 
-            coef, pval = stats.pearsonr(against_vals, gene_vals)
+            if corrMethod == "pearson":
+                coef, pval = stats.pearsonr(against_vals, gene_vals)
+            elif corrMethod == "spearman":
+                coef, pval = stats.spearmanr(against_vals, gene_vals)
+            else:
+                raise NotImplementedError("Corr method is not implemented")
+
             if math.isnan(coef):
                 coef = 0
             if math.isnan(pval):
@@ -165,6 +165,7 @@ class CorrelationsSelection(AnalysisBase):
         return {"correlations": correlations_retval}
 
     def analyse_select_metadata(self, user_request, sample_labels, against_vals, pvalthreshold):
+        corrMethod = user_request.get_custom_attr("corrMethod")
         metadata = Metadata(user_request.user_id, user_request.pid)
         metadata_table, metadata_headers, _ = metadata.get_as_table_in_table_order(sample_labels)
 
@@ -185,7 +186,12 @@ class CorrelationsSelection(AnalysisBase):
                 r += 1
 
             if is_numeric:
-                coef, pval = stats.pearsonr(against_vals, metadata_vals)
+                if corrMethod == "pearson":
+                    coef, pval = stats.pearsonr(against_vals, metadata_vals)
+                elif corrMethod == "spearman":
+                    coef, pval = stats.spearmanr(against_vals, metadata_vals)
+                else:
+                    raise NotImplementedError("Corr method is not implemented")
                 if math.isnan(coef):
                     coef = 0
                 if math.isnan(pval):
@@ -207,6 +213,7 @@ class CorrelationsSelection(AnalysisBase):
         return {"correlations": correlations_retval}
 
     def analyse_select_otu(self, user_request, base, headers, metadata_values, taxonomy_map, pvalthreshold):
+        corrMethod = user_request.get_custom_attr("corrMethod")
         otu_to_genus = {}
         if int(user_request.level) == -1:
             # We want to display a short hint for the OTU using the genus (column 5)
@@ -228,7 +235,13 @@ class CorrelationsSelection(AnalysisBase):
                 otu_vals.append(base[r, c])
                 r += 1
 
-            coef, pval = stats.pearsonr(metadata_values, otu_vals)
+            if corrMethod == "pearson":
+                coef, pval = stats.pearsonr(metadata_values, otu_vals)
+            elif corrMethod == "spearman":
+                coef, pval = stats.spearmanr(metadata_values, otu_vals)
+            else:
+                raise NotImplementedError("Corr method is not implemented")
+
             if math.isnan(coef):
                 coef = 0
             if math.isnan(pval):

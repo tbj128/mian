@@ -52,22 +52,23 @@
                 <select id="pwVar2" name="pwVar2" class="form-control">
                 </select>
 
-                <label class="control-label">Min Presence Threshold  <a href="https://tbj128.gitbook.io/mian/fisher-exact-test#min-presence-threshold" target="_blank"><i class="fa fa-info-circle"></i></a></label>
+                <label class="control-label">Min Presence Threshold (exclusive)  <a href="https://tbj128.gitbook.io/mian/fisher-exact-test#min-presence-threshold" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="minthreshold" name="minthreshold" type="number" value="0"/>
 
                 <label class="control-label">P-Value Threshold <a href="https://tbj128.gitbook.io/mian/fisher-exact-test#p-value-threshold" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="pvalthreshold" name="pvalthreshold" type="number" value="0.5" min="0"
                        max="1" step="0.01"/>
 
-                <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/fisher-exact-test#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                <select id="fixTraining" name="fixTraining" class="form-control">
+                <label class="control-label">Select Using Training Set <a href="https://tbj128.gitbook.io/mian/fisher-exact-test#select-using-training-set" target="_blank"><i class="fa fa-info-circle"></i></a></label>
+                <select id="useTrainingSet" name="useTrainingSet" class="form-control">
                     <option value="yes">Yes</option>
                     <option value="no" selected>No</option>
                 </select>
 
-                <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/fisher-exact-test#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="1"/>
-
+                <div id="trainingProportionContainer" style="display:none;">
+                    <label class="control-label">Training Proportion (applicable only if using a training set) <a href="https://tbj128.gitbook.io/mian/fisher-exact-test#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
+                    <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
+                </div>
               </div>
             </div>
         </div>
@@ -97,7 +98,7 @@
 
     <div id="analysis-container" class="analysis-container" style="min-height:500px;">
         <div id="send-to-container" style="display:none;">
-            <div id="machine-learning-alert" class="alert alert-success" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) model. ML will use the same training set as the feature selection</div>
+            <div id="machine-learning-alert" class="alert alert-info" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) model. However, if doing so, <strong>make sure to perform feature selection using a training set</strong> in order to produce an unbiased predictive performance on a test set.</div>
             <div class="row">
                 <div class="col-md-12">
                     <h4>Train and test selected features with...</h4>

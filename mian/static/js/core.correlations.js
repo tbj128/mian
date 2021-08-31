@@ -20,6 +20,7 @@ createSpecificListeners();
 //
 var initialCorrvar1 = getParameterByName("corrvar1");
 var initialCorrvar2 = getParameterByName("corrvar2");
+var initialCorrMethod = getParameterByName("corrMethod");
 var initialCorrvar1SpecificTaxonomies = getParameterByName("corrvar1SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar1SpecificTaxonomies")) : [];
 var initialCorrvar2SpecificTaxonomies = getParameterByName("corrvar2SpecificTaxonomies") ? JSON.parse(getParameterByName("corrvar2SpecificTaxonomies")) : [];
 var initialSizeVarSpecificTaxonomies = getParameterByName("sizevarSpecificTaxonomies") ? JSON.parse(getParameterByName("sizevarSpecificTaxonomies")) : [];
@@ -78,6 +79,10 @@ function createSpecificListeners() {
     });
 
     $("#colorvar").change(function() {
+        updateAnalysis();
+    });
+
+    $("#corrMethod").change(function() {
         updateAnalysis();
     });
 
@@ -302,6 +307,7 @@ function updateAnalysis() {
     var corrvar1 = $("#corrvar1").val();
     var corrvar2 = $("#corrvar2").val();
     var colorvar = $("#colorvar").val();
+    var corrMethod = $("#corrMethod").val();
     var sizevar = $("#sizevar").val();
     var samplestoshow = $("#samplestoshow").val();
 
@@ -373,6 +379,7 @@ function updateAnalysis() {
         corrvar1: corrvar1,
         corrvar2: corrvar2,
         colorvar: colorvar,
+        corrMethod: corrMethod,
         sizevar: sizevar,
         samplestoshow: samplestoshow,
         corrvar1SpecificTaxonomies: corrvar1SpecificTaxonomies,
@@ -479,6 +486,11 @@ function updateCorrVar(result) {
     if (initialColorVar) {
         $("#colorvar").val(initialColorVar);
         initialColorVar = null;
+    }
+
+    if (initialCorrMethod) {
+        $("#corrMethod").val(initialCorrMethod);
+        initialCorrMethod = null;
     }
 
     if (initialSizeVar) {

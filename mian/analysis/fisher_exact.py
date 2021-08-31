@@ -22,6 +22,7 @@ from sklearn.model_selection import train_test_split
 rpy2.robjects.numpy2ri.activate()
 
 from mian.model.otu_table import OTUTable
+import random
 
 
 class FisherExact(object):
@@ -92,20 +93,11 @@ class FisherExact(object):
                 else:
                     otu_to_genus[header] = ""
 
-        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
-        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
         training_proportion = float(user_request.get_custom_attr("trainingProportion"))
-        if fix_training and len(existing_training_indexes) > 0:
-            existing_training_indexes = [int(i) for i in existing_training_indexes]
-            training_indexes = np.array(existing_training_indexes)
-        else:
-            if training_proportion == 1:
-                training_indexes = np.array(range(otuTable.shape[0]))
-            else:
-                training_indexes, _ = train_test_split(range(otuTable.shape[0]), test_size=(1 - training_proportion), stratify=metaVals)
-        training_indexes = np.array(training_indexes)
-        otuTable = otuTable[training_indexes, :]
-        metaVals = [metaVals[i] for i in training_indexes]
+
+        if training_proportion < 1:
+            otuTable, _, metaVals, _ = train_test_split(otuTable, metaVals, train_size=training_proportion, random_state=seed)
 
         if int(user_request.level) == -1:
             # OTU tables are returned as a CSR matrix
@@ -157,6 +149,6 @@ class FisherExact(object):
         abundancesObj["hints"] = hints
         abundancesObj["cat1"] = cat1
         abundancesObj["cat2"] = cat2
-        abundancesObj["training_indexes"] = training_indexes.tolist()
+        abundancesObj["seed"] = seed
 
         return abundancesObj

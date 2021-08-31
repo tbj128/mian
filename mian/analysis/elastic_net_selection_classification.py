@@ -16,6 +16,7 @@ from sklearn.preprocessing import normalize
 
 from mian.model.otu_table import OTUTable
 import numpy as np
+import random
 
 
 class ElasticNetSelectionClassification(object):
@@ -30,8 +31,7 @@ class ElasticNetSelectionClassification(object):
         return self.analyse(user_request, otu_table, headers, metadata_vals, taxonomy_map)
 
     def analyse(self, user_request, otu_table, headers, metadata_vals, taxonomy_map):
-        fix_training = user_request.get_custom_attr("fixTraining") == "yes"
-        existing_training_indexes = user_request.get_custom_attr("trainingIndexes")
+        seed = int(user_request.get_custom_attr("seed")) if user_request.get_custom_attr("seed") is not "" else random.randint(0, 100000)
         training_proportion = float(user_request.get_custom_attr("trainingProportion"))
         mixing_ratio = float(user_request.get_custom_attr("mixingRatio"))
         loss_function = user_request.get_custom_attr("lossFunction")
@@ -47,27 +47,16 @@ class ElasticNetSelectionClassification(object):
                 else:
                     otu_to_genus[header] = ""
 
-        if fix_training and len(existing_training_indexes) > 0:
-            existing_training_indexes = [int(i) for i in existing_training_indexes]
-            training_indexes = np.array(existing_training_indexes)
-        else:
-            if training_proportion == 1:
-                training_indexes = np.array(range(otu_table.shape[0]))
-            else:
-                training_indexes, _ = train_test_split(range(otu_table.shape[0]), test_size=(1 - training_proportion), stratify=metadata_vals)
-        training_indexes = np.array(training_indexes)
-        otu_table = otu_table[training_indexes, :]
-
         if int(user_request.level) == -1:
             # OTU tables are returned as a CSR matrix
             X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
         else:
             X = otu_table
 
-        X = normalize(X)
-
         Y = np.array(metadata_vals)
-        Y = Y[training_indexes]
+
+        if training_proportion < 1:
+            X, _, Y, _ = train_test_split(X, Y, train_size=training_proportion, random_state=seed)
 
         columns = np.array(headers)
 
@@ -126,6 +115,6 @@ class ElasticNetSelectionClassification(object):
         abundances_obj = {}
         abundances_obj["feature_map"] = feature_map
         abundances_obj["hints"] = hints
-        abundances_obj["training_indexes"] = training_indexes.tolist()
+        abundances_obj["seed"] = seed
 
         return abundances_obj

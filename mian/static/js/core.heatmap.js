@@ -44,6 +44,9 @@ function initializeFields() {
         $("#alphaContext2").val(alphaParams[0]);
         $("#alphaType2").val(alphaParams[1]);
     }
+    if (getParameterByName("corrMethod") !== null) {
+        $("#corrMethod").val(getParameterByName("corrMethod"));
+    }
     if (getParameterByName("cluster") !== null) {
         $("#cluster").val(getParameterByName("cluster"));
     }
@@ -77,6 +80,9 @@ function createSpecificListeners() {
         } else {
             $("#alpha-diversity-container-2").hide();
         }
+        updateAnalysis();
+    });
+    $("#corrMethod").change(function() {
         updateAnalysis();
     });
     $("#cluster").change(function() {
@@ -147,6 +153,7 @@ function updateAnalysis() {
 
     var corrvar1 = $("#corrvar1").val();
     var corrvar2 = $("#corrvar2").val();
+    var corrMethod = $("#corrMethod").val();
     var cluster = $("#cluster").val();
     var minSamplesPresent = $("#minSamplesPresent").val();
 
@@ -165,6 +172,7 @@ function updateAnalysis() {
         corrvar1Alpha: JSON.stringify([$("#alphaContext1").val(), $("#alphaType1").val()]),
         corrvar2: corrvar2,
         corrvar2Alpha: JSON.stringify([$("#alphaContext2").val(), $("#alphaType2").val()]),
+        corrMethod: corrMethod,
         cluster: cluster,
         minSamplesPresent: minSamplesPresent,
         showlabels: $("#showlabels").val(),

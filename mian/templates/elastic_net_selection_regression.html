@@ -51,14 +51,16 @@
                 <label class="control-label">Features to Keep <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#number-of-features-to-keep" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="keep" name="keep" type="number" value="5" placeholder="Leave blank for all relevant features"/>
 
-                <label class="control-label">Freeze Training Set Between Changes <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#freeze-training-set-between-changes" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                <select id="fixTraining" name="fixTraining" class="form-control">
+                <label class="control-label">Select Using Training Set <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#select-using-training-set" target="_blank"><i class="fa fa-info-circle"></i></a></label>
+                <select id="useTrainingSet" name="useTrainingSet" class="form-control">
                     <option value="yes">Yes</option>
                     <option value="no" selected>No</option>
                 </select>
 
-                <label class="control-label">Training Proportion <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
-                <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
+                <div id="trainingProportionContainer" style="display:none;">
+                    <label class="control-label">Training Proportion (applicable only if using a training set) <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#training-proportion" target="_blank"><i class="fa fa-info-circle"></i></a></label>
+                    <input class="form-control" id="trainingProportion" name="trainingProportion" type="number" value="0.7"/>
+                </div>
 
                 <label class="control-label">L1 Regularization Ratio <a href="https://tbj128.gitbook.io/mian/elastic-net-regression#l1-regularization-ratio" target="_blank"><i class="fa fa-info-circle"></i></a></label>
                 <input class="form-control" id="mixingRatio" name="mixingRatio" type="number" value="0.5"/>
@@ -107,7 +109,7 @@
     </div>
 
     <div id="send-to-container" class="analysis-container" style="display:none;">
-        <div id="machine-learning-alert" class="alert alert-success" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) model. ML will use the same training set as the feature selection</div>
+        <div id="machine-learning-alert" class="alert alert-info" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) model. However, if doing so, <strong>make sure to perform feature selection using a training set</strong> in order to produce an unbiased predictive performance on a test set.</div>
         <div class="row">
             <div class="col-md-12">
                 <h4>Train and test selected features with...</h4>

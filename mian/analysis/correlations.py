@@ -41,6 +41,7 @@ class Correlations(AnalysisBase):
         corrvar1 = user_request.get_custom_attr("corrvar1")
         corrvar2 = user_request.get_custom_attr("corrvar2")
         colorvar = user_request.get_custom_attr("colorvar")
+        corrMethod = user_request.get_custom_attr("corrMethod")
         sizevar = user_request.get_custom_attr("sizevar")
         samplestoshow = user_request.get_custom_attr("samplestoshow")
         taxonomiesOfInterest1 = json.loads(user_request.get_custom_attr("corrvar1SpecificTaxonomies"))
@@ -190,7 +191,13 @@ class Correlations(AnalysisBase):
 
             i += 1
 
-        coef, pval = stats.pearsonr(corrValArr1, corrValArr2)
+        if corrMethod == "pearson":
+            coef, pval = stats.pearsonr(corrValArr1, corrValArr2)
+        elif corrMethod == "spearman":
+            coef, pval = stats.spearmanr(corrValArr1, corrValArr2)
+        else:
+            raise NotImplementedError("Corr method is not implemented")
+
         if math.isnan(coef):
             coef = 0
         if math.isnan(pval):

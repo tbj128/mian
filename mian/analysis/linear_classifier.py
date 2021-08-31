@@ -163,12 +163,12 @@ class LinearClassifier(object):
             }
         else:
             if fix_training == "yes":
-                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, random_state=seed, stratify=Y)
-                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, random_state=seed, stratify=y_test)
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, random_state=seed)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, random_state=seed)
             else:
                 # Use a random seed each time (not recommended)
-                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion, stratify=Y)
-                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5, stratify=y_test)
+                X_train, X_test, y_train, y_test = train_test_split(X, Y, train_size=training_proportion)
+                X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, train_size=0.5)
 
             imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
             X_train = imp_mean.fit_transform(X_train)

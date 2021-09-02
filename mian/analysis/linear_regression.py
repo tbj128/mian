@@ -12,7 +12,7 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import ElasticNet, SGDRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 
 from mian.model.otu_table import OTUTable
 import numpy as np
@@ -43,12 +43,12 @@ class LinearRegression(object):
             # OTU tables are returned as a CSR matrix
             X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
         else:
-            X = otu_table
+            X = pd.DataFrame(otu_table, columns=headers, index=range(otu_table.shape[0]))
 
         Y = np.array(metadata_vals)
 
         def performCrossValidationForAUC(X_cv, metadata_vals_cv, Y_cv):
-            cv = KFold(n_splits=cross_validate_folds)
+            cv = KFold(n_splits=cross_validate_folds, shuffle=True, random_state=seed)
 
             classifier = ElasticNet(l1_ratio=mixing_ratio, max_iter=max_iterations)
 

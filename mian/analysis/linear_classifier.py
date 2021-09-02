@@ -46,7 +46,7 @@ class LinearClassifier(object):
             # OTU tables are returned as a CSR matrix
             X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
         else:
-            X = otu_table
+            X = pd.DataFrame(otu_table, columns=headers, index=range(otu_table.shape[0]))
 
         Y = np.array(metadata_vals)
         uniq_metadata_vals = list(set(Y))
@@ -66,7 +66,7 @@ class LinearClassifier(object):
             return np.array(Y_cv_binarize)
 
         def performCrossValidationForAUC(X_cv, metadata_vals_cv, Y_cv):
-            cv = StratifiedKFold(n_splits=cross_validate_folds)
+            cv = StratifiedKFold(n_splits=cross_validate_folds, shuffle=True, random_state=seed)
 
             classifier = SGDClassifier(loss=loss_function, l1_ratio=mixing_ratio, max_iter=max_iterations)
 
@@ -76,7 +76,9 @@ class LinearClassifier(object):
                 class_to_roc[uniq_metadata_vals[i]] = {
                     "fprs": [],
                     "tprs": [],
-                    "aucs": []
+                    "aucs": [],
+                    "num_positives": 0,
+                    "num_total": 0
                 }
 
             for i, (train, test) in enumerate(cv.split(X_cv, metadata_vals_cv)):
@@ -94,6 +96,8 @@ class LinearClassifier(object):
                     class_to_roc[label]["fprs"].append(base_fpr)
                     class_to_roc[label]["tprs"].append(tpr)
                     class_to_roc[label]["aucs"].append(auc)
+                    class_to_roc[label]["num_positives"] = sum(Y_cv_binarize[:, 1])
+                    class_to_roc[label]["num_total"] = len(Y_cv_binarize[:, 1])
                 else:
                     for c in range(len(classifier.classes_)):
                         actual_class = classifier.classes_[c]
@@ -107,6 +111,8 @@ class LinearClassifier(object):
                         class_to_roc[actual_class]["fprs"].append(base_fpr)
                         class_to_roc[actual_class]["tprs"].append(tpr)
                         class_to_roc[actual_class]["aucs"].append(auc)
+                        class_to_roc[actual_class]["num_positives"] = sum(Y_cv_binarize[:, c])
+                        class_to_roc[actual_class]["num_total"] = len(Y_cv_binarize[:, c])
 
                         i += 1
 
@@ -117,7 +123,9 @@ class LinearClassifier(object):
                         "fpr": [round(a.item(), 4) for a in np.array(class_to_roc[k]["fprs"]).mean(axis=0)],
                         "tpr": [round(a.item(), 4) for a in np.array(class_to_roc[k]["tprs"]).mean(axis=0)],
                         "auc": round(np.array(class_to_roc[k]["aucs"]).mean(), 4),
-                        "auc_std": round(np.array(class_to_roc[k]["aucs"]).std(), 4)
+                        "auc_std": round(np.array(class_to_roc[k]["aucs"]).std(), 4),
+                        "num_positives": round(np.array(class_to_roc[k]["num_positives"]).mean(), 0),
+                        "num_total": round(np.array(class_to_roc[k]["num_total"]).mean(), 0),
                     }
 
             cv_obj = {
@@ -159,7 +167,9 @@ class LinearClassifier(object):
         if cross_validate_set == "full":
             cv_obj = performCrossValidationForAUC(X, metadata_vals, Y)
             return {
-                "train_class_to_roc": cv_obj["class_to_roc"]
+                "train_class_to_roc": cv_obj["class_to_roc"],
+                "cv_size": X.shape,
+                "seed": seed
             }
         else:
             if fix_training == "yes":

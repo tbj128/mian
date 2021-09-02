@@ -75,8 +75,10 @@ function initializeFields() {
         $("#crossValidate").val(getParameterByName("crossValidate"));
         if ($("#crossValidate").val() === "full") {
             $("#trainingConfig").hide();
+            $("#cvFolds").show();
         } else {
             $("#trainingConfig").show();
+            $("#cvFolds").hide();
         }
     }
 
@@ -130,8 +132,10 @@ function createSpecificListeners() {
     $("#crossValidate").change(function() {
         if ($("#crossValidate").val() === "full") {
             $("#trainingConfig").hide();
+            $("#cvFolds").show();
         } else {
             $("#trainingConfig").show();
+            $("#cvFolds").hide();
         }
         updateAnalysis();
     });
@@ -184,6 +188,10 @@ function renderTrainingPlot() {
     tableResults = [];
     if ($("#crossValidate").val() === "full") {
         tableResults.push(["Label", "Cross-Validation AUROC"]);
+        $("#train-n").text("N/A");
+        $("#val-n").text("N/A");
+        $("#test-n").text("N/A");
+
     } else {
         tableResults.push(["Label", "Training AUROC", "Validation AUROC", "Test AUROC"]);
 
@@ -195,10 +203,12 @@ function renderTrainingPlot() {
     var colors = palette('cb-Accent', Object.keys(cachedAbundancesObj[trainOrTestKey]).length);
     config.data.datasets = [];
     var i = 0;
-    for (var k in cachedAbundancesObj[trainOrTestKey]) {
+    for (var k of Object.keys(cachedAbundancesObj[trainOrTestKey]).slice().reverse()) {
         if ($("#crossValidate").val() === "full") {
             tableResults.push([k, cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"]]);
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>N/A</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>");
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["num_positives"] + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td></tr>");
+
+            $("#test-n").text(cachedAbundancesObj[trainOrTestKey][k]["num_total"]);
         } else {
             var trainAuc = cachedAbundancesObj["train_class_to_roc"][k] ? cachedAbundancesObj["train_class_to_roc"][k]["auc"] : "N/A";
             var valAuc = cachedAbundancesObj["val_class_to_roc"][k] ? cachedAbundancesObj["val_class_to_roc"][k]["auc"] : "N/A";
@@ -209,6 +219,7 @@ function renderTrainingPlot() {
             tableResults.push([k, trainAuc, valAuc, testAuc]);
             $("#auc-rows").append("<tr><td>" + k + "</td><td>" + trainPos + "</td><td>" + trainAuc + "</td><td>" + valPos + "</td><td>" + valAuc+ "</td><td>" + testPos + "</td><td>" + testAuc + "</td></tr>");
         }
+
         config.data.datasets.push({
             label: k,
             backgroundColor: "#" + colors[i],
@@ -223,7 +234,13 @@ function renderTrainingPlot() {
                 }
             }),
         });
+
         i += 1
+
+        if (Object.keys(cachedAbundancesObj[trainOrTestKey]).length == 2) {
+            // If there are only two classes, only plot one ROC curve
+            break;
+        }
     }
 
     window.rocChart.update();

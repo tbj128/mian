@@ -46,7 +46,7 @@ class DeepNeuralNetwork(object):
             # OTU tables are returned as a CSR matrix
             X = pd.DataFrame.sparse.from_spmatrix(otu_table, columns=headers, index=range(otu_table.shape[0]))
         else:
-            X = otu_table
+            X = pd.DataFrame(otu_table, columns=headers, index=range(otu_table.shape[0]))
 
         le_name_mapping = {}
         if problem_type == "classification":

@@ -251,8 +251,14 @@ function renderRocPlot() {
             tableResults.push([k, cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"]]);
             $("#auc-rows").append("<tr><td>" + k + "</td><td>N/A</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + " ± " + cachedAbundancesObj[trainOrTestKey][k]["auc_std"] + "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>");
         } else {
-            tableResults.push([k, cachedAbundancesObj["train_class_to_roc"][k]["auc"], cachedAbundancesObj["val_class_to_roc"][k]["auc"], cachedAbundancesObj["test_class_to_roc"][k]["auc"]]);
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj[trainOrTestKey][k]["auc"] + "</td></tr>");
+            var trainAuc = cachedAbundancesObj["train_class_to_roc"][k] ? cachedAbundancesObj["train_class_to_roc"][k]["auc"] : "N/A";
+            var valAuc = cachedAbundancesObj["val_class_to_roc"][k] ? cachedAbundancesObj["val_class_to_roc"][k]["auc"] : "N/A";
+            var testAuc = cachedAbundancesObj["test_class_to_roc"][k] ? cachedAbundancesObj["test_class_to_roc"][k]["auc"] : "N/A";
+            var trainPos = cachedAbundancesObj["train_class_to_roc"][k] ? cachedAbundancesObj["train_class_to_roc"][k]["num_positives"] : "N/A";
+            var valPos = cachedAbundancesObj["val_class_to_roc"][k] ? cachedAbundancesObj["val_class_to_roc"][k]["num_positives"] : "N/A";
+            var testPos = cachedAbundancesObj["test_class_to_roc"][k] ? cachedAbundancesObj["test_class_to_roc"][k]["num_positives"] : "N/A";
+            tableResults.push([k, trainAuc, valAuc, testAuc]);
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + trainPos + "</td><td>" + trainAuc + "</td><td>" + valPos + "</td><td>" + valAuc+ "</td><td>" + testPos + "</td><td>" + testAuc + "</td></tr>");
         }
         configRoc.data.datasets.push({
             label: k,

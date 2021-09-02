@@ -355,23 +355,32 @@ function renderTrainingPlot() {
 
         var i = 0;
         for (var k in cachedAbundancesObj["train_class_to_roc"]) {
-            tableResults.push([k, cachedAbundancesObj["train_class_to_roc"][k]["auc"], cachedAbundancesObj["val_class_to_roc"][k]["auc"], cachedAbundancesObj["test_class_to_roc"][k]["auc"]]);
-            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["train_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["val_class_to_roc"][k]["auc"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["num_positives"] + "</td><td>" + cachedAbundancesObj["test_class_to_roc"][k]["auc"] + "</td></tr>");
+            var trainAuc = cachedAbundancesObj["train_class_to_roc"][k] ? cachedAbundancesObj["train_class_to_roc"][k]["auc"] : "N/A";
+            var valAuc = cachedAbundancesObj["val_class_to_roc"][k] ? cachedAbundancesObj["val_class_to_roc"][k]["auc"] : "N/A";
+            var testAuc = cachedAbundancesObj["test_class_to_roc"][k] ? cachedAbundancesObj["test_class_to_roc"][k]["auc"] : "N/A";
+            var trainPos = cachedAbundancesObj["train_class_to_roc"][k] ? cachedAbundancesObj["train_class_to_roc"][k]["num_positives"] : "N/A";
+            var valPos = cachedAbundancesObj["val_class_to_roc"][k] ? cachedAbundancesObj["val_class_to_roc"][k]["num_positives"] : "N/A";
+            var testPos = cachedAbundancesObj["test_class_to_roc"][k] ? cachedAbundancesObj["test_class_to_roc"][k]["num_positives"] : "N/A";
 
-            configRoc.data.datasets.push({
-                label: k,
-                backgroundColor: "#" + colors[i],
-                borderColor: "#" + colors[i],
-                data: [],
-                fill: false,
-                lineTension: 0,
-                data: cachedAbundancesObj["test_class_to_roc"][k]["tpr"].map((val, i) => {
-                    return {
-                        x: cachedAbundancesObj["test_class_to_roc"][k]["fpr"][i],
-                        y: cachedAbundancesObj["test_class_to_roc"][k]["tpr"][i]
-                    }
-                }),
-            });
+            tableResults.push([k, trainAuc, valAuc, testAuc]);
+            $("#auc-rows").append("<tr><td>" + k + "</td><td>" + trainPos + "</td><td>" + trainAuc + "</td><td>" + valPos + "</td><td>" + valAuc+ "</td><td>" + testPos + "</td><td>" + testAuc + "</td></tr>");
+
+            if (cachedAbundancesObj["test_class_to_roc"][k]) {
+                configRoc.data.datasets.push({
+                    label: k,
+                    backgroundColor: "#" + colors[i],
+                    borderColor: "#" + colors[i],
+                    data: [],
+                    fill: false,
+                    lineTension: 0,
+                    data: cachedAbundancesObj["test_class_to_roc"][k]["tpr"].map((val, i) => {
+                        return {
+                            x: cachedAbundancesObj["test_class_to_roc"][k]["fpr"][i],
+                            y: cachedAbundancesObj["test_class_to_roc"][k]["tpr"][i]
+                        }
+                    }),
+                });
+            }
             i += 1
         }
 

@@ -184,6 +184,7 @@ class AlphaDiversity(AnalysisBase):
                 tree = tree.root_at_midpoint()
             return alpha_diversity(alpha_type, otu_table, ids=sample_labels, otu_ids=headers, tree=tree)
         else:
+            otu_table = np.array(otu_table)
             num_species = np.count_nonzero(otu_table > 0, axis=1)
             if alpha_context == "evenness":
                 diversity = alpha_diversity(alpha_type, otu_table, ids=sample_labels)

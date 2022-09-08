@@ -116,6 +116,21 @@
     </div>
     {% include 'notifications.html' %}
     {% include 'download_container.html' %}
+
+    <div id="display-no-results" class="display-notification project-empty" style="display:none;">
+        <div class="row">
+            <div class="col-md-3">
+                <i class="fa fa-exclamation-circle fa-4x"></i>
+            </div>
+            <div class="col-md-9">
+                <h3>No taxonomic groups/OTUs were selected</h3>
+                <p>
+                    No taxonomic groups/OTUs had a non-zero coefficient in the selected model. Try adjusting the parameters to yield more results.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div id="analysis-container" class="analysis-container" style="display:none;">
         <div id="send-to-container" style="display:none;">
             <div id="machine-learning-alert" class="alert alert-info" role="alert"><strong>Tip </strong>Assess the performance of the selected features using a machine learning (ML) model. However, if doing so, <strong>make sure to perform feature selection using a training set</strong> in order to produce an unbiased predictive performance on a test set.</div>

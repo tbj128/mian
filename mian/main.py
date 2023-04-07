@@ -14,6 +14,7 @@ from flask import Flask, request, render_template, redirect, url_for, Response, 
 from flask_mail import Mail, Message
 import flask_login
 from flask_login import current_user
+from flask_ldap3_login import LDAP3LoginManager, AuthenticationResponseStatus
 from werkzeug.utils import secure_filename
 from sqlite3 import dbapi2 as sqlite3
 from urllib.parse import unquote
@@ -27,6 +28,7 @@ import zlib
 import time
 import uuid
 import logging
+import configparser
 import multiprocessing
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
@@ -92,11 +94,13 @@ from mian.model.otu_table import OTUTable
 
 DB_NAME = "mian.db"
 SCHEMA_NAME = "schema.sql"
+CONFIG_NAME = "config.ini"
 
 RELATIVE_PATH = os.path.dirname(os.path.realpath(__file__))
 UPLOAD_FOLDER = os.path.join(RELATIVE_PATH, "data")
 DB_PATH = os.path.join(RELATIVE_PATH, DB_NAME)
 SCHEMA_PATH = os.path.join(RELATIVE_PATH, SCHEMA_NAME)
+CONFIG_PATH = os.path.join(RELATIVE_PATH, CONFIG_NAME)
 
 #
 # Main App
@@ -105,20 +109,104 @@ SCHEMA_PATH = os.path.join(RELATIVE_PATH, SCHEMA_NAME)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+# Read the config file
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
+
+# def get_config_section():
+#     if not hasattr(get_config_section, 'section_dict'):
+#         get_config_section.section_dict = collections.defaultdict()
+
+#         for section in config.sections():
+#             get_config_section.section_dict[section] = dict(config.items(section))
+
+#     return get_config_section.section_dict
+
+# # Load config file variables into config_dict.
+# # Variable names are converted to lowercase!
+# config_dict = get_config_section()
+
 # Initialize the web app
 app = Flask(__name__)
 app.config.update(
-    MAIL_SERVER='email-smtp.us-east-1.amazonaws.com',
-    MAIL_PORT=587,
-    MAIL_USE_TLS=True,
-    MAIL_USERNAME=os.environ['MAIL_USERNAME'] if 'MAIL_USERNAME' in os.environ else "",
-    MAIL_PASSWORD=os.environ['MAIL_PASSWORD'] if 'MAIL_PASSWORD' in os.environ else ""
+    MAIL_SERVER=config['mail'].get('mail_server'),
+    MAIL_PORT=int(config['mail'].get('mail_port')),
+    MAIL_USE_TLS=config['mail'].getboolean('mail_use_tls'),
+    MAIL_USERNAME=config['mail'].get('mail_username'),
+    MAIL_PASSWORD=config['mail'].get('mail_password')
 )
 mail = Mail(app)
+
+# app.config['DEBUG'] = True
+# logging.getLogger('flask_ldap3_login').setLevel(logging.DEBUG)
+
+#
+# LDAP
+#
+if config['ldap'].getboolean('ldap_active'):
+    app.config['LDAP_HOST'] = config['ldap'].get('ldap_host')
+    app.config['LDAP_BASE_DN'] = config['ldap'].get('ldap_base_dn')
+    app.config['LDAP_USER_DN'] = config['ldap'].get('ldap_user_dn')
+    app.config['LDAP_SEARCH_FOR_GROUPS'] = config['ldap'].getboolean(
+        'ldap_search_for_groups')
+    app.config['LDAP_USER_RDN_ATTR'] = config['ldap'].get('ldap_user_rdn_attr')
+    app.config['LDAP_USER_LOGIN_ATTR'] = config['ldap'].get(
+        'ldap_user_login_attr')
+    app.config['LDAP_BIND_USER_DN'] = config['ldap'].get('ldap_bind_user_dn')
+    app.config['LDAP_BIND_USER_PASSWORD'] = config['ldap'].get(
+        'ldap_bind_user_password')
+    app.config['LDAP_USER_SEARCH_SCOPE'] = config['ldap'].get(
+        'ldap_user_search_scope')
+    app.config['LDAP_PORT'] = int(config['ldap'].get('ldap_port'))
+    app.config['LDAP_USE_SSL'] = config['ldap'].getboolean('ldap_use_ssl')
+    app.config['LDAP_ADD_SERVER'] = config['ldap'].getboolean(
+        'ldap_add_server')
+    app.config['LDAP_READONLY'] = config['ldap'].getboolean('ldap_readonly')
+    app.config['LDAP_CHECK_NAMES'] = config['ldap'].getboolean(
+        'ldap_check_names')
+    app.config['LDAP_BIND_DIRECT_CREDENTIALS'] = config['ldap'].getboolean(
+        'ldap_bind_direct_credentials')
+    app.config['LDAP_BIND_DIRECT_PREFIX'] = config['ldap'].get(
+        'ldap_bind_direct_prefix')
+    app.config['LDAP_BIND_DIRECT_SUFFIX'] = config['ldap'].get(
+        'ldap_bind_direct_suffix')
+    app.config['LDAP_ALWAYS_SEARCH_BIND'] = config['ldap'].getboolean(
+        'ldap_always_search_bind')
+    app.config['LDAP_FAIL_AUTH_ON_MULTIPLE_FOUND'] = config['ldap'].getboolean(
+        'ldap_fail_auth_on_multiple_found')
+    app.config['LDAP_GROUP_DN'] = config['ldap'].get('ldap_group_dn')
+    app.config['LDAP_USER_OBJECT_FILTER'] = config['ldap'].get(
+        'ldap_user_object_filter')
+    app.config['LDAP_GET_USER_ATTRIBUTES'] = config['ldap'].get(
+        'ldap_get_user_attributes')
+    app.config['LDAP_GROUP_SEARCH_SCOPE'] = config['ldap'].get(
+        'ldap_group_search_scope')
+    app.config['LDAP_GROUP_OBJECT_FILTER'] = config['ldap'].get(
+        'ldap_group_object_filter')
+    app.config['LDAP_GROUP_MEMBERS_ATTR'] = config['ldap'].get(
+        'ldap_group_members_attr')
+    app.config['LDAP_GET_GROUP_ATTRIBUTES'] = config['ldap'].get(
+        'ldap_get_group_attributes')
+
 
 # Initialize the login manager
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
+if config['ldap'].getboolean('ldap_active'):
+    ldap_manager = LDAP3LoginManager(app)
+
+# Create a dictionary to store the ldap users in when they authenticate
+# This example stores users in memory.
+users = {}
+
+# Make ldap_active accessible in templates
+
+
+@app.context_processor
+def inject_ldap_active():
+    return dict(ldap=config['ldap'].getboolean('ldap_active'))
+
 
 # Initialize the database if applicable
 db.initDB(DB_PATH, SCHEMA_PATH)
@@ -134,6 +222,7 @@ db.initDB(DB_PATH, SCHEMA_PATH)
 #       or reloading of this file. Consider mixture of front-end timeout and signal library
 #       See: https://stackoverflow.com/questions/366682/how-to-limit-execution-time-of-a-function-call-in-python
 MAX_FUNCTION_TIME_SECONDS = 60
+
 
 def abortable_worker(func, *args, **kwargs):
     timeout = kwargs.get('timeout', MAX_FUNCTION_TIME_SECONDS)
@@ -166,6 +255,7 @@ def abortable_worker_long(func, *args, **kwargs):
 # Page Routes
 #
 
+
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     next = url_for(request.endpoint, **request.args)
@@ -178,8 +268,10 @@ def unauthorized_callback():
             user = User(nonce, userID, True)
             flask_login.login_user(user)
             return redirect_dest(fallback=url_for('projects'))
-
-    return redirect(url_for('login', next=next, nonce=nonce))
+    if config['ldap'].getboolean('ldap_active'):
+        return redirect(url_for('login', next=next))
+    else:
+        return redirect(url_for('login', next=next, nonce=nonce))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -230,10 +322,30 @@ def redirect_dest(fallback):
         return redirect(fallback)
 
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'GET':
+#         if config['ldap']['ldap_active'].casefold() == 'true':
+#             return render_template('login_ldap.html')
+#     else:
+#         username = request.form['username']
+#         password = request.form['password']
+
+#         isAuth, userID = checkAuth(username, password)
+#         if isAuth:
+#             user = User(username, userID, True)
+#             flask_login.login_user(user)
+#             return redirect_dest(fallback=url_for('projects'))
+
+#         return render_template('login.html', badlogin=1)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return render_template('login.html')
+        if config['ldap'].getboolean('ldap_active'):
+            return render_template('login_ldap.html')
+        else:
+            return render_template('login.html')
     else:
         email = request.form['email']
         password = request.form['password']
@@ -244,7 +356,10 @@ def login():
             flask_login.login_user(user)
             return redirect_dest(fallback=url_for('projects'))
 
-        return render_template('login.html', badlogin=1)
+        if config['ldap'].getboolean('ldap_active'):
+            return render_template('login_ldap.html', badlogin=1)
+        else:
+            return render_template('login.html', badlogin=1)
 
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
@@ -351,10 +466,14 @@ def create():
 
         if project_type == "biom":
             # Biom files are self-contained - they must be split up and subsampled to be compatible with mian
-            project_biom_name = secure_filename(request.form['projectBiomName'])
-            project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
-            project_gene_name = secure_filename(request.form['projectGeneName'])
-            project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
+            project_biom_name = secure_filename(
+                request.form['projectBiomName'])
+            project_phylogenetic_name = secure_filename(
+                request.form['projectPhylogeneticName'])
+            project_gene_name = secure_filename(
+                request.form['projectGeneName'])
+            project_sample_id_name = secure_filename(
+                request.form['projectSampleIDName'])
             try:
                 status, message = project_manager.stage_project_from_biom(project_name=project_name,
                                                                           biom_name=project_biom_name,
@@ -365,11 +484,16 @@ def create():
                 return redirect(url_for('projects', status=GENERAL_ERROR, message=""))
         else:
             # Users can also choose to manually upload files
-            project_otu_table_name = secure_filename(request.form['projectOTUTableName'])
-            project_taxa_map_name = secure_filename(request.form['projectTaxaMapName'])
-            project_sample_id_name = secure_filename(request.form['projectSampleIDName'])
-            project_phylogenetic_name = secure_filename(request.form['projectPhylogeneticName'])
-            project_gene_name = secure_filename(request.form['projectGeneName'])
+            project_otu_table_name = secure_filename(
+                request.form['projectOTUTableName'])
+            project_taxa_map_name = secure_filename(
+                request.form['projectTaxaMapName'])
+            project_sample_id_name = secure_filename(
+                request.form['projectSampleIDName'])
+            project_phylogenetic_name = secure_filename(
+                request.form['projectPhylogeneticName'])
+            project_gene_name = secure_filename(
+                request.form['projectGeneName'])
             try:
                 status, message = project_manager.stage_project_from_tsv(project_name=project_name,
                                                                          otu_filename=project_otu_table_name,
@@ -399,20 +523,25 @@ def createFilter():
         project_subsample_to = request.form['projectSubsampleTo']
         sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
         sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
-        lowExpressionFilteringType = request.form['lowExpressionFilteringType'] if 'lowExpressionFilteringType' in request.form else "none"
+        lowExpressionFilteringType = request.form[
+            'lowExpressionFilteringType'] if 'lowExpressionFilteringType' in request.form else "none"
 
-        lowExpressionFilteringCount = request.form['lowExpressionFilteringCount'] if 'lowExpressionFilteringCount' in request.form else 0
+        lowExpressionFilteringCount = request.form[
+            'lowExpressionFilteringCount'] if 'lowExpressionFilteringCount' in request.form else 0
         try:
             lowExpressionFilteringCount = float(lowExpressionFilteringCount)
         except:
             lowExpressionFilteringCount = 0
 
-        lowExpressionFilteringPrevalence = request.form['lowExpressionFilteringPrevalence'] if 'lowExpressionFilteringPrevalence' in request.form else 0
+        lowExpressionFilteringPrevalence = request.form[
+            'lowExpressionFilteringPrevalence'] if 'lowExpressionFilteringPrevalence' in request.form else 0
         try:
-            lowExpressionFilteringPrevalence = float(lowExpressionFilteringPrevalence)
+            lowExpressionFilteringPrevalence = float(
+                lowExpressionFilteringPrevalence)
         except:
             lowExpressionFilteringPrevalence = 0
-        sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
+        sampleFilterVals = json.loads(
+            request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
 
         try:
             status, message = project_manager.create_project(pid=pid,
@@ -437,9 +566,11 @@ def getFilterInfo():
     pid = request.form['pid']
     sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
     sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
-    sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
+    sampleFilterVals = json.loads(
+        request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
 
-    info = project_manager.get_filtering_info(pid, sampleFilter, sampleFilterRole, sampleFilterVals)
+    info = project_manager.get_filtering_info(
+        pid, sampleFilter, sampleFilterRole, sampleFilterVals)
     return json.dumps(info)
 
 
@@ -459,6 +590,7 @@ def home():
         return redirect(url_for('projects'))
     else:
         return render_template('index.html')
+        # return render_template('index.html', ldap=config['ldap'].getboolean('ldap_active'))
 
 
 @app.errorhandler(404)
@@ -934,7 +1066,8 @@ def getOTUTableHeadersAtLevelShare():
 
 
 def getOTUTableHeadersAtLevel(user, pid, level):
-    headers = OTUTable.get_otu_table_headers_at_taxonomic_level(user, pid, level)
+    headers = OTUTable.get_otu_table_headers_at_taxonomic_level(
+        user, pid, level)
     return json.dumps(headers)
 
 # ---
@@ -970,7 +1103,6 @@ def getMetadataVals(user, pid, catvar):
 # ---
 
 
-
 # Visualization endpoints
 
 class NpEncoder(json.JSONEncoder):
@@ -983,6 +1115,7 @@ class NpEncoder(json.JSONEncoder):
             return obj.tolist()
         else:
             return super(NpEncoder, self).default(obj)
+
 
 @app.route('/alpha_diversity', methods=['POST'])
 @flask_login.login_required
@@ -1008,7 +1141,8 @@ def getAlphaDiversity(user_request, req):
     user_request.set_custom_attr("plotType", req.form['plotType'])
     user_request.set_custom_attr("alphaType", req.form['alphaType'])
     user_request.set_custom_attr("alphaContext", req.form['alphaContext'])
-    user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
+    user_request.set_custom_attr(
+        "statisticalTest", req.form['statisticalTest'])
 
     plugin = AlphaDiversity()
 
@@ -1049,7 +1183,8 @@ def getBetaDiversityShare():
 def getBetaDiversity(user_request, req):
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("betaType", req.form['betaType'])
-    user_request.set_custom_attr("numPermutations", req.form['numPermutations'])
+    user_request.set_custom_attr(
+        "numPermutations", req.form['numPermutations'])
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "beta")
 
@@ -1092,7 +1227,8 @@ def getBetaDiversityPERMANOVAShare():
 def getBetaDiversityPERMANOVA(user_request, req):
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
     user_request.set_custom_attr("betaType", req.form['betaType'])
-    user_request.set_custom_attr("numPermutations", req.form['numPermutations'])
+    user_request.set_custom_attr(
+        "numPermutations", req.form['numPermutations'])
     user_request.set_custom_attr("strata", req.form['strata'])
     user_request.set_custom_attr("api", "permanova")
 
@@ -1134,7 +1270,8 @@ def getBorutaShare():
 def getBoruta(user_request, req):
     user_request.set_custom_attr("pval", req.form['pval'])
     user_request.set_custom_attr("maxruns", req.form['maxruns'])
-    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr(
+        "trainingProportion", req.form['trainingProportion'])
     user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
     user_request.set_custom_attr("seed", req.form['seed'])
 
@@ -1176,8 +1313,10 @@ def getBoxplotsShare():
 def getBoxplots(user_request, req):
     user_request.set_custom_attr("yvals", req.form['yvals'])
     user_request.set_custom_attr("colorvar", req.form['colorvar'])
-    user_request.set_custom_attr("yvalsSpecificTaxonomy", req.form['yvalsSpecificTaxonomy'])
-    user_request.set_custom_attr("statisticalTest", req.form['statisticalTest'])
+    user_request.set_custom_attr(
+        "yvalsSpecificTaxonomy", req.form['yvalsSpecificTaxonomy'])
+    user_request.set_custom_attr(
+        "statisticalTest", req.form['statisticalTest'])
 
     plugin = Boxplots()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1260,7 +1399,8 @@ def getCompositionHeatmap(user_request, req):
     user_request.set_custom_attr("rows", req.form['rows'])
     user_request.set_custom_attr("cols", req.form['cols'])
     user_request.set_custom_attr("clustersamples", req.form['clustersamples'])
-    user_request.set_custom_attr("clustertaxonomic", req.form['clustertaxonomic'])
+    user_request.set_custom_attr(
+        "clustertaxonomic", req.form['clustertaxonomic'])
     user_request.set_custom_attr("showlabels", req.form['showlabels'])
     user_request.set_custom_attr("colorscheme", req.form['colorscheme'])
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1304,9 +1444,12 @@ def getCorrelations(user_request, req):
     user_request.set_custom_attr("sizevar", req.form['sizevar'])
     user_request.set_custom_attr("corrMethod", req.form['corrMethod'])
     user_request.set_custom_attr("samplestoshow", req.form['samplestoshow'])
-    user_request.set_custom_attr("corrvar1SpecificTaxonomies", req.form['corrvar1SpecificTaxonomies'])
-    user_request.set_custom_attr("corrvar2SpecificTaxonomies", req.form['corrvar2SpecificTaxonomies'])
-    user_request.set_custom_attr("sizevarSpecificTaxonomies", req.form['sizevarSpecificTaxonomies'])
+    user_request.set_custom_attr(
+        "corrvar1SpecificTaxonomies", req.form['corrvar1SpecificTaxonomies'])
+    user_request.set_custom_attr(
+        "corrvar2SpecificTaxonomies", req.form['corrvar2SpecificTaxonomies'])
+    user_request.set_custom_attr(
+        "sizevarSpecificTaxonomies", req.form['sizevarSpecificTaxonomies'])
 
     plugin = Correlations()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1391,7 +1534,8 @@ def getCorrelationsSelection(user_request, req):
     user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
     user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
     user_request.set_custom_attr("seed", req.form['seed'])
-    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr(
+        "trainingProportion", req.form['trainingProportion'])
 
     plugin = CorrelationsSelection()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1435,7 +1579,8 @@ def getDeepNeuralNetwork(user_request, req):
     user_request.set_custom_attr("expvar", req.form['expvar'])
     user_request.set_custom_attr("problemType", req.form['problemType'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr(
+        "trainingProportion", float(req.form['trainingProportion']))
     user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = DeepNeuralNetwork()
@@ -1480,7 +1625,8 @@ def getDifferentialSelection(user_request, req):
     user_request.set_custom_attr("pwVar2", req.form['pwVar2'])
     user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
     user_request.set_custom_attr("seed", req.form['seed'])
-    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr(
+        "trainingProportion", req.form['trainingProportion'])
 
     plugin = DifferentialSelection()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1520,7 +1666,8 @@ def getElasticNetSelectionClassificationShare():
 def getElasticNetSelectionClassification(user_request, req):
     user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
     user_request.set_custom_attr("seed", req.form['seed'])
-    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr(
+        "trainingProportion", req.form['trainingProportion'])
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
     user_request.set_custom_attr("lossFunction", req.form['lossFunction'])
@@ -1565,7 +1712,8 @@ def getElasticNetSelectionRegression(user_request, req):
     user_request.set_custom_attr("expvar", req.form['expvar'])
     user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
     user_request.set_custom_attr("seed", req.form['seed'])
-    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr(
+        "trainingProportion", req.form['trainingProportion'])
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
     user_request.set_custom_attr("keep", req.form['keep'])
@@ -1612,7 +1760,8 @@ def getFisherExact(user_request, req):
     user_request.set_custom_attr("pvalthreshold", req.form['pvalthreshold'])
     user_request.set_custom_attr("useTrainingSet", req.form['useTrainingSet'])
     user_request.set_custom_attr("seed", req.form['seed'])
-    user_request.set_custom_attr("trainingProportion", req.form['trainingProportion'])
+    user_request.set_custom_attr(
+        "trainingProportion", req.form['trainingProportion'])
 
     plugin = FisherExact()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1654,9 +1803,12 @@ def getHeatmap(user_request, req):
     user_request.set_custom_attr("corrvar2", req.form['corrvar2'])
     user_request.set_custom_attr("corrMethod", req.form['corrMethod'])
     user_request.set_custom_attr("cluster", req.form['cluster'])
-    user_request.set_custom_attr("minSamplesPresent", req.form['minSamplesPresent'])
-    user_request.set_custom_attr("corrvar1Alpha", json.loads(req.form['corrvar1Alpha']))
-    user_request.set_custom_attr("corrvar2Alpha", json.loads(req.form['corrvar2Alpha']))
+    user_request.set_custom_attr(
+        "minSamplesPresent", req.form['minSamplesPresent'])
+    user_request.set_custom_attr(
+        "corrvar1Alpha", json.loads(req.form['corrvar1Alpha']))
+    user_request.set_custom_attr(
+        "corrvar2Alpha", json.loads(req.form['corrvar2Alpha']))
 
     plugin = Heatmap()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1698,9 +1850,11 @@ def getLinearClassifier(user_request, req):
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
     user_request.set_custom_attr("crossValidate", req.form['crossValidate'])
-    user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
+    user_request.set_custom_attr(
+        "crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr(
+        "trainingProportion", float(req.form['trainingProportion']))
     user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = LinearClassifier()
@@ -1716,8 +1870,6 @@ def getLinearClassifier(user_request, req):
         return json.dumps({
             "timeout": True
         })
-
-
 
 
 # ---
@@ -1745,9 +1897,11 @@ def getLinearRegression(user_request, req):
     user_request.set_custom_attr("mixingRatio", req.form['mixingRatio'])
     user_request.set_custom_attr("maxIterations", req.form['maxIterations'])
     user_request.set_custom_attr("crossValidate", req.form['crossValidate'])
-    user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
+    user_request.set_custom_attr(
+        "crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr(
+        "trainingProportion", float(req.form['trainingProportion']))
     user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = LinearRegression()
@@ -1763,7 +1917,6 @@ def getLinearRegression(user_request, req):
         return json.dumps({
             "timeout": True
         })
-
 
 
 # ---
@@ -1790,9 +1943,11 @@ def getRandomForest(user_request, req):
     user_request.set_custom_attr("numTrees", req.form['numTrees'])
     user_request.set_custom_attr("maxDepth", req.form['maxDepth'])
     user_request.set_custom_attr("crossValidate", req.form['crossValidate'])
-    user_request.set_custom_attr("crossValidateFolds", req.form['crossValidateFolds'])
+    user_request.set_custom_attr(
+        "crossValidateFolds", req.form['crossValidateFolds'])
     user_request.set_custom_attr("fixTraining", req.form['fixTraining'])
-    user_request.set_custom_attr("trainingProportion", float(req.form['trainingProportion']))
+    user_request.set_custom_attr(
+        "trainingProportion", float(req.form['trainingProportion']))
     user_request.set_custom_attr("seed", req.form['seed'])
 
     plugin = RandomForest()
@@ -1945,6 +2100,7 @@ def getTableShare():
     else:
         abortNotShared()
 
+
 def getTable(user_request):
     plugin = TableView()
     pool = multiprocessing.Pool(maxtasksperchild=1)
@@ -1980,10 +2136,13 @@ def getTreeShare():
     else:
         abortNotShared()
 
+
 def getTree(user_request, req):
-    user_request.set_custom_attr("taxonomy_display_level", req.form['taxonomy_display_level'])
+    user_request.set_custom_attr(
+        "taxonomy_display_level", req.form['taxonomy_display_level'])
     user_request.set_custom_attr("display_values", req.form['display_values'])
-    user_request.set_custom_attr("exclude_unclassified", req.form['exclude_unclassified'])
+    user_request.set_custom_attr(
+        "exclude_unclassified", req.form['exclude_unclassified'])
     plugin = TreeView()
     pool = multiprocessing.Pool(maxtasksperchild=1)
     abortable_func = partial(abortable_worker, plugin.run)
@@ -1997,7 +2156,6 @@ def getTree(user_request, req):
         return json.dumps({
             "timeout": True
         })
-
 
 
 #
@@ -2068,7 +2226,8 @@ def save_image_to_notebook():
     link = request.form['link']
 
     notebook = Notebook(user, pid)
-    notebook_section = NotebookSection(title=title, description=description, type="image", content=image, link=link)
+    notebook_section = NotebookSection(
+        title=title, description=description, type="image", content=image, link=link)
     notebook.add_section(notebook_section)
     return json.dumps({})
 
@@ -2084,7 +2243,8 @@ def save_table_to_notebook():
     link = request.form['link']
 
     notebook = Notebook(user, pid)
-    notebook_section = NotebookSection(title=title, description=description, type="table", content=table, link=link)
+    notebook_section = NotebookSection(
+        title=title, description=description, type="table", content=table, link=link)
     notebook.add_section(notebook_section)
     return json.dumps({})
 
@@ -2095,7 +2255,7 @@ def get_quantile_metadata_info():
     user = current_user.id
     pid = request.args.get("pid")
     metadata_name = request.args.get("metadata_name")
-    quantile_type = request.args.get("quantile_type") # gene or numeric
+    quantile_type = request.args.get("quantile_type")  # gene or numeric
     if quantile_type == "gene":
         genes = Genes(user, pid)
         return_obj = {
@@ -2138,7 +2298,8 @@ def save_quantile():
     quantile_staging = json.loads(request.form['quantileStaging'])
 
     quantiles = Quantiles(user, pid)
-    quantiles.update_quantile(quantile_staging["metadata_name"], quantile_staging["min"], quantile_staging["max"], quantile_staging["quantiles"], quantile_staging["type"], quantile_staging["quantile_type"])
+    quantiles.update_quantile(quantile_staging["metadata_name"], quantile_staging["min"], quantile_staging["max"],
+                              quantile_staging["quantiles"], quantile_staging["type"], quantile_staging["quantile_type"])
     quantiles.save()
     return json.dumps({})
 
@@ -2167,10 +2328,12 @@ def __get_user_request(request, user=None):
     taxonomyFilterPrevalnce = request.form['taxonomyFilterPrevalence'] if 'taxonomyFilterPrevalence' in request.form else ""
     taxonomyFilter = request.form['taxonomyFilter'] if 'taxonomyFilter' in request.form else ""
     taxonomyFilterRole = request.form['taxonomyFilterRole'] if 'taxonomyFilterRole' in request.form else ""
-    taxonomyFilterVals = json.loads(request.form['taxonomyFilterVals']) if 'taxonomyFilterVals' in request.form else []
+    taxonomyFilterVals = json.loads(
+        request.form['taxonomyFilterVals']) if 'taxonomyFilterVals' in request.form else []
     sampleFilter = request.form['sampleFilter'] if 'sampleFilter' in request.form else ""
     sampleFilterRole = request.form['sampleFilterRole'] if 'sampleFilterRole' in request.form else ""
-    sampleFilterVals = json.loads(request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
+    sampleFilterVals = json.loads(
+        request.form['sampleFilterVals']) if 'sampleFilterVals' in request.form else []
     catvar = request.form['catvar'] if 'catvar' in request.form else ""
     level = request.form['level'] if 'level' in request.form else -2
     user_request = UserRequest(user, pid, taxonomyFilterCount, taxonomyFilterPrevalnce, taxonomyFilter,
@@ -2178,25 +2341,31 @@ def __get_user_request(request, user=None):
                                sampleFilterVals, level, catvar)
     return user_request
 
+
 @app.route('/upload', methods=['POST'])
 @flask_login.login_required
 def upload():
     if request.method == 'POST':
         file = request.files['upload']
-        logger.info("Uploading file " + str(file.filename) + " for user " + str(current_user.id))
+        logger.info("Uploading file " + str(file.filename) +
+                    " for user " + str(current_user.id))
         if file:
             filename = secure_filename(file.filename)
 
-            user_staging_dir = os.path.join(ProjectManager.STAGING_DIRECTORY, current_user.id)
-            logger.info("Files will be temporarily put into a staging directory " + str(user_staging_dir))
+            user_staging_dir = os.path.join(
+                ProjectManager.STAGING_DIRECTORY, current_user.id)
+            logger.info(
+                "Files will be temporarily put into a staging directory " + str(user_staging_dir))
 
             if not os.path.exists(user_staging_dir):
-                logger.info("Making staging directory for user " + str(current_user.id))
+                logger.info("Making staging directory for user " +
+                            str(current_user.id))
                 os.makedirs(user_staging_dir)
 
             file.save(os.path.join(user_staging_dir, filename))
             return "Saved"
         return "Error"
+
 
 @app.route('/deleteProject', methods=['POST'])
 @flask_login.login_required
@@ -2212,6 +2381,7 @@ def deleteProject():
                 shutil.rmtree(userProjectFolder)
                 return "OK"
         return "Error"
+
 
 @app.route('/loadExampleProject', methods=['POST'])
 @flask_login.login_required
@@ -2236,6 +2406,7 @@ def loadExampleProject():
 
         return redirect(url_for('projects', status=OK, message="Example COPD Project Loaded"))
 
+
 @app.route('/changeSubsampling', methods=['POST'])
 @flask_login.login_required
 def changeSubsampling():
@@ -2245,9 +2416,11 @@ def changeSubsampling():
     subsampleTo = request.form['subsampleTo']
 
     project_manager = ProjectManager(user)
-    subsample_value = project_manager.modify_subsampling(pid, subsampleType, subsampleTo)
+    subsample_value = project_manager.modify_subsampling(
+        pid, subsampleType, subsampleTo)
 
     return json.dumps(subsample_value)
+
 
 @app.route("/download")
 @flask_login.login_required
@@ -2260,19 +2433,20 @@ def downloadFile():
     def generate_tsv():
         for row in project_manager.get_file_for_download(currProject, type):
             yield '\t'.join(str(x) for x in row) + '\n'
+
     def generate_text():
         return project_manager.get_file_for_download(currProject, type)
 
     if type == "biom" or type == "phylogenetic":
         return Response(generate_text(),
-                           mimetype="text/plain",
-                           headers={"Content-Disposition":
-                                        "attachment;filename=" + type + ".txt"})
+                        mimetype="text/plain",
+                        headers={"Content-Disposition":
+                                 "attachment;filename=" + type + ".txt"})
     else:
         return Response(generate_tsv(),
-                           mimetype="text/tab-separated-values",
-                           headers={"Content-Disposition":
-                                        "attachment;filename=" + type + ".txt"})
+                        mimetype="text/tab-separated-values",
+                        headers={"Content-Disposition":
+                                 "attachment;filename=" + type + ".txt"})
 
 
 # ------------------
@@ -2284,13 +2458,40 @@ def downloadFile():
 #
 
 
+# @login_manager.user_loader
+# def user_loader(id):
+#     userEmail = getUserEmail(id)
+#     if userEmail == "":
+#         return
+#     user = User(userEmail, id, True)
+#     return user
+
+# Declare a User Loader for Flask-Login.
+# Simply returns the User if it exists in our 'database', otherwise
+# returns None.
 @login_manager.user_loader
 def user_loader(id):
-    userEmail = getUserEmail(id)
-    if userEmail == "":
-        return
-    user = User(userEmail, id, True)
-    return user
+    if config['ldap'].getboolean('ldap_active'):
+        if id in users:
+            return User(id, id, True)
+        return None
+    else:
+        userEmail = getUserEmail(id)
+        if userEmail == "":
+            return
+        user = User(userEmail, id, True)
+        return user
+
+
+# Declare The User Saver for Flask-Ldap3-Login
+# Here you have to save the user, and return it so it can be used in the
+# login controller.
+if config['ldap'].getboolean('ldap_active'):
+    @ldap_manager.save_user
+    def save_user(username):
+        user = User(username, username, True)
+        users[username] = user
+        return user
 
 
 def createSalt():
@@ -2298,7 +2499,7 @@ def createSalt():
     Creates a random 16 character salt
     """
     ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    chars=[]
+    chars = []
     for i in range(16):
         chars.append(random.choice(ALPHABET))
     return "".join(chars)
@@ -2314,8 +2515,10 @@ def addUser(username, password):
 
     salt = createSalt()
 
-    calculatedPassword = hashlib.md5(str(salt + password).encode('utf-8')).hexdigest()
-    c.execute('INSERT INTO accounts (user_email, password_hash, salt) VALUES (?,?,?)', (username, calculatedPassword, salt))
+    calculatedPassword = hashlib.md5(
+        str(salt + password).encode('utf-8')).hexdigest()
+    c.execute('INSERT INTO accounts (user_email, password_hash, salt) VALUES (?,?,?)',
+              (username, calculatedPassword, salt))
     db.commit()
     db.close()
 
@@ -2350,30 +2553,71 @@ def getUserEmail(userID):
     return row[1]
 
 
+# def checkAuth(username, password):
+#     """
+#     Used during login to check if the user credentials are correct
+#     """
+#     db = sqlite3.connect(DB_PATH)
+#     c = db.cursor()
+#     t = (username,)
+#     c.execute('SELECT password_hash, salt, id FROM accounts WHERE user_email=?', t)
+#     row = c.fetchone()
+#     db.close()
+
+#     if row is None:
+#         # No user exists
+#         return False, -1
+#     else:
+#         knownPassword = row[0]
+#         salt = row[1]
+#         id = row[2]
+#         calculatedPassword = hashlib.md5(str(salt + password).encode('utf-8')).hexdigest()
+#         okay = calculatedPassword == knownPassword
+#         if okay:
+#             return okay, id
+#         else:
+#             return okay, -1
+
 def checkAuth(username, password):
     """
     Used during login to check if the user credentials are correct
     """
-    db = sqlite3.connect(DB_PATH)
-    c = db.cursor()
-    t = (username,)
-    c.execute('SELECT password_hash, salt, id FROM accounts WHERE user_email=?', t)
-    row = c.fetchone()
-    db.close()
-
-    if row is None:
-        # No user exists
-        return False, -1
-    else:
-        knownPassword = row[0]
-        salt = row[1]
-        id = row[2]
-        calculatedPassword = hashlib.md5(str(salt + password).encode('utf-8')).hexdigest()
-        okay = calculatedPassword == knownPassword
-        if okay:
-            return okay, id
+    # Check if the credentials are correct
+    if config['ldap'].getboolean('ldap_active'):
+        response = ldap_manager.authenticate(username, password)
+        # print(response.status)
+        if response.status == AuthenticationResponseStatus.fail:
+            # No user exists
+            return False, -1
         else:
-            return okay, -1
+            if response.status == AuthenticationResponseStatus.success:
+                save_user(username)
+                return True, username
+            else:
+                return False, -1
+    else:
+        db = sqlite3.connect(DB_PATH)
+        c = db.cursor()
+        t = (username,)
+        c.execute(
+            'SELECT password_hash, salt, id FROM accounts WHERE user_email=?', t)
+        row = c.fetchone()
+        db.close()
+
+        if row is None:
+            # No user exists
+            return False, -1
+        else:
+            knownPassword = row[0]
+            salt = row[1]
+            id = row[2]
+            calculatedPassword = hashlib.md5(
+                str(salt + password).encode('utf-8')).hexdigest()
+            okay = calculatedPassword == knownPassword
+            if okay:
+                return okay, id
+            else:
+                return okay, -1
 
 
 def sendResetPasswordLink(email):
@@ -2399,17 +2643,20 @@ def sendResetPasswordLink(email):
         c = db.cursor()
         c.execute('DELETE FROM reset WHERE id = ?', (id,))
         db.commit()
-        c.execute('INSERT INTO reset (id, secret, expiry) VALUES (?,?,?)', (id, secret, expiry))
+        c.execute(
+            'INSERT INTO reset (id, secret, expiry) VALUES (?,?,?)', (id, secret, expiry))
         db.commit()
         db.close()
 
-        logger.info("Generated a reset link: https://miandata.org/reset_password?id=" + str(id) + "&secret=" + secret)
+        logger.info("Generated a reset link: https://miandata.org/reset_password?id=" +
+                    str(id) + "&secret=" + secret)
 
         if not app.debug:
             msg = Message("Reset Password on Mian",
                           sender="no-reply@miandata.org",
                           recipients=[email])
-            msg.body = "Reset your password here: https://miandata.org/reset_password?id=" + str(id) + "&secret=" + secret
+            msg.body = "Reset your password here: https://miandata.org/reset_password?id=" + \
+                str(id) + "&secret=" + secret
             mail.send(msg)
 
         return True
@@ -2444,7 +2691,8 @@ def resetPassword(user, secret, new_password):
         c = db.cursor()
         salt = createSalt()
 
-        calculatedPassword = hashlib.md5(str(salt + new_password).encode('utf-8')).hexdigest()
+        calculatedPassword = hashlib.md5(
+            str(salt + new_password).encode('utf-8')).hexdigest()
         c.execute('UPDATE accounts SET password_hash = ?, salt = ? WHERE id = ?',
                   (calculatedPassword, salt, user))
         db.commit()
@@ -2465,21 +2713,25 @@ def changePassword(id, original_password, new_password):
     db.close()
 
     if row is None:
-        logger.info("No user exists when attempting to change password for id " + str(id))
+        logger.info(
+            "No user exists when attempting to change password for id " + str(id))
         return False
     else:
         knownPassword = row[0]
         salt = row[1]
-        calculatedPassword = hashlib.md5(str(salt + original_password).encode('utf-8')).hexdigest()
+        calculatedPassword = hashlib.md5(
+            str(salt + original_password).encode('utf-8')).hexdigest()
         if calculatedPassword != knownPassword:
-            logger.info("User id " + str(id) + " password change had the wrong old password")
+            logger.info("User id " + str(id) +
+                        " password change had the wrong old password")
             return False
 
     db = sqlite3.connect(DB_PATH)
     c = db.cursor()
     salt = createSalt()
 
-    calculatedPassword = hashlib.md5(str(salt + new_password).encode('utf-8')).hexdigest()
+    calculatedPassword = hashlib.md5(
+        str(salt + new_password).encode('utf-8')).hexdigest()
     c.execute('UPDATE accounts SET password_hash = ?, salt = ? WHERE id = ?',
               (calculatedPassword, salt, id))
     db.commit()
@@ -2503,10 +2755,41 @@ class User(flask_login.UserMixin):
     def is_authenticated(self):
         return True
 
+# class User(flask_login.UserMixin):
+#     def __init__(self, username, id, active=True):
+#         self.name = username
+#         self.id = id
+#         self.active = active
+
+#     def is_active(self):
+#         return self.active
+
+#     def is_anonymous(self):
+#         return False
+
+#     def is_authenticated(self):
+#         return True
+
+# # Declare an Object Model for the user, and make it comply with the
+# # flask-login UserMixin mixin.
+# class User(flask_login.UserMixin):
+#     def __init__(self, dn, username, data):
+#         self.dn = dn
+#         self.username = username
+#         self.data = data
+#         self.id = convertToNumber(username)
+
+#     def __repr__(self):
+#         return self.dn
+
+#     def get_id(self):
+#         return self.dn
 
 # Project Helpers
 
 # @lru_cache(maxsize=1048576)
+
+
 def get_project_ids_to_info(user_id):
     """
     Gets a mapping of all project names to IDs
@@ -2516,7 +2799,8 @@ def get_project_ids_to_info(user_id):
     user_dir = os.path.join(ProjectManager.DATA_DIRECTORY, user_id)
     for subdir, dirs, files in os.walk(user_dir):
         for dir in sorted(dirs):
-            logger.info("Found project directory " + str(dir) + " for user " + str(user_id))
+            logger.info("Found project directory " +
+                        str(dir) + " for user " + str(user_id))
             if dir != ProjectManager.STAGING_DIRECTORY:
                 pid = dir
                 quantiles = Quantiles(user_id, pid)
@@ -2596,7 +2880,7 @@ def checkSharedValidity(req):
 
     return project_names_to_info[pid]["shared"] == "yes"
 
+
 def abortNotShared():
     abort(403)
     abort(Response('This project is not publicly accessible'))
-

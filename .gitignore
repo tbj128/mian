@@ -12,6 +12,7 @@ mian/static/tmp/*
 .idea/*
 
 set_env_var.py
+mian/config.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

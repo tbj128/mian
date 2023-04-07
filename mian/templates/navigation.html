@@ -1,7 +1,8 @@
 <nav class="navbar navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+        aria-expanded="false" aria-controls="navbar">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -12,7 +13,8 @@
     <div id="navbar" class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualize <span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+            aria-expanded="false">Visualize <span class="caret"></span></a>
           <ul class="dropdown-menu">
             {% if share %}
             <li><a class="nav-link" href="/share/boxplots">Boxplots</a></li>
@@ -42,7 +44,8 @@
       </ul>
       <ul class="nav navbar-nav">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Diversity <span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+            aria-expanded="false">Diversity <span class="caret"></span></a>
           <ul class="dropdown-menu">
             {% if share %}
             <li><a class="nav-link" href="/share/alpha_diversity">Alpha Diversity</a></li>
@@ -60,11 +63,13 @@
       </ul>
       <ul class="nav navbar-nav">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Feature Selection <span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+            aria-expanded="false">Feature Selection <span class="caret"></span></a>
           <ul class="dropdown-menu">
             {% if share %}
             <li><a class="nav-link" href="/share/random_forest">Boruta Classification</a></li>
-            <li><a class="nav-link" href="/share/elastic_net_selection_classification">Elastic Net Classification</a></li>
+            <li><a class="nav-link" href="/share/elastic_net_selection_classification">Elastic Net Classification</a>
+            </li>
             <li><a class="nav-link" href="/share/elastic_net_selection_regression">Elastic Net Regression</a></li>
             <li><a class="nav-link" href="/share/fisher_exact">Fisher Exact Test</a></li>
             <li><a class="nav-link" href="/share/differential_selection">Differential Selection</a></li>
@@ -82,7 +87,8 @@
       </ul>
       <ul class="nav navbar-nav">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Machine Learning <span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+            aria-expanded="false">Machine Learning <span class="caret"></span></a>
           <ul class="dropdown-menu">
             {% if share %}
             <li><a class="nav-link" href="/share/linear_regression">Linear Regressor</a></li>
@@ -101,29 +107,33 @@
       <ul class="nav navbar-nav navbar-right" style="margin-right:0px;">
         <li><a class="nav-link" href="https://tbj128.gitbook.io/mian/" target="_blank">Documentation</a></li>
         {% if current_user.is_authenticated %}
-          <li class="dropdown">
-            {% if "@" in current_user.name %}
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ current_user.name }} <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="/change_password">Change Password</a></li>
-              <li><a href="/logout">Logout</a></li>
-            </ul>
-            {% else %}
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="/logout">Logout</a></li>
-            </ul>
-            <input type="hidden" id="user-nonce" name="user-nonce" value="{{ current_user.name }}">
-            {% endif %}
-          </li>
+        <li class="dropdown">
+          {% if "@" in current_user.name %}
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+            aria-expanded="false">{{ current_user.name }} <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="/change_password">Change Password</a></li>
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+          {% else %}
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+            aria-expanded="false">Settings <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+          {% if not ldap %}
+          <input type="hidden" id="user-nonce" name="user-nonce" value="{{ current_user.name }}">
+          {% endif %}
+          {% endif %}
+        </li>
         {% else %}
-          <li><a href="/login">Login</a></li>
+        <li><a href="/login">Login</a></li>
         {% endif %}
       </ul>
     </div><!--/.nav-collapse -->
   </div>
 </nav>
 <div id="progress" class="waiting" style="display:none;">
-    <dt></dt>
-    <dd></dd>
+  <dt></dt>
+  <dd></dd>
 </div>

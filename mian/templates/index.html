@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    {% include 'header.html' %}
-    <title>Mian: 16S rRNA Operational Taxonomic Unit (OTU) data analysis, visualization, and feature selection tools</title>
-  </head>
 
-  <body>
+<head>
+    {% include 'header.html' %}
+    <title>Mian: 16S rRNA Operational Taxonomic Unit (OTU) data analysis, visualization, and feature selection tools
+    </title>
+</head>
+
+<body>
     <div id="ie-warning" class="alert alert-danger" style="display:none;">
-        <strong>Internet Explorer Not Supported</strong> Mian works best on Chrome, Safari, or Firefox. Some features may not be available on Internet Explorer.
+        <strong>Internet Explorer Not Supported</strong> Mian works best on Chrome, Safari, or Firefox. Some features
+        may not be available on Internet Explorer.
     </div>
     {% include 'navigation.html' %}
 
@@ -23,107 +26,132 @@
     </form>
 
     <div class="highlight">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6">
-            <h1 style="font-size:48px;margin-top:128px;margin-bottom:24px;">Meet <strong>Mian</strong></h1>
-            <h4 style="color:#D4F5FF;line-height:26px;">A new way to visualize, analyse, and train machine learning models on the microbiome. Built by the research community for the research community.</h4>
-            <br /><br />
-            <p>
-              <a href="signup" class="btn btn-default btn-lg" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Create an account using your email to easily access your data." data-trigger="hover">&nbsp;&nbsp;Signup&nbsp;&nbsp;</a>
-              <a href="javascript:{}" onclick="document.getElementById('demo-login').submit(); return false;" class="btn btn-default btn-lg" style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;"  data-container="body" data-toggle="popover" data-placement="bottom" data-content="Try Mian with several sample datasets." data-trigger="hover">&nbsp;&nbsp;Try Demo&nbsp;&nbsp;</a>
-              <a href="javascript:{}" onclick="document.getElementById('demo-signup').submit(); return false;" class="btn btn-default btn-lg" style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Upload your own data and explore Mian, but bookmark the link for future access." data-trigger="hover">&nbsp;&nbsp;Continue Without Signup&nbsp;&nbsp;</a>
-            </p>
-          </div>
-          <div class="col-md-6"><img src="/static/img/laptop-preview.png" /></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 style="font-size:48px;margin-top:128px;margin-bottom:24px;">Meet <strong>Mian</strong></h1>
+                    <h4 style="color:#D4F5FF;line-height:26px;">A new way to visualize, analyse, and train machine
+                        learning models on the microbiome. Built by the research community for the research community.
+                    </h4>
+                    <br /><br />
+                    <p>
+                        {% if ldap %}
+                        <a href="login" class="btn btn-default btn-lg" data-container="body" data-toggle="popover"
+                            data-placement="bottom" data-content="Login using your username and password."
+                            data-trigger="hover">&nbsp;&nbsp;Login&nbsp;&nbsp;</a>
+                        {% else %}
+                        <a href="signup" class="btn btn-default btn-lg" data-container="body" data-toggle="popover"
+                            data-placement="bottom"
+                            data-content="Create an account using your email to easily access your data."
+                            data-trigger="hover">&nbsp;&nbsp;Signup&nbsp;&nbsp;</a>
+                        <a href="javascript:{}" onclick="document.getElementById('demo-login').submit(); return false;"
+                            class="btn btn-default btn-lg"
+                            style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;"
+                            data-container="body" data-toggle="popover" data-placement="bottom"
+                            data-content="Try Mian with several sample datasets." data-trigger="hover">&nbsp;&nbsp;Try
+                            Demo&nbsp;&nbsp;</a>
+                        <a href="javascript:{}" onclick="document.getElementById('demo-signup').submit(); return false;"
+                            class="btn btn-default btn-lg"
+                            style="background-color: transparent !important; color: #FFF; border-color: #FFF; margin-left: 6px;"
+                            data-container="body" data-toggle="popover" data-placement="bottom"
+                            data-content="Upload your own data and explore Mian, but bookmark the link for future access."
+                            data-trigger="hover">&nbsp;&nbsp;Continue Without Signup&nbsp;&nbsp;</a>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6"><img src="/static/img/laptop-preview.png" /></div>
+            </div>
         </div>
-      </div>
     </div>
 
     <div class="highlight-light" style="text-align:center;color:#3d3d3d;">
-      <div class="container">
-        <div class="section-heading" style="margin:0 auto 32px auto;color:#">
-            <h2>Explore microbiome data and discover relevant relationships. No code needed.</h2>
-        </div>
-        <div class="row">
-          <div class="col-md-3 col-sm-6">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-line-chart fa-4x"></i>
-                  </div>
-                  <h4>Powerful Visualizations</h4>
-                  <p>Easily see trends and patterns in the form of bar charts, scatterplots, PCA, NMDS, composition pie charts, tree plots, and more.</p>
-              </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-bar-chart fa-4x"></i>
-                  </div>
-                  <h4>Diversity Measurements</h4>
-                  <p>View key alpha and beta diversity results in the context of gene expression, host response, or any other related metadata.</p>
-              </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-table fa-4x"></i>
-                  </div>
-                  <h4>Machine Learning</h4>
-                  <p>Run feature selection algorithms like Boruta and train machine learning models like linear regression or deep neural networks.</p>
-              </div>
-          </div>
-          <div class="col-md-3 col-sm-6">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-link fa-4x"></i>
-                  </div>
-                  <h4>Relationships</h4>
-                  <p>Find relationships between changes in the microbiome and changes in the immune cell infiltration, gene expression, or other measured response.</p>
-              </div>
-          </div>
-        </div>
+        <div class="container">
+            <div class="section-heading" style="margin:0 auto 32px auto;">
+                <h2>Explore microbiome data and discover relevant relationships. No code needed.</h2>
+            </div>
+            <div class="row">
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-line-chart fa-4x"></i>
+                        </div>
+                        <h4>Powerful Visualizations</h4>
+                        <p>Easily see trends and patterns in the form of bar charts, scatterplots, PCA, NMDS,
+                            composition pie charts, tree plots, and more.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-bar-chart fa-4x"></i>
+                        </div>
+                        <h4>Diversity Measurements</h4>
+                        <p>View key alpha and beta diversity results in the context of gene expression, host response,
+                            or any other related metadata.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-table fa-4x"></i>
+                        </div>
+                        <h4>Machine Learning</h4>
+                        <p>Run feature selection algorithms like Boruta and train machine learning models like linear
+                            regression or deep neural networks.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-link fa-4x"></i>
+                        </div>
+                        <h4>Relationships</h4>
+                        <p>Find relationships between changes in the microbiome and changes in the immune cell
+                            infiltration, gene expression, or other measured response.</p>
+                    </div>
+                </div>
+            </div>
 
 
-        <div class="row" style="margin-top:24px;">
-          <div class="col-md-3 col-sm-6">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-filter fa-4x"></i>
-                  </div>
-                  <h4>Responsive Filtering</h4>
-                  <p>Pick and choose to use different levels of filtering of your data.</p>
-              </div>
-          </div>
-          <div class="col-md-3">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-tag fa-4x"></i>
-                  </div>
-                  <h4>Free</h4>
-                  <p>Research should be accessible to everyone, always.</p>
-              </div>
-          </div>
-          <div class="col-md-3">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-heart fa-4x"></i>
-                  </div>
-                  <h4>Open Source</h4>
-                  <p>Fork us on Github <a href="http://www.github.com/tbj128/mian">here</a>.</p>
-              </div>
-          </div>
-          <div class="col-md-3">
-              <div class="feature">
-                  <div class="icon">
-                      <i class="fa fa-compress fa-4x"></i>
-                  </div>
-                  <h4>Subsampling Enabled</h4>
-                  <p>Get meaningful results by automatically or manually subsampling the microbiome data.</p>
-              </div>
-          </div>
+            <div class="row" style="margin-top:24px;">
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-filter fa-4x"></i>
+                        </div>
+                        <h4>Responsive Filtering</h4>
+                        <p>Pick and choose to use different levels of filtering of your data.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-tag fa-4x"></i>
+                        </div>
+                        <h4>Free</h4>
+                        <p>Research should be accessible to everyone, always.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-heart fa-4x"></i>
+                        </div>
+                        <h4>Open Source</h4>
+                        <p>Fork us on Github <a href="http://www.github.com/tbj128/mian">here</a>.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="feature">
+                        <div class="icon">
+                            <i class="fa fa-compress fa-4x"></i>
+                        </div>
+                        <h4>Subsampling Enabled</h4>
+                        <p>Get meaningful results by automatically or manually subsampling the microbiome data.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
 
@@ -142,5 +170,6 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<script src="/static/js/ie10-viewport-bug-workaround.js"></script>-->
 
-  </body>
+</body>
+
 </html>

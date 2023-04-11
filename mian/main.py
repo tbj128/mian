@@ -114,19 +114,6 @@ logger = logging.getLogger(__name__)
 config = configparser.ConfigParser()
 config.read(CONFIG_PATH)
 
-# def get_config_section():
-#     if not hasattr(get_config_section, 'section_dict'):
-#         get_config_section.section_dict = collections.defaultdict()
-
-#         for section in config.sections():
-#             get_config_section.section_dict[section] = dict(config.items(section))
-
-#     return get_config_section.section_dict
-
-# # Load config file variables into config_dict.
-# # Variable names are converted to lowercase!
-# config_dict = get_config_section()
-
 # Initialize the web app
 app = Flask(__name__)
 app.config.update(
@@ -320,24 +307,6 @@ def redirect_dest(fallback):
         return redirect(dest)
     except:
         return redirect(fallback)
-
-
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if request.method == 'GET':
-#         if config['ldap']['ldap_active'].casefold() == 'true':
-#             return render_template('login_ldap.html')
-#     else:
-#         username = request.form['username']
-#         password = request.form['password']
-
-#         isAuth, userID = checkAuth(username, password)
-#         if isAuth:
-#             user = User(username, userID, True)
-#             flask_login.login_user(user)
-#             return redirect_dest(fallback=url_for('projects'))
-
-#         return render_template('login.html', badlogin=1)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -2457,15 +2426,6 @@ def downloadFile():
 # Auth helper methods
 #
 
-
-# @login_manager.user_loader
-# def user_loader(id):
-#     userEmail = getUserEmail(id)
-#     if userEmail == "":
-#         return
-#     user = User(userEmail, id, True)
-#     return user
-
 # Declare a User Loader for Flask-Login.
 # Simply returns the User if it exists in our 'database', otherwise
 # returns None.
@@ -2551,32 +2511,6 @@ def getUserEmail(userID):
         return ""
     db.close()
     return row[1]
-
-
-# def checkAuth(username, password):
-#     """
-#     Used during login to check if the user credentials are correct
-#     """
-#     db = sqlite3.connect(DB_PATH)
-#     c = db.cursor()
-#     t = (username,)
-#     c.execute('SELECT password_hash, salt, id FROM accounts WHERE user_email=?', t)
-#     row = c.fetchone()
-#     db.close()
-
-#     if row is None:
-#         # No user exists
-#         return False, -1
-#     else:
-#         knownPassword = row[0]
-#         salt = row[1]
-#         id = row[2]
-#         calculatedPassword = hashlib.md5(str(salt + password).encode('utf-8')).hexdigest()
-#         okay = calculatedPassword == knownPassword
-#         if okay:
-#             return okay, id
-#         else:
-#             return okay, -1
 
 def checkAuth(username, password):
     """
@@ -2754,36 +2688,6 @@ class User(flask_login.UserMixin):
 
     def is_authenticated(self):
         return True
-
-# class User(flask_login.UserMixin):
-#     def __init__(self, username, id, active=True):
-#         self.name = username
-#         self.id = id
-#         self.active = active
-
-#     def is_active(self):
-#         return self.active
-
-#     def is_anonymous(self):
-#         return False
-
-#     def is_authenticated(self):
-#         return True
-
-# # Declare an Object Model for the user, and make it comply with the
-# # flask-login UserMixin mixin.
-# class User(flask_login.UserMixin):
-#     def __init__(self, dn, username, data):
-#         self.dn = dn
-#         self.username = username
-#         self.data = data
-#         self.id = convertToNumber(username)
-
-#     def __repr__(self):
-#         return self.dn
-
-#     def get_id(self):
-#         return self.dn
 
 # Project Helpers
 

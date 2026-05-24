@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mian:
+    build: .
+    image: mian:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist user data outside the container
+      - mian_data:/usr/src/app/mian/data
+    environment:
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PROCESSES=5
+      - FLASK_DEBUG=0
+      - MIAN_RUNTIME_R_INSTALL=0
+    restart: unless-stopped
+
+volumes:
+  mian_data:
+    name: mian_data

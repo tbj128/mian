@@ -1,0 +1,16 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.db
+*.log
+*.out
+*.logfile
+.DS_Store
+.idea
+mian/data/*
+!mian/data/example
+!mian/data/unit_tests
+mian/static/tmp/*
+mian/config.ini

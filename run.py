@@ -25,9 +25,9 @@ def setup_logging(
 
 app.secret_key = 'Twilight Sparkle'
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['DEBUG'] = True
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', '1') == '1'
 print("App Startup")
 # app.run(debug=True, port=8080)
 # app.run(host='0.0.0.0', debug=True, port=8080)
-app.run(threaded=False, processes=3)
+app.run(host=os.environ.get('FLASK_HOST', '127.0.0.1'), port=5000, threaded=False, processes=int(os.environ.get('FLASK_PROCESSES', '3')))
 

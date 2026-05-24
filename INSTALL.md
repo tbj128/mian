@@ -21,78 +21,70 @@ The following instructions are for an example installation of Mian on an Apache 
 #### Tensorflow Notes
 - On M1 ARM64 Macbooks, Mian was tested under Rosetta 2. Tensorflow must be built from source (without AVX or GPU) to achieve a version compatible with Python 3.6 (following instructions from https://www.tensorflow.org/install/source )  
 ___  
-## Install on modern OS with python > 3.6.x
+## Install on modern OS with Python > 3.6.x
 ## Method 1: Docker
-- You can use the procedure and Dockerfile below to create a docker image that runs mian.
+
+The repository includes a `Dockerfile`, `docker-compose.yml`, and `requirements.txt`. This is the recommended approach for running Mian on a modern OS without having to manage Python or R dependencies manually.
+
+**Requirements:** Docker Engine 20.10+. Docker Compose V2 (`docker compose` with a space) is recommended. V1 (`docker-compose` with a hyphen) works with the workaround described below.
+
+**First-time setup**
+
 ```
-mkdir main_docker
-cd mian_docker
 git clone https://github.com/tbj128/mian.git
+cd mian
+docker compose up --build -d
 ```
-- Create a file called **requirements.txt** filled with:
+
+The first build will take a while — R packages are compiled from source. Subsequent starts are fast. Once running, open `http://localhost:5000` in your browser.
+
+**Starting and stopping**
+
+With Docker Compose V2:
 ```
-biom-format
-flask==1.1.1
-flask-login==0.4.0
-Flask-Mail==0.9.1
-h5py
-rpy2==3.1.0
-scikit-learn
-scipy
-werkzeug==1.0.1
-scikit-bio
-pandas==1.0.3
-Keras==2.3.1
-Boruta
-tensorflow==2.5.0
-traitlets==4.3.3
-numpy
-cython
+# Start (after code or config changes)
+docker compose up --build -d
+
+# Start (no changes since last run)
+docker compose up -d
+
+# Stop (data is preserved)
+docker compose down
+
+# View logs
+docker compose logs -f
 ```
-- Dockerfile
+
+With Docker Compose V1 (`docker-compose` with a hyphen) — V1 has a known bug with modern Docker Engine that causes a crash when recreating an existing container. Always run `down` before `up` to avoid it:
 ```
-FROM python:3.6.7
-
-# set working directory in container
-WORKDIR /usr/src/app
-
-# Copy and install packages
-COPY requirements.txt /
-RUN pip install --upgrade pip
-RUN pip install -r /requirements.txt
-
-
-# Install needed system tools
-RUN apt-get update \
-        && apt-get install -y --no-install-recommends \
-        software-properties-common apt-transport-https gfortran libblas-dev liblapack-dev \
-        && rm -rf /var/lib/apt/lists/*
-
-# Install R
-RUN gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E19F5F87128899B192B1A2C2AD5F960A256A04AF && gpg -a --export E19F5F87128899B192B1A2C2AD5F960A256A04AF | apt-key add -
-RUN add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian stretch-cran35/'
-RUN apt-get update \
-        && apt-get install -y --no-install-recommends --allow-unauthenticated \
-        r-base \
-        && rm -rf /var/lib/apt/lists/*
-
-# Install R packages
-RUN R -e "install.packages(c('vegan', 'RColorBrewer', 'ranger', 'Boruta', 'BiocManager', 'remotes'), repos='https://cloud.r-project.org/')"
-RUN R -e "library('remotes'); install_version('locfit', '1.5.9.4'); install_version('Hmisc', '4.4')"
-RUN R -e "BiocManager::install('DESeq2')"
-
-# Copy app folder to app folder in container
-COPY /mian /usr/src/app/
-
-# Run app
-CMD python run.py
+docker-compose down && docker-compose up --build -d
+docker-compose down && docker-compose up -d
 ```
-- Build the image and run. The first step will take a while.
+Upgrading to V2 is strongly recommended: `sudo apt-get install docker-compose-plugin`
+
+**Configuration**
+
+Runtime settings are controlled via the `environment:` section of `docker-compose.yml`:
+
+| Variable | Docker default | Description |
+|---|---|---|
+| `FLASK_HOST` | `0.0.0.0` | Interface to bind to |
+| `FLASK_DEBUG` | `0` | Set to `1` to enable Flask debug mode |
+| `FLASK_PROCESSES` | `5` | Number of worker processes (each loads R into memory ~200-400 MB) |
+| `MIAN_RUNTIME_R_INSTALL` | `0` | Set to `1` to allow missing R packages to be installed at runtime |
+
+**LDAP**
+
+By default the Docker image runs without LDAP (the "Try Demo", "Signup", and "Continue Without Signup" buttons are shown on the homepage). To enable LDAP, copy `mian/config.ini.example` to `mian/config.ini`, fill in your LDAP settings, and rebuild the image.
+
+**Persistence**
+
+User data is stored in a named Docker volume (`mian_data`) mounted at `/usr/src/app/mian/data`. It survives container restarts and image rebuilds. The volume name is fixed and does not depend on the directory you launch from.
+
+To remove the volume and all stored data permanently:
 ```
-docker build -t mian .
-docker run -d --name mian -p 5000:5000 mian
+docker compose down -v
 ```
-- This is good for testing, but there is no persistence. You will have to make sure the database and data dirs (/usr/src/app/mian/mian.db and /usr/src/app/mian/data) are not inside the container.
 ___  
 
 ## Method 2: Conda

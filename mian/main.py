@@ -54,7 +54,7 @@ r_package_install.importr_custom("vegan")
 r_package_install.importr_custom("RColorBrewer")
 r_package_install.importr_custom("ranger")
 r_package_install.importr_custom("Boruta")
-r_package_install.importr_custom("DESeq2")
+r_package_install.importr_custom("DESeq2", is_bioconductor=True)
 
 from mian.core.project_manager import ProjectManager, GENERAL_ERROR, OK
 from mian.analysis.alpha_diversity import AlphaDiversity
@@ -114,14 +114,22 @@ logger = logging.getLogger(__name__)
 config = configparser.ConfigParser()
 config.read(CONFIG_PATH)
 
+# Ensure required sections exist with safe defaults when config.ini is absent
+# (e.g. first run inside a Docker container before the file is generated)
+if not config.has_section('mail'):
+    config.add_section('mail')
+if not config.has_section('ldap'):
+    config.add_section('ldap')
+    config.set('ldap', 'ldap_active', 'False')
+
 # Initialize the web app
 app = Flask(__name__)
 app.config.update(
-    MAIL_SERVER=config['mail'].get('mail_server'),
-    MAIL_PORT=int(config['mail'].get('mail_port')),
-    MAIL_USE_TLS=config['mail'].getboolean('mail_use_tls'),
-    MAIL_USERNAME=config['mail'].get('mail_username'),
-    MAIL_PASSWORD=config['mail'].get('mail_password')
+    MAIL_SERVER=config.get('mail', 'mail_server', fallback='localhost'),
+    MAIL_PORT=int(config.get('mail', 'mail_port', fallback='25')),
+    MAIL_USE_TLS=config.getboolean('mail', 'mail_use_tls', fallback=False),
+    MAIL_USERNAME=config.get('mail', 'mail_username', fallback=''),
+    MAIL_PASSWORD=config.get('mail', 'mail_password', fallback='')
 )
 mail = Mail(app)
 
